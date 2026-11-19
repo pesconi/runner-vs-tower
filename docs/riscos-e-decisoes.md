@@ -168,7 +168,7 @@ Cada decisão tem **por que importa**, **prazo** (antes de qual entrega) e
 | **D8** | **Orçamento de UA e de ferramentas** (se houver) | Sem orçamento, o gênero (CPI alto, descoberta difícil [F]) exige ASO e orgânico; não há dado para dimensionar | RT-10 | Soft launch **sem** UA paga ou com valor pequeno e fixo, definido por você |
 | **D9** | **Países do soft launch** | CPM e CPI variam muito por país [F: Adjust 2026-04-15] | RT-9 | Escolher poucos países de idioma suportado; usar dados do Wild Pack para decidir |
 | **D10** | **Idiomas** | Ficha e textos | RT-9 | Os mesmos do Wild Pack (P6) |
-| **D11** | **Extração do kit:** pacote local (A), fork (B) | Reuso técnico, 5.2 | RT-1 | **A** em duas etapas, com B como saída |
+| **D11** | **Extração do kit:** pacote local (A), fork (B) | Reuso técnico, 5.2 | RT-1 | **Decidido em 2026-11-19: A** (ver `decisoes.md`, K1) |
 | **D12** | **Quantidade de conteúdo no lançamento** (mundos, fases) | Define RT-6 e o prazo | RT-5 | Poucos mundos e 30–50 fases por dados; resto no pós-lançamento |
 | **D13** | **Quem são os 5 testadores** do protótipo (portão) | Sem testadores não há portão | RT-3 | Gente fora do estúdio, que joga celular, com alguns que não conhecem o Wild Pack |
 | **D14** | **Plataforma:** só Android | iOS exige conta Apple, build e revisão | RT-0 | Só Android na v1 |
