@@ -1,0 +1,190 @@
+# Runner vs Tower — riscos e decisões pendentes
+
+Data: 2026-11-19. **[F]** = fato com fonte (pesquisa de 2026-11-18, `SISTEMA.md`,
+código); **[I]** = inferência nossa. Nenhuma decisão abaixo foi tomada. Este
+documento não é aconselhamento jurídico: o que toca propriedade intelectual
+precisa de revisão do usuário (e de advogado se houver dúvida real).
+
+---
+
+## 1. Riscos
+
+Escala: probabilidade e impacto em Baixa/Média/Alta, **julgamento nosso [I]**,
+sem medida.
+
+### R1 — Clone percebido (Mob Control e similares)
+
+- **Fato [F]:** Mob Control é do Voodoo, 302,1 mi de downloads totais, 81,6 mi
+  em 2025, MAU máximo da série em abr/2026 (Udonis/AppMagic, 2026-07-02). A
+  pesquisa já descreve o líder como "dono" do gênero e a saturação como média-
+  alta. Count Masters passa de 100 mi de downloads no Play (listagem, baixa
+  confiança).
+- **Risco [I]:** jogador e loja compararem com o líder e preferirem o líder;
+  ASO e UA mais caros contra marcas fortes. Probabilidade **Alta**, impacto
+  **Alto**.
+- **Mitigação:** gancho próprio (GDD 5, Opção A), arte e identidade próprias
+  (massinha adulta, não neon de Voodoo), nome sem "Mob", "Count" ou "Crowd Run"
+  genéricos; **critério de descarte** no portão RT-3 (3 de 5 testadores citam
+  "igual a…"); varredura de loja em RT-0.
+- **Gatilho de parada:** o protótipo falha o portão (ver plano RT-3).
+
+### R2 — IP e semelhança com Mob Control
+
+- **Fato [F]:** não há análise jurídica no repositório; a pesquisa só trata de
+  mercado. Mecânicas de jogo em geral não são protegidas por direito autoral, mas
+  **arte, nome, ícone, interface, sons, textos e a "aparência total" são**, e a
+  Play tem política contra imitação e contra ficha que induz o usuário a
+  confundir [I, a conferir na Central de Políticas; minha memória, não verifiquei
+  nesta sessão].
+- **Risco [I]:** denúncia por semelhança, remoção da ficha, perda de conta (a
+  mesma conta publica o Wild Pack). Probabilidade **Média-baixa** se a identidade
+  for própria; impacto **Alto** (a conta é única).
+- **Mitigação:**
+  1. **Não copiar** assets, nomes de modos, tipos de torre ou telas de nenhum
+     jogo existente; referência só como categoria.
+  2. Arte própria no pipeline de massinha do estúdio; todo asset externo só CC0
+     com licença arquivada [F: SISTEMA.md 4.1].
+  3. Nome, ícone e capturas diferentes **de propósito** (varredura em RT-0 e
+     de novo em RT-9).
+  4. Marcas registradas: pesquisar o nome final nas bases oficiais antes de
+     comprar domínio, arte e ficha (decisão D1).
+  5. Usar mecânicas genéricas do gênero (portões, multiplicar, lançar) e não
+     imitar o conjunto específico de um título.
+- **Nota:** o "Runner vs Tower" é só **nome de trabalho** e nunca vai à loja
+  sem passar pela varredura de marca.
+
+### R3 — Desempenho no celular fraco
+
+- **Fatos [F]:** gate 3×: CPU principal p95 ≤ 11 ms, GPU p95 ≤ 11 ms, PSS ≤
+  450 MB; medido com 300 corredores a ~7–10,5 ms de CPU (SISTEMA.md 5.4, 7.35).
+  Não há aparelho fraco de referência; o alvo é Android 8+, ARM64, ~3 GB de RAM
+  (decisão de 2026-11-16). O pico de 300 só existe no início da corrida do
+  Wild Pack (7.35); neste jogo o assalto é o pico.
+- **Risco [I]:** o assalto estoura a CPU principal; a margem é pequena (~1 ms).
+  Probabilidade **Média**, impacto **Alto** (o jogo é inviável em aparelhos de
+  entrada).
+- **Mitigação:** movimento em lote de unidades em voo, sem física, projéteis em
+  pool, limites por dados (reuso-tecnico.md 6.2 e 6.3); **medição no protótipo
+  antes de arte**; se falhar, reduzir limites, não o gate.
+- **Gatilho de parada:** protótipo não fecha o gate com no mínimo um número de
+  unidades em voo que o jogo ainda considere "multidão" (definir no RT-2;
+  inferência).
+
+### R4 — Monetização sem dados
+
+- **Fatos [F]:** a receita citada nas fontes é IAP; a pesquisa **não achou**
+  dado público de receita de anúncio por gênero, que é o que mais importa ao
+  estúdio. Hoje o estúdio não tem IAP, intersticial, analytics nem backend. CPM
+  de LatAm é bem menor que o de América do Norte (Adjust, 2026-04-15 [F]).
+- **Risco [I]:** o jogo cair em D1/D7 aceitáveis mas não render o suficiente
+  para justificar o ciclo; monetizar demais e derrubar a retenção; monetizar de
+  menos e não cobrir o custo. Probabilidade **Alta** (incerteza estrutural),
+  impacto **Médio**.
+- **Mitigação:** monetização ética e **leve no início** (recompensado opcional,
+  intersticial com limite, remover anúncios); calibrar por dados no soft
+  launch; ter meta de receita só **depois** de medir eCPM real do AdMob (a
+  conta do Wild Pack já gera esse dado; usar o aceite e o eCPM reais do Wild Pack
+  como primeira medida **[I]**).
+- **Gatilho de parada:** após soft launch, se o eCPM real e o D7 não suportarem
+  nenhuma estimativa razoável, decidir parar ou mudar de gênero (candidatos 2
+  e 3 da pesquisa).
+
+### R5 — Sem analytics (bloqueio de validação)
+
+- **Fato [F]:** SISTEMA.md lista "missões diárias, login ou analytics" como fora
+  do escopo; a política de privacidade do Wild Pack **declara não usar
+  analytics**; pesquisa: "sem dado de retenção/aceite não se valida nenhuma
+  hipótese".
+- **Risco [I]:** o soft launch não consegue medir D1/D7 (as metas pedem
+  D1 ≥ 35%, D7 ≥ 12%). Probabilidade **Alta** se nada mudar, impacto **Alto**.
+- **Mitigação:** decisão D4 antes do RT-7; opções: (a) analytics mínimo e
+  consentido, (b) usar só retenção por instalações ativas do Play Console
+  (limitada), (c) soft launch com medição manual em grupo pequeno.
+
+### R6 — Prazo e capacidade de uma pessoa
+
+- **Fato [F]:** um desenvolvedor com Claude Code; pesquisa estima M (4–6
+  semanas) só para o jogo mínimo [I dela].
+- **Risco [I]:** a janela até 30/jun tem folga de poucos dias (plano de
+  entregas); o Wild Pack ainda pode consumir tempo; a extração do kit (RT-1) é
+  a etapa mais incerta. Probabilidade **Média-alta**, impacto **Médio**.
+- **Mitigação:** cortar escopo (menos mundos, sem passe), alternativa de fork,
+  aceitar lançamento em jul/2027 se necessário.
+
+### R7 — Regras da Play e conta única
+
+- **Fato [F]:** a pesquisa registra que não investigou os requisitos de teste
+  fechado para contas novas; a conta de organização do Wild Pack está em
+  criação (P1 pendente).
+- **Risco [I]:** novo app depende do que o Wild Pack aprender com a conta; uma
+  violação em um app pode afetar a conta inteira. Probabilidade **Média**,
+  impacto **Alto**.
+- **Mitigação:** revisar a Central de Políticas e o questionário IARC com
+  evidência de código; nunca publicar ficha sem checklist; manter 13+ e
+  anúncios sem tag infantil.
+
+### R8 — Percepção "infantil" ou violência
+
+- **Fato [F]:** adultização do Wild Pack foi motivada pelo risco de a Play
+  entender que o app apela a crianças (`docs/adultizacao-ideias.md`).
+- **Risco [I]:** combate de bonecos pode ser lido como violência e mudar a
+  classificação; massinha fofa pode ser lida como infantil. Probabilidade
+  **Média**, impacto **Médio**.
+- **Mitigação:** sem sangue; direção adulta; responder o IARC com o código na
+  mão; revisar o ícone e a ficha com a mesma lista da adultização.
+
+### R9 — Escopo oficial "apps quase idênticos"
+
+- **Fato [F]:** SISTEMA.md veda "publicar vários apps quase idênticos".
+- **Risco [I]:** conflito de regra com o próprio estúdio; Runner vs Tower **não**
+  é quase idêntico (mecânica de assalto, outra meta), mas depende de reler a
+  linha. Probabilidade **Baixa**, impacto **Baixo** (decisão simples, D3).
+
+### R10 — Dependência de áudio/arte CC0 e de ferramentas
+
+- **Fato [F]:** áudio e arte vêm de pacotes CC0 já usados no Wild Pack;
+  `docs/audio-licenses.md`.
+- **Risco [I]:** faltar arte de torre/defesa/chefe em CC0 com a direção adulta;
+  gerar arte própria demanda tempo. Probabilidade **Média**, impacto **Médio**.
+- **Mitigação:** priorizar formas simples de massinha geradas no Blender (como o
+  corpo atual); só usar assets externos com licença arquivada.
+
+---
+
+## 2. Decisões pendentes do usuário
+
+Cada decisão tem **por que importa**, **prazo** (antes de qual entrega) e
+**recomendação [I]**. Nenhuma foi tomada. Marcar a resposta e a data.
+
+| # | Decisão | Por que importa | Antes de | Recomendação [I] |
+|---|---|---|---|---|
+| **D1** | **Nome do jogo** (e checagem de marca) | Nome de trabalho "Runner vs Tower" é genérico, difícil de proteger e parecido com títulos de gênero; domínio, ícone e ficha dependem dele | RT-4 (arte), definitivo antes de RT-9 | Escolher 3 candidatos próprios e verificar marca antes de investir em arte; nome sem termos do líder |
+| **D2** | **Gancho** (A, B ou C do GDD 5) | Define o protótipo | RT-2 | **A**, com o traço B só em chefes |
+| **D3** | **Reler a regra "apps quase idênticos"** e aprovar o segundo app | Regra do SISTEMA.md; sem decisão não há entrega | RT-0 | Aprovar: o jogo é diferente |
+| **D4** | **Analytics** (nenhum / mínimo consentido / outro) | Sem dado não há D1/D7; muda política de privacidade, UMP e Data safety; contraria o "fora do escopo" | RT-7 (antes: RT-3 se medir no teste) | Analytics **mínimo** (só D1, D7, aceite de anúncio), com consentimento, e escolha da ferramenta pelo usuário (**sem chamadas pagas sem aprovação**) |
+| **D5** | **Escopo de retenção:** recompensa diária, missões, eventos | SISTEMA.md veda "missões diárias, login ou analytics" | RT-7 | Reabrir só recompensa diária e missões locais; eventos só depois do lançamento |
+| **D6** | **Monetização aprovada para v1:** intersticial? IAP remover anúncios? passe? | Cada item adiciona SDK, declarações, política e teste | RT-7 | v1 com recompensado + intersticial com limite + remover anúncios; passe só pós-lançamento |
+| **D7** | **Conta Play e conta AdMob:** usar as do Wild Pack ou separar; DUNS; risco de conta única | O Wild Pack ainda está criando a conta (P1) | RT-9 | Mesma conta de organização; app e unidade de anúncio separados |
+| **D8** | **Orçamento de UA e de ferramentas** (se houver) | Sem orçamento, o gênero (CPI alto, descoberta difícil [F]) exige ASO e orgânico; não há dado para dimensionar | RT-10 | Soft launch **sem** UA paga ou com valor pequeno e fixo, definido por você |
+| **D9** | **Países do soft launch** | CPM e CPI variam muito por país [F: Adjust 2026-04-15] | RT-9 | Escolher poucos países de idioma suportado; usar dados do Wild Pack para decidir |
+| **D10** | **Idiomas** | Ficha e textos | RT-9 | Os mesmos do Wild Pack (P6) |
+| **D11** | **Extração do kit:** pacote local (A), fork (B) | Reuso técnico, 5.2 | RT-1 | **A** em duas etapas, com B como saída |
+| **D12** | **Quantidade de conteúdo no lançamento** (mundos, fases) | Define RT-6 e o prazo | RT-5 | Poucos mundos e 30–50 fases por dados; resto no pós-lançamento |
+| **D13** | **Quem são os 5 testadores** do protótipo (portão) | Sem testadores não há portão | RT-3 | Gente fora do estúdio, que joga celular, com alguns que não conhecem o Wild Pack |
+| **D14** | **Plataforma:** só Android | iOS exige conta Apple, build e revisão | RT-0 | Só Android na v1 |
+| **D15** | **Prioridade em relação ao Wild Pack:** se o Wild Pack precisar de atualização, quem ganha as semanas | Uma pessoa só | RT-0 | Wild Pack tem prioridade nas semanas de incidente; o plano desliza |
+| **D16** | **Critério de "parar":** aceitar os gatilhos dos riscos R1, R3, R4 | Evita insistir em jogo que não funciona | RT-0 | Aceitar |
+
+### Dúvidas abertas registradas pela sessão (sem resposta)
+
+1. Existe alguma restrição jurídica sobre o nome "Wild Pack" que atinja o
+   segundo jogo (mesma marca guarda-chuva)? Não verificado.
+2. O estúdio quer que o segundo jogo mantenha o **mesmo universo** do Wild Pack
+   (mesmos personagens) ou um universo próprio? Afeta arte e ASO.
+3. A regra de teste fechado da Play para contas novas e as exigências de IARC
+   para "combate de bonecos" não foram pesquisadas nesta sessão (sem chamadas
+   pagas e fora do escopo; precisam ser conferidas no Play Console).
+4. O OPPO CPH2791 é o único aparelho; um segundo aparelho de entrada mudaria o
+   risco R3, mas o usuário já decidiu não ter (2026-11-16).
+5. Existe alguma meta de receita do estúdio que defina o "bom o bastante"?
+   Sem número, o plano não consegue declarar sucesso comercial.
