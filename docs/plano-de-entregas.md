@@ -27,7 +27,7 @@ lançamento jun/2027.
 | ~~RT-4 Fatia vertical~~ — concluída em 2026-11-20 (`rt4-fatia.md`) | 2 | 2,4 | ~~fev–início de mar~~ |
 | ~~RT-5 Produção — núcleo de meta~~ — concluída em 2026-11-20 (gate 3× aprovado; fichas D12/D19 pendentes; `rt5-meta.md`) | 2 | 2,4 | ~~mar~~ |
 | ~~RT-6 Produção — conteúdo (mundos, torres, chefes)~~ — concluída em 2026-11-20 (`rt6-conteudo.md`) | 2,5 | 3 | ~~mar–abr~~ |
-| ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (ficha D21 pendente; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
+| ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
 | RT-8 Produção — polimento, áudio e gate de release | 1 | 1,2 | fim de abr |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
@@ -220,7 +220,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   e declarações, testadores de licença para a compra de teste.
 - **Status: concluída em 2026-11-20** (`Stage RT.7`; `rt7-monetizacao.md`). D6 = B, D5 = B, D4 = A:
   premiado (dobrar moedas, continuar uma vez por fase), intersticial pronto e **desligado**, presente diário
-  local, medição mínima atrás de uma porta sem SDK (ferramenta na ficha **D21**, pendente), UMP antes de
+  local, medição mínima atrás de uma porta sem SDK (ferramenta: **D21 = A, Firebase**, a instalar antes da RT-9), UMP antes de
   qualquer anúncio (portão comum no kit, K.7), só unidades de teste do Google. **A compra de teste não se
   aplica** (D6: sem IAP na v1). Aceite: validador do jogo e **validador de monetização** sem falha; EditMode 119/119; PlayMode 12/12 (6 novos com
   anúncio simulado: continuar, NO THANKS, sem anúncio sem oferta, dobrar moedas, intersticial, presente diário);
@@ -229,8 +229,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   sem reconferir consentimento, relógio adiantado travando o presente); APKs com anúncios de teste em
   `C:\temp\rt7` (36,1 MB, +0,03 MB sobre a RT-6). **Pendente do usuário:** o OPPO não estava conectado; o gate 3×
   do mundo 4 (`Tools/rt2-gate.sh rt7-w4 60 20 /c/temp/rt7/Claybreak-measure.apk 4`) e a instalação do APK normal
-  (`adb install -r /c/temp/rt7/Claybreak.apk`) ficam para quando ele ligar o celular; ver os anúncios de teste;
-  responder a ficha D21.
+  (`adb install -r /c/temp/rt7/Claybreak.apk`) ficam para quando ele ligar o celular; ver os anúncios de teste.
 
 ## RT-8 — Produção: polimento, áudio e gate de release
 

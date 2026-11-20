@@ -763,7 +763,7 @@ Responda: A, B, C ou D, ou "A com <ajuste>", ou "explica melhor".
 entram 3 mundos novos (paleta, 1 torre nova e chefe novo cada; escudo no mundo 2). Se a RT-6 apertar,
 cai para C (4º mundo no soft launch) sem retrabalho.
 
-## Ficha D21 (RT-7, aguardando resposta)
+## Ficha D21 (RT-7, respondida em 2026-11-20: A)
 
 ### DECISÃO D21 — Qual ferramenta gratuita mede os jogadores (analytics)
 
@@ -854,3 +854,9 @@ Se você não responder: nada é instalado; o jogo segue sem mandar nenhum event
 continua normalmente.
 
 Responda: A, B, C, D ou E, ou "A com <ajuste>", ou "explica melhor".
+
+**Resposta do usuário (2026-11-20): A — Firebase Analytics** na configuração mínima (sem ID de
+publicidade, sem sinais do Google, coleta desligada até o jogo liberar; fora da Europa/Reino Unido com aviso
+na política e dados mínimos). Próximo passo: uma sessão instala o SDK, liga o adaptador, atualiza política e
+Data safety e mede o peso no gate; o usuário cria o projeto gratuito no Firebase quando a sessão pedir. Deve
+sair antes da RT-9.
