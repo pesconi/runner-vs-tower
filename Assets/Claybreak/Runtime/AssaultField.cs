@@ -9,83 +9,131 @@ namespace Claybreak
     /// <summary>
     /// Units in flight during the assault, moved in one batch (reuso-tecnico 4.1, risk R-D2): one Update
     /// walks preallocated arrays; no per-unit Update, no physics, no allocation. A unit in flight never
-    /// collides with another; it only meets the gate row, the wall and the tower, by distance along its
-    /// lane (R-D4). Units come from the kit's RunnerPool and go back to it when they hit or die.
+    /// collides with another; it only meets the gate row, the sweeper, the wall and the tower, by distance
+    /// along its lane (R-D4). Units come from the kit's RunnerPool and go back to it when they hit or die.
+    /// A unit can be a Brute (the special unit): bigger, darker, more damage, and armor against one hit.
     /// </summary>
     public sealed class AssaultField : MonoBehaviour
     {
         private const float SteerResponse = 6f;
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
         [SerializeField] private RunnerPool runnerPool;
         [SerializeField] private AssaultTower tower;
         [SerializeField] private AssaultWall wall;
-        [SerializeField] private Transform[] gateVisuals = new Transform[PrototypeLevel.LaneCount];
-        [SerializeField] private TextMesh[] gateLabels = new TextMesh[PrototypeLevel.LaneCount];
-        [SerializeField] private Renderer[] gatePanels = new Renderer[PrototypeLevel.LaneCount];
+        [SerializeField] private SweeperDefense sweeper;
+        [SerializeField] private Transform[] gateVisuals = new Transform[ClaybreakLevel.LaneCount];
+        [SerializeField] private TextMesh[] gateLabels = new TextMesh[ClaybreakLevel.LaneCount];
+        [SerializeField] private Renderer[] gatePanels = new Renderer[ClaybreakLevel.LaneCount];
         [SerializeField] private Material goodGateMaterial;
         [SerializeField] private Material badGateMaterial;
 
-        private PrototypeLevel level;
-        private readonly float[] laneX = new float[PrototypeLevel.LaneCount];
-        private readonly int[] gatePassed = new int[PrototypeLevel.LaneCount];
-        private readonly int[] laneCounts = new int[PrototypeLevel.LaneCount];
-        private readonly float[] laneZSum = new float[PrototypeLevel.LaneCount];
+        private ClaybreakLevel level;
+        private readonly float[] laneX = new float[ClaybreakLevel.LaneCount];
+        private readonly int[] gatePassed = new int[ClaybreakLevel.LaneCount];
+        private readonly int[] laneCounts = new int[ClaybreakLevel.LaneCount];
+        private readonly float[] laneZSum = new float[ClaybreakLevel.LaneCount];
         private RunnerUnit[] units;
         private Transform[] transforms;
+        private Renderer[] bruteRenderers;
         private float[] xs;
         private float[] targetXs;
         private float[] zs;
         private int[] lanes;
+        private int[] armor;
+        private bool[] brutes;
         private int count;
+        private int capacity;
+        private int gateShift;
         private uint spreadSeed = 1u;
         private Vector3 unitScale = Vector3.one * 0.5f;
+        private Color crowdColor = Color.white;
+        private Color bruteColor = Color.red;
+        private float bruteScale = 1.4f;
+        private int bruteDamage = 1;
+        private int bruteArmor;
+        private int towerDamage = 1;
+        private MaterialPropertyBlock colorBlock;
 
         public int InFlight => count;
         public int PeakInFlight { get; private set; }
-        public int Capacity => units == null ? 0 : units.Length;
+        public int TowerHits { get; private set; }
+        public int Capacity => capacity;
+        public int GateShift => gateShift;
         public bool Running { get; set; }
 
-        public bool Configure(PrototypeLevel levelData, Renderer track, ClaybreakTheme theme, CharacterController leader,
+        /// <summary>One-time setup: lane positions, preallocated arrays and the crowd look on every pool unit.</summary>
+        public bool Initialize(Renderer track, ClaybreakTheme theme, ClaybreakWorld world, CharacterController leader,
             Vector3 followerScale)
         {
-            if (runnerPool == null || tower == null || wall == null || gateVisuals == null
-                || gateVisuals.Length != PrototypeLevel.LaneCount || gateLabels.Length != PrototypeLevel.LaneCount
-                || gatePanels.Length != PrototypeLevel.LaneCount || goodGateMaterial == null || badGateMaterial == null
-                || levelData == null || track == null)
+            if (runnerPool == null || tower == null || wall == null || sweeper == null || gateVisuals == null
+                || gateVisuals.Length != ClaybreakLevel.LaneCount || gateLabels.Length != ClaybreakLevel.LaneCount
+                || gatePanels.Length != ClaybreakLevel.LaneCount || goodGateMaterial == null || badGateMaterial == null
+                || track == null || theme == null || world == null)
             {
-                Debug.LogError("AssaultField needs the pool, tower, wall, one gate per lane, a level and the track.", this);
+                Debug.LogError("AssaultField needs the pool, tower, wall, sweeper, one gate per lane, the track, theme and world.", this);
                 return false;
             }
 
-            level = levelData;
             unitScale = followerScale;
+            crowdColor = theme.CrowdColor;
+            bruteColor = world.BruteColor;
+            bruteScale = world.BruteScale;
+            bruteDamage = world.BruteDamage;
+            bruteArmor = world.BruteArmor;
+            colorBlock = new MaterialPropertyBlock();
             Bounds bounds = track.bounds;
-            float laneWidth = bounds.size.x / PrototypeLevel.LaneCount;
-            for (int i = 0; i < PrototypeLevel.LaneCount; i++)
+            float laneWidth = bounds.size.x / ClaybreakLevel.LaneCount;
+            for (int i = 0; i < ClaybreakLevel.LaneCount; i++)
             {
                 laneX[i] = bounds.min.x + laneWidth * (i + 0.5f);
             }
 
-            int capacity = Mathf.Min(level.MaximumUnitsInFlight, runnerPool.Capacity);
+            capacity = runnerPool.Capacity;
             units = new RunnerUnit[capacity];
             transforms = new Transform[capacity];
+            bruteRenderers = new Renderer[capacity];
             xs = new float[capacity];
             targetXs = new float[capacity];
             zs = new float[capacity];
             lanes = new int[capacity];
-            PlaceDefenses();
+            armor = new int[capacity];
+            brutes = new bool[capacity];
             return DressIdleUnits(theme, leader);
+        }
+
+        /// <summary>Per-level setup: defenses placed and dressed for <paramref name="levelData"/>.</summary>
+        public void Configure(ClaybreakLevel levelData, Renderer track, int wallHealth, int damagePerUnit)
+        {
+            level = levelData;
+            towerDamage = Mathf.Max(1, damagePerUnit);
+            capacity = Mathf.Min(level.MaximumUnitsInFlight, runnerPool.Capacity);
+            Bounds bounds = track.bounds;
+            sweeper.Configure(level.SweeperEnabled, level.SweeperZ, level.SweeperPeriod, bounds.min.x, bounds.max.x);
+            Vector3 wallPosition = wall.transform.position;
+            wall.transform.position = new Vector3(laneX[level.WallLane], wallPosition.y, level.WallZ);
+            wall.ResetWall(level.WallEnabled, wallHealth);
+            Vector3 towerPosition = tower.transform.position;
+            tower.transform.position = new Vector3(towerPosition.x, towerPosition.y, level.TowerZ);
+            for (int i = 0; i < ClaybreakLevel.LaneCount; i++)
+            {
+                Vector3 position = gateVisuals[i].position;
+                gateVisuals[i].position = new Vector3(laneX[i], position.y, level.AssaultGateZ);
+            }
+
+            gateShift = 0;
+            DressGates();
         }
 
         public float GetLaneX(int lane)
         {
-            return laneX[Mathf.Clamp(lane, 0, PrototypeLevel.LaneCount - 1)];
+            return laneX[Mathf.Clamp(lane, 0, ClaybreakLevel.LaneCount - 1)];
         }
 
         public int GetNearestLane(float x)
         {
             int best = 0;
-            for (int i = 1; i < PrototypeLevel.LaneCount; i++)
+            for (int i = 1; i < ClaybreakLevel.LaneCount; i++)
             {
                 if (Mathf.Abs(x - laneX[i]) < Mathf.Abs(x - laneX[best]))
                 {
@@ -96,13 +144,28 @@ namespace Claybreak
             return best;
         }
 
-        /// <summary>Takes a free pool unit and sends it down <paramref name="lane"/> from <paramref name="from"/>.</summary>
-        public bool TryLaunch(int lane, Vector3 from)
+        /// <summary>The gate that stands in <paramref name="lane"/> now (the boss rule shifts them).</summary>
+        public GateSpec GateIn(int lane)
         {
-            return TrySpawn(lane, from.x, from.z);
+            const int lanesCount = ClaybreakLevel.LaneCount;
+            return level.AssaultGates[((lane - gateShift) % lanesCount + lanesCount) % lanesCount];
         }
 
-        /// <summary>Kills every unit within <paramref name="radius"/> of <paramref name="center"/> (cannon blast).</summary>
+        /// <summary>Boss rule (GDD 4.4): the gate row turns one lane to the right.</summary>
+        public void ShiftGates()
+        {
+            gateShift = (gateShift + 1) % ClaybreakLevel.LaneCount;
+            Array.Clear(gatePassed, 0, gatePassed.Length);
+            DressGates();
+        }
+
+        /// <summary>Takes a free pool unit and sends it down <paramref name="lane"/> from <paramref name="from"/>.</summary>
+        public bool TryLaunch(int lane, Vector3 from, bool brute)
+        {
+            return TrySpawn(lane, from.x, from.z, brute);
+        }
+
+        /// <summary>Kills every unit within <paramref name="radius"/> of <paramref name="center"/> (cannon blast); armor absorbs one.</summary>
         public int KillInRadius(Vector3 center, float radius)
         {
             float radiusSquared = radius * radius;
@@ -111,7 +174,7 @@ namespace Claybreak
             {
                 float dx = xs[i] - center.x;
                 float dz = zs[i] - center.z;
-                if (dx * dx + dz * dz <= radiusSquared)
+                if (dx * dx + dz * dz <= radiusSquared && !AbsorbHit(i))
                 {
                     RemoveOrRecycle(i);
                     killed++;
@@ -142,7 +205,7 @@ namespace Claybreak
             }
 
             int lane = 0;
-            for (int i = 1; i < PrototypeLevel.LaneCount; i++)
+            for (int i = 1; i < ClaybreakLevel.LaneCount; i++)
             {
                 if (laneCounts[i] > laneCounts[lane])
                 {
@@ -156,7 +219,7 @@ namespace Claybreak
             return true;
         }
 
-        /// <summary>Sends every unit in flight back to the pool and rearms the gate row and defenses.</summary>
+        /// <summary>Sends every unit in flight back to the pool and clears the counters.</summary>
         public void ResetField()
         {
             for (int i = count - 1; i >= 0; i--)
@@ -166,14 +229,14 @@ namespace Claybreak
 
             Array.Clear(gatePassed, 0, gatePassed.Length);
             PeakInFlight = 0;
+            TowerHits = 0;
             Running = false;
-            tower.ResetTower(level.TowerHealth);
-            wall.ResetWall(level.WallHealth);
+            sweeper.Running = false;
         }
 
         private void Update()
         {
-            if (!Running || count == 0)
+            if (!Running || count == 0 || level == null)
             {
                 return;
             }
@@ -183,9 +246,12 @@ namespace Claybreak
             float steer = 1f - Mathf.Exp(-SteerResponse * deltaTime);
             float gateZ = level.AssaultGateZ;
             float wallZ = level.WallZ;
+            float sweeperZ = level.SweeperZ;
             float towerZ = level.TowerZ;
             int wallLane = level.WallLane;
+            bool sweeping = sweeper.IsPresent;
             int lostAtWall = 0;
+            float y = transform.position.y;
 
             // Backwards, so a removal (swap with the last) never skips a unit; clones appended this
             // frame sit past the start index and move from the next frame.
@@ -197,7 +263,7 @@ namespace Claybreak
 
                 if (previousZ < gateZ && z >= gateZ)
                 {
-                    int leaving = GateMath.UnitsOut(level.AssaultGates[lane], ++gatePassed[lane]);
+                    int leaving = GateMath.UnitsOut(GateIn(lane), ++gatePassed[lane]);
                     if (leaving == 0)
                     {
                         Remove(i);
@@ -206,18 +272,26 @@ namespace Claybreak
 
                     for (int clone = 1; clone < leaving; clone++)
                     {
-                        // Clones trail the original a little (a burst, not a stack) but never behind the
-                        // gate, or they would cross it again.
-                        if (!TrySpawn(lane, xs[i], Mathf.Max(gateZ, z - 0.35f * clone)))
+                        // Clones are plain units that trail the original a little (a burst, not a stack)
+                        // but never behind the gate, or they would cross it again.
+                        if (!TrySpawn(lane, xs[i], Mathf.Max(gateZ, z - 0.35f * clone), false))
                         {
                             break;
                         }
                     }
                 }
 
+                if (sweeping && previousZ < sweeperZ && z >= sweeperZ && sweeper.Covers(xs[i]) && !AbsorbHit(i))
+                {
+                    RunnerDeathEffects.Play(new Vector3(xs[i], y, sweeperZ), 2);
+                    ClaybreakSfx.Play(ClaybreakSfx.Cue.Sweep);
+                    RemoveOrRecycle(i);
+                    continue;
+                }
+
                 if (lane == wallLane && wall.IsStanding && z >= wallZ)
                 {
-                    wall.Hit();
+                    wall.Hit(brutes[i] ? bruteDamage : 1);
                     Remove(i);
                     lostAtWall++;
                     continue;
@@ -225,7 +299,8 @@ namespace Claybreak
 
                 if (z >= towerZ)
                 {
-                    tower.Hit(level.DamagePerUnit);
+                    TowerHits++;
+                    tower.Hit(brutes[i] ? bruteDamage * towerDamage : towerDamage);
                     RemoveOrRecycle(i);
                     continue;
                 }
@@ -233,26 +308,36 @@ namespace Claybreak
                 float x = xs[i] + (targetXs[i] - xs[i]) * steer;
                 xs[i] = x;
                 zs[i] = z;
-                transforms[i].position = new Vector3(x, transform.position.y, z);
+                transforms[i].position = new Vector3(x, y, z);
                 units[i].AnimateRun(step);
             }
 
             if (lostAtWall > 0)
             {
-                RunnerDeathEffects.Play(new Vector3(laneX[wallLane], transform.position.y, wallZ - 0.5f),
-                    Mathf.Min(lostAtWall, 3));
+                RunnerDeathEffects.Play(new Vector3(laneX[wallLane], y, wallZ - 0.5f), Mathf.Min(lostAtWall, 3));
             }
         }
 
-        private bool TrySpawn(int lane, float x, float z)
+        private bool AbsorbHit(int index)
         {
-            if (count >= units.Length || !runnerPool.TryGet(out RunnerUnit unit))
+            if (armor[index] <= 0)
+            {
+                return false;
+            }
+
+            armor[index]--;
+            return true;
+        }
+
+        private bool TrySpawn(int lane, float x, float z, bool brute)
+        {
+            if (count >= capacity || !runnerPool.TryGet(out RunnerUnit unit))
             {
                 return false;
             }
 
             Transform unitTransform = unit.transform;
-            unitTransform.localScale = unitScale;
+            unitTransform.localScale = brute ? unitScale * bruteScale : unitScale;
             unitTransform.rotation = Quaternion.identity;
             unitTransform.position = new Vector3(x, transform.position.y, z);
             units[count] = unit;
@@ -261,6 +346,17 @@ namespace Claybreak
             targetXs[count] = laneX[lane] + NextSpread() * level.LaneSpread;
             zs[count] = z;
             lanes[count] = lane;
+            brutes[count] = brute;
+            armor[count] = brute ? bruteArmor : 0;
+            bruteRenderers[count] = null;
+            if (brute)
+            {
+                // Only Brutes pay for a component lookup (a handful per level).
+                Renderer renderer = unit.GetComponent<Renderer>();
+                bruteRenderers[count] = renderer;
+                Tint(renderer, bruteColor);
+            }
+
             count++;
             if (count > PeakInFlight)
             {
@@ -286,17 +382,39 @@ namespace Claybreak
         private void Remove(int index)
         {
             RunnerUnit unit = units[index];
+            if (brutes[index])
+            {
+                Tint(bruteRenderers[index], crowdColor);
+                unit.transform.localScale = unitScale;
+            }
+
             int last = count - 1;
             units[index] = units[last];
             transforms[index] = transforms[last];
+            bruteRenderers[index] = bruteRenderers[last];
             xs[index] = xs[last];
             targetXs[index] = targetXs[last];
             zs[index] = zs[last];
             lanes[index] = lanes[last];
+            armor[index] = armor[last];
+            brutes[index] = brutes[last];
             units[last] = null;
             transforms[last] = null;
+            bruteRenderers[last] = null;
             count = last;
             runnerPool.Release(unit);
+        }
+
+        private void Tint(Renderer renderer, Color color)
+        {
+            if (renderer == null)
+            {
+                return;
+            }
+
+            renderer.GetPropertyBlock(colorBlock);
+            colorBlock.SetColor(BaseColorId, color);
+            renderer.SetPropertyBlock(colorBlock);
         }
 
         // Deterministic spread in [-1, 1] (xorshift), so a run looks the same every time and costs nothing.
@@ -308,21 +426,14 @@ namespace Claybreak
             return (spreadSeed & 0xFFFF) / 32767.5f - 1f;
         }
 
-        private void PlaceDefenses()
+        private void DressGates()
         {
-            for (int i = 0; i < PrototypeLevel.LaneCount; i++)
+            for (int i = 0; i < ClaybreakLevel.LaneCount; i++)
             {
-                Vector3 position = gateVisuals[i].position;
-                gateVisuals[i].position = new Vector3(laneX[i], position.y, level.AssaultGateZ);
-                GateSpec gate = level.AssaultGates[i];
+                GateSpec gate = GateIn(i);
                 gateLabels[i].text = gate.Label;
                 gatePanels[i].sharedMaterial = gate.IsGood ? goodGateMaterial : badGateMaterial;
             }
-
-            Vector3 wallPosition = wall.transform.position;
-            wall.transform.position = new Vector3(laneX[level.WallLane], wallPosition.y, level.WallZ);
-            Vector3 towerPosition = tower.transform.position;
-            tower.transform.position = new Vector3(towerPosition.x, towerPosition.y, level.TowerZ);
         }
 
         // Every pool unit wears the crowd's clay look before the run starts, so a unit cloned by a xN gate

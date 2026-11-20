@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// RT-2 placeholder sounds, synthesized here (no third-party source, so no license to track). The
+    /// Placeholder sounds (RT-2, extended in RT-4 with this game's own cues), synthesized here (no third-party source, so no license to track). The
     /// kit ships only the sound engine; the Wild Pack's clips are its content and are never copied.
     /// One short WAV per <see cref="GameSound"/> role plus a menu and a run loop. Replaced in RT-8.
     /// </summary>
@@ -18,6 +18,64 @@ namespace Claybreak.Editor
         public static AudioClip Get(string folder, GameSound sound)
         {
             return Write(folder, sound.ToString(), Synthesize(sound), false);
+        }
+
+        /// <summary>The game's own cues (<see cref="ClaybreakSfx.Cue"/>), written once per build.</summary>
+        public static void WriteCues(string folder)
+        {
+            foreach (ClaybreakSfx.Cue cue in Enum.GetValues(typeof(ClaybreakSfx.Cue)))
+            {
+                GetCue(folder, cue);
+            }
+        }
+
+        public static AudioClip GetCue(string folder, ClaybreakSfx.Cue cue)
+        {
+            return Write(folder, "Cue" + cue, SynthesizeCue(cue), false);
+        }
+
+        private static float[] SynthesizeCue(ClaybreakSfx.Cue cue)
+        {
+            switch (cue)
+            {
+                case ClaybreakSfx.Cue.CannonFire: return Mix(Noise(0.25f, 0.55f, 9f, 1u), Thump(0.25f, 70f, 0.8f));
+                case ClaybreakSfx.Cue.TowerFall: return Mix(Noise(1.4f, 0.5f, 2.2f, 2u), Thump(1.2f, 45f, 0.7f));
+                case ClaybreakSfx.Cue.FloorBreak: return Mix(Noise(0.5f, 0.55f, 5f, 3u), Thump(0.35f, 60f, 0.6f));
+                case ClaybreakSfx.Cue.WallBreak: return Mix(Noise(0.35f, 0.5f, 7f, 4u), Thump(0.25f, 90f, 0.5f));
+                case ClaybreakSfx.Cue.Sweep: return Noise(0.22f, 0.3f, 4f, 5u);
+                case ClaybreakSfx.Cue.Crate: return Notes(0.07f, 0.4f, 440f, 554f, 659f);
+                default: return Mix(Sweep(0.9f, 110f, 82f, 0.5f), Sweep(0.9f, 165f, 123f, 0.3f));
+            }
+        }
+
+        // Decaying white noise (deterministic seed), low-passed by a one-pole filter: rubble, booms, whooshes.
+        private static float[] Noise(float seconds, float volume, float decay, uint seed)
+        {
+            var samples = new float[(int)(seconds * SampleRate)];
+            float low = 0f;
+            for (int i = 0; i < samples.Length; i++)
+            {
+                seed ^= seed << 13;
+                seed ^= seed >> 17;
+                seed ^= seed << 5;
+                float white = (seed & 0xFFFF) / 32767.5f - 1f;
+                low += (white - low) * 0.18f;
+                float t = (float)i / SampleRate;
+                samples[i] = low * volume * 2.2f * Mathf.Exp(-decay * t) * Mathf.Min(1f, i / 60f);
+            }
+
+            return samples;
+        }
+
+        private static float[] Mix(float[] a, float[] b)
+        {
+            var samples = new float[Math.Max(a.Length, b.Length)];
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] = Mathf.Clamp((i < a.Length ? a[i] : 0f) + (i < b.Length ? b[i] : 0f), -1f, 1f);
+            }
+
+            return samples;
         }
 
         public static AudioClip GetMusic(string folder, bool run)

@@ -12,12 +12,14 @@ namespace Claybreak
         private int maximumHealth = 1;
         private int health;
         private Vector3 bodyScale;
+        private bool ready;
 
         public bool IsStanding => health > 0;
+        public bool HasParts => body != null && healthLabel != null;
 
         private void Awake()
         {
-            if (body == null || healthLabel == null)
+            if (!HasParts)
             {
                 Debug.LogError("AssaultWall needs its body and health label.", this);
                 enabled = false;
@@ -25,28 +27,38 @@ namespace Claybreak
             }
 
             bodyScale = body.localScale;
+            ready = true;
         }
 
-        public void ResetWall(int startHealth)
+        /// <summary>Raises the wall with <paramref name="startHealth"/>, or keeps it down when the level has none.</summary>
+        public void ResetWall(bool present, int startHealth)
         {
+            if (!ready)
+            {
+                return;
+            }
+
             maximumHealth = Mathf.Max(1, startHealth);
-            health = maximumHealth;
-            gameObject.SetActive(true);
-            Refresh();
+            health = present ? maximumHealth : 0;
+            gameObject.SetActive(present);
+            if (present)
+            {
+                Refresh();
+            }
         }
 
-        public void Hit()
+        public void Hit(int damage)
         {
             if (health <= 0)
             {
                 return;
             }
 
-            health--;
+            health = Mathf.Max(0, health - damage);
             GameAudio.Play(GameSound.UnitLoss);
             if (health == 0)
             {
-                GameAudio.Play(GameSound.GateGood);
+                ClaybreakSfx.Play(ClaybreakSfx.Cue.WallBreak);
                 gameObject.SetActive(false);
                 return;
             }

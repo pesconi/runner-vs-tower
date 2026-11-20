@@ -9,8 +9,9 @@ using UnityEngine;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// The game's validator (RT-2): level data against the pool, the theme, the scene wiring, the
-    /// preallocated pools, and the code rules of the prototype (no Instantiate/Destroy at run time,
+    /// The game's validator (RT-4): the world and every level against the pool, the device-gate level
+    /// (heaviest tower, every defense at its limit), the theme, the scene wiring (tower bodies, HUD,
+    /// screens, sounds, preallocated pools), and the code rules (no Instantiate/Destroy at run time,
     /// rule 2.2.1; no physics queries, rule 2.2.7).
     /// Batchmode: -executeMethod Claybreak.Editor.ClaybreakValidation.RunAndQuit
     /// </summary>
@@ -21,7 +22,7 @@ namespace Claybreak.Editor
             @"\b(Instantiate|Destroy|DestroyImmediate)\s*\(|new\s+GameObject\s*\(|\.AddComponent\s*<|\bPhysics\.",
             RegexOptions.Compiled);
 
-        [MenuItem("Claybreak/Validate Prototype")]
+        [MenuItem("Claybreak/Validate")]
         public static void ValidateFromMenu()
         {
             Report(Run());
@@ -47,7 +48,7 @@ namespace Claybreak.Editor
         {
             if (failures.Count == 0)
             {
-                Debug.Log("PASS Claybreak validation: levels, theme, scene, pools and runtime code rules.");
+                Debug.Log("PASS Claybreak validation: world, levels, device-gate level, theme, scene, pools and runtime code rules.");
             }
             else
             {
@@ -57,49 +58,76 @@ namespace Claybreak.Editor
 
         private static void CheckData(List<string> failures)
         {
-            var level = AssetDatabase.LoadAssetAtPath<PrototypeLevel>(PrototypeSceneBuilder.LevelPath);
-            var stress = AssetDatabase.LoadAssetAtPath<PrototypeLevel>(PrototypeSceneBuilder.StressLevelPath);
-            var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(PrototypeSceneBuilder.ThemePath);
-            if (level == null || stress == null || theme == null)
+            var world = AssetDatabase.LoadAssetAtPath<ClaybreakWorld>(WorldContent.WorldPath);
+            var stress = AssetDatabase.LoadAssetAtPath<ClaybreakLevel>(WorldContent.StressLevelPath);
+            var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(ClaybreakSceneBuilder.ThemePath);
+            if (world == null || stress == null || theme == null)
             {
-                failures.Add("missing level, device-gate level or theme (run Claybreak > Build Prototype Scene)");
+                failures.Add("missing world, device-gate level or theme (run Claybreak > Build Scene)");
                 return;
             }
 
-            CheckLevel(level, failures);
+            if (!world.TryValidate(ClaybreakSceneBuilder.PoolSize, out string error))
+            {
+                failures.Add("world: " + error);
+            }
+
+            if (world.LevelCount > ClaybreakSceneBuilder.LevelDots)
+            {
+                failures.Add($"world: {world.LevelCount} levels but the menu has {ClaybreakSceneBuilder.LevelDots} dots");
+            }
+
+            var kinds = new HashSet<TowerKind>();
+            for (int i = 0; i < world.LevelCount; i++)
+            {
+                ClaybreakLevel level = world.Levels[i];
+                if (level == null)
+                {
+                    continue;
+                }
+
+                CheckLevel(level, failures);
+                kinds.Add(level.Tower);
+                if (level.RunGates.Count < 3 || level.RunGates.Count > RunGateCourse.MaximumPairs)
+                {
+                    failures.Add($"{level.name}: 3-{RunGateCourse.MaximumPairs} run gate pairs, has {level.RunGates.Count}");
+                }
+            }
+
+            if (kinds.Count < 3)
+            {
+                failures.Add("world: RT-4 asks for 2-3 towers and a boss; the levels use " + kinds.Count + " tower kinds");
+            }
+
             CheckLevel(stress, failures);
-            if (level.IsDeviceGateLevel)
+            if (!stress.IsDeviceGateLevel || stress.StartCount != ClaybreakSceneBuilder.PoolSize
+                || stress.MaximumUnitsInFlight != ClaybreakSceneBuilder.PoolSize)
             {
-                failures.Add($"{level.name}: the played level must not auto-launch or recycle units");
+                failures.Add($"{stress.name}: the device-gate level must auto-launch with {ClaybreakSceneBuilder.PoolSize} units in flight");
             }
 
-            if (level.RunGates.Count < 3 || level.RunGates.Count > RunGateCourse.MaximumPairs)
+            if (stress.Tower != TowerKind.Boss || !stress.CannonEnabled || !stress.SweeperEnabled || !stress.WallEnabled
+                || stress.MaximumProjectiles < 12)
             {
-                failures.Add($"{level.name}: RT-2 asks for 3-{RunGateCourse.MaximumPairs} run gate pairs, has {level.RunGates.Count}");
+                failures.Add($"{stress.name}: the device gate runs the heaviest tower (boss) with every defense on and 12 projectiles");
             }
 
-            if (!stress.IsDeviceGateLevel || stress.StartCount != PrototypeSceneBuilder.PoolSize
-                || stress.MaximumUnitsInFlight != PrototypeSceneBuilder.PoolSize)
-            {
-                failures.Add($"{stress.name}: the device-gate level must auto-launch with {PrototypeSceneBuilder.PoolSize} units in flight");
-            }
-
-            if (!theme.TryValidate(out string error))
+            if (!theme.TryValidate(out error))
             {
                 failures.Add("theme: " + error);
             }
         }
 
-        private static void CheckLevel(PrototypeLevel level, List<string> failures)
+        private static void CheckLevel(ClaybreakLevel level, List<string> failures)
         {
-            if (!level.TryValidate(PrototypeSceneBuilder.PoolSize, out string error))
+            if (!level.TryValidate(ClaybreakSceneBuilder.PoolSize, out string error))
             {
                 failures.Add($"{level.name}: {error}");
             }
 
-            if (level.MaximumProjectiles > PrototypeSceneBuilder.ProjectilePoolSize)
+            if (level.MaximumProjectiles > ClaybreakSceneBuilder.ProjectilePoolSize)
             {
-                failures.Add($"{level.name}: {level.MaximumProjectiles} projectiles exceed the scene pool of {PrototypeSceneBuilder.ProjectilePoolSize}");
+                failures.Add($"{level.name}: {level.MaximumProjectiles} projectiles exceed the scene pool of {ClaybreakSceneBuilder.ProjectilePoolSize}");
             }
         }
 
@@ -127,19 +155,19 @@ namespace Claybreak.Editor
         private static void CheckScene(List<string> failures)
         {
             EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-            if (scenes.Length != 1 || scenes[0].path != PrototypeSceneBuilder.ScenePath || !scenes[0].enabled)
+            if (scenes.Length != 1 || scenes[0].path != ClaybreakSceneBuilder.ScenePath || !scenes[0].enabled)
             {
-                failures.Add("build settings must list only " + PrototypeSceneBuilder.ScenePath);
+                failures.Add("build settings must list only " + ClaybreakSceneBuilder.ScenePath);
             }
 
-            if (!File.Exists(PrototypeSceneBuilder.ScenePath))
+            if (!File.Exists(ClaybreakSceneBuilder.ScenePath))
             {
-                failures.Add("missing scene " + PrototypeSceneBuilder.ScenePath);
+                failures.Add("missing scene " + ClaybreakSceneBuilder.ScenePath);
                 return;
             }
 
             var previous = EditorSceneManager.GetActiveScene().path;
-            var scene = EditorSceneManager.OpenScene(PrototypeSceneBuilder.ScenePath, OpenSceneMode.Single);
+            var scene = EditorSceneManager.OpenScene(ClaybreakSceneBuilder.ScenePath, OpenSceneMode.Single);
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
             if (flow == null)
             {
@@ -171,22 +199,56 @@ namespace Claybreak.Editor
                 failures.Add("the leader does not start above the track collider");
             }
 
-            var pool = Object.FindFirstObjectByType<RunnerPool>(FindObjectsInactive.Include);
-            if (pool == null || pool.Capacity != PrototypeSceneBuilder.PoolSize)
+            if (Object.FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length
+                > 1 + ClaybreakSceneBuilder.PoolSize + 1)
             {
-                failures.Add($"the scene needs a RunnerPool with {PrototypeSceneBuilder.PoolSize} preallocated units");
+                failures.Add("only the track, the leader and the pool units may carry colliders (no physics in the game)");
+            }
+
+            var pool = Object.FindFirstObjectByType<RunnerPool>(FindObjectsInactive.Include);
+            if (pool == null || pool.Capacity != ClaybreakSceneBuilder.PoolSize)
+            {
+                failures.Add($"the scene needs a RunnerPool with {ClaybreakSceneBuilder.PoolSize} preallocated units");
             }
 
             var cannon = Object.FindFirstObjectByType<CannonDefense>();
-            if (cannon == null || cannon.PoolSize != PrototypeSceneBuilder.ProjectilePoolSize)
+            if (cannon == null || cannon.PoolSize != ClaybreakSceneBuilder.ProjectilePoolSize)
             {
-                failures.Add($"the cannon needs {PrototypeSceneBuilder.ProjectilePoolSize} preallocated projectiles");
+                failures.Add($"the cannon needs {ClaybreakSceneBuilder.ProjectilePoolSize} preallocated projectiles");
             }
 
             var gates = Object.FindFirstObjectByType<RunGateCourse>();
-            if (gates == null || gates.Capacity != RunGateCourse.MaximumPairs)
+            if (gates == null || gates.Capacity != RunGateCourse.MaximumPairs || gates.CrateCapacity != ClaybreakLevel.MaximumCrates)
             {
-                failures.Add($"the run needs {RunGateCourse.MaximumPairs} preallocated gate pairs");
+                failures.Add($"the run needs {RunGateCourse.MaximumPairs} gate pairs and {ClaybreakLevel.MaximumCrates} crates preallocated");
+            }
+
+            var tower = Object.FindFirstObjectByType<AssaultTower>();
+            string towerError = "missing";
+            if (tower == null || !tower.TryValidate(out towerError))
+            {
+                failures.Add("tower: " + towerError);
+            }
+
+            var wall = Object.FindFirstObjectByType<AssaultWall>(FindObjectsInactive.Include);
+            var sweeper = Object.FindFirstObjectByType<SweeperDefense>(FindObjectsInactive.Include);
+            if (wall == null || !wall.HasParts || sweeper == null || !sweeper.HasParts)
+            {
+                failures.Add("the wall and the sweeper need their parts");
+            }
+
+            var hud = Object.FindFirstObjectByType<ClaybreakHud>(FindObjectsInactive.Include);
+            var screens = Object.FindFirstObjectByType<ClaybreakScreens>(FindObjectsInactive.Include);
+            if (hud == null || !hud.HasParts || screens == null || !screens.HasParts
+                || screens.DotCapacity != ClaybreakSceneBuilder.LevelDots)
+            {
+                failures.Add("the HUD and the menu/result screens need every part");
+            }
+
+            var sfx = Object.FindFirstObjectByType<ClaybreakSfx>(FindObjectsInactive.Include);
+            if (sfx == null || !sfx.HasEveryCue)
+            {
+                failures.Add("the game's sound cues need a clip each and preallocated voices");
             }
 
             if (scene.isDirty)

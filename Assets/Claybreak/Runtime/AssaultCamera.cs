@@ -12,6 +12,8 @@ namespace Claybreak
         [SerializeField] private Vector3 offset = new Vector3(0f, 17f, -11f);
         [Tooltip("Point looked at, as a fraction of the way from the firing line to the tower.")]
         [SerializeField, Range(0f, 1f)] private float focus = 0.55f;
+        [Tooltip("Extra offset for the boss, whose tower is taller.")]
+        [SerializeField] private Vector3 bossOffset = new Vector3(0f, 3f, -3f);
         [SerializeField, Min(0.1f)] private float blendSeconds = 0.8f;
 
         private Vector3 fromPosition;
@@ -20,11 +22,11 @@ namespace Claybreak
         private Quaternion toRotation;
         private float time = -1f;
 
-        public void Begin(Vector3 firingLine, Vector3 towerFront)
+        public void Begin(Vector3 firingLine, Vector3 towerFront, bool boss)
         {
             fromPosition = transform.position;
             fromRotation = transform.rotation;
-            toPosition = firingLine + offset;
+            toPosition = firingLine + offset + (boss ? bossOffset : Vector3.zero);
             Vector3 lookAt = Vector3.Lerp(firingLine, towerFront, focus);
             toRotation = Quaternion.LookRotation(lookAt - toPosition, Vector3.up);
             time = 0f;

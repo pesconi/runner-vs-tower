@@ -11,13 +11,13 @@ namespace Claybreak
     /// </summary>
     public sealed class CannonDefense : MonoBehaviour
     {
-        [SerializeField] private Transform muzzle;
         [SerializeField] private Transform[] projectiles = new Transform[0];
         [SerializeField] private Transform[] shadows = new Transform[0];
         [SerializeField, Min(0f)] private float arcHeight = 7f;
 
+        private Transform muzzle;
         private AssaultField field;
-        private PrototypeLevel level;
+        private ClaybreakLevel level;
         private bool[] flying;
         private float[] progress;
         private Vector3[] starts;
@@ -30,9 +30,10 @@ namespace Claybreak
         public int PeakActive { get; private set; }
         public int PoolSize => projectiles == null ? 0 : projectiles.Length;
 
-        public bool Configure(PrototypeLevel levelData, AssaultField assaultField)
+        /// <summary>Arms the cannon for a level, firing from <paramref name="towerMuzzle"/> (the shown tower's).</summary>
+        public bool Configure(ClaybreakLevel levelData, AssaultField assaultField, Transform towerMuzzle)
         {
-            if (muzzle == null || projectiles == null || shadows == null || projectiles.Length == 0
+            if (towerMuzzle == null || projectiles == null || shadows == null || projectiles.Length == 0
                 || projectiles.Length != shadows.Length || levelData == null || assaultField == null)
             {
                 Debug.LogError("CannonDefense needs a muzzle and as many preallocated projectiles as shadows.", this);
@@ -47,11 +48,16 @@ namespace Claybreak
 
             level = levelData;
             field = assaultField;
-            limit = level.MaximumProjectiles;
-            flying = new bool[projectiles.Length];
-            progress = new float[projectiles.Length];
-            starts = new Vector3[projectiles.Length];
-            targets = new Vector3[projectiles.Length];
+            muzzle = towerMuzzle;
+            limit = level.CannonEnabled ? level.MaximumProjectiles : 0;
+            if (flying == null)
+            {
+                flying = new bool[projectiles.Length];
+                progress = new float[projectiles.Length];
+                starts = new Vector3[projectiles.Length];
+                targets = new Vector3[projectiles.Length];
+            }
+
             ResetCannon();
             return true;
         }
@@ -88,6 +94,7 @@ namespace Claybreak
                 if (cooldown <= 0f && ActiveCount < limit && field.TryPickTarget(level.ProjectileFlightTime, out Vector3 target))
                 {
                     Fire(target);
+                    ClaybreakSfx.Play(ClaybreakSfx.Cue.CannonFire);
                     cooldown = level.CannonInterval;
                 }
             }

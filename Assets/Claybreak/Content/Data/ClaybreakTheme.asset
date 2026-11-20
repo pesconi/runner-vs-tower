@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98561413406eea245b1a4e0316114d62, type: 3}
+  m_Name: ClaybreakTheme
+  m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakTheme
+  roster:
+    leader:
+      scale: 1
+      builtInColorShade: 0
+      skin: {fileID: 0}
+    defaultCrewMemberId: 
+    crewMembers: []
+    legacyColorMappings: []
+    runAnimation:
+      strideLength: 1.8
+    builtInBody: {fileID: 11400000, guid: 0a489c7d6e4c1854e8648a4df9827262, type: 2}
+    colorSkins: []
+  crowdColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
+  audio:
+    enabled: 1
+    sounds:
+    - sound: 0
+      clip: {fileID: 8300000, guid: 44fc454a360f76442a34ff73bf1e8a8d, type: 3}
+      volume: 0.4
+      pitchVariation: 0.08
+      minimumInterval: 0.07
+    - sound: 1
+      clip: {fileID: 8300000, guid: 64c25ceb064cd4a46b80945c13459875, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    - sound: 2
+      clip: {fileID: 8300000, guid: b993a96a88f9d4c46a8e84262666c377, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    - sound: 3
+      clip: {fileID: 8300000, guid: 245fd0334cd4cba4ab8799fc43588656, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.07
+    - sound: 4
+      clip: {fileID: 8300000, guid: 8c6525cd86be10a4399e11bf8770fe79, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    - sound: 5
+      clip: {fileID: 8300000, guid: 93f7b315d6b269e4cad645b1d16424b0, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    - sound: 6
+      clip: {fileID: 8300000, guid: 613e360758bab994da85d8bcb67d50af, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    - sound: 7
+      clip: {fileID: 8300000, guid: e589d8f6c69d31744aefc9af60c0e74a, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    - sound: 8
+      clip: {fileID: 8300000, guid: 6fec06323e7dabf44889f0aeb5316002, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    - sound: 9
+      clip: {fileID: 8300000, guid: 7acf478bad675cc4f9110de295d5a374, type: 3}
+      volume: 0.8
+      pitchVariation: 0.08
+      minimumInterval: 0.05
+    menuMusic: {fileID: 8300000, guid: 0164a2ef0be9c174ea3275e91e9d078e, type: 3}
+    runMusic: {fileID: 8300000, guid: 6e71e35dfaec4c741a683c2811e6addd, type: 3}
+    musicVolume: 0.3
+    voiceLimit: 6
+    soundOnLabel: 'SOUND: ON'
+    soundOffLabel: 'SOUND: OFF'
+    musicOnLabel: 'MUSIC: ON'
+    musicOffLabel: 'MUSIC: OFF'
+    haptics:
+    - sound: 3
+      milliseconds: 25
+      amplitude: 120
+      minimumInterval: 0.15
+    - sound: 5
+      milliseconds: 90
+      amplitude: 220
+      minimumInterval: 0.5
+    - sound: 2
+      milliseconds: 30
+      amplitude: 140
+      minimumInterval: 0.3
+    - sound: 6
+      milliseconds: 60
+      amplitude: 180
+      minimumInterval: 0.5
+    vibrationOnLabel: 'VIBRATION: ON'
+    vibrationOffLabel: 'VIBRATION: OFF'
+  deathEffect:
+    enabled: 1
+    splatMaterial: {fileID: 2100000, guid: 4d51177fd95a37044815eb12e5f7fae2, type: 2}
+    primaryColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
+    secondaryColor: {r: 0.6, g: 0.25, b: 0.1, a: 1}
+    splatSize: 1.1
+    lifetime: 8
+    maximumSplats: 48

@@ -11,6 +11,7 @@ namespace Claybreak
         private static string[] plain;
         private static string[] army;
         private static string[] tower;
+        private static string[] brutes;
 
         public static string Plain(int value)
         {
@@ -25,6 +26,11 @@ namespace Claybreak
         public static string Tower(int value)
         {
             return Get(ref tower, "TOWER ", value);
+        }
+
+        public static string Brutes(int value)
+        {
+            return Get(ref brutes, "BRUTES ", value);
         }
 
         private static string Get(ref string[] cache, string prefix, int value)

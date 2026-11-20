@@ -5,10 +5,11 @@ using UnityEngine;
 namespace Claybreak
 {
     /// <summary>
-    /// The short run's math gates (RT-2: 3-5 pairs, from level data). The scene builder preallocates
-    /// <see cref="MaximumPairs"/> pair visuals; the level places and labels the ones it uses at start.
-    /// A pair is crossed when the leader passes its distance; the side is the half of the track the
-    /// leader is on. No colliders: one distance check per frame (no physics queries per frame).
+    /// The short run's math gates and special-unit crates (from level data). The scene builder
+    /// preallocates <see cref="MaximumPairs"/> pair visuals and <see cref="ClaybreakLevel.MaximumCrates"/>
+    /// crates; each level places and labels the ones it uses. A pair is crossed when the leader passes its
+    /// distance; the side is the half of the track the leader is on. A crate is taken when the leader
+    /// passes it on its side. No colliders: distance checks only (no physics queries per frame).
     /// </summary>
     public sealed class RunGateCourse : MonoBehaviour
     {
@@ -19,45 +20,61 @@ namespace Claybreak
         [SerializeField] private TextMesh[] rightLabels = new TextMesh[0];
         [SerializeField] private Renderer[] leftPanels = new Renderer[0];
         [SerializeField] private Renderer[] rightPanels = new Renderer[0];
+        [SerializeField] private Transform[] crateRoots = new Transform[0];
+        [SerializeField] private TextMesh[] crateLabels = new TextMesh[0];
         [SerializeField] private Material goodMaterial;
         [SerializeField] private Material badMaterial;
 
-        private PrototypeLevel level;
+        private ClaybreakLevel level;
         private float trackCenterX;
+        private float crateOffsetX;
+        private bool cratesShown;
         private int next;
+        private int nextCrate;
 
         /// <summary>Raised when the leader crosses a gate: the gate taken.</summary>
         public event Action<GateSpec> GateCrossed;
 
-        public int Capacity => pairRoots == null ? 0 : pairRoots.Length;
+        /// <summary>Raised when the leader takes a crate: the special units it holds.</summary>
+        public event Action<int> CratePicked;
 
-        public bool Configure(PrototypeLevel levelData, Renderer track)
+        public int Capacity => pairRoots == null ? 0 : pairRoots.Length;
+        public int CrateCapacity => crateRoots == null ? 0 : crateRoots.Length;
+
+        public bool Configure(ClaybreakLevel levelData, Renderer track, bool showCrates)
         {
             int capacity = Capacity;
             if (levelData == null || track == null || goodMaterial == null || badMaterial == null
                 || leftLabels.Length != capacity || rightLabels.Length != capacity
                 || leftPanels.Length != capacity || rightPanels.Length != capacity
-                || levelData.RunGates.Count > capacity)
+                || crateLabels.Length != CrateCapacity || levelData.RunGates.Count > capacity
+                || levelData.Crates.Count > CrateCapacity)
             {
-                Debug.LogError("RunGateCourse needs its preallocated pair visuals and room for every level pair.", this);
+                Debug.LogError("RunGateCourse needs its preallocated pair and crate visuals, with room for every level item.", this);
                 return false;
             }
 
             level = levelData;
-            trackCenterX = track.bounds.center.x;
-            for (int i = 0; i < capacity; i++)
+            cratesShown = showCrates;
+            Bounds bounds = track.bounds;
+            trackCenterX = bounds.center.x;
+            crateOffsetX = bounds.size.x * 0.25f;
+            for (int i = 0; i < level.RunGates.Count; i++)
             {
-                bool used = i < level.RunGates.Count;
-                if (!used)
-                {
-                    continue;
-                }
-
                 RunGatePair pair = level.RunGates[i];
                 Vector3 position = pairRoots[i].position;
                 pairRoots[i].position = new Vector3(position.x, position.y, pair.z);
                 Dress(leftLabels[i], leftPanels[i], pair.left);
                 Dress(rightLabels[i], rightPanels[i], pair.right);
+            }
+
+            for (int i = 0; i < level.Crates.Count; i++)
+            {
+                CratePlacement crate = level.Crates[i];
+                Vector3 position = crateRoots[i].position;
+                crateRoots[i].position = new Vector3(trackCenterX + (crate.right ? crateOffsetX : -crateOffsetX),
+                    position.y, crate.z);
+                crateLabels[i].text = "+" + crate.units;
             }
 
             ResetCourse();
@@ -67,9 +84,15 @@ namespace Claybreak
         public void ResetCourse()
         {
             next = 0;
+            nextCrate = 0;
             for (int i = 0; i < Capacity; i++)
             {
                 pairRoots[i].gameObject.SetActive(level != null && i < level.RunGates.Count);
+            }
+
+            for (int i = 0; i < CrateCapacity; i++)
+            {
+                crateRoots[i].gameObject.SetActive(cratesShown && level != null && i < level.Crates.Count);
             }
         }
 
@@ -84,6 +107,20 @@ namespace Claybreak
                 next++;
                 GameAudio.Play(taken.IsGood ? GameSound.GateGood : GameSound.GateBad);
                 GateCrossed?.Invoke(taken);
+            }
+
+            while (cratesShown && level != null && nextCrate < level.Crates.Count && leader.z >= level.Crates[nextCrate].z)
+            {
+                CratePlacement crate = level.Crates[nextCrate];
+                bool onRight = leader.x >= trackCenterX;
+                if (onRight == crate.right)
+                {
+                    crateRoots[nextCrate].gameObject.SetActive(false);
+                    ClaybreakSfx.Play(ClaybreakSfx.Cue.Crate);
+                    CratePicked?.Invoke(crate.units);
+                }
+
+                nextCrate++;
             }
         }
 

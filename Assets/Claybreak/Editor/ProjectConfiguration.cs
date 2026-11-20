@@ -47,7 +47,7 @@ namespace Claybreak.Editor
                     throw new InvalidOperationException("The Google Mobile Ads editor plug-in (kit dependency) is missing.");
                 }
 
-                PrototypeSceneBuilder.EnsureFolder("Assets/GoogleMobileAds/Resources");
+                ClaybreakSceneBuilder.EnsureFolder("Assets/GoogleMobileAds/Resources");
                 settings = ScriptableObject.CreateInstance(type);
                 AssetDatabase.CreateAsset(settings, AdsSettingsPath);
             }

@@ -38,7 +38,7 @@ namespace Claybreak.Editor
             Directory.CreateDirectory(Path.GetDirectoryName(output));
             BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { PrototypeSceneBuilder.ScenePath },
+                scenes = new[] { ClaybreakSceneBuilder.ScenePath },
                 locationPathName = output,
                 target = BuildTarget.Android,
                 options = BuildOptions.None,
@@ -49,7 +49,7 @@ namespace Claybreak.Editor
                 throw new InvalidOperationException("Android build " + report.summary.result);
             }
 
-            Debug.Log($"[ClaybreakBuild] {(measure ? "Measurement" : "Prototype")} APK: {output} "
+            Debug.Log($"[ClaybreakBuild] {(measure ? "Measurement" : "Game")} APK: {output} "
                 + $"({new FileInfo(output).Length / (1024 * 1024)} MB, {report.summary.totalTime.TotalSeconds:0} s)");
         }
     }
