@@ -27,7 +27,15 @@ namespace Claybreak.Editor
         /// <summary>World 3 tower option: a gasholder, steel rings inside a lattice frame under a dome.</summary>
         Gasholder,
         /// <summary>World 3 boss option: a steam press, two steel columns and a crossbeam holding the hammer.</summary>
-        PistonHammer
+        PistonHammer,
+        /// <summary>World 4 tower option: a basalt and frost spire of turned diamond tiers, an ice crystal on top.</summary>
+        FrostSpire,
+        /// <summary>World 4 tower option: a bone bastion, pale walls under rib arches, spiked tiers.</summary>
+        BoneBastion,
+        /// <summary>World 4 boss option: a taller spire with a crown of ice shards and two ice obelisks.</summary>
+        CrownSpire,
+        /// <summary>World 4 boss option: a larger bone bastion with horns.</summary>
+        BoneHorns
     }
 
     /// <summary>What the game needs from a built tower body.</summary>
@@ -72,6 +80,8 @@ namespace Claybreak.Editor
                 case TowerKind.World2Boss: return WorldContent.ChosenBossStyle(1);
                 case TowerKind.World3Tower: return WorldContent.ChosenTowerStyle(2);
                 case TowerKind.World3Boss: return WorldContent.ChosenBossStyle(2);
+                case TowerKind.World4Tower: return WorldContent.ChosenTowerStyle(3);
+                case TowerKind.World4Boss: return WorldContent.ChosenBossStyle(3);
                 default: throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "no art style for this tower kind");
             }
         }
@@ -94,6 +104,10 @@ namespace Claybreak.Editor
                 case TowerStyle.SmokestackMill: SmokestackMill(body, p, ref parts); break;
                 case TowerStyle.Gasholder: Gasholder(body, p, ref parts); break;
                 case TowerStyle.PistonHammer: PistonHammer(body, p, ref parts); break;
+                case TowerStyle.FrostSpire: FrostSpire(body, p, ref parts, 1f); break;
+                case TowerStyle.CrownSpire: FrostSpire(body, p, ref parts, 1.15f); CrownExtras(body, p, parts); break;
+                case TowerStyle.BoneBastion: BoneBastion(body, p, ref parts, 1f); break;
+                case TowerStyle.BoneHorns: BoneBastion(body, p, ref parts, 1.2f); BoneHornExtras(body, p, parts); break;
                 default: throw new System.ArgumentOutOfRangeException(nameof(style), style, "no builder for this style");
             }
 
@@ -565,6 +579,110 @@ namespace Claybreak.Editor
             }
 
             parts.BarHeight = 15.6f;
+        }
+
+        // ---------- world 4 tower: frost spire / boss: crown spire ----------
+
+        private static void FrostSpire(Transform body, ArtPalette p, ref TowerParts parts, float scale)
+        {
+            Prim.Box(body, "Plinth", new Vector3(0f, 0.5f, 3.6f), new Vector3(10.5f, 1f, 7.5f), p.Basalt);
+            Prim.Cyl(body, "Base", new Vector3(0f, 2.3f, 4f), new Vector3(7.6f * scale, 1.4f, 7.6f * scale), p.Frost);
+            Prim.Box(body, "Door", new Vector3(0f, 2f, 4f - 3.8f * scale + 0.05f), new Vector3(1.8f, 2.4f, 0.2f), p.Ice);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Prim.Box(body, "Obelisk", new Vector3(side * 4.4f, 2.6f, 1.2f), new Vector3(0.9f, 4.2f, 0.9f), p.Basalt);
+                Prim.Box(body, "ObeliskTip", new Vector3(side * 4.4f, 5f, 1.2f), new Vector3(0.6f, 0.6f, 0.6f), p.Ice, new Vector3(45f, 0f, 45f));
+            }
+
+            Cannon(body, p, new Vector3(0f, 4.5f, 4f - 3.6f * scale), ref parts);
+            float[] widths = { 6f, 5f, 4f, 3f };
+            float y = 3.7f;
+            for (int i = 0; i < 4; i++)
+            {
+                Transform tier = Tier(body, i, ref parts);
+                float w = widths[i] * scale;
+                float h = 2.1f * scale;
+                Prim.Box(tier, "Diamond", new Vector3(0f, y + h * 0.5f, 4f), new Vector3(w, h, w), i % 2 == 0 ? p.Basalt : p.Frost,
+                    new Vector3(0f, 45f, 0f));
+                Prim.Box(tier, "Slit", new Vector3(0f, y + h * 0.5f, 4f - w * 0.7f - 0.02f), new Vector3(0.25f, h * 0.6f, 0.05f), p.Ice);
+                Prim.Box(tier, "Cap", new Vector3(0f, y + h + 0.06f, 4f), new Vector3(w * 1.05f, 0.14f, w * 1.05f), p.Frost, new Vector3(0f, 45f, 0f));
+                if (i == 3)
+                {
+                    Prim.Ball(tier, "Crystal", new Vector3(0f, y + h + 1.3f, 4f), new Vector3(1.1f, 2.6f, 1.1f), p.Ice);
+                }
+
+                y += h + 0.15f;
+            }
+
+            parts.BarHeight = y + 4f;
+        }
+
+        private static void CrownExtras(Transform body, ArtPalette p, TowerParts parts)
+        {
+            // The crown belongs to the top tier (it falls with the first floor).
+            Transform top = parts.Tiers[0];
+            float y = parts.BarHeight - 4f;
+            for (int s = 0; s < 6; s++)
+            {
+                float a = s * Mathf.PI / 3f;
+                Prim.Box(top, "Shard", new Vector3(Mathf.Cos(a) * 1.9f, y + 0.4f, 4f + Mathf.Sin(a) * 1.9f), new Vector3(0.35f, 2f, 0.35f), p.Ice,
+                    new Vector3(Mathf.Sin(a) * 20f, 0f, -Mathf.Cos(a) * 20f));
+            }
+
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Prim.Box(body, "Pylon", new Vector3(side * 5.6f, 5f, 5f), new Vector3(1.1f, 10f, 1.1f), p.Basalt, new Vector3(0f, 45f, 0f));
+                Prim.Ball(body, "PylonLight", new Vector3(side * 5.6f, 10.6f, 5f), new Vector3(0.9f, 1.6f, 0.9f), p.Ice);
+            }
+        }
+
+        // ---------- world 4 tower option B: bone bastion / boss B: bone horns ----------
+
+        private static void BoneBastion(Transform body, ArtPalette p, ref TowerParts parts, float scale)
+        {
+            Prim.Box(body, "Plinth", new Vector3(0f, 0.5f, 3.6f), new Vector3(10.5f, 1f, 7.5f), p.Basalt);
+            Prim.Box(body, "Wall", new Vector3(0f, 2.5f, 1.2f), new Vector3(8.6f * scale, 3f, 1.4f), p.Bone);
+            Prim.Box(body, "Gate", new Vector3(0f, 2.1f, 0.45f), new Vector3(2.2f, 2.4f, 0.15f), p.Basalt);
+            for (int rib = 0; rib < 4; rib++)
+            {
+                float x = (rib - 1.5f) * 2.2f * scale;
+                Prim.Box(body, "Rib", new Vector3(x, 4.4f, 1.4f), new Vector3(0.35f, 2.2f, 0.35f), p.Bone, new Vector3(0f, 0f, rib < 2 ? 20f : -20f));
+            }
+
+            Cannon(body, p, new Vector3(0f, 4.6f, 0.6f), ref parts);
+            float[] widths = { 7f, 5.8f, 4.6f, 3.4f };
+            float y = 4f;
+            for (int i = 0; i < 4; i++)
+            {
+                Transform tier = Tier(body, i, ref parts);
+                float w = widths[i] * scale;
+                float h = 2f * scale;
+                Prim.Box(tier, "Block", new Vector3(0f, y + h * 0.5f, 4f), new Vector3(w, h, w * 0.7f), i % 2 == 0 ? p.Bone : p.StoneLight);
+                Prim.Box(tier, "Band", new Vector3(0f, y + h - 0.1f, 4f), new Vector3(w + 0.3f, 0.2f, w * 0.7f + 0.3f), p.Basalt);
+                for (int s = 0; s < 3; s++)
+                {
+                    Prim.Box(tier, "Spike", new Vector3((s - 1) * w * 0.35f, y + h + 0.4f, 4f - w * 0.3f), new Vector3(0.25f, 0.9f, 0.25f), p.Bone);
+                }
+
+                Prim.Box(tier, "Slit", new Vector3(0f, y + h * 0.5f, 4f - w * 0.35f - 0.03f), new Vector3(0.3f, 0.9f, 0.05f), p.Ice);
+                y += h + 0.15f;
+            }
+
+            parts.BarHeight = y + 3.6f;
+        }
+
+        private static void BoneHornExtras(Transform body, ArtPalette p, TowerParts parts)
+        {
+            for (int i = 0; i < parts.Tiers.Length; i += 2)
+            {
+                Transform tier = parts.Tiers[i];
+                float y = 4f + (3 - i) * 2.55f + 1.2f;
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    Prim.Box(tier, "Horn", new Vector3(side * (3.6f - i * 0.4f), y + 0.6f, 4f), new Vector3(2.4f, 0.45f, 0.45f), p.Bone,
+                        new Vector3(0f, 0f, side * 40f));
+                }
+            }
         }
 
         // ---------- shared ----------

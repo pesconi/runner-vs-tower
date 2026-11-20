@@ -57,7 +57,7 @@ namespace Claybreak.Editor
             world == 0 ? $"{DataFolder}/DeviceGateLevel.asset" : $"{DataFolder}/DeviceGateLevelWorld{world + 1}.asset";
 
         /// <summary>Every world in catalog order.</summary>
-        public static WorldDefinition[] Worlds => new[] { World1(), World2(), World3() };
+        public static WorldDefinition[] Worlds => new[] { World1(), World2(), World3(), World4() };
 
         /// <summary>The art style in use for a world's own tower (TowerArt.StyleFor).</summary>
         public static TowerStyle ChosenTowerStyle(int world)
@@ -352,6 +352,8 @@ namespace Claybreak.Editor
                         accent = new Color(0.75f, 0.92f, 1f)
                     }
                 },
+                // Palette B in use: A (soot and ember) repeats world 1's brown and orange (second opinion, D20).
+                ChosenLook = 1,
                 TowerOptions = new[] { TowerStyle.SmokestackMill, TowerStyle.Gasholder },
                 BossOptions = new[] { TowerStyle.PistonHammer, TowerStyle.ForgeColossus },
                 Recipe = new WorldRecipe
@@ -364,7 +366,7 @@ namespace Claybreak.Editor
                     secondTowerEvery = 4,
                     bossTower = TowerKind.World3Boss,
                     bossRule = BossRule.Overheat,
-                    expectedDamage = 1.6f,
+                    expectedDamage = 1.5f,
                     startFirst = 18,
                     startLast = 24,
                     runSpeedFirst = 6f,
@@ -389,6 +391,87 @@ namespace Claybreak.Editor
                     rewardFirst = 170,
                     rewardLast = 240,
                     bossReward = 500
+                }
+            }.WithChosenLook();
+        }
+
+        // ---------- world 4: the peaks (turn-gate boss) ----------
+
+        // A frozen range at night. Every defense from the start; the boss turns its best gate at every floor.
+        private static WorldDefinition World4()
+        {
+            return new WorldDefinition
+            {
+                Id = "world4",
+                Name = "WORLD 4",
+                StarsToUnlock = 45,
+                LookNames = new[] { "frost night (blue snow, ice light)", "ash peaks (black-violet, magenta glow)" },
+                LookOptions = new[]
+                {
+                    new WorldLook
+                    {
+                        scenery = SceneryStyle.Peaks,
+                        sky = new Color(0.07f, 0.09f, 0.16f),
+                        ambient = new Color(0.4f, 0.45f, 0.56f),
+                        sun = new Color(0.78f, 0.86f, 1f),
+                        sunIntensity = 1f,
+                        ground = new Color(0.34f, 0.38f, 0.47f),
+                        field = new Color(0.3f, 0.34f, 0.42f),
+                        prop = new Color(0.78f, 0.82f, 0.9f),
+                        propDark = new Color(0.12f, 0.14f, 0.22f),
+                        accent = new Color(0.5f, 0.9f, 1f)
+                    },
+                    new WorldLook
+                    {
+                        scenery = SceneryStyle.Peaks,
+                        sky = new Color(0.12f, 0.07f, 0.14f),
+                        ambient = new Color(0.38f, 0.32f, 0.42f),
+                        sun = new Color(1f, 0.78f, 0.9f),
+                        sunIntensity = 1.05f,
+                        ground = new Color(0.25f, 0.22f, 0.27f),
+                        field = new Color(0.14f, 0.11f, 0.16f),
+                        prop = new Color(0.42f, 0.38f, 0.46f),
+                        propDark = new Color(0.07f, 0.05f, 0.09f),
+                        accent = new Color(1f, 0.35f, 0.75f)
+                    }
+                },
+                TowerOptions = new[] { TowerStyle.FrostSpire, TowerStyle.BoneBastion },
+                BossOptions = new[] { TowerStyle.CrownSpire, TowerStyle.BoneHorns },
+                Recipe = new WorldRecipe
+                {
+                    worldId = "world4",
+                    seed = 404,
+                    levelCount = 10,
+                    mainTower = TowerKind.World4Tower,
+                    secondTower = TowerKind.World3Tower,
+                    secondTowerEvery = 4,
+                    bossTower = TowerKind.World4Boss,
+                    bossRule = BossRule.TurnGate,
+                    expectedDamage = 1.75f,
+                    startFirst = 22,
+                    startLast = 30,
+                    runSpeedFirst = 6.5f,
+                    runSpeedLast = 7.5f,
+                    shareFirst = 0.56f,
+                    shareLast = 0.68f,
+                    bossShare = 0.72f,
+                    addFirst = 15,
+                    addLast = 45,
+                    wallFrom = 0,
+                    sweeperFrom = 0,
+                    shieldFrom = 1,
+                    cratesFrom = 0,
+                    cannonIntervalFirst = 1.7f,
+                    cannonIntervalLast = 1.15f,
+                    projectilesFirst = 6,
+                    projectilesLast = 9,
+                    sweeperPeriodFirst = 2.9f,
+                    sweeperPeriodLast = 2.3f,
+                    shieldBlockFirst = 0.5f,
+                    shieldBlockLast = 0.65f,
+                    rewardFirst = 240,
+                    rewardLast = 320,
+                    bossReward = 700
                 }
             }.WithChosenLook();
         }
@@ -486,7 +569,12 @@ namespace Claybreak.Editor
                 new CrowdSkin { id = "moss", title = "MOSS", color = new Color(0.42f, 0.62f, 0.3f), price = 300 },
                 new CrowdSkin { id = "slate", title = "SLATE", color = new Color(0.46f, 0.52f, 0.62f), price = 500 },
                 new CrowdSkin { id = "bone", title = "BONE", color = new Color(0.9f, 0.86f, 0.74f), price = 800 },
-                new CrowdSkin { id = "ink", title = "INK", color = new Color(0.22f, 0.2f, 0.27f), price = 1200 }
+                new CrowdSkin { id = "ink", title = "INK", color = new Color(0.22f, 0.2f, 0.27f), price = 1200 },
+                // RT-6: one skin in the colors of each new world, so the shop outlasts the first pass of the four
+                // worlds (docs/rt6-economia.md); the RT-5 prices stay as approved (D19 A).
+                new CrowdSkin { id = "mire", title = "MIRE", color = new Color(0.36f, 0.6f, 0.5f), price = 1500 },
+                new CrowdSkin { id = "cinder", title = "CINDER", color = new Color(0.55f, 0.2f, 0.12f), price = 2000 },
+                new CrowdSkin { id = "frost", title = "FROST", color = new Color(0.7f, 0.85f, 0.95f), price = 2500 }
             };
             var entries = new WorldEntry[worlds.Length];
             for (int w = 0; w < worlds.Length; w++)

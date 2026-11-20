@@ -65,6 +65,7 @@ namespace Claybreak.Editor
                         case SceneryStyle.Marches: Marches(set, kind, x, z, side, m, p); break;
                         case SceneryStyle.Mire: Mire(set, kind, x, z, side, index, m, p); break;
                         case SceneryStyle.Foundry: Foundry(set, kind, x, z, side, m, p); break;
+                        case SceneryStyle.Peaks: Peaks(set, kind, x, z, side, m, p); break;
                         default: throw new ArgumentOutOfRangeException(nameof(style), style, "no scenery for this style");
                     }
                 }
@@ -75,6 +76,7 @@ namespace Claybreak.Editor
                 case SceneryStyle.Marches: Ridge(set, trackEnd, m); break;
                 case SceneryStyle.Mire: Grove(set, trackEnd, m, p); break;
                 case SceneryStyle.Foundry: Skyline(set, trackEnd, m); break;
+                case SceneryStyle.Peaks: Range(set, trackEnd, m); break;
             }
 
             foreach (Transform prop in set.GetComponentsInChildren<Transform>(true))
@@ -202,6 +204,48 @@ namespace Claybreak.Editor
                 Prim.Box(set, "FarHall", new Vector3(x, h * 0.5f, z), new Vector3(12f, h, 8f), m.PropDark);
                 Prim.Cyl(set, "FarStack", new Vector3(x + 3f, h + 5f, z), new Vector3(1.4f, 5f, 1.4f), m.PropDark);
                 Prim.Box(set, "FarWindows", new Vector3(x, h * 0.55f, z - 4.05f), new Vector3(8f, 0.6f, 0.1f), m.Accent);
+            }
+        }
+
+        // ---------- world 4: the peaks (ice shards, drifts, bone pikes, cairns; far jagged peaks) ----------
+
+        private static void Peaks(Transform set, int kind, float x, float z, int side, WorldMaterials m, ArtPalette p)
+        {
+            switch (kind)
+            {
+                case 0:
+                    for (int s = 0; s < 3; s++)
+                    {
+                        Prim.Box(set, "Shard", new Vector3(x + (s - 1) * 0.5f, 0.8f + s % 2 * 0.3f, z + (s % 2) * 0.4f),
+                            new Vector3(0.35f, 1.6f + s % 2 * 0.6f, 0.35f), m.Accent, new Vector3((s - 1) * 14f, s * 30f, (1 - s) * 12f));
+                    }
+
+                    break;
+                case 1:
+                    Prim.Ball(set, "Drift", new Vector3(x, 0.15f, z), new Vector3(3f, 0.8f, 2.2f), m.Prop);
+                    break;
+                case 2:
+                    Prim.Cyl(set, "Pike", new Vector3(x, 1.3f, z), new Vector3(0.18f, 1.3f, 0.18f), p.Bone, new Vector3(0f, 0f, side * 10f));
+                    Prim.Box(set, "PikeCross", new Vector3(x - side * 0.15f, 2.1f, z), new Vector3(0.9f, 0.12f, 0.12f), p.Bone, new Vector3(0f, 0f, side * 10f));
+                    break;
+                default:
+                    Prim.Ball(set, "Cairn", new Vector3(x, 0.4f, z), new Vector3(1.2f, 0.8f, 1.1f), m.PropDark);
+                    Prim.Ball(set, "Cairn", new Vector3(x, 1.05f, z), new Vector3(0.8f, 0.55f, 0.8f), m.PropDark);
+                    Prim.Ball(set, "CairnLight", new Vector3(x, 1.45f, z), new Vector3(0.3f, 0.3f, 0.3f), m.Accent);
+                    break;
+            }
+        }
+
+        private static void Range(Transform set, float trackEnd, WorldMaterials m)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                float x = -49f + i * 14f;
+                float h = 18f + (i % 3) * 7f;
+                float z = trackEnd + 26f + (i % 2) * 6f;
+                Prim.Box(set, "Peak", new Vector3(x, h * 0.3f, z), new Vector3(h * 0.55f, h * 0.55f, 8f), m.PropDark, new Vector3(0f, 0f, 45f));
+                Prim.Box(set, "SnowCap", new Vector3(x, h * 0.3f + h * 0.27f, z - 0.5f), new Vector3(h * 0.16f, h * 0.16f, 8.2f), m.Prop,
+                    new Vector3(0f, 0f, 45f));
             }
         }
 

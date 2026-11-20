@@ -236,13 +236,13 @@ namespace Claybreak.Editor
             AssaultShot(folder, "jogo-assalto-torre", tower, camera, world.Levels[1], 17f);
             AssaultShot(folder, "jogo-assalto-chefe", tower, camera, world.Levels[world.LevelCount - 1], 20f);
 
-            // RT-6: every world in the real scene (its scenery set, look and towers), a plain level and the boss.
+            // RT-6: every world in the real scene (its scenery set, look and own tower: level 2), and its boss.
             var scenery = UnityEngine.Object.FindAnyObjectByType<WorldScenery>(FindObjectsInactive.Include);
             for (int w = 0; w < catalog.Worlds.Count; w++)
             {
                 ClaybreakWorld each = catalog.Worlds[w].world;
                 scenery.Apply(w, each.Look);
-                AssaultShot(folder, $"jogo-mundo{w + 1}-fase", tower, camera, each.Levels[3], 17f);
+                AssaultShot(folder, $"jogo-mundo{w + 1}-fase", tower, camera, each.Levels[1], 17f);
                 AssaultShot(folder, $"jogo-mundo{w + 1}-chefe", tower, camera, each.Levels[each.LevelCount - 1], 20f);
             }
 

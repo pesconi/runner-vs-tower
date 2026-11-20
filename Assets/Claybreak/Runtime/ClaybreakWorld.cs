@@ -12,7 +12,9 @@ namespace Claybreak
         /// <summary>World 2: reeds, stilt huts, mossy dead trees, lantern poles and dark pools; far gnarled trees.</summary>
         Mire,
         /// <summary>World 3: barrels, chimneys, pipe arches and crucibles; a far factory skyline with lit windows.</summary>
-        Foundry
+        Foundry,
+        /// <summary>World 4: ice shards, snow drifts, bone pikes and cairns; far jagged peaks with snow caps.</summary>
+        Peaks
     }
 
     /// <summary>

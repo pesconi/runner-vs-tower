@@ -71,7 +71,7 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 5
   towerDistance: 33
-  towerHealth: 800
+  towerHealth: 750
   floors: 2
   damagePerUnit: 1
   bossRule: 0
@@ -90,6 +90,6 @@ MonoBehaviour:
   shieldEnabled: 1
   shieldLane: 2
   shieldDistance: 29
-  shieldHealth: 110
+  shieldHealth: 100
   shieldBlock: 0.55
   coinReward: 210

@@ -179,6 +179,7 @@ uma antes da entrega indicada.
 | **D17** | **Direção de arte da torre e do chefe** (opções A/B/C de cada, em `docs/art/rt4/`) | Arte final da fatia (RT-4) e modelo das próximas torres | aceite da RT-4 | Torre A (bastião de pedra clara) + chefe A (cidadela) — ficha em `decisoes.md`; o jogo usa A/A provisórias |
 | **D18** | **Nome "Claybreak" depois da checagem de marca** (há o jogo "Claybreak Range"; INPI não conferido) | Ícone, ficha da loja e domínio dependem do nome | RT-9 | Seguir como nome de trabalho; o usuário confere INPI/TMview/USPTO à mão; dois nomes reserva checados na RT-9 — ficha em `decisoes.md` — **checagem gratuita de "Clay Siege" em 2026-11-20: sem conflito no acessível; INPI/USPTO/TMview/WIPO a conferir à mão antes da RT-9** |
 | **D19** | **Preços e curvas da loja** (4 upgrades, 3 elites, 6 skins; moedas por fase) | Ritmo da meta; base para a RT-6 calibrar os mundos | aceite da RT-5 | Aprovar a forma como ponto de partida; total e pagamento dos mundos acertados na RT-6; recalibrar no soft launch — ficha em `decisoes.md`; o jogo roda com a tabela [P] — **decidido em 2026-11-20: A** (tabela atual como ponto de partida) |
+| **D20** | **Arte dos mundos 2, 3 e 4** (paleta, torre e chefe de cada um) | Cara do jogo na loja e no soft launch | aceite da RT-6 (não trava código) | Recomendações A (paleta B no mundo 3) como provisórias; trocar é uma linha — ficha em `decisoes.md` (RT-6); o jogo roda com as recomendações |
 
 ### Dúvidas abertas registradas pela sessão (sem resposta)
 

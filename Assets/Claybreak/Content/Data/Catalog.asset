@@ -19,6 +19,8 @@ MonoBehaviour:
     starsToUnlock: 10
   - world: {fileID: 11400000, guid: 65fc513f24fbdf4449b1be27394f06ac, type: 2}
     starsToUnlock: 25
+  - world: {fileID: 11400000, guid: da67872af440a454ea64f91349200d68, type: 2}
+    starsToUnlock: 45
   upgrades:
   - id: army
     title: ARMY
@@ -143,6 +145,18 @@ MonoBehaviour:
     title: INK
     color: {r: 0.22, g: 0.2, b: 0.27, a: 1}
     price: 1200
+  - id: mire
+    title: MIRE
+    color: {r: 0.36, g: 0.6, b: 0.5, a: 1}
+    price: 1500
+  - id: cinder
+    title: CINDER
+    color: {r: 0.55, g: 0.2, b: 0.12, a: 1}
+    price: 2000
+  - id: frost
+    title: FROST
+    color: {r: 0.7, g: 0.85, b: 0.95, a: 1}
+    price: 2500
   loadoutSlots: 2
   specialEvery: 3
   worldsFooter: MORE WORLDS SOON

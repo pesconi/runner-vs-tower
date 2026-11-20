@@ -475,6 +475,105 @@ mundo)^0,7, nunca abaixo de 1; a primeira passada nunca muda. O expoente fica no
 versão 3 por causa do mundo 1 com 10 fases (estrelas do chefe mudam de lugar); v1 e v2 migram, e os saves de
 exemplo e os testes cobrem as três versões.
 
+## 2026-11-20 — T-RT6-5 — Pagamento dos mundos e total da loja (D19 A) — técnica (sessão RT-6)
+
+Simulação (`docs/rt6-economia.md`, mesmas premissas da RT-5): cada mundo paga mais que o anterior (prêmios
+40–200 no mundo 1, 110–350 no 2, 170–500 no 3, 240–700 no 4). Sem mudança, a primeira passada dos 4 mundos
+(~13,2 mil moedas) pagaria quase a loja inteira da RT-5 (13.380), e a loja acabaria junto com o conteúdo
+(risco apontado na D19). Os preços aprovados ficam iguais; entram 3 skins nas cores dos mundos novos
+(MIRE, do pântano, 1.500; CINDER, da fundição, 2.000; FROST, do gelo, 2.500): loja de 19.380, a primeira passada paga ~68% dela e
+o resto sai em ~10 min de voltas do mundo 4 (loja inteira em ~53 min simulados, 63 fases). O dano esperado
+de cada mundo (1,0 / 1,3 / 1,5 / 1,75) acompanha os upgrades que a simulação já comprou ao chegar nele.
+Recalibrar no soft launch com dados reais.
+
+## Ficha D20 (RT-6, aguardando resposta)
+
+### DECISÃO D20 — Arte dos mundos 2, 3 e 4 (paleta, torre e chefe)
+
+O que você está aprovando: a aparência dos três mundos novos do lançamento, com a paleta, a torre e o chefe
+marcados como recomendados abaixo (feitos por código, com formas simples, como a arte da fatia), como
+**provisória até o soft launch** (lançamento de teste); trocar qualquer item por outra opção desta ficha é
+trocar uma linha e reconstruir.
+
+Por que agora: o plano pede a sua aprovação da arte dos mundos na RT-6 (conteúdo). Não trava nada: o jogo
+já roda com as recomendações. Trocar é barato até o soft launch; depois, mudar a cara de um mundo que os
+jogadores já viram pesa mais.
+
+Contexto que você precisa saber:
+- Os 4 mundos de 10 fases (D12 = A) estão prontos e jogáveis; o mundo 1 é o da fatia (arte aprovada na D17:
+  bastião de pedra e cidadela, chão marrom e braseiros laranja). Cada mundo novo tem cenário próprio, uma
+  torre nova, um chefe novo com regra própria, e reaproveita a torre do mundo anterior em 2 das 9 fases
+  comuns (fato: conteúdo da RT-6).
+- Tudo é feito por código, com caixas, cilindros e esferas de cor lisa, sem ferramenta ou asset pago
+  (fato). O GDD (seção 9) pede paleta noturna e quente, adulta, torres com atitude (fortaleza, forja,
+  fábrica, ruína) e massinha arredondada; as torres daqui são de formas duras, como as da fatia; "sem
+  rostos" é regra das decisões D17/RT-4 (fato).
+- As folhas de opções (`docs/art/rt6/`, A à esquerda) usam uma câmera parecida com a do jogo, mas um pouco
+  mais afastada (a torre aparece menor que no jogo); as capturas do jogo de verdade, com a torre nova de
+  cada mundo e o chefe, estão em `docs/art/telas/jogo-mundoN-fase.png` e `-chefe.png` (fato).
+- As recomendações passaram no teste de desempenho do OPPO (gate 3×) com o chefe de cada mundo: quadro de
+  16 ms (60 por segundo, 3× de folga), memória ~200 MB. As opções B não foram medidas no aparelho; são as
+  mesmas peças, e uma troca seria medida de novo (fato/inferência nossa).
+- Limites conhecidos (segunda opinião, conferido): a neblina de cada mundo tinge os portões (no mundo 4 o
+  vermelho fica rosado e o azul fica perto da pista azul e dos cristais); quase todas as torres são pilhas de
+  andares que afinam para cima; as capturas não mostram o exército nem números nos portões. A legibilidade
+  com o exército correndo só se confere jogando.
+- Regras de chefe (já no jogo, não fazem parte desta decisão): mundo 2 — o escudo volta a cada andar
+  derrubado; mundo 3 — canhão e varredor aceleram a cada andar; mundo 4 — o melhor portão multiplicador vira
+  divisor a cada andar.
+
+MUNDO 2 — pântano (introduz o escudo: um gerador numa faixa que, de pé, faz a torre ignorar parte do dano)
+- Paleta: **A (recomendada)** noite verde-azulada com lanternas verdes · B lodo âmbar com lampiões laranja.
+- Torre: **A** forte de madeira escura sobre palafitas, paliçada e lanternas · B ruína de barro inclinada com
+  musgo (era a opção C da D17; lê melhor no escuro, mas parece mais "brinquedo").
+- Chefe: **A** campanário de pedra meio afundado, arcos acesos e um sino · B totem de anéis de barro com
+  chifres (opção C da D17).
+- Atenção: o mundo 2 A é o mais escuro; a torre de madeira escura é o item que pior se destaca do fundo.
+
+MUNDO 3 — fundição
+- Paleta: A fuligem e brasa (preto avermelhado, metal laranja) · **B (recomendada)** fumaça amarelada com
+  lâmpadas brancas. Mudou para B por causa da segunda opinião: a A repetia o marrom com laranja do mundo 1.
+- Torre: **A** moinho de tijolo com telhado em serra, duas chaminés, andares de janelas acesas · B gasômetro.
+- Chefe: **A** martelo-pilão (duas colunas e uma travessa; a única silhueta que não é pilha) · B colosso da
+  forja (quase a forja do mundo 1).
+
+MUNDO 4 — picos gelados
+- Paleta: **A (recomendada)** noite azul de neve com luz de gelo · B picos de cinza (preto-violeta, brilho
+  magenta). Quase empate: a B separa melhor os portões e é mais "quente" como o GDD pede; a A é a que mais
+  difere dos outros três mundos.
+- Torre: **A** agulha de basalto e gelo, andares em losango, cristal no topo · B bastião de osso.
+- Chefe: **A** agulha coroada (coroa de lascas e dois obeliscos) · B bastião de osso maior com chifres. Os
+  dois chefes são a torre do mundo com extras: parecidos demais com ela (fraqueza conhecida).
+
+Opções:
+A) Aprovar as recomendações como provisórias até o soft launch (como o jogo está agora).
+   + Nenhum trabalho a mais; cada mundo novo tem cor dominante e cenário próprios.
+   - Riscos: formas simples podem parecer pobres perto de concorrentes com arte feita à mão (chance média;
+     impacto médio na instalação) — mitigação: a loja (RT-8) e o soft launch medem, e a arte troca sem mexer
+     no jogo. Mundo 2 escuro e portões tingidos no mundo 4 (chance média; impacto baixo) — conferir jogando.
+     Chefe do mundo 4 parecido com a torre (chance alta de alguém notar; impacto baixo).
+   Custo: nenhum. Dá para voltar atrás? sim, fácil.
+B) Aprovar com trocas: diga quais itens vão para a outra opção (ex.: "mundo 4 paleta B").
+   + Você escolhe item a item. Custo: minutos + um gate no aparelho para o mundo trocado. Volta atrás? sim.
+   - Riscos: combinação não vista junta (chance baixa; impacto baixo) — refaço as capturas.
+C) A com ajustes (sugestão da segunda opinião): clarear o mundo 2, deixar os portões sem a tinta da neblina
+   em todos os mundos, refazer o chefe do mundo 4 com silhueta própria.
+   + Corrige as fraquezas conhecidas antes de alguém de fora ver.
+   - Riscos: uma sessão de trabalho e novo gate (chance alta de custar a sessão; impacto baixo, sem prazo).
+D) Adiar até jogar os 4 mundos no celular.
+   + Decide vendo como o jogador vê. Sem risco para o código (o jogo segue com as recomendações).
+
+Recomendação: A, e jogar no celular antes de responder — trocar depois é uma linha, e o que realmente
+importa (se a arte segura a instalação) só a loja e o soft launch medem. Se, jogando, o mundo 2 ou os
+portões do mundo 4 incomodarem, responda C.
+Segunda opinião (fable): concorda com A só como provisória e com ajustes; apontou que a paleta A do mundo 3
+repetia o mundo 1 (trocada para B), que as capturas do jogo mostravam a torre reaproveitada em vez da nova
+(refeitas), que as opções B não foram medidas no aparelho, a tinta dos portões no mundo 4, o mundo 2 escuro
+e o chefe do mundo 4 parecido demais com a torre; sugeriu a opção C (incluída).
+Se você não responder: o jogo segue com as recomendações como provisórias; nada mais espera por isso.
+
+Responda: A, B + itens, C, D, ou "explica melhor".
+
 ## Fichas D19 e D12 (RT-5, aguardando resposta)
 
 ### DECISÃO D19 — Preços e curvas da loja (upgrades, elites, skins)

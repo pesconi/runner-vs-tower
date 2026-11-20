@@ -27,16 +27,16 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 60d28d8f848d9294e8e97d13844c8385, type: 2}
   look:
     scenery: 2
-    sky: {r: 0.14, g: 0.06, b: 0.05, a: 1}
-    ambient: {r: 0.4, g: 0.3, b: 0.28, a: 1}
-    sun: {r: 1, g: 0.62, b: 0.42, a: 1}
-    sunIntensity: 1.15
-    ground: {r: 0.22, g: 0.2, b: 0.2, a: 1}
-    field: {r: 0.1, g: 0.09, b: 0.09, a: 1}
-    prop: {r: 0.36, g: 0.3, b: 0.27, a: 1}
-    propDark: {r: 0.07, g: 0.06, b: 0.06, a: 1}
-    accent: {r: 1, g: 0.45, b: 0.1, a: 1}
-  expectedDamage: 1.6
+    sky: {r: 0.26, g: 0.25, b: 0.17, a: 1}
+    ambient: {r: 0.46, g: 0.46, b: 0.38, a: 1}
+    sun: {r: 0.95, g: 0.95, b: 0.8, a: 1}
+    sunIntensity: 1
+    ground: {r: 0.33, g: 0.32, b: 0.28, a: 1}
+    field: {r: 0.2, g: 0.2, b: 0.16, a: 1}
+    prop: {r: 0.45, g: 0.42, b: 0.34, a: 1}
+    propDark: {r: 0.16, g: 0.16, b: 0.13, a: 1}
+    accent: {r: 0.75, g: 0.92, b: 1, a: 1}
+  expectedDamage: 1.5
   loopPowerExponent: 0.7
   healthPerLoop: 0.25
   coinsPerLoop: 0.25

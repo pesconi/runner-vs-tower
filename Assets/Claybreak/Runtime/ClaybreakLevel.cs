@@ -35,7 +35,9 @@ namespace Claybreak
         World2Tower,
         World2Boss,
         World3Tower,
-        World3Boss
+        World3Boss,
+        World4Tower,
+        World4Boss
     }
 
     /// <summary>

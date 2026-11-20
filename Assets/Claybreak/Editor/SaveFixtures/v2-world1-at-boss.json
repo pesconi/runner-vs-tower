@@ -1,0 +1,1 @@
+{"version":2,"coins":900,"world":"world1","worlds":[{"id":"world1","nextLevel":6,"loop":1,"stars":[3,3,2,3,2,3,3]}],"upgrades":[{"id":"army","level":3},{"id":"damage","level":2}],"units":["brute"],"loadout":["brute"],"skins":["clay","ember"],"skin":"ember","levelsWon":20,"levelsLost":4}

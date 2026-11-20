@@ -27,17 +27,34 @@ visual por mundo, save v3), `RT.6b` (mundo 2), `RT.6c` (mundo 3), `RT.6d` (mundo
 |---|---|---|---|---|---|---|
 | 1 — marchas | crepúsculo, pedras, pilares, braseiros (RT-4) | bastião de pedra (+ forja) | cidadela — a fileira de portões gira | muralha, canhão, varredor | ×1,0 | — |
 | 2 — pântano | noite verde-azulada, juncos, palafitas, lanternas verdes | forte de palafita (+ forja) | campanário afundado — o escudo volta a cada andar | **escudo** (da fase 3) | ×1,3 | chefe do 1 + 10 estrelas |
-| 3 — fundição | fuligem e brasa, barris, chaminés, cadinhos, silhueta de fábrica | moinho de chaminés (+ forte de palafita) | martelo-pilão — canhão e varredor esquentam a cada andar | todas desde a fase 1; escudo da fase 4 | ×1,6 | chefe do 2 + 25 estrelas |
+| 3 — fundição | fumaça amarelada, lâmpadas brancas, barris, chaminés, cadinhos, silhueta de fábrica | moinho de chaminés (+ forte de palafita) | martelo-pilão — canhão e varredor esquentam a cada andar | todas desde a fase 1; escudo da fase 4 | ×1,5 | chefe do 2 + 25 estrelas |
+| 4 — picos gelados | noite azul de neve, lascas de gelo, estacas de osso, picos ao fundo | agulha de basalto e gelo (+ moinho) | agulha coroada — o melhor portão multiplicador vira ÷2 a cada andar | todas desde a fase 1, escudo da fase 2 | ×1,75 | chefe do 3 + 45 estrelas |
 
-Rampa do mundo 2 (vida): 110 → 220 → 380 → 500 → 540 → 550 → 650 → 680 → 720 → chefe 800 (tabela
-completa em `docs/rt6-economia.md`). As opções de arte de cada mundo novo estão em `docs/art/rt6/`
+Vida do chefe: 600 / 800 / 940 / 1.130 (mundos 1 a 4); cada mundo começa mais fácil que o chefe anterior e
+sobe até o seu (tabela completa, fase a fase, em `docs/rt6-economia.md`). A paleta do mundo 3 em uso é a B:
+a segunda opinião da ficha D20 mostrou que a A repetia o marrom com laranja do mundo 1.
+
+### Economia (D19 A, acertada nesta entrega)
+
+Simulação com as mesmas premissas da RT-5 [I]: ~365 moedas por minuto; primeira passada de cada mundo
+termina aos ~11 / 21 / 32 / 43 minutos; os 4 mundos pagam ~13,2 mil moedas, 68% da loja. Preços da RT-5
+iguais; entram 3 skins dos mundos novos (MIRE 1.500, CINDER 2.000, FROST 2.500): loja de 19.380, tudo
+comprado em ~53 minutos (63 fases), o resto depois da primeira passada sai nas voltas do mundo 4. Detalhe e
+sensibilidade (preços ×0,75 e ×1,5) em `docs/rt6-economia.md`; decisão T-RT6-5. As opções de arte de cada mundo novo estão em `docs/art/rt6/`
 (`mundoN-paletas.png`, `-torres.png`, `-chefes.png`, A à esquerda) e o assalto de cada mundo na cena real em
 `docs/art/telas/jogo-mundoN-fase.png` e `-chefe.png`.
 
 ## 2. Decisões
 
-Técnicas (`decisoes.md`, T-RT6-1 a T-RT6-4): fases como `LevelSpec` gerado por perfil; visual por mundo
-pré-alocado; escudo e regras de chefe como dado; ajuste das voltas pelo poder do jogador e save v3.
+Técnicas (`decisoes.md`, T-RT6-1 a T-RT6-5): fases como `LevelSpec` gerado por perfil; visual por mundo
+pré-alocado; escudo e regras de chefe como dado; ajuste das voltas pelo poder do jogador e save v3;
+pagamento dos mundos e total da loja.
+
+Do usuário: **D20** — arte dos mundos 2, 3 e 4 (ficha em `decisoes.md`, com segunda opinião; o jogo roda
+com as recomendações como provisórias). O nº de fases já foi decidido (D12 = A, 4 × 10).
+
+Fica para depois (anotado, fora do escopo): a neblina tinge os portões em cada mundo; os chefes do mundo 4
+são a torre do mundo com extras (opção C da D20 corrige, se o usuário quiser).
 
 ## 3. Validação
 
@@ -46,6 +63,7 @@ pré-alocado; escudo e regras de chefe como dado; ajuste das voltas pelo poder d
 | 2026-11-20 | RT.6a: cena, validador, isolamento do kit, EditMode, PlayMode, economia, APKs (`Tools/rt4-check.sh /c/temp/rt6`) | PASS; EditMode 101/101 (+ testes do gerador, do escudo, das regras e da migração v3), PlayMode 5/5 |
 | 2026-11-20 | RT.6b (mundo 2): as mesmas etapas + capturas | PASS; EditMode 101/101, PlayMode 6/6 (novo: o gate de cada mundo mostra o cenário e a torre do chefe dele, com o escudo de pé onde o mundo tem) |
 | 2026-11-20 | RT.6c (mundo 3): as mesmas etapas | PASS; EditMode 101/101, PlayMode 6/6 |
+| 2026-11-20 | RT.6d (mundo 4 + economia): todas as etapas, incluindo o isolamento do kit; saves de exemplo novos `v2-world1-at-boss` e `v3-four-worlds` no validador | PASS; EditMode 101/101, PlayMode 6/6; APK do jogo instalado no OPPO |
 
 ## 4. Gate 3× no OPPO CPH2791 (torre mais pesada de cada mundo, loadout máximo)
 
@@ -56,4 +74,18 @@ com 300 em voo e 12 pedras.
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-20 | 1 (cidadela) | 16 ms (max 16) | 0,0% | 4,5–5,5 ms | 3,9–4,3 ms | 182 MB | 299 | 100 | 11–12/12 | **Sim** |
 | 2026-11-20 | 2 (campanário, escudo de pé) | 16 ms (max 16) | 0,0% | 4,4–5,6 ms | 4,1–4,5 ms | 195 MB | 299 | 100 | 11–12/12 | **Sim** |
-| 2026-11-20 | 3 (martelo-pilão, escudo de pé) | 16 ms (max 16) | 0,0% | 4,1–6,5 ms | 4,0–4,4 ms | 199 MB | 299 | 100 | 12/12 | **Sim** |
+| 2026-11-20 | 3 (martelo-pilão, escudo de pé; paleta A) | 16 ms (max 16) | 0,0% | 4,1–6,5 ms | 4,0–4,4 ms | 199 MB | 299 | 100 | 12/12 | **Sim** |
+| 2026-11-20 | 3 de novo com a paleta B em uso | 16 ms (max 16) | 0,0% | 4,7–5,1 ms | 4,0–4,2 ms | 197 MB | 299 | 100 | 12/12 | **Sim** |
+| 2026-11-20 | 4 (agulha coroada, escudo de pé) | 16 ms (max 33) | 0,0% | 4,9–6,1 ms; 9,1 na última janela (coleta de memória) | 4,1–4,4 ms | 197 MB | 299 | 100 | 11–12/12 | **Sim** |
+
+Saídas completas em `C:\temp\rt2\gate-rt6-w<N>-oppo-60.txt`. Como refazer: OPPO no USB, desbloqueado,
+`adb start-server`, depois `Tools/rt2-gate.sh rt6-w<N>-oppo-60 60 20 /c/temp/rt6/Claybreak-measure.apk <N>`
+(os APKs saem de `Tools/rt4-check.sh /c/temp/rt6 "scene apk"`).
+
+## 5. ACEITE PENDENTE — o que só vocês fazem
+
+1. **Jogar os 4 mundos no OPPO** (o jogo já está instalado; o save da fatia/RT-5 abre e migra: quem estava no
+   chefe do mundo 1 encontra as 3 fases novas). Para chegar aos mundos novos é preciso vencer o chefe do
+   anterior e ter as estrelas pedidas (10, 25, 45). Conferir em especial: o mundo 2 é escuro demais? os
+   portões do mundo 4 se leem bem? a dificuldade sobe sem travar?
+2. Responder a ficha **D20** (arte dos mundos) no fim de `docs/decisoes.md`.

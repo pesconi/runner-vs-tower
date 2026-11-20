@@ -46,6 +46,10 @@ namespace Claybreak.Editor
         public readonly Material Brick = Solid("Brick", new Color(0.4f, 0.17f, 0.12f));
         public readonly Material Soot = Solid("Soot", new Color(0.09f, 0.08f, 0.08f));
         public readonly Material Steel = Solid("Steel", new Color(0.44f, 0.46f, 0.48f));
+        // World 4 towers (RT-6): frost, basalt, ice light.
+        public readonly Material Frost = Solid("Frost", new Color(0.8f, 0.85f, 0.92f));
+        public readonly Material Basalt = Solid("Basalt", new Color(0.15f, 0.14f, 0.19f));
+        public readonly Material Ice = Unlit("Ice", new Color(0.5f, 0.9f, 1f));
         public readonly Material ShieldDome = Clear("ShieldDome", new Color(0.35f, 0.85f, 0.95f, 0.22f));
         public readonly Material ShieldCore = Unlit("ShieldCore", new Color(0.45f, 0.95f, 1f));
 

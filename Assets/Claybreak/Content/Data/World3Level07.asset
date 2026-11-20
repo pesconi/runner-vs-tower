@@ -78,14 +78,14 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 5
   towerDistance: 34.5
-  towerHealth: 890
+  towerHealth: 840
   floors: 3
   damagePerUnit: 1
   bossRule: 0
   wallEnabled: 1
   wallLane: 2
   wallDistance: 22
-  wallHealth: 160
+  wallHealth: 150
   cannonEnabled: 1
   cannonInterval: 1.5
   projectileFlightTime: 0.8666666

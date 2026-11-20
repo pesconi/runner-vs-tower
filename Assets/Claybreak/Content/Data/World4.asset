@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d76d5bf8e65f14ea53e1612d70f4c8, type: 3}
+  m_Name: World4
+  m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakWorld
+  worldId: world4
+  worldName: WORLD 4
+  levels:
+  - {fileID: 11400000, guid: 1893e4779d4944d4c91e486eaf0af89f, type: 2}
+  - {fileID: 11400000, guid: 59cd6f43647b4724a8b0be8dd2e59f99, type: 2}
+  - {fileID: 11400000, guid: 77cc5efbf993f1f45af63d4ad277a269, type: 2}
+  - {fileID: 11400000, guid: 93d5e0bcf5ca63540a561b57ed6c4028, type: 2}
+  - {fileID: 11400000, guid: 3ff8e12bdc723df439217a4649eb7490, type: 2}
+  - {fileID: 11400000, guid: be75070e0b583a742bd57a5144bef4b6, type: 2}
+  - {fileID: 11400000, guid: 87e85671fb17bdb4aa711e40299123c0, type: 2}
+  - {fileID: 11400000, guid: aeacdbb084c66f84d99406717202854b, type: 2}
+  - {fileID: 11400000, guid: 630c3db7762ad2d409f94fb351c44114, type: 2}
+  - {fileID: 11400000, guid: bc8c994d2475a944d8afe7667b40b748, type: 2}
+  look:
+    scenery: 3
+    sky: {r: 0.07, g: 0.09, b: 0.16, a: 1}
+    ambient: {r: 0.4, g: 0.45, b: 0.56, a: 1}
+    sun: {r: 0.78, g: 0.86, b: 1, a: 1}
+    sunIntensity: 1
+    ground: {r: 0.34, g: 0.38, b: 0.47, a: 1}
+    field: {r: 0.3, g: 0.34, b: 0.42, a: 1}
+    prop: {r: 0.78, g: 0.82, b: 0.9, a: 1}
+    propDark: {r: 0.12, g: 0.14, b: 0.22, a: 1}
+    accent: {r: 0.5, g: 0.9, b: 1, a: 1}
+  expectedDamage: 1.75
+  loopPowerExponent: 0.7
+  healthPerLoop: 0.25
+  coinsPerLoop: 0.25

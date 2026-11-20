@@ -195,10 +195,12 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** todos os mundos jogáveis do lançamento; `GameThemeCompleteness`-
   like sem falha; gate 3× em cada mundo; sem repetição visual óbvia.
 - **Exige o usuário:** aprovar arte dos mundos; aprovar nº de fases.
-- **Status: em andamento** (`rt6-conteudo.md`): `Stage RT.6a` feito (mundo 1 com 10 fases, geração por
-  dados, escudo, regras de chefe, visual por mundo, save v3; gate do mundo 1 aprovado no OPPO);
-  `Stage RT.6b` feito (mundo 2, pântano, com o escudo; gate aprovado); `Stage RT.6c` feito (mundo 3,
-  fundição; gate aprovado).
+- **Status: concluída em 2026-11-20** (`Stage RT.6a`–`RT.6d`; `rt6-conteudo.md`): 4 mundos × 10 fases
+  jogáveis (D12 = A), geração de fases por perfil de dificuldade, escudo, um chefe com regra própria por
+  mundo, visual próprio por mundo, voltas ajustadas ao poder do jogador (correção da D19), save v3 com
+  migração, economia acertada (D19 A: +3 skins, loja de 19.380); validador sem falha e gate 3× aprovado no
+  OPPO em cada mundo. Pendentes do usuário: jogar os 4 mundos e responder a ficha D20 (arte dos mundos;
+  o jogo roda com as recomendações).
 
 ## RT-7 — Produção: monetização, retenção e analytics
 

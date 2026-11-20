@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13bb24070fdcf1d4b8798f005145b724, type: 3}
+  m_Name: World4Level05
+  m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakLevel
+  title: LEVEL 5
+  startCount: 26
+  runSpeed: 7
+  runGates:
+  - z: 18
+    left:
+      operation: 0
+      value: 30
+    right:
+      operation: 2
+      value: 2
+  - z: 38
+    left:
+      operation: 2
+      value: 2
+    right:
+      operation: 0
+      value: 60
+  - z: 58
+    left:
+      operation: 2
+      value: 2
+    right:
+      operation: 3
+      value: 2
+  - z: 78
+    left:
+      operation: 1
+      value: 30
+    right:
+      operation: 3
+      value: 2
+  crates:
+  - z: 28
+    right: 1
+    units: 3
+  - z: 48
+    right: 0
+    units: 3
+  - z: 68
+    right: 1
+    units: 4
+  firingLineZ: 94
+  launchRate: 12
+  unitSpeed: 9
+  laneSpread: 0.7
+  maximumUnitsInFlight: 300
+  assaultGateDistance: 9
+  assaultGates:
+  - operation: 2
+    value: 3
+  - operation: 3
+    value: 2
+  - operation: 2
+    value: 2
+  autoLaunch: 0
+  recycleUnits: 0
+  tower: 7
+  towerDistance: 33
+  towerHealth: 650
+  floors: 2
+  damagePerUnit: 1
+  bossRule: 0
+  wallEnabled: 1
+  wallLane: 0
+  wallDistance: 24
+  wallHealth: 120
+  cannonEnabled: 1
+  cannonInterval: 1.45
+  projectileFlightTime: 0.87777776
+  blastRadius: 1.15
+  maximumProjectiles: 7
+  sweeperEnabled: 1
+  sweeperDistance: 15
+  sweeperPeriod: 2.6000001
+  shieldEnabled: 1
+  shieldLane: 2
+  shieldDistance: 29
+  shieldHealth: 90
+  shieldBlock: 0.55
+  coinReward: 275
