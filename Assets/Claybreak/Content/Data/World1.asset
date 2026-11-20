@@ -22,5 +22,21 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4e10853090d1f834ab727e751458d79d, type: 2}
   - {fileID: 11400000, guid: d71ed09e826b0b7419f4e96f76ac1530, type: 2}
   - {fileID: 11400000, guid: 8094524aa4c1320428fc8d784b3496a8, type: 2}
+  - {fileID: 11400000, guid: 54f592defba8fea4ba7cb461fb47fd03, type: 2}
+  - {fileID: 11400000, guid: 5dd4f783d4e8b9a45b06aa9f2be6937a, type: 2}
+  - {fileID: 11400000, guid: f3847f31a2796134eaa0eb2724e98963, type: 2}
+  look:
+    scenery: 0
+    sky: {r: 0.16, g: 0.12, b: 0.14, a: 1}
+    ambient: {r: 0.42, g: 0.36, b: 0.34, a: 1}
+    sun: {r: 1, g: 0.86, b: 0.7, a: 1}
+    sunIntensity: 1.2
+    ground: {r: 0.34, g: 0.27, b: 0.24, a: 1}
+    field: {r: 0.2, g: 0.17, b: 0.17, a: 1}
+    prop: {r: 0.46, g: 0.42, b: 0.42, a: 1}
+    propDark: {r: 0.24, g: 0.21, b: 0.22, a: 1}
+    accent: {r: 1, g: 0.55, b: 0.15, a: 1}
+  expectedDamage: 1
+  loopPowerExponent: 0.7
   healthPerLoop: 0.25
   coinsPerLoop: 0.25

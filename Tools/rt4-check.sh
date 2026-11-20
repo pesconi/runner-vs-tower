@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Full batchmode validation of the game (RT-4, RT-5), Unity Editor CLOSED on this project:
 # scene build, game validator (catalog, worlds, save fixtures, scene, code rules), kit isolation, EditMode
-# and PlayMode tests, the economy table (docs/rt5-economia.md), art captures (needs a GPU, so no
+# and PlayMode tests, the economy and level table (docs/rt6-economia.md; docs/rt5-economia.md is the RT-5 record), art captures (needs a GPU, so no
 # -nographics there) and the two Android APKs (game and measurement).
 # Usage (Git Bash, repository root): Tools/rt4-check.sh [out=/c/temp/rt4] [steps="scene validate isolation editmode playmode economy capture apk"]
 # Prints one PASS/FAIL line per step; logs in <out>/logs. Exit 1 if any step failed.
@@ -34,7 +34,7 @@ for step in $STEPS; do
     isolation) run isolation -nographics -executeMethod JungleDegree.StudioKit.Editor.EngineIsolationValidation.RunAndQuit ;;
     editmode) tests EditMode ;;
     playmode) tests PlayMode ;;
-    economy) run economy -nographics -executeMethod Claybreak.Editor.EconomyReport.WriteAndQuit -claybreakReport "$PROJECT/docs/rt5-economia.md" ;;
+    economy) run economy -nographics -executeMethod Claybreak.Editor.EconomyReport.WriteAndQuit -claybreakReport "$PROJECT/docs/rt6-economia.md" ;;
     capture) run capture -executeMethod Claybreak.Editor.ArtDirectionCapture.CaptureAndQuit -claybreakCaptureDir "$WIN_OUT/art" ;;
     apk)
       run apk-game -nographics -executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit -claybreakApk "$WIN_OUT/Claybreak.apk"

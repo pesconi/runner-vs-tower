@@ -12,59 +12,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13bb24070fdcf1d4b8798f005145b724, type: 3}
   m_Name: Level07
   m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakLevel
-  title: BOSS
-  startCount: 16
-  runSpeed: 6
+  title: LEVEL 7
+  startCount: 14
+  runSpeed: 5.5
   runGates:
   - z: 18
     left:
+      operation: 0
+      value: 19
+    right:
       operation: 2
       value: 2
-    right:
-      operation: 0
-      value: 15
   - z: 38
     left:
-      operation: 0
+      operation: 2
+      value: 3
+    right:
+      operation: 3
+      value: 2
+  - z: 58
+    left:
+      operation: 1
       value: 25
     right:
-      operation: 1
-      value: 10
-  - z: 58
+      operation: 0
+      value: 25
+  - z: 78
     left:
       operation: 3
       value: 2
     right:
       operation: 2
-      value: 3
-  - z: 80
+      value: 2
+  - z: 98
     left:
-      operation: 0
-      value: 30
-    right:
       operation: 2
       value: 2
-  - z: 100
-    left:
-      operation: 1
-      value: 30
     right:
-      operation: 0
+      operation: 1
       value: 20
   crates:
   - z: 28
     right: 0
-    units: 4
+    units: 3
   - z: 48
     right: 1
     units: 4
-  - z: 70
-    right: 0
-    units: 4
-  - z: 90
-    right: 1
-    units: 4
-  firingLineZ: 112
+  firingLineZ: 114
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -79,22 +73,27 @@ MonoBehaviour:
     value: 2
   autoLaunch: 0
   recycleUnits: 0
-  tower: 2
-  towerDistance: 36
-  towerHealth: 600
-  floors: 4
+  tower: 0
+  towerDistance: 34.5
+  towerHealth: 520
+  floors: 3
   damagePerUnit: 1
-  shiftGatesOnFloor: 1
-  wallEnabled: 1
-  wallLane: 1
-  wallDistance: 24
-  wallHealth: 100
+  bossRule: 0
+  wallEnabled: 0
+  wallLane: 0
+  wallDistance: 22
+  wallHealth: 90
   cannonEnabled: 1
-  cannonInterval: 1.6
-  projectileFlightTime: 0.85
+  cannonInterval: 1.85
+  projectileFlightTime: 0.8666666
   blastRadius: 1.2
-  maximumProjectiles: 6
+  maximumProjectiles: 5
   sweeperEnabled: 1
-  sweeperDistance: 17
-  sweeperPeriod: 2.8
-  coinReward: 200
+  sweeperDistance: 14
+  sweeperPeriod: 3
+  shieldEnabled: 0
+  shieldLane: 2
+  shieldDistance: 30.5
+  shieldHealth: 70
+  shieldBlock: 0.55
+  coinReward: 105

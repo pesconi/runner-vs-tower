@@ -1,160 +1,254 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 namespace Claybreak.Editor
 {
+    /// <summary>One world of the content: identity, look, difficulty profile, hand-made levels and unlock rule.</summary>
+    public sealed class WorldDefinition
+    {
+        public string Id;
+        public string Name;
+        public WorldLook Look;
+        public WorldRecipe Recipe;
+        /// <summary>Hand-made levels by index (null entries are generated from the recipe).</summary>
+        public LevelSpec[] FixedLevels;
+        public int StarsToUnlock;
+        public float HealthPerLoop = 0.25f;
+        public float CoinsPerLoop = 0.25f;
+    }
+
     /// <summary>
-    /// The game's content as code: world 1 (7 levels, the last is the boss), the device-gate level and the
-    /// meta catalog (RT-5: upgrade tracks, special units, skins, world list). The scene builder rewrites the
-    /// assets from here on every build, so tuning is a reviewed code change (not an Inspector edit that a
-    /// rebuild loses). Session target (GDD 3, RT-4): about 35-50 s per level, 7 levels plus menus in about
-    /// 5 minutes. Every price and curve in <see cref="WriteCatalog"/> is provisional [P] (decisoes.md, D19).
+    /// The game's content as code (RT-6): every world (identity, look, difficulty profile and the levels
+    /// generated from it by <see cref="LevelGenerator"/>, plus a few hand-made ones), one device-gate level per
+    /// world (its heaviest tower, its scenery, every defense at its limit) and the meta catalog (upgrades,
+    /// special units, skins, world list). The scene builder rewrites the assets from here on every build, so
+    /// tuning is a reviewed code change, not an Inspector edit that a rebuild loses. Prices are [P] (D19 A:
+    /// the RT-5 table is the starting point; RT-6 calibrates world pay and the shop total together).
     /// </summary>
     public static class WorldContent
     {
         public const string DataFolder = ClaybreakSceneBuilder.Root + "/Data";
-        public const string WorldPath = DataFolder + "/World1.asset";
-        public const string StressLevelPath = DataFolder + "/DeviceGateLevel.asset";
         public const string CatalogPath = DataFolder + "/Catalog.asset";
-        public const int LevelCount = 7;
 
-        public static string LevelPath(int index) => $"{DataFolder}/Level{index + 1:00}.asset";
+        /// <summary>World 1 keeps the slice's asset names (Level01..., World1, DeviceGateLevel).</summary>
+        public static string WorldPath(int world) => $"{DataFolder}/World{world + 1}.asset";
 
-        private static GateSpec Add(int v) => new GateSpec(GateOperation.Add, v);
-        private static GateSpec Sub(int v) => new GateSpec(GateOperation.Subtract, v);
-        private static GateSpec Mul(int v) => new GateSpec(GateOperation.Multiply, v);
-        private static GateSpec Div(int v) => new GateSpec(GateOperation.Divide, v);
+        public static string LevelPath(int world, int index) =>
+            world == 0 ? $"{DataFolder}/Level{index + 1:00}.asset" : $"{DataFolder}/World{world + 1}Level{index + 1:00}.asset";
 
-        private static RunGatePair Pair(float z, GateSpec left, GateSpec right) =>
-            new RunGatePair { z = z, left = left, right = right };
+        public static string StressLevelPath(int world) =>
+            world == 0 ? $"{DataFolder}/DeviceGateLevel.asset" : $"{DataFolder}/DeviceGateLevelWorld{world + 1}.asset";
 
-        private static CratePlacement Crate(float z, bool right, int units) =>
-            new CratePlacement { z = z, right = right, units = units };
+        /// <summary>Every world in catalog order.</summary>
+        public static WorldDefinition[] Worlds => new[] { World1() };
 
-        /// <summary>Writes every level, the device-gate level, the world and the catalog. Returns the catalog.</summary>
+        /// <summary>Writes every level, the device-gate levels, the worlds and the catalog. Returns the catalog.</summary>
         public static ClaybreakCatalog Write()
         {
-            var levels = new ClaybreakLevel[LevelCount];
+            WorldDefinition[] definitions = Worlds;
+            var worlds = new ClaybreakWorld[definitions.Length];
+            for (int w = 0; w < definitions.Length; w++)
+            {
+                WorldDefinition definition = definitions[w];
+                LevelSpec[] specs = LevelGenerator.GenerateWorld(definition.Recipe, definition.FixedLevels);
+                var levels = new ClaybreakLevel[specs.Length];
+                for (int i = 0; i < specs.Length; i++)
+                {
+                    levels[i] = WriteLevel(LevelPath(w, i), specs[i]);
+                }
+
+                var world = LoadOrCreate<ClaybreakWorld>(WorldPath(w));
+                world.EditorAssign(definition.Id, definition.Name, levels, definition.Look, definition.Recipe.expectedDamage,
+                    definition.HealthPerLoop, definition.CoinsPerLoop);
+                EditorUtility.SetDirty(world);
+                worlds[w] = world;
+                WriteLevel(StressLevelPath(w), DeviceGateLevel(definition));
+            }
+
+            return WriteCatalog(worlds, definitions);
+        }
+
+        /// <summary>The generated specs of a world (reports and tests read them without writing assets).</summary>
+        public static LevelSpec[] Specs(WorldDefinition definition) =>
+            LevelGenerator.GenerateWorld(definition.Recipe, definition.FixedLevels);
+
+        // ---------- world 1: the marches (RT-4 slice, 7 -> 10 levels) ----------
+
+        // Levels 1-6 and the boss are the slice's, played and tuned on the OPPO (unchanged numbers); levels 7-9
+        // are generated from the profile and ramp between level 6 and the boss.
+        private static WorldDefinition World1()
+        {
+            var fixedLevels = new LevelSpec[10];
 
             // 1: learn the run and the hold-to-launch. Cannon only, slow. Good path: 10>20>60>80.
-            levels[0] = Level(0, "LEVEL 1", s =>
-            {
-                Run(s, 10, 5f, 78f,
-                    new[] { Pair(20f, Add(10), Mul(2)), Pair(40f, Mul(3), Sub(8)), Pair(60f, Sub(15), Add(20)) });
-                Row(s, Mul(2), Div(2), Mul(2));
-                Tower(s, TowerKind.Keep, 110, 1, 30f);
-                Wall(s, false, 2, 18f, 40);
-                Cannon(s, true, 3f, 1f, 1f, 2);
-                Sweeper(s, false, 14f, 3.4f);
-                Set(s, "coinReward", 40);
-            });
+            fixedLevels[0] = Spec("LEVEL 1", 10, 5f, 78f,
+                new[] { Pair(20f, Add(10), Mul(2)), Pair(40f, Mul(3), Sub(8)), Pair(60f, Sub(15), Add(20)) }, null,
+                Row(Mul(2), Div(2), Mul(2)), TowerKind.Keep, 110, 1, 30f, 40,
+                s => { Wall(s, false, 2, 18f, 40); Cannon(s, 3f, 1f, 1f, 2); });
 
             // 2: the RT-2 level (tested on the OPPO): the wall guards the x3 lane.
-            levels[1] = Level(1, "LEVEL 2", s =>
-            {
-                Run(s, 10, 5f, 96f, new[]
-                {
-                    Pair(20f, Add(10), Mul(2)), Pair(40f, Mul(3), Sub(8)), Pair(60f, Sub(15), Add(20)),
-                    Pair(80f, Div(2), Mul(2))
-                });
-                Row(s, Mul(2), Div(2), Mul(3));
-                Tower(s, TowerKind.Keep, 250, 1, 32f);
-                Wall(s, true, 2, 20f, 60);
-                Cannon(s, true, 2.2f, 0.9f, 1.1f, 4);
-                Sweeper(s, false, 14f, 3.4f);
-                Set(s, "coinReward", 50);
-            });
+            fixedLevels[1] = Spec("LEVEL 2", 10, 5f, 96f,
+                new[] { Pair(20f, Add(10), Mul(2)), Pair(40f, Mul(3), Sub(8)), Pair(60f, Sub(15), Add(20)), Pair(80f, Div(2), Mul(2)) }, null,
+                Row(Mul(2), Div(2), Mul(3)), TowerKind.Keep, 250, 1, 32f, 50,
+                s => { Wall(s, true, 2, 20f, 60); Cannon(s, 2.2f, 0.9f, 1.1f, 4); });
 
             // 3: the forge and the sweeper (third defense). Its first win unlocks the Brute.
-            levels[2] = Level(2, "LEVEL 3", s =>
-            {
-                Run(s, 12, 5.5f, 98f, new[]
-                {
-                    Pair(18f, Mul(2), Add(8)), Pair(38f, Sub(10), Mul(3)), Pair(58f, Add(25), Div(2)),
-                    Pair(80f, Mul(2), Sub(20))
-                });
-                Row(s, Div(2), Mul(3), Mul(2));
-                Tower(s, TowerKind.Forge, 300, 2, 32f);
-                Wall(s, false, 0, 22f, 60);
-                Cannon(s, true, 2.3f, 0.9f, 1.1f, 4);
-                Sweeper(s, true, 16f, 3.4f);
-                Set(s, "coinReward", 60);
-            });
+            fixedLevels[2] = Spec("LEVEL 3", 12, 5.5f, 98f,
+                new[] { Pair(18f, Mul(2), Add(8)), Pair(38f, Sub(10), Mul(3)), Pair(58f, Add(25), Div(2)), Pair(80f, Mul(2), Sub(20)) }, null,
+                Row(Div(2), Mul(3), Mul(2)), TowerKind.Forge, 300, 2, 32f, 60,
+                s => { Wall(s, false, 0, 22f, 60); Cannon(s, 2.3f, 0.9f, 1.1f, 4); Sweeper(s, 16f, 3.4f); });
 
             // 4: first crates; the wall now sits on the left x3 lane.
-            levels[3] = Level(3, "LEVEL 4", s =>
-            {
-                Run(s, 12, 5.5f, 100f, new[]
-                {
-                    Pair(18f, Add(12), Sub(5)), Pair(38f, Mul(2), Mul(3)), Pair(60f, Sub(20), Add(15)),
-                    Pair(82f, Mul(2), Div(2))
-                }, new[] { Crate(28f, true, 3), Crate(70f, false, 3) });
-                Row(s, Mul(3), Div(2), Mul(2));
-                Tower(s, TowerKind.Keep, 320, 2, 32f);
-                Wall(s, true, 0, 20f, 70);
-                Cannon(s, true, 2f, 0.9f, 1.15f, 4);
-                Sweeper(s, false, 14f, 3.4f);
-                Set(s, "coinReward", 70);
-            });
+            fixedLevels[3] = Spec("LEVEL 4", 12, 5.5f, 100f,
+                new[] { Pair(18f, Add(12), Sub(5)), Pair(38f, Mul(2), Mul(3)), Pair(60f, Sub(20), Add(15)), Pair(82f, Mul(2), Div(2)) },
+                new[] { Crate(28f, true, 3), Crate(70f, false, 3) },
+                Row(Mul(3), Div(2), Mul(2)), TowerKind.Keep, 320, 2, 32f, 70,
+                s => { Wall(s, true, 0, 20f, 70); Cannon(s, 2f, 0.9f, 1.15f, 4); });
 
             // 5: forge with three floors, sweeper and a faster cannon.
-            levels[4] = Level(4, "LEVEL 5", s =>
-            {
-                Run(s, 14, 5.5f, 104f, new[]
+            fixedLevels[4] = Spec("LEVEL 5", 14, 5.5f, 104f,
+                new[]
                 {
                     Pair(18f, Mul(2), Add(10)), Pair(38f, Add(20), Sub(15)), Pair(58f, Div(2), Mul(3)),
                     Pair(80f, Add(30), Mul(2)), Pair(94f, Sub(25), Add(10))
-                }, new[] { Crate(28f, false, 3), Crate(68f, true, 4) });
-                Row(s, Mul(2), Mul(3), Div(2));
-                Tower(s, TowerKind.Forge, 440, 3, 34f);
-                Wall(s, false, 1, 22f, 60);
-                Cannon(s, true, 1.9f, 0.85f, 1.15f, 5);
-                Sweeper(s, true, 17f, 3f);
-                Set(s, "coinReward", 85);
-            });
+                },
+                new[] { Crate(28f, false, 3), Crate(68f, true, 4) },
+                Row(Mul(2), Mul(3), Div(2)), TowerKind.Forge, 440, 3, 34f, 85,
+                s => { Wall(s, false, 1, 22f, 60); Cannon(s, 1.9f, 0.85f, 1.15f, 5); Sweeper(s, 17f, 3f); });
 
-            // 6: every defense at once before the boss.
-            levels[5] = Level(5, "LEVEL 6", s =>
-            {
-                Run(s, 15, 6f, 108f, new[]
+            // 6: every defense at once before the new levels.
+            fixedLevels[5] = Spec("LEVEL 6", 15, 6f, 108f,
+                new[]
                 {
                     Pair(18f, Add(15), Mul(2)), Pair(38f, Mul(3), Div(2)), Pair(58f, Sub(30), Add(20)),
                     Pair(80f, Mul(2), Sub(10)), Pair(96f, Add(25), Div(3))
-                }, new[] { Crate(28f, true, 4), Crate(48f, false, 3), Crate(70f, true, 4) });
-                Row(s, Mul(2), Div(2), Mul(3));
-                Tower(s, TowerKind.Keep, 470, 3, 34f);
-                Wall(s, true, 2, 24f, 90);
-                Cannon(s, true, 1.8f, 0.85f, 1.2f, 5);
-                Sweeper(s, true, 16f, 3f);
-                Set(s, "coinReward", 100);
-            });
+                },
+                new[] { Crate(28f, true, 4), Crate(48f, false, 3), Crate(70f, true, 4) },
+                Row(Mul(2), Div(2), Mul(3)), TowerKind.Keep, 470, 3, 34f, 100,
+                s => { Wall(s, true, 2, 24f, 90); Cannon(s, 1.8f, 0.85f, 1.2f, 5); Sweeper(s, 16f, 3f); });
 
-            // 7: the boss. Four floors; each fallen floor turns the gate row (GDD 4.4).
-            levels[6] = Level(6, "BOSS", s =>
-            {
-                Run(s, 16, 6f, 112f, new[]
+            // Boss (level 10): four floors; each fallen floor turns the gate row (GDD 4.4).
+            fixedLevels[9] = Spec("BOSS", 16, 6f, 112f,
+                new[]
                 {
                     Pair(18f, Mul(2), Add(15)), Pair(38f, Add(25), Sub(10)), Pair(58f, Div(2), Mul(3)),
                     Pair(80f, Add(30), Mul(2)), Pair(100f, Sub(30), Add(20))
-                }, new[] { Crate(28f, false, 4), Crate(48f, true, 4), Crate(70f, false, 4), Crate(90f, true, 4) });
-                Row(s, Mul(3), Div(2), Mul(2));
-                Tower(s, TowerKind.Boss, 600, 4, 36f);
-                Set(s, "shiftGatesOnFloor", true);
-                Wall(s, true, 1, 24f, 100);
-                Cannon(s, true, 1.6f, 0.85f, 1.2f, 6);
-                Sweeper(s, true, 17f, 2.8f);
-                Set(s, "coinReward", 200);
-            });
+                },
+                new[] { Crate(28f, false, 4), Crate(48f, true, 4), Crate(70f, false, 4), Crate(90f, true, 4) },
+                Row(Mul(3), Div(2), Mul(2)), TowerKind.Boss, 600, 4, 36f, 200,
+                s =>
+                {
+                    s.bossRule = BossRule.ShiftGates;
+                    Wall(s, true, 1, 24f, 100);
+                    Cannon(s, 1.6f, 0.85f, 1.2f, 6);
+                    Sweeper(s, 17f, 2.8f);
+                });
 
-            WriteDeviceGateLevel();
-            return WriteCatalog(WriteWorld(levels));
+            return new WorldDefinition
+            {
+                Id = SaveMigration.V1WorldId,
+                Name = "WORLD 1",
+                FixedLevels = fixedLevels,
+                StarsToUnlock = 0,
+                Look = new WorldLook
+                {
+                    scenery = SceneryStyle.Marches,
+                    sky = new Color(0.16f, 0.12f, 0.14f),
+                    ambient = new Color(0.42f, 0.36f, 0.34f),
+                    sun = new Color(1f, 0.86f, 0.7f),
+                    sunIntensity = 1.2f,
+                    ground = new Color(0.34f, 0.27f, 0.24f),
+                    field = new Color(0.2f, 0.17f, 0.17f),
+                    prop = new Color(0.46f, 0.42f, 0.42f),
+                    propDark = new Color(0.24f, 0.21f, 0.22f),
+                    accent = new Color(1f, 0.55f, 0.15f)
+                },
+                Recipe = new WorldRecipe
+                {
+                    worldId = SaveMigration.V1WorldId,
+                    seed = 101,
+                    levelCount = 10,
+                    mainTower = TowerKind.Keep,
+                    secondTower = TowerKind.Forge,
+                    secondTowerEvery = 3,
+                    bossTower = TowerKind.Boss,
+                    bossRule = BossRule.ShiftGates,
+                    expectedDamage = 1f,
+                    startFirst = 10,
+                    startLast = 16,
+                    runSpeedFirst = 5f,
+                    runSpeedLast = 6f,
+                    shareFirst = 0.5f,
+                    shareLast = 0.62f,
+                    bossShare = 0.67f,
+                    addFirst = 8,
+                    addLast = 30,
+                    wallFrom = 1,
+                    sweeperFrom = 2,
+                    shieldFrom = -1,
+                    cratesFrom = 3,
+                    cannonIntervalFirst = 2.4f,
+                    cannonIntervalLast = 1.6f,
+                    projectilesFirst = 3,
+                    projectilesLast = 6,
+                    rewardFirst = 40,
+                    rewardLast = 135,
+                    bossReward = 200
+                }
+            };
         }
 
-        // ---------- meta (RT-5), every number [P] until the user approves the curve (D19) ----------
+        // ---------- device gate (reuso-tecnico 6.3), one per world ----------
 
-        // Prices grow about 1.5x per step; the simulated player buys the whole shop in about 7 loops of world 1
-        // (docs/rt5-economia.md, written by EconomyReport). Elites: one free by a level, the others sold.
-        private static ClaybreakCatalog WriteCatalog(ClaybreakWorld world1)
+        // The world's heaviest tower (its boss body), every defense the world has, 300 units in flight and 12
+        // projectiles, held for as long as the measurement runs, in the world's scenery.
+        private static LevelSpec DeviceGateLevel(WorldDefinition world)
+        {
+            bool shield = world.Recipe.shieldFrom >= 0 || world.Recipe.bossRule == BossRule.ShieldReturns;
+            return new LevelSpec
+            {
+                title = "DEVICE GATE",
+                startCount = ClaybreakSceneBuilder.PoolSize,
+                runSpeed = 12f,
+                firingLineZ = 24f,
+                runGates = new RunGatePair[0],
+                launchRate = 150f,
+                unitSpeed = 5f,
+                laneSpread = 1.1f,
+                assaultGates = Row(Mul(1), Mul(1), Mul(1)),
+                autoLaunch = true,
+                recycleUnits = true,
+                tower = world.Recipe.bossTower,
+                towerHealth = NumberLabels.CachedMaximum,
+                floors = 4,
+                towerDistance = 62f,
+                bossRule = world.Recipe.bossRule,
+                wallEnabled = true,
+                wallLane = 2,
+                wallDistance = 20f,
+                wallHealth = 1,
+                cannonEnabled = true,
+                cannonInterval = 0.05f,
+                projectileFlightTime = 1f,
+                blastRadius = 1.2f,
+                maximumProjectiles = 12,
+                sweeperEnabled = true,
+                sweeperDistance = 30f,
+                sweeperPeriod = 3f,
+                // The shield stands for the whole measurement: its dome is drawn over the tower all along.
+                shieldEnabled = shield,
+                shieldLane = 0,
+                shieldDistance = 56f,
+                shieldHealth = NumberLabels.CachedMaximum,
+                shieldBlock = 0.5f
+            };
+        }
+
+        // ---------- meta (RT-5), prices [P] (D19 A) ----------
+
+        // Prices grow about 1.5x per step (docs/rt5-economia.md and docs/rt6-economia.md, written by EconomyReport).
+        private static ClaybreakCatalog WriteCatalog(ClaybreakWorld[] worlds, WorldDefinition[] definitions)
         {
             var catalog = LoadOrCreate<ClaybreakCatalog>(CatalogPath);
             UpgradeTrack[] upgrades =
@@ -176,7 +270,7 @@ namespace Claybreak.Editor
                 {
                     id = SaveMigration.V1BruteId, title = "BRUTE", description = "Heavy hitter, slow to fall.",
                     color = new Color(0.5f, 0.14f, 0.1f), scale = 1.45f, damage = 4, armor = 1, speed = 1f,
-                    price = 0, unlockWorld = world1.WorldId, unlockLevel = 2
+                    price = 0, unlockWorld = SaveMigration.V1WorldId, unlockLevel = 2
                 },
                 new UnitType
                 {
@@ -191,7 +285,7 @@ namespace Claybreak.Editor
                     price = 900
                 }
             };
-            CrowdSkin[] skins =
+            var skins = new List<CrowdSkin>
             {
                 new CrowdSkin { id = "clay", title = "CLAY", color = new Color(0.95f, 0.55f, 0.18f), price = 0 },
                 new CrowdSkin { id = "ember", title = "EMBER", color = new Color(0.86f, 0.24f, 0.16f), price = 150 },
@@ -200,8 +294,13 @@ namespace Claybreak.Editor
                 new CrowdSkin { id = "bone", title = "BONE", color = new Color(0.9f, 0.86f, 0.74f), price = 800 },
                 new CrowdSkin { id = "ink", title = "INK", color = new Color(0.22f, 0.2f, 0.27f), price = 1200 }
             };
-            WorldEntry[] worlds = { new WorldEntry { world = world1, starsToUnlock = 0 } };
-            catalog.EditorAssign(worlds, upgrades, units, skins, ClaybreakCatalog.MaximumLoadoutSlots, 3);
+            var entries = new WorldEntry[worlds.Length];
+            for (int w = 0; w < worlds.Length; w++)
+            {
+                entries[w] = new WorldEntry { world = worlds[w], starsToUnlock = definitions[w].StarsToUnlock };
+            }
+
+            catalog.EditorAssign(entries, upgrades, units, skins.ToArray(), ClaybreakCatalog.MaximumLoadoutSlots, 3);
             EditorUtility.SetDirty(catalog);
             return catalog;
         }
@@ -217,159 +316,71 @@ namespace Claybreak.Editor
             return track;
         }
 
-        // Device gate (reuso-tecnico 6.3): the heaviest tower (boss body), every defense on, 300 units in
-        // flight and 12 projectiles, held for as long as the measurement runs.
-        private static void WriteDeviceGateLevel()
-        {
-            Level(StressLevelPath, "DEVICE GATE", s =>
-            {
-                Run(s, ClaybreakSceneBuilder.PoolSize, 12f, 24f, new RunGatePair[0]);
-                Set(s, "launchRate", 150f);
-                Set(s, "unitSpeed", 5f);
-                Set(s, "laneSpread", 1.1f);
-                Row(s, Mul(1), Mul(1), Mul(1));
-                Set(s, "autoLaunch", true);
-                Set(s, "recycleUnits", true);
-                Tower(s, TowerKind.Boss, NumberLabels.CachedMaximum, 4, 62f);
-                Wall(s, true, 2, 20f, 1);
-                Cannon(s, true, 0.05f, 1f, 1.2f, 12);
-                Sweeper(s, true, 30f, 3f);
-            });
-        }
-
-        private static ClaybreakWorld WriteWorld(ClaybreakLevel[] levels)
-        {
-            var world = LoadOrCreate<ClaybreakWorld>(WorldPath);
-            var so = new SerializedObject(world);
-            so.FindProperty("worldId").stringValue = SaveMigration.V1WorldId;
-            so.FindProperty("worldName").stringValue = "WORLD 1";
-            SerializedProperty array = so.FindProperty("levels");
-            array.arraySize = levels.Length;
-            for (int i = 0; i < levels.Length; i++)
-            {
-                array.GetArrayElementAtIndex(i).objectReferenceValue = levels[i];
-            }
-
-            so.FindProperty("healthPerLoop").floatValue = 0.25f;
-            so.FindProperty("coinsPerLoop").floatValue = 0.25f;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(world);
-            return world;
-        }
-
         // ---------- helpers ----------
 
-        private static ClaybreakLevel Level(int index, string title, System.Action<SerializedObject> fill)
-        {
-            return Level(LevelPath(index), title, fill);
-        }
-
-        private static ClaybreakLevel Level(string path, string title, System.Action<SerializedObject> fill)
+        private static ClaybreakLevel WriteLevel(string path, LevelSpec spec)
         {
             var level = LoadOrCreate<ClaybreakLevel>(path);
-            // Start from the defaults every time, so a field removed from a level does not linger.
-            var defaults = ScriptableObject.CreateInstance<ClaybreakLevel>();
-            EditorUtility.CopySerialized(defaults, level);
-            Object.DestroyImmediate(defaults);
             level.name = System.IO.Path.GetFileNameWithoutExtension(path);
-            var so = new SerializedObject(level);
-            so.FindProperty("title").stringValue = title;
-            Set(so, "launchRate", 12f);
-            Set(so, "unitSpeed", 9f);
-            Set(so, "laneSpread", 0.7f);
-            Set(so, "maximumUnitsInFlight", ClaybreakSceneBuilder.PoolSize);
-            Set(so, "assaultGateDistance", 9f);
-            Set(so, "damagePerUnit", 1);
-            fill(so);
-            so.ApplyModifiedPropertiesWithoutUndo();
+            level.EditorAssign(spec);
             EditorUtility.SetDirty(level);
             return level;
         }
 
-        private static void Run(SerializedObject so, int start, float speed, float firingLine, RunGatePair[] pairs,
-            CratePlacement[] crates = null)
+        private static LevelSpec Spec(string title, int start, float speed, float firingLine, RunGatePair[] pairs,
+            CratePlacement[] crates, GateSpec[] row, TowerKind tower, int health, int floors, float towerDistance, int reward,
+            System.Action<LevelSpec> defenses)
         {
-            Set(so, "startCount", start);
-            Set(so, "runSpeed", speed);
-            Set(so, "firingLineZ", firingLine);
-            SerializedProperty array = so.FindProperty("runGates");
-            array.arraySize = pairs.Length;
-            for (int i = 0; i < pairs.Length; i++)
+            var spec = new LevelSpec
             {
-                SerializedProperty pair = array.GetArrayElementAtIndex(i);
-                pair.FindPropertyRelative("z").floatValue = pairs[i].z;
-                SetGate(pair.FindPropertyRelative("left"), pairs[i].left);
-                SetGate(pair.FindPropertyRelative("right"), pairs[i].right);
-            }
-
-            crates ??= new CratePlacement[0];
-            SerializedProperty crateArray = so.FindProperty("crates");
-            crateArray.arraySize = crates.Length;
-            for (int i = 0; i < crates.Length; i++)
-            {
-                SerializedProperty crate = crateArray.GetArrayElementAtIndex(i);
-                crate.FindPropertyRelative("z").floatValue = crates[i].z;
-                crate.FindPropertyRelative("right").boolValue = crates[i].right;
-                crate.FindPropertyRelative("units").intValue = crates[i].units;
-            }
+                title = title,
+                startCount = start,
+                runSpeed = speed,
+                firingLineZ = firingLine,
+                runGates = pairs,
+                crates = crates ?? new CratePlacement[0],
+                assaultGates = row,
+                tower = tower,
+                towerHealth = health,
+                floors = floors,
+                towerDistance = towerDistance,
+                coinReward = reward
+            };
+            defenses(spec);
+            return spec;
         }
 
-        private static void Row(SerializedObject so, GateSpec a, GateSpec b, GateSpec c)
+        private static void Wall(LevelSpec s, bool enabled, int lane, float distance, int health)
         {
-            SerializedProperty array = so.FindProperty("assaultGates");
-            array.arraySize = ClaybreakLevel.LaneCount;
-            SetGate(array.GetArrayElementAtIndex(0), a);
-            SetGate(array.GetArrayElementAtIndex(1), b);
-            SetGate(array.GetArrayElementAtIndex(2), c);
+            s.wallEnabled = enabled;
+            s.wallLane = lane;
+            s.wallDistance = distance;
+            s.wallHealth = health;
         }
 
-        private static void Tower(SerializedObject so, TowerKind kind, int health, int floors, float distance)
+        private static void Cannon(LevelSpec s, float interval, float flight, float radius, int projectiles)
         {
-            so.FindProperty("tower").enumValueIndex = (int)kind;
-            Set(so, "towerHealth", health);
-            Set(so, "floors", floors);
-            Set(so, "towerDistance", distance);
+            s.cannonEnabled = true;
+            s.cannonInterval = interval;
+            s.projectileFlightTime = flight;
+            s.blastRadius = radius;
+            s.maximumProjectiles = projectiles;
         }
 
-        private static void Wall(SerializedObject so, bool enabled, int lane, float distance, int health)
+        private static void Sweeper(LevelSpec s, float distance, float period)
         {
-            Set(so, "wallEnabled", enabled);
-            Set(so, "wallLane", lane);
-            Set(so, "wallDistance", distance);
-            Set(so, "wallHealth", health);
+            s.sweeperEnabled = true;
+            s.sweeperDistance = distance;
+            s.sweeperPeriod = period;
         }
 
-        private static void Cannon(SerializedObject so, bool enabled, float interval, float flight, float radius, int projectiles)
-        {
-            Set(so, "cannonEnabled", enabled);
-            Set(so, "cannonInterval", interval);
-            Set(so, "projectileFlightTime", flight);
-            Set(so, "blastRadius", radius);
-            Set(so, "maximumProjectiles", projectiles);
-        }
-
-        private static void Sweeper(SerializedObject so, bool enabled, float distance, float period)
-        {
-            Set(so, "sweeperEnabled", enabled);
-            Set(so, "sweeperDistance", distance);
-            Set(so, "sweeperPeriod", period);
-        }
-
-        private static void SetGate(SerializedProperty gate, GateSpec spec)
-        {
-            gate.FindPropertyRelative("operation").enumValueIndex = (int)spec.operation;
-            gate.FindPropertyRelative("value").intValue = spec.value;
-        }
-
-        private static void Set(SerializedObject so, string property, float value) => Find(so, property).floatValue = value;
-        private static void Set(SerializedObject so, string property, int value) => Find(so, property).intValue = value;
-        private static void Set(SerializedObject so, string property, bool value) => Find(so, property).boolValue = value;
-
-        private static SerializedProperty Find(SerializedObject so, string property)
-        {
-            return so.FindProperty(property)
-                ?? throw new System.InvalidOperationException($"{so.targetObject.GetType().Name}.{property} not found");
-        }
+        private static GateSpec[] Row(GateSpec a, GateSpec b, GateSpec c) => new[] { a, b, c };
+        private static GateSpec Add(int v) => new GateSpec(GateOperation.Add, v);
+        private static GateSpec Sub(int v) => new GateSpec(GateOperation.Subtract, v);
+        private static GateSpec Mul(int v) => new GateSpec(GateOperation.Multiply, v);
+        private static GateSpec Div(int v) => new GateSpec(GateOperation.Divide, v);
+        private static RunGatePair Pair(float z, GateSpec left, GateSpec right) => new RunGatePair { z = z, left = left, right = right };
+        private static CratePlacement Crate(float z, bool right, int units) => new CratePlacement { z = z, right = right, units = units };
 
         private static T LoadOrCreate<T>(string path) where T : ScriptableObject
         {

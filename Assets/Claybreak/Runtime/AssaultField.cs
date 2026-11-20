@@ -9,8 +9,8 @@ namespace Claybreak
     /// <summary>
     /// Units in flight during the assault, moved in one batch (reuso-tecnico 4.1, risk R-D2): one Update
     /// walks preallocated arrays; no per-unit Update, no physics, no allocation. A unit in flight never
-    /// collides with another; it only meets the gate row, the sweeper, the wall and the tower, by distance
-    /// along its lane (R-D4). Units come from the kit's RunnerPool and go back to it when they hit or die.
+    /// collides with another; it only meets the gate row, the sweeper, the wall, the shield generator and the
+    /// tower, by distance along its lane (R-D4). While the shield stands the tower takes only part of each hit. Units come from the kit's RunnerPool and go back to it when they hit or die.
     /// A unit can be special (a type from the loadout, RT-5): its own size, color, damage, armor and speed.
     /// The damage upgrade multiplies every hit; fractions carry over, so +15% is exact over a stream.
     /// </summary>
@@ -23,6 +23,7 @@ namespace Claybreak
         [SerializeField] private AssaultTower tower;
         [SerializeField] private AssaultWall wall;
         [SerializeField] private SweeperDefense sweeper;
+        [SerializeField] private ShieldDefense shield;
         [SerializeField] private Transform[] gateVisuals = new Transform[ClaybreakLevel.LaneCount];
         [SerializeField] private TextMesh[] gateLabels = new TextMesh[ClaybreakLevel.LaneCount];
         [SerializeField] private Renderer[] gatePanels = new Renderer[ClaybreakLevel.LaneCount];
@@ -32,6 +33,7 @@ namespace Claybreak
         private ClaybreakLevel level;
         private readonly float[] laneX = new float[ClaybreakLevel.LaneCount];
         private readonly int[] gatePassed = new int[ClaybreakLevel.LaneCount];
+        private readonly bool[] gateTurned = new bool[ClaybreakLevel.LaneCount];
         private readonly int[] laneCounts = new int[ClaybreakLevel.LaneCount];
         private readonly float[] laneZSum = new float[ClaybreakLevel.LaneCount];
         private RunnerUnit[] units;
@@ -54,6 +56,7 @@ namespace Claybreak
         private float damageMultiplier = 1f;
         private float towerCarry;
         private float wallCarry;
+        private float shieldCarry;
         private int towerDamage = 1;
         private MaterialPropertyBlock colorBlock;
 
@@ -82,12 +85,12 @@ namespace Claybreak
         /// <summary>One-time setup: lane positions and preallocated arrays (the flow then dresses the pool in the skin).</summary>
         public bool Initialize(Renderer track, ClaybreakTheme theme, Vector3 followerScale)
         {
-            if (runnerPool == null || tower == null || wall == null || sweeper == null || gateVisuals == null
+            if (runnerPool == null || tower == null || wall == null || sweeper == null || shield == null || gateVisuals == null
                 || gateVisuals.Length != ClaybreakLevel.LaneCount || gateLabels.Length != ClaybreakLevel.LaneCount
                 || gatePanels.Length != ClaybreakLevel.LaneCount || goodGateMaterial == null || badGateMaterial == null
                 || track == null || theme == null)
             {
-                Debug.LogError("AssaultField needs the pool, tower, wall, sweeper, one gate per lane, the track and the theme.", this);
+                Debug.LogError("AssaultField needs the pool, tower, wall, sweeper, shield, one gate per lane, the track and the theme.", this);
                 return false;
             }
 
@@ -116,7 +119,7 @@ namespace Claybreak
         }
 
         /// <summary>Per-level setup: defenses placed and dressed for <paramref name="levelData"/>.</summary>
-        public void Configure(ClaybreakLevel levelData, Renderer track, int wallHealth, int damagePerUnit)
+        public void Configure(ClaybreakLevel levelData, Renderer track, int wallHealth, int shieldHealth, int damagePerUnit)
         {
             level = levelData;
             towerDamage = Mathf.Max(1, damagePerUnit);
@@ -128,6 +131,7 @@ namespace Claybreak
             wall.ResetWall(level.WallEnabled, wallHealth);
             Vector3 towerPosition = tower.transform.position;
             tower.transform.position = new Vector3(towerPosition.x, towerPosition.y, level.TowerZ);
+            shield.ResetShield(level.ShieldEnabled, shieldHealth, level.ShieldBlock, laneX[level.ShieldLane], level.ShieldZ, level.TowerZ);
             for (int i = 0; i < ClaybreakLevel.LaneCount; i++)
             {
                 Vector3 position = gateVisuals[i].position;
@@ -135,8 +139,10 @@ namespace Claybreak
             }
 
             gateShift = 0;
+            Array.Clear(gateTurned, 0, gateTurned.Length);
             towerCarry = 0f;
             wallCarry = 0f;
+            shieldCarry = 0f;
             DressGates();
         }
 
@@ -203,8 +209,51 @@ namespace Claybreak
         public GateSpec GateIn(int lane)
         {
             const int lanesCount = ClaybreakLevel.LaneCount;
-            return level.AssaultGates[((lane - gateShift) % lanesCount + lanesCount) % lanesCount];
+            int index = ((lane - gateShift) % lanesCount + lanesCount) % lanesCount;
+            return gateTurned[index] ? new GateSpec(GateOperation.Divide, 2) : level.AssaultGates[index];
         }
+
+        /// <summary>
+        /// Boss rule "turn gate": the strongest multiplier still standing in the row becomes ÷2. False when
+        /// no multiplier is left to turn.
+        /// </summary>
+        public bool TurnBestGate()
+        {
+            int best = -1;
+            for (int i = 0; i < ClaybreakLevel.LaneCount; i++)
+            {
+                GateSpec gate = level.AssaultGates[i];
+                if (!gateTurned[i] && gate.operation == GateOperation.Multiply && gate.value > 1
+                    && (best < 0 || gate.value > level.AssaultGates[best].value))
+                {
+                    best = i;
+                }
+            }
+
+            if (best < 0)
+            {
+                return false;
+            }
+
+            gateTurned[best] = true;
+            Array.Clear(gatePassed, 0, gatePassed.Length);
+            DressGates();
+            return true;
+        }
+
+        /// <summary>Boss rule "overheat": the sweeper swings faster.</summary>
+        public void SpeedUpSweeper(float factor)
+        {
+            sweeper.SpeedUp(factor);
+        }
+
+        /// <summary>Boss rule "shield returns": the generator stands again at full health.</summary>
+        public void RaiseShield()
+        {
+            shield.Raise();
+        }
+
+        public ShieldDefense Shield => shield;
 
         /// <summary>Boss rule (GDD 4.4): the gate row turns one lane to the right.</summary>
         public void ShiftGates()
@@ -302,8 +351,11 @@ namespace Claybreak
             float gateZ = level.AssaultGateZ;
             float wallZ = level.WallZ;
             float sweeperZ = level.SweeperZ;
+            float shieldZ = level.ShieldZ;
             float towerZ = level.TowerZ;
             int wallLane = level.WallLane;
+            int shieldLane = level.ShieldLane;
+            bool shielded = shield.IsStanding;
             bool sweeping = sweeper.IsPresent;
             int lostAtWall = 0;
             float y = transform.position.y;
@@ -353,11 +405,20 @@ namespace Claybreak
                     continue;
                 }
 
+                if (shielded && lane == shieldLane && z >= shieldZ)
+                {
+                    shield.Hit(Damage(i, 1, ref shieldCarry));
+                    shielded = shield.IsStanding;
+                    RunnerDeathEffects.Play(new Vector3(xs[i], y, shieldZ - 0.5f), 1);
+                    RemoveOrRecycle(i);
+                    continue;
+                }
+
                 if (z >= towerZ)
                 {
                     TowerHits++;
                     // The device gate keeps the slice's flat damage so its endless tower outlasts the measurement.
-                    tower.Hit(level.RecycleUnits ? towerDamage : Damage(i, towerDamage, ref towerCarry));
+                    tower.Hit(level.RecycleUnits ? towerDamage : Damage(i, towerDamage, ref towerCarry, 1f - shield.Block));
                     RemoveOrRecycle(i);
                     continue;
                 }
@@ -375,14 +436,16 @@ namespace Claybreak
             }
         }
 
-        // Whole damage of one hit (base x special x upgrade); the fraction carries to the next hit.
-        private int Damage(int index, int baseDamage, ref float carry)
+        // Whole damage of one hit (base x special x upgrade x what the shield lets through); the fraction
+        // carries to the next hit, so a half-blocked stream does exactly half the damage. A fully absorbed
+        // hit deals 0 (the shield took it).
+        private int Damage(int index, int baseDamage, ref float carry, float passes = 1f)
         {
             int special = kinds[index] >= 0 ? slotTypes[kinds[index]].damage : 1;
-            carry += baseDamage * special * damageMultiplier;
+            carry += baseDamage * special * damageMultiplier * passes;
             int whole = (int)carry;
             carry -= whole;
-            return Mathf.Max(1, whole);
+            return passes >= 1f ? Mathf.Max(1, whole) : whole;
         }
 
         private bool AbsorbHit(int index)

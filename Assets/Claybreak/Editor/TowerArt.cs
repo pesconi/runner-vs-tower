@@ -47,6 +47,21 @@ namespace Claybreak.Editor
         /// <summary>The second tower of the world (not under art review: forge levels).</summary>
         public const TowerStyle SecondTower = TowerStyle.IronForge;
 
+        /// <summary>
+        /// The style each tower kind is built in (RT-6: one line per kind; a world's options are compared in
+        /// docs/art/rt6 and the chosen one is set here, provisional until the user approves the art).
+        /// </summary>
+        public static TowerStyle StyleFor(TowerKind kind)
+        {
+            switch (kind)
+            {
+                case TowerKind.Keep: return ChosenTower;
+                case TowerKind.Forge: return SecondTower;
+                case TowerKind.Boss: return ChosenBoss;
+                default: throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "no art style for this tower kind");
+            }
+        }
+
         public static TowerParts Build(TowerStyle style, Transform parent, ArtPalette p)
         {
             var body = new GameObject(style.ToString()).transform;

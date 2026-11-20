@@ -42,6 +42,12 @@ namespace Claybreak
         public int GateBonus { get; }
         public float LaunchRateMultiplier { get; }
         public static RunLoadout None => new RunLoadout(0, 1f, 0, 1f);
+
+        /// <summary>
+        /// Attack power for the difficulty adjustment: the damage multiplier, plus half of the launch-rate bonus
+        /// (a faster stream loses fewer units to the cannon but does not hit harder).
+        /// </summary>
+        public float Power => DamageMultiplier * (1f + 0.5f * (LaunchRateMultiplier - 1f));
     }
 
     /// <summary>
@@ -79,7 +85,27 @@ namespace Claybreak
         public WorldSave WorldProgress => Save.worlds[worldIndex];
         public int LevelIndex => WorldProgress.nextLevel;
         public ClaybreakLevel CurrentLevel => World.Levels[LevelIndex];
-        public float HealthMultiplier => 1f + World.HealthPerLoop * WorldProgress.loop;
+        /// <summary>
+        /// Tower and wall health multiplier of the current world: +HealthPerLoop per loop and, on replays only,
+        /// the player's power above what the world was tuned for (D19, RT-6): (power / expected) to the world's
+        /// exponent, never below 1. A first pass is never adjusted: buying upgrades always shows.
+        /// </summary>
+        public float HealthMultiplier => (1f + World.HealthPerLoop * WorldProgress.loop) * PowerAdjustment;
+
+        /// <summary>The replay adjustment alone (1 on a first pass or when the player is not above the world's tuning).</summary>
+        public float PowerAdjustment
+        {
+            get
+            {
+                if (WorldProgress.loop <= 0)
+                {
+                    return 1f;
+                }
+
+                float ratio = Loadout.Power / World.ExpectedDamage;
+                return ratio <= 1f ? 1f : Mathf.Pow(ratio, World.LoopPowerExponent);
+            }
+        }
         public float CoinMultiplier => 1f + World.CoinsPerLoop * WorldProgress.loop;
         public int StarsAt(int level) => StarsAt(worldIndex, level);
 

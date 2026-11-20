@@ -65,7 +65,7 @@ MonoBehaviour:
   towerHealth: 300
   floors: 2
   damagePerUnit: 1
-  shiftGatesOnFloor: 0
+  bossRule: 0
   wallEnabled: 0
   wallLane: 0
   wallDistance: 22
@@ -78,4 +78,9 @@ MonoBehaviour:
   sweeperEnabled: 1
   sweeperDistance: 16
   sweeperPeriod: 3.4
+  shieldEnabled: 0
+  shieldLane: 0
+  shieldDistance: 26
+  shieldHealth: 60
+  shieldBlock: 0.5
   coinReward: 60

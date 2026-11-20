@@ -23,6 +23,7 @@ namespace Claybreak
         private Vector3[] starts;
         private Vector3[] targets;
         private float cooldown;
+        private float intervalScale = 1f;
         private int limit;
 
         public bool Armed { get; set; }
@@ -62,11 +63,19 @@ namespace Claybreak
             return true;
         }
 
+        /// <summary>Boss rule "overheat": every later shot comes <paramref name="factor"/> times sooner (reset per level).</summary>
+        public void Overheat(float factor)
+        {
+            intervalScale = Mathf.Max(0.2f, intervalScale * Mathf.Clamp01(factor));
+            cooldown = Mathf.Min(cooldown, level == null ? 0f : level.CannonInterval * intervalScale);
+        }
+
         public void ResetCannon()
         {
             Armed = false;
             ActiveCount = 0;
             PeakActive = 0;
+            intervalScale = 1f;
             cooldown = level == null ? 0f : level.CannonInterval;
             for (int i = 0; i < projectiles.Length; i++)
             {
@@ -95,7 +104,7 @@ namespace Claybreak
                 {
                     Fire(target);
                     ClaybreakSfx.Play(ClaybreakSfx.Cue.CannonFire);
-                    cooldown = level.CannonInterval;
+                    cooldown = level.CannonInterval * intervalScale;
                 }
             }
 

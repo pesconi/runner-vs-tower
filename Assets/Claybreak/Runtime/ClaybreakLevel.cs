@@ -23,7 +23,10 @@ namespace Claybreak
         [Min(1)] public int units;
     }
 
-    /// <summary>Which tower body stands at the end of the assault field (each has its own silhouette).</summary>
+    /// <summary>
+    /// Which tower body stands at the end of the assault field (each has its own silhouette, built by the
+    /// scene builder from the art style chosen for it). Values are stable: new kinds go at the end.
+    /// </summary>
     public enum TowerKind
     {
         Keep,
@@ -32,9 +35,26 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// One level as data (RT-4): the short run with its math gates and special-unit crates, the assault
-    /// field (gate row), the tower (body, health, floors) and its defenses (wall, cannon, sweeper), plus
-    /// the boss rule. Every limit the device gate depends on (units, projectiles, launch rate) lives here,
+    /// What a boss does when one of its floors falls (GDD 4.4: one mechanic of its own per boss). A level
+    /// with a rule is the world's boss; a plain level has none.
+    /// </summary>
+    public enum BossRule
+    {
+        None,
+        /// <summary>The gate row turns one lane to the right: the good gate moves away (world 1).</summary>
+        ShiftGates,
+        /// <summary>The shield generator rises again at full health (needs the shield).</summary>
+        ShieldReturns,
+        /// <summary>The cannon fires faster and the sweeper swings faster.</summary>
+        Overheat,
+        /// <summary>The best multiplier of the gate row turns into a divider.</summary>
+        TurnGate
+    }
+
+    /// <summary>
+    /// One level as data (RT-4, RT-6): the short run with its math gates and special-unit crates, the assault
+    /// field (gate row), the tower (body, health, floors) and its defenses (wall, cannon, sweeper, shield),
+    /// plus the boss rule. Content writes it from a <see cref="LevelSpec"/> (hand-made or generated). Every limit the device gate depends on (units, projectiles, launch rate) lives here,
     /// so a failed gate is answered by changing data, not code.
     /// </summary>
     [CreateAssetMenu(menuName = "Claybreak/Level")]
@@ -89,8 +109,8 @@ namespace Claybreak
         [SerializeField, Min(1)] private int damagePerUnit = 1;
 
         [Header("Boss rule (GDD 4.4)")]
-        [Tooltip("When a floor falls the gate row turns one lane to the right: the good gate moves away.")]
-        [SerializeField] private bool shiftGatesOnFloor;
+        [Tooltip("What happens when a floor falls; a level with a rule is the world's boss.")]
+        [SerializeField] private BossRule bossRule;
 
         [Header("Defense: wall")]
         [SerializeField] private bool wallEnabled = true;
@@ -115,6 +135,16 @@ namespace Claybreak
         [Tooltip("Seconds for the arm to cross the track and come back.")]
         [SerializeField, Min(1f)] private float sweeperPeriod = 3.2f;
 
+        [Header("Defense: shield (GDD 4.3, fourth type)")]
+        [Tooltip("A generator on one lane; while it stands the tower ignores part of every hit.")]
+        [SerializeField] private bool shieldEnabled;
+        [SerializeField, Range(0, LaneCount - 1)] private int shieldLane;
+        [Tooltip("Distance from the firing line to the generator.")]
+        [SerializeField, Min(2f)] private float shieldDistance = 26f;
+        [SerializeField, Min(1)] private int shieldHealth = 60;
+        [Tooltip("Share of each tower hit the shield absorbs while the generator stands.")]
+        [SerializeField, Range(0.1f, 0.9f)] private float shieldBlock = 0.5f;
+
         [Header("Reward")]
         [SerializeField, Min(0)] private int coinReward = 40;
 
@@ -135,11 +165,11 @@ namespace Claybreak
         public bool RecycleUnits => recycleUnits;
         public bool IsDeviceGateLevel => autoLaunch || recycleUnits;
         public TowerKind Tower => tower;
-        public bool IsBoss => tower == TowerKind.Boss;
+        public bool IsBoss => bossRule != BossRule.None;
+        public BossRule BossRule => bossRule;
         public int TowerHealth => towerHealth;
         public int Floors => floors;
         public int DamagePerUnit => damagePerUnit;
-        public bool ShiftGatesOnFloor => shiftGatesOnFloor;
         public bool WallEnabled => wallEnabled;
         public int WallLane => wallLane;
         public float WallZ => firingLineZ + wallDistance;
@@ -152,6 +182,11 @@ namespace Claybreak
         public bool SweeperEnabled => sweeperEnabled;
         public float SweeperZ => firingLineZ + sweeperDistance;
         public float SweeperPeriod => sweeperPeriod;
+        public bool ShieldEnabled => shieldEnabled;
+        public int ShieldLane => shieldLane;
+        public float ShieldZ => firingLineZ + shieldDistance;
+        public int ShieldHealth => shieldHealth;
+        public float ShieldBlock => shieldBlock;
         public int CoinReward => coinReward;
 
         /// <summary>Checks the level against the pool it will run on. Used by the validator and at start.</summary>
@@ -248,15 +283,85 @@ namespace Claybreak
                 return false;
             }
 
-            if (shiftGatesOnFloor && floors < 2)
+            if (bossRule != BossRule.None && floors < 2)
             {
-                error = "the boss rule (shift gates on floor) needs at least 2 floors.";
+                error = "a boss rule acts when a floor falls: it needs at least 2 floors.";
+                return false;
+            }
+
+            if (bossRule == BossRule.ShieldReturns && !shieldEnabled)
+            {
+                error = "the boss rule ShieldReturns needs the shield.";
+                return false;
+            }
+
+            if (shieldEnabled && (shieldLane < 0 || shieldLane >= LaneCount
+                || shieldDistance <= assaultGateDistance + 1f || shieldDistance >= towerDistance - 1.5f))
+            {
+                error = "The shield generator must sit on a lane between the gate row (1 m after it) and the tower (1.5 m before it).";
+                return false;
+            }
+
+            if (shieldEnabled && wallEnabled && shieldLane == wallLane && Mathf.Abs(shieldDistance - wallDistance) < 2f)
+            {
+                error = "The shield generator and the wall on the same lane need at least 2 m between them.";
+                return false;
+            }
+
+            if (shieldEnabled && sweeperEnabled && Mathf.Abs(shieldDistance - sweeperDistance) < 1.5f)
+            {
+                error = "The shield generator and the sweeper need at least 1.5 m between them.";
                 return false;
             }
 
             error = null;
             return true;
         }
+
+#if UNITY_EDITOR
+        /// <summary>Editor only (content and tests): writes every field from <paramref name="spec"/>.</summary>
+        public void EditorAssign(LevelSpec spec)
+        {
+            title = spec.title;
+            startCount = spec.startCount;
+            runSpeed = spec.runSpeed;
+            runGates = spec.runGates == null ? new RunGatePair[0] : (RunGatePair[])spec.runGates.Clone();
+            crates = spec.crates == null ? new CratePlacement[0] : (CratePlacement[])spec.crates.Clone();
+            firingLineZ = spec.firingLineZ;
+            launchRate = spec.launchRate;
+            unitSpeed = spec.unitSpeed;
+            laneSpread = spec.laneSpread;
+            maximumUnitsInFlight = spec.maximumUnitsInFlight;
+            assaultGateDistance = spec.assaultGateDistance;
+            assaultGates = spec.assaultGates == null ? new GateSpec[0] : (GateSpec[])spec.assaultGates.Clone();
+            autoLaunch = spec.autoLaunch;
+            recycleUnits = spec.recycleUnits;
+            tower = spec.tower;
+            towerDistance = spec.towerDistance;
+            towerHealth = spec.towerHealth;
+            floors = spec.floors;
+            damagePerUnit = spec.damagePerUnit;
+            bossRule = spec.bossRule;
+            wallEnabled = spec.wallEnabled;
+            wallLane = spec.wallLane;
+            wallDistance = spec.wallDistance;
+            wallHealth = spec.wallHealth;
+            cannonEnabled = spec.cannonEnabled;
+            cannonInterval = spec.cannonInterval;
+            projectileFlightTime = spec.projectileFlightTime;
+            blastRadius = spec.blastRadius;
+            maximumProjectiles = spec.maximumProjectiles;
+            sweeperEnabled = spec.sweeperEnabled;
+            sweeperDistance = spec.sweeperDistance;
+            sweeperPeriod = spec.sweeperPeriod;
+            shieldEnabled = spec.shieldEnabled;
+            shieldLane = spec.shieldLane;
+            shieldDistance = spec.shieldDistance;
+            shieldHealth = spec.shieldHealth;
+            shieldBlock = spec.shieldBlock;
+            coinReward = spec.coinReward;
+        }
+#endif
 
         private bool NearGate(float z)
         {

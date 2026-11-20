@@ -99,11 +99,45 @@ namespace Claybreak.Tests
         public void BossRuleNeedsFloors()
         {
             var so = new SerializedObject(level);
-            so.FindProperty("shiftGatesOnFloor").boolValue = true;
+            so.FindProperty("bossRule").enumValueIndex = (int)BossRule.ShiftGates;
             so.FindProperty("floors").intValue = 1;
             so.ApplyModifiedPropertiesWithoutUndo();
             Assert.IsFalse(level.TryValidate(300, out string error));
             StringAssert.Contains("boss rule", error);
+        }
+
+        [Test]
+        public void ShieldReturnsNeedsTheShield()
+        {
+            var so = new SerializedObject(level);
+            so.FindProperty("bossRule").enumValueIndex = (int)BossRule.ShieldReturns;
+            so.FindProperty("floors").intValue = 4;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Assert.IsFalse(level.TryValidate(300, out string error));
+            StringAssert.Contains("shield", error);
+        }
+
+        [Test]
+        public void ShieldGeneratorMustSitBetweenTheGateRowAndTheTower()
+        {
+            var so = new SerializedObject(level);
+            so.FindProperty("shieldEnabled").boolValue = true;
+            so.FindProperty("shieldDistance").floatValue = 60f;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Assert.IsFalse(level.TryValidate(300, out string error));
+            StringAssert.Contains("shield", error);
+        }
+
+        [Test]
+        public void ABossIsALevelWithARule()
+        {
+            var spec = new LevelSpec { tower = TowerKind.Keep, floors = 3, bossRule = BossRule.TurnGate };
+            level.EditorAssign(spec);
+            Assert.IsTrue(level.IsBoss);
+            Assert.IsTrue(level.TryValidate(300, out string error), error);
+            spec.bossRule = BossRule.None;
+            level.EditorAssign(spec);
+            Assert.IsFalse(level.IsBoss);
         }
     }
 }

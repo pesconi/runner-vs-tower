@@ -35,11 +35,15 @@ namespace Claybreak
         private const int DeviceGateSpecials = 1_000_000;
         private const float WonResultDelay = 1.5f;
         private const float LostResultDelay = 0.8f;
+        // Boss rule "overheat": each fallen floor makes the cannon and the sweeper this much quicker.
+        private const float OverheatFactor = 0.75f;
 
         [SerializeField] private ClaybreakCatalog catalog;
-        [Tooltip("Device-gate level (300 units in flight, every defense at its limit, the heaviest tower). Development and measurement builds pick it with `--ez stress true`.")]
-        [SerializeField] private ClaybreakLevel stressLevel;
+        [Tooltip("Device-gate level per catalog world (300 units in flight, every defense at its limit, the world's heaviest tower, its scenery). Development and measurement builds pick it with `--ez stress true [--ei world N]` (N from 1).")]
+        [SerializeField] private ClaybreakLevel[] stressLevels = new ClaybreakLevel[0];
         [SerializeField] private bool useStressLevelInEditor;
+        [SerializeField, Min(1)] private int stressWorldInEditor = 1;
+        [SerializeField] private WorldScenery scenery;
         [SerializeField] private ClaybreakTheme theme;
         [SerializeField] private Renderer track;
         [SerializeField] private PlayerController player;
@@ -65,6 +69,7 @@ namespace Claybreak
         private ClaybreakLevel activeLevel;
         private FlowState state = FlowState.Menu;
         private bool deviceGate;
+        private int deviceGateWorld;
         private bool resultShown;
         private float launchCredit;
         private int autoLane;
@@ -88,6 +93,9 @@ namespace Claybreak
         /// <summary>Editor only (PlayMode tests): the next flow to start runs the device-gate level.</summary>
         public static bool EditorUsesDeviceGateLevel { get; set; }
 
+        /// <summary>Editor only (PlayMode tests): the world (from 1) whose device-gate level runs.</summary>
+        public static int EditorDeviceGateWorld { get; set; } = 1;
+
         /// <summary>Editor only (PlayMode tests): the next flow presses PLAY by itself.</summary>
         public static bool EditorStartsWithoutTap { get; set; }
 
@@ -102,6 +110,8 @@ namespace Claybreak
         public ClaybreakLevel ActiveLevel => activeLevel;
         public Progression Progress => progression;
         public ClaybreakScreens Screens => screens;
+        public WorldScenery Scenery => scenery;
+        private ClaybreakLevel StressLevel => stressLevels[deviceGateWorld];
         public RunLoadout ActiveLoadout => runLoadout;
         public int LoadoutCount => loadoutCount;
 
@@ -136,7 +146,7 @@ namespace Claybreak
 
         private void Start()
         {
-            deviceGate = PickDeviceGate();
+            deviceGate = PickDeviceGate(out deviceGateWorld);
             if (!Configure(out string error))
             {
                 Debug.LogError("[Claybreak] The game cannot start: " + error, this);
@@ -150,10 +160,10 @@ namespace Claybreak
                 + $"coins {progression.Save.coins}, stars {progression.TotalStars}, army +{ready.StartingArmy}, damage x{ready.DamageMultiplier:0.##}, "
                 + $"gates +{ready.GateBonus}, launch x{ready.LaunchRateMultiplier:0.##}, loadout [{string.Join(", ", progression.Save.loadout)}], "
                 + $"skin {progression.Skin.id}, pool {pool.Capacity}"
-                + (deviceGate ? ", DEVICE GATE (maximum loadout)" : string.Empty) + ".", this);
+                + (deviceGate ? $", DEVICE GATE world {deviceGateWorld + 1} (maximum loadout)" : string.Empty) + ".", this);
             if (deviceGate)
             {
-                StartLevel(stressLevel);
+                StartLevel(StressLevel);
             }
             else
             {
@@ -163,7 +173,7 @@ namespace Claybreak
 
         private bool Configure(out string error)
         {
-            if (catalog == null || stressLevel == null || theme == null || track == null || player == null || crowd == null
+            if (catalog == null || stressLevels == null || scenery == null || theme == null || track == null || player == null || crowd == null
                 || pool == null || runCamera == null || assaultCamera == null || gates == null || field == null
                 || tower == null || cannon == null || hud == null || screens == null || sfx == null
                 || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null)
@@ -172,11 +182,28 @@ namespace Claybreak
                 return false;
             }
 
-            if (!catalog.TryValidate(pool.Capacity, out error) || !stressLevel.TryValidate(pool.Capacity, out error)
-                || !theme.TryValidate(out error) || !tower.TryValidate(out error))
+            if (!catalog.TryValidate(pool.Capacity, out error) || !theme.TryValidate(out error) || !tower.TryValidate(out error)
+                || !scenery.TryValidate(catalog.Worlds.Count, out error))
             {
                 return false;
             }
+
+            if (stressLevels.Length != catalog.Worlds.Count)
+            {
+                error = $"one device-gate level per world is expected ({stressLevels.Length} for {catalog.Worlds.Count}).";
+                return false;
+            }
+
+            foreach (ClaybreakLevel stress in stressLevels)
+            {
+                if (stress == null || !stress.TryValidate(pool.Capacity, out error))
+                {
+                    error = "device-gate level: " + (error ?? "missing");
+                    return false;
+                }
+            }
+
+            deviceGateWorld = Mathf.Clamp(deviceGateWorld, 0, stressLevels.Length - 1);
 
             progression = new Progression(catalog, LoadSave());
             leader = player.GetComponent<CharacterController>();
@@ -196,6 +223,7 @@ namespace Claybreak
             tower.Destroyed += OnTowerDestroyed;
             tower.HealthChanged += hud.SetTower;
             tower.FloorFallen += OnFloorFallen;
+            field.Shield.Fallen += OnShieldFallen;
             crowd.CountChanged += count => hud.SetArmy(count - 1);
             screens.PlayPressed += () => StartLevel(progression.CurrentLevel);
             screens.ShopPressed += () => screens.ShowShop(progression);
@@ -209,26 +237,31 @@ namespace Claybreak
             return true;
         }
 
-        private bool PickDeviceGate()
+        private bool PickDeviceGate(out int world)
         {
 #if UNITY_EDITOR
+            world = (EditorUsesDeviceGateLevel ? EditorDeviceGateWorld : stressWorldInEditor) - 1;
             return EditorUsesDeviceGateLevel || useStressLevelInEditor;
 #elif (DEVELOPMENT_BUILD || RELEASE_MEASUREMENT) && UNITY_ANDROID
-            return ReadStressExtra();
+            return ReadStressExtra(out world);
 #else
+            world = 0;
             return false;
 #endif
         }
 
 #if (DEVELOPMENT_BUILD || RELEASE_MEASUREMENT) && UNITY_ANDROID && !UNITY_EDITOR
-        // Development builds only: `adb shell am start ... --ez stress true` runs the device-gate level.
-        private static bool ReadStressExtra()
+        // Development builds only: `adb shell am start ... --ez stress true [--ei world N]` runs the device-gate
+        // level of world N (from 1; default 1).
+        private static bool ReadStressExtra(out int world)
         {
+            world = 0;
             try
             {
                 using AndroidJavaClass player = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
                 using AndroidJavaObject activity = player.GetStatic<AndroidJavaObject>("currentActivity");
                 using AndroidJavaObject intent = activity.Call<AndroidJavaObject>("getIntent");
+                world = intent.Call<int>("getIntExtra", "world", 1) - 1;
                 return intent.Call<bool>("getBooleanExtra", "stress", false);
             }
             catch (Exception exception)
@@ -361,8 +394,11 @@ namespace Claybreak
             field.ConfigureLoadout(loadout, progression.Skin.color, runLoadout.DamageMultiplier);
             int towerHealth = played ? progression.ScaleHealth(level.TowerHealth) : level.TowerHealth;
             int wallHealth = played ? progression.ScaleHealth(level.WallHealth) : level.WallHealth;
+            int shieldHealth = played ? progression.ScaleHealth(level.ShieldHealth) : level.ShieldHealth;
+            int world = played ? progression.WorldIndex : deviceGateWorld;
+            scenery.Apply(world, catalog.Worlds[world].world.Look);
             field.ResetField();
-            field.Configure(level, track, wallHealth, level.DamagePerUnit);
+            field.Configure(level, track, wallHealth, shieldHealth, level.DamagePerUnit);
             tower.ResetTower(level.Tower, towerHealth, level.Floors);
             if (!cannon.Configure(level, field, tower.Muzzle)
                 || !gates.Configure(level, track, played && loadoutCount > 0, runLoadout.GateBonus))
@@ -457,7 +493,7 @@ namespace Claybreak
                         resultShown = true;
                         if (deviceGate)
                         {
-                            StartLevel(stressLevel);
+                            StartLevel(StressLevel);
                         }
                         else
                         {
@@ -594,17 +630,38 @@ namespace Claybreak
             hud.Banner("+" + added + " " + loadout[slot].title);
         }
 
+        // The boss rule of the level (GDD 4.4), one per world; a plain tower just loses the floor.
         private void OnFloorFallen(int floorsLeft)
         {
-            if (activeLevel.ShiftGatesOnFloor)
+            switch (activeLevel.BossRule)
             {
-                field.ShiftGates();
-                hud.Banner("FLOOR DOWN! GATES SHIFTED");
-                ClaybreakSfx.Play(ClaybreakSfx.Cue.Boss);
+                case BossRule.ShiftGates:
+                    field.ShiftGates();
+                    break;
+                case BossRule.ShieldReturns:
+                    field.RaiseShield();
+                    break;
+                case BossRule.Overheat:
+                    cannon.Overheat(OverheatFactor);
+                    field.SpeedUpSweeper(OverheatFactor);
+                    break;
+                case BossRule.TurnGate:
+                    field.TurnBestGate();
+                    break;
+                default:
+                    hud.Banner("FLOOR DOWN!");
+                    return;
             }
-            else
+
+            hud.Banner(BossRules.FloorBanner(activeLevel.BossRule));
+            ClaybreakSfx.Play(ClaybreakSfx.Cue.Boss);
+        }
+
+        private void OnShieldFallen()
+        {
+            if (state == FlowState.Assault)
             {
-                hud.Banner("FLOOR DOWN!");
+                hud.Banner("SHIELD DOWN!");
             }
         }
 
@@ -672,7 +729,7 @@ namespace Claybreak
             hud.SetHint(deviceGate ? null : AssaultHint);
             if (activeLevel.IsBoss && !deviceGate)
             {
-                hud.Banner("BOSS! EACH FLOOR SHIFTS THE GATES");
+                hud.Banner(BossRules.Intro(activeLevel.BossRule));
                 ClaybreakSfx.Play(ClaybreakSfx.Cue.Boss);
             }
         }

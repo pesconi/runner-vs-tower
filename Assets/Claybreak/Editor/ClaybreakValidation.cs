@@ -9,8 +9,10 @@ using UnityEngine;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// The game's validator: the meta catalog (RT-5) and every world and level against the pool, the
-    /// device-gate level (heaviest tower, every defense at its limit), the theme, the save validator over
+    /// The game's validator (the theme completeness check of the plan): the meta catalog (RT-5) and every
+    /// world and level against the pool; per world (RT-6) its look, its own scenery and towers (no obvious
+    /// visual repetition between worlds), a boss with a rule, a level ramp that never gets easier, and its
+    /// device-gate level (the world's heaviest tower, every defense at its limit); the theme, the save validator over
     /// the fixture saves (every version a phone may hold must migrate and pass <see cref="SaveValidator"/>),
     /// the scene wiring (tower bodies, HUD, screens with one row per catalog entry, sounds, preallocated
     /// pools), and the code rules (no Instantiate/Destroy at run time, rule 2.2.1; no physics queries,
@@ -63,11 +65,10 @@ namespace Claybreak.Editor
         private static void CheckData(List<string> failures)
         {
             var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
-            var stress = AssetDatabase.LoadAssetAtPath<ClaybreakLevel>(WorldContent.StressLevelPath);
             var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(ClaybreakSceneBuilder.ThemePath);
-            if (catalog == null || stress == null || theme == null)
+            if (catalog == null || theme == null)
             {
-                failures.Add("missing catalog, device-gate level or theme (run Claybreak > Build Scene)");
+                failures.Add("missing catalog or theme (run Claybreak > Build Scene)");
                 return;
             }
 
@@ -84,48 +85,125 @@ namespace Claybreak.Editor
                 failures.Add("catalog: the version-1 save ids (world1 first, army, brute) must stay in the catalog");
             }
 
-            foreach (WorldEntry entry in catalog.Worlds)
+            if (catalog.Worlds.Count != WorldContent.Worlds.Length)
             {
-                ClaybreakWorld world = entry.world;
-                if (world.LevelCount > ClaybreakSceneBuilder.LevelDots)
+                failures.Add($"catalog: {catalog.Worlds.Count} worlds, content defines {WorldContent.Worlds.Length} (rebuild the scene)");
+            }
+
+            var sceneries = new HashSet<SceneryStyle>();
+            var skies = new HashSet<Color>();
+            var towersSeen = new Dictionary<TowerKind, string>();
+            for (int w = 0; w < catalog.Worlds.Count; w++)
+            {
+                ClaybreakWorld world = catalog.Worlds[w].world;
+                CheckWorld(world, w, sceneries, skies, towersSeen, failures);
+                var stress = AssetDatabase.LoadAssetAtPath<ClaybreakLevel>(WorldContent.StressLevelPath(w));
+                if (stress == null)
                 {
-                    failures.Add($"{world.name}: {world.LevelCount} levels but the menu has {ClaybreakSceneBuilder.LevelDots} dots");
+                    failures.Add($"{world.name}: missing device-gate level {WorldContent.StressLevelPath(w)}");
+                    continue;
                 }
 
-                var kinds = new HashSet<TowerKind>();
-                for (int i = 0; i < world.LevelCount; i++)
+                CheckStress(world, stress, failures);
+            }
+
+            if (!theme.TryValidate(out error))
+            {
+                failures.Add("theme: " + error);
+            }
+        }
+
+        // One world: levels within the menu, a look of its own (scenery style and sky not shared with another
+        // world), towers that no earlier world uses for its main tower or boss, 2+ kinds plus the boss,
+        // health that never drops from one plain level to the next and a boss above them all.
+        private static void CheckWorld(ClaybreakWorld world, int index, HashSet<SceneryStyle> sceneries, HashSet<Color> skies,
+            Dictionary<TowerKind, string> towersSeen, List<string> failures)
+        {
+            if (world.LevelCount > ClaybreakSceneBuilder.LevelDots)
+            {
+                failures.Add($"{world.name}: {world.LevelCount} levels but the menu has {ClaybreakSceneBuilder.LevelDots} dots");
+            }
+
+            if (!world.Look.IsSet)
+            {
+                failures.Add($"{world.name}: no look (sky, ground, sun)");
+            }
+            else if (!sceneries.Add(world.Look.scenery) || !skies.Add(world.Look.sky))
+            {
+                failures.Add($"{world.name}: scenery {world.Look.scenery} or its sky repeats another world's (no obvious visual repetition)");
+            }
+
+            var kinds = new HashSet<TowerKind>();
+            int previousHealth = 0;
+            int bossHealth = world.LevelCount > 0 ? world.Levels[world.LevelCount - 1].TowerHealth : 0;
+            for (int i = 0; i < world.LevelCount; i++)
+            {
+                ClaybreakLevel level = world.Levels[i];
+                CheckLevel(level, failures);
+                kinds.Add(level.Tower);
+                if (level.RunGates.Count < 3 || level.RunGates.Count > RunGateCourse.MaximumPairs)
                 {
-                    ClaybreakLevel level = world.Levels[i];
-                    CheckLevel(level, failures);
-                    kinds.Add(level.Tower);
-                    if (level.RunGates.Count < 3 || level.RunGates.Count > RunGateCourse.MaximumPairs)
-                    {
-                        failures.Add($"{level.name}: 3-{RunGateCourse.MaximumPairs} run gate pairs, has {level.RunGates.Count}");
-                    }
+                    failures.Add($"{level.name}: 3-{RunGateCourse.MaximumPairs} run gate pairs, has {level.RunGates.Count}");
                 }
 
-                if (kinds.Count < 3)
+                bool boss = i == world.LevelCount - 1;
+                if (!boss && (level.TowerHealth < previousHealth - 60 || level.TowerHealth >= bossHealth))
                 {
-                    failures.Add($"{world.name}: a world shows 2-3 towers and a boss; its levels use {kinds.Count} tower kinds");
+                    failures.Add($"{level.name}: tower health {level.TowerHealth} breaks the ramp (previous {previousHealth}, boss {bossHealth})");
+                }
+
+                previousHealth = Mathf.Max(previousHealth, level.TowerHealth);
+                if (boss && (level.BossRule == BossRule.None || level.Floors < 3))
+                {
+                    failures.Add($"{level.name}: the boss needs a rule and at least 3 floors");
                 }
             }
 
+            if (kinds.Count < 3)
+            {
+                failures.Add($"{world.name}: a world shows 2-3 towers and a boss; its levels use {kinds.Count} tower kinds");
+            }
+
+            // Each world brings its own main tower and boss; reusing an earlier world's second tower is fine.
+            ClaybreakLevel last = world.LevelCount > 0 ? world.Levels[world.LevelCount - 1] : null;
+            TowerKind main = world.LevelCount > 0 ? world.Levels[world.LevelCount > 1 ? 1 : 0].Tower : TowerKind.Keep;
+            foreach (TowerKind own in new[] { main, last != null ? last.Tower : main })
+            {
+                if (towersSeen.TryGetValue(own, out string other) && other != world.WorldId)
+                {
+                    failures.Add($"{world.name}: tower {own} is already the main tower or boss of {other}");
+                }
+
+                towersSeen[own] = world.WorldId;
+            }
+
+            if (index == 0 && world.WorldId != SaveMigration.V1WorldId)
+            {
+                failures.Add("the first world must keep the slice id " + SaveMigration.V1WorldId);
+            }
+        }
+
+        // The device gate of a world: its boss body, its boss rule, every defense the world has, at its limits.
+        private static void CheckStress(ClaybreakWorld world, ClaybreakLevel stress, List<string> failures)
+        {
             CheckLevel(stress, failures);
+            ClaybreakLevel boss = world.Levels[world.LevelCount - 1];
+            bool worldHasShield = false;
+            foreach (ClaybreakLevel level in world.Levels)
+            {
+                worldHasShield |= level.ShieldEnabled;
+            }
+
             if (!stress.IsDeviceGateLevel || stress.StartCount != ClaybreakSceneBuilder.PoolSize
                 || stress.MaximumUnitsInFlight != ClaybreakSceneBuilder.PoolSize)
             {
                 failures.Add($"{stress.name}: the device-gate level must auto-launch with {ClaybreakSceneBuilder.PoolSize} units in flight");
             }
 
-            if (stress.Tower != TowerKind.Boss || !stress.CannonEnabled || !stress.SweeperEnabled || !stress.WallEnabled
-                || stress.MaximumProjectiles < 12)
+            if (stress.Tower != boss.Tower || stress.BossRule != boss.BossRule || !stress.CannonEnabled || !stress.SweeperEnabled
+                || !stress.WallEnabled || stress.MaximumProjectiles < 12 || stress.ShieldEnabled != worldHasShield)
             {
-                failures.Add($"{stress.name}: the device gate runs the heaviest tower (boss) with every defense on and 12 projectiles");
-            }
-
-            if (!theme.TryValidate(out error))
-            {
-                failures.Add("theme: " + error);
+                failures.Add($"{stress.name}: the device gate of {world.WorldId} runs its boss tower ({boss.Tower}) with every defense of the world on and 12 projectiles");
             }
         }
 
@@ -303,9 +381,18 @@ namespace Claybreak.Editor
 
             var wall = Object.FindFirstObjectByType<AssaultWall>(FindObjectsInactive.Include);
             var sweeper = Object.FindFirstObjectByType<SweeperDefense>(FindObjectsInactive.Include);
-            if (wall == null || !wall.HasParts || sweeper == null || !sweeper.HasParts)
+            var shield = Object.FindFirstObjectByType<ShieldDefense>(FindObjectsInactive.Include);
+            if (wall == null || !wall.HasParts || sweeper == null || !sweeper.HasParts || shield == null || !shield.HasParts)
             {
-                failures.Add("the wall and the sweeper need their parts");
+                failures.Add("the wall, the sweeper and the shield need their parts");
+            }
+
+            var worldCatalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
+            var scenery = Object.FindFirstObjectByType<WorldScenery>(FindObjectsInactive.Include);
+            string sceneryError = "missing";
+            if (scenery == null || worldCatalog == null || !scenery.TryValidate(worldCatalog.Worlds.Count, out sceneryError))
+            {
+                failures.Add("scenery: " + sceneryError);
             }
 
             var hud = Object.FindFirstObjectByType<ClaybreakHud>(FindObjectsInactive.Include);

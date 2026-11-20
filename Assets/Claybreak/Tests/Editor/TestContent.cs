@@ -12,6 +12,14 @@ namespace Claybreak.Tests
     public sealed class TestContent : System.IDisposable
     {
         public const int LevelsPerWorld = 6;
+        /// <summary>Damage multiplier the test worlds are tuned for (the replay adjustment compares with it).</summary>
+        public const float ExpectedDamage = 1.2f;
+
+        public static readonly WorldLook Look = new WorldLook
+        {
+            scenery = SceneryStyle.Marches, sky = Color.gray, ambient = Color.gray, sun = Color.white, sunIntensity = 1f,
+            ground = Color.gray, field = Color.gray, prop = Color.gray, propDark = Color.black, accent = Color.yellow
+        };
         private readonly List<Object> made = new List<Object>();
 
         public TestContent(int worlds = 1, int starsForWorld2 = 0)
@@ -68,24 +76,14 @@ namespace Claybreak.Tests
                 {
                     level.FindProperty("tower").enumValueIndex = (int)TowerKind.Boss;
                     level.FindProperty("floors").intValue = 4;
-                    level.FindProperty("shiftGatesOnFloor").boolValue = true;
+                    level.FindProperty("bossRule").enumValueIndex = (int)BossRule.ShiftGates;
                 }
 
                 level.ApplyModifiedPropertiesWithoutUndo();
             }
 
             ClaybreakWorld world = Make<ClaybreakWorld>(id);
-            var so = new SerializedObject(world);
-            so.FindProperty("worldId").stringValue = id;
-            so.FindProperty("worldName").stringValue = id.ToUpperInvariant();
-            SerializedProperty array = so.FindProperty("levels");
-            array.arraySize = LevelsPerWorld;
-            for (int i = 0; i < LevelsPerWorld; i++)
-            {
-                array.GetArrayElementAtIndex(i).objectReferenceValue = levels[i];
-            }
-
-            so.ApplyModifiedPropertiesWithoutUndo();
+            world.EditorAssign(id, id.ToUpperInvariant(), levels, Look, ExpectedDamage, 0.25f, 0.25f);
             return world;
         }
 

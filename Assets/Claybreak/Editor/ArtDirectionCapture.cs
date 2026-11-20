@@ -81,14 +81,15 @@ namespace Claybreak.Editor
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var palette = new ArtPalette();
-            ClaybreakSceneBuilder.CreateEnvironment(palette, 60f);
+            Renderer track = ClaybreakSceneBuilder.CreateEnvironment(palette, 60f, out Light sun);
             var root = new GameObject("Tower").transform;
             root.position = new Vector3(0f, 0f, 40f);
             TowerParts parts = TowerArt.Build(style, root, palette);
             var cameraObject = new GameObject("Camera", typeof(Camera));
             Camera camera = cameraObject.GetComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = RenderSettings.fogColor;
+            WorldDefinition world1 = WorldContent.Worlds[0];
+            ClaybreakSceneBuilder.DressWorld(world1.Id, world1.Look, palette, 60f, track, sun, camera);
             camera.fieldOfView = 50f;
             Vector3 focus = new Vector3(0f, parts.BarHeight * 0.42f, 43f);
             cameraObject.transform.position = focus + new Vector3(-10f, 3f + parts.BarHeight * 0.15f, -19f);

@@ -41,7 +41,7 @@ namespace Claybreak
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public int version = CurrentVersion;
         public int coins;
@@ -105,6 +105,36 @@ namespace Claybreak
         public const string V1WorldId = "world1";
         public const string V1StartingArmyId = "army";
         public const string V1BruteId = "brute";
+
+        /// <summary>World 1 had 7 levels (6 + boss) up to save version 2; RT-6 made it 10 (9 + boss).</summary>
+        public const int World1LevelsBeforeV3 = 7;
+        public const int World1LevelsFromV3 = 10;
+
+        /// <summary>
+        /// Versions 1 and 2 to 3: world 1 grew from 7 to 10 levels, the three new ones before the boss. Levels
+        /// 1-6 keep their stars, the boss's stars move from slot 7 to slot 10, and a player who was at the
+        /// boss now meets the first new level. Loops, coins and everything else stay.
+        /// </summary>
+        public static void World1To10Levels(SaveData save)
+        {
+            if (save?.worlds == null)
+            {
+                return;
+            }
+
+            foreach (WorldSave world in save.worlds)
+            {
+                if (world == null || world.id != V1WorldId || world.stars == null || world.stars.Length != World1LevelsBeforeV3)
+                {
+                    continue;
+                }
+
+                var stars = new int[World1LevelsFromV3];
+                Array.Copy(world.stars, stars, World1LevelsBeforeV3 - 1);
+                stars[World1LevelsFromV3 - 1] = world.stars[World1LevelsBeforeV3 - 1];
+                world.stars = stars;
+            }
+        }
 
         public static SaveData FromV1(SaveDataV1 old)
         {
@@ -186,6 +216,11 @@ namespace Claybreak
                     case 1:
                         SaveDataV1 old = JsonUtility.FromJson<SaveDataV1>(json);
                         parsed = old == null ? null : SaveMigration.FromV1(old);
+                        SaveMigration.World1To10Levels(parsed);
+                        break;
+                    case 2:
+                        parsed = JsonUtility.FromJson<SaveData>(json);
+                        SaveMigration.World1To10Levels(parsed);
                         break;
                     case SaveData.CurrentVersion:
                         parsed = JsonUtility.FromJson<SaveData>(json);

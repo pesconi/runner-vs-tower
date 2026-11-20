@@ -38,6 +38,14 @@ namespace Claybreak.Editor
         public readonly Material Marker = Clear("LaneMarker", new Color(1f, 0.8f, 0.25f, 0.35f));
         public readonly Material Shadow = Clear("Shadow", new Color(0f, 0f, 0f, 0.5f));
         public readonly Material Danger = Clear("Danger", new Color(0.95f, 0.3f, 0.15f, 0.35f));
+        public readonly Material ShieldDome = Clear("ShieldDome", new Color(0.35f, 0.85f, 0.95f, 0.22f));
+        public readonly Material ShieldCore = Unlit("ShieldCore", new Color(0.45f, 0.95f, 1f));
+
+        /// <summary>A lit material of one world's look or one tower style, in Materials/&lt;folder&gt;/ (RT-6).</summary>
+        public static Material SolidIn(string folder, string name, Color color) => Solid(folder + "/" + name, color);
+
+        /// <summary>An unlit (glowing) material in Materials/&lt;folder&gt;/.</summary>
+        public static Material UnlitIn(string folder, string name, Color color) => Unlit(folder + "/" + name, color);
 
         private static Material Solid(string name, Color color)
         {
@@ -78,8 +86,8 @@ namespace Claybreak.Editor
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (material == null)
             {
-                ClaybreakSceneBuilder.EnsureFolder(MaterialFolder);
-                material = new Material(shader) { name = name };
+                ClaybreakSceneBuilder.EnsureFolder(path.Substring(0, path.LastIndexOf('/')));
+                material = new Material(shader) { name = name.Substring(name.LastIndexOf('/') + 1) };
                 AssetDatabase.CreateAsset(material, path);
             }
             else if (material.shader != shader)

@@ -142,13 +142,23 @@ namespace Claybreak.Editor
             // Load every asset after NewScene: opening a scene unloads assets nothing references, and a
             // reference taken before it would be serialized as missing.
             var catalog = Load<ClaybreakCatalog>(WorldContent.CatalogPath);
-            var stress = Load<ClaybreakLevel>(WorldContent.StressLevelPath);
+            var stress = new ClaybreakLevel[catalog.Worlds.Count];
+            for (int w = 0; w < stress.Length; w++)
+            {
+                stress[w] = Load<ClaybreakLevel>(WorldContent.StressLevelPath(w));
+            }
+
             var theme = Load<ClaybreakTheme>(ThemePath);
             var palette = new ArtPalette();
             Mesh body = LoadFirstMesh(BodyPath);
             Material clay = Load<Material>(ClayMaterialPath);
 
-            float trackEnd = stress.TowerZ + 16f;
+            float trackEnd = 0f;
+            foreach (ClaybreakLevel level in stress)
+            {
+                trackEnd = Mathf.Max(trackEnd, level.TowerZ + 16f);
+            }
+
             foreach (WorldEntry entry in catalog.Worlds)
             {
                 foreach (ClaybreakLevel level in entry.world.Levels)
@@ -157,7 +167,7 @@ namespace Claybreak.Editor
                 }
             }
 
-            Renderer track = CreateEnvironment(palette, trackEnd);
+            Renderer track = CreateEnvironment(palette, trackEnd, out Light sun);
             ClaybreakLevel first = catalog.Worlds[0].world.Levels[0];
 
             var flowObject = new GameObject("ClaybreakFlow");
@@ -200,6 +210,7 @@ namespace Claybreak.Editor
             Set(follow, "offset", new Vector3(0f, 9f, -8f));
             Set(follow, "lookAheadDistance", 6f);
             var assaultCamera = cameraObject.AddComponent<AssaultCamera>();
+            WorldScenery scenery = CreateScenery(catalog, palette, trackEnd, track, sun, camera);
 
             RunGateCourse gates = CreateRunGates(palette);
             Transform firingLine = Prim.Box(null, "FiringLine", new Vector3(0f, 0.01f, first.FiringLineZ),
@@ -210,7 +221,8 @@ namespace Claybreak.Editor
             CannonDefense cannon = CreateCannon(palette);
             AssaultWall wall = CreateWall(first, palette);
             SweeperDefense sweeper = CreateSweeper(palette);
-            AssaultField field = CreateField(pool, tower, wall, sweeper, first, palette);
+            ShieldDefense shield = CreateShield(palette);
+            AssaultField field = CreateField(pool, tower, wall, sweeper, shield, first, palette);
             Sprite pill = Load<Sprite>(PillTexturePath);
             Sprite star = Load<Sprite>(StarTexturePath);
             Transform canvas = CreateCanvas();
@@ -219,7 +231,8 @@ namespace Claybreak.Editor
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
 
             SetRef(flow, "catalog", catalog);
-            SetRef(flow, "stressLevel", stress);
+            SetArray(flow, "stressLevels", stress);
+            SetRef(flow, "scenery", scenery);
             SetRef(flow, "theme", theme);
             SetRef(flow, "track", track);
             SetRef(flow, "player", player);
@@ -241,26 +254,22 @@ namespace Claybreak.Editor
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
-            Debug.Log($"[Claybreak] Scene {ScenePath}: {catalog.Worlds.Count} world(s), {catalog.LevelCount} levels, "
+            Debug.Log($"[Claybreak] Scene {ScenePath}: {catalog.Worlds.Count} world(s) with their scenery, {catalog.LevelCount} levels, {stress.Length} device-gate levels, "
                 + $"{catalog.Upgrades.Count} upgrades, {catalog.Units.Count} units, {catalog.Skins.Count} skins, pool {PoolSize}, {ProjectilePoolSize} projectiles, "
                 + $"{RunGateCourse.MaximumPairs} gate pairs, {ClaybreakLevel.MaximumCrates} crates, track to z={trackEnd:0}.");
         }
 
-        /// <summary>Lighting, fog, the track (the one collider: the kit's leader stands on it) and the static set dressing.</summary>
-        public static Renderer CreateEnvironment(ArtPalette palette, float trackEnd)
+        /// <summary>Lighting, fog and the track (the one collider: the kit's leader stands on it); world sets come apart.</summary>
+        public static Renderer CreateEnvironment(ArtPalette palette, float trackEnd, out Light light)
         {
             RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.42f, 0.36f, 0.34f);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = new Color(0.16f, 0.12f, 0.14f);
             RenderSettings.fogStartDistance = 50f;
             RenderSettings.fogEndDistance = 130f;
             var sun = new GameObject("Sun", typeof(Light));
-            Light light = sun.GetComponent<Light>();
+            light = sun.GetComponent<Light>();
             light.type = LightType.Directional;
-            light.color = new Color(1f, 0.86f, 0.7f);
-            light.intensity = 1.2f;
             light.shadows = LightShadows.None;
             sun.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             // Explicit: a scene made in batchmode (art captures) does not pick its sun by itself.
@@ -270,58 +279,61 @@ namespace Claybreak.Editor
             float length = trackEnd - TrackStartZ;
             Renderer track = Prim.Box(null, "Track", new Vector3(0f, -0.1f, middle), new Vector3(TrackWidth, 0.2f, length), palette.Ground);
             track.gameObject.AddComponent<BoxCollider>();
-
-            var set = new GameObject("SetDressing").transform;
-            Prim.Box(set, "FieldLeft", new Vector3(-TrackWidth - 6f, -0.15f, middle), new Vector3(TrackWidth + 4f, 0.2f, length), palette.Field);
-            Prim.Box(set, "FieldRight", new Vector3(TrackWidth + 6f, -0.15f, middle), new Vector3(TrackWidth + 4f, 0.2f, length), palette.Field);
-            for (int side = -1; side <= 1; side += 2)
-            {
-                Prim.Box(set, "Curb", new Vector3(side * (TrackWidth * 0.5f + 0.2f), 0.05f, middle), new Vector3(0.4f, 0.3f, length), palette.StoneDark);
-            }
-
-            // Props outside the playable width every 9 m, alternating kinds, deterministic.
-            int index = 0;
-            for (float z = TrackStartZ + 4f; z < trackEnd; z += 9f, index++)
-            {
-                for (int side = -1; side <= 1; side += 2)
-                {
-                    float x = side * (TrackWidth * 0.5f + 2.2f + (index * 37 % 5) * 0.5f);
-                    switch ((index + (side > 0 ? 1 : 0)) % 4)
-                    {
-                        case 0:
-                            Prim.Ball(set, "Rock", new Vector3(x, 0.4f, z), new Vector3(1.8f, 1.1f, 1.5f), palette.StoneDark);
-                            break;
-                        case 1:
-                            Prim.Box(set, "Pillar", new Vector3(x, 1.4f, z), new Vector3(0.8f, 2.8f, 0.8f), palette.Stone);
-                            Prim.Box(set, "PillarCap", new Vector3(x, 2.95f, z), new Vector3(1.1f, 0.3f, 1.1f), palette.StoneDark);
-                            break;
-                        case 2:
-                            Prim.Cyl(set, "Trunk", new Vector3(x, 1.2f, z), new Vector3(0.35f, 1.2f, 0.35f), palette.Wood);
-                            Prim.Box(set, "Branch", new Vector3(x + side * 0.4f, 2.1f, z), new Vector3(0.9f, 0.18f, 0.18f), palette.Wood,
-                                new Vector3(0f, 0f, side * 35f));
-                            break;
-                        default:
-                            Prim.Cyl(set, "Brazier", new Vector3(x, 0.6f, z), new Vector3(0.5f, 0.6f, 0.5f), palette.Iron);
-                            Prim.Ball(set, "Coals", new Vector3(x, 1.25f, z), new Vector3(0.55f, 0.3f, 0.55f), palette.Glow);
-                            break;
-                    }
-                }
-            }
-
-            // A far ridge, read as a silhouette through the fog.
-            for (int i = 0; i < 7; i++)
-            {
-                float x = -42f + i * 14f;
-                Prim.Box(set, "Ridge", new Vector3(x, 5f + (i % 3) * 3f, trackEnd + 25f), new Vector3(16f, 14f + (i % 3) * 6f, 10f),
-                    palette.StoneDark, new Vector3(0f, 0f, (i % 2 == 0 ? 8f : -6f)));
-            }
-
-            foreach (Transform prop in set.GetComponentsInChildren<Transform>())
-            {
-                GameObjectUtility.SetStaticEditorFlags(prop.gameObject, StaticEditorFlags.BatchingStatic);
-            }
-
             return track;
+        }
+
+        /// <summary>One world's set dressing and look on a scene made by <see cref="CreateEnvironment"/> (captures).</summary>
+        public static GameObject DressWorld(string worldId, WorldLook look, ArtPalette palette, float trackEnd, Renderer track,
+            Light sun, Camera camera)
+        {
+            WorldMaterials materials = WorldMaterials.For(worldId, look);
+            GameObject set = WorldSceneryArt.Build(look.scenery, "Scenery_" + worldId, materials, palette, TrackStartZ, trackEnd);
+            track.sharedMaterial = materials.Ground;
+            ApplyLook(look, sun, camera);
+            return set;
+        }
+
+        private static void ApplyLook(WorldLook look, Light sun, Camera camera)
+        {
+            RenderSettings.fogColor = look.sky;
+            RenderSettings.ambientLight = look.ambient;
+            sun.color = look.sun;
+            sun.intensity = look.sunIntensity;
+            if (camera != null)
+            {
+                camera.backgroundColor = look.sky;
+            }
+        }
+
+        // One preallocated set per world (only the first shown), its track material, and the switch.
+        private static WorldScenery CreateScenery(ClaybreakCatalog catalog, ArtPalette palette, float trackEnd, Renderer track,
+            Light sun, Camera camera)
+        {
+            var root = new GameObject("Scenery");
+            WorldScenery scenery = root.AddComponent<WorldScenery>();
+            int count = catalog.Worlds.Count;
+            var sets = new UnityEngine.Object[count];
+            var grounds = new UnityEngine.Object[count];
+            for (int w = 0; w < count; w++)
+            {
+                ClaybreakWorld world = catalog.Worlds[w].world;
+                WorldMaterials materials = WorldMaterials.For(world.WorldId, world.Look);
+                GameObject set = WorldSceneryArt.Build(world.Look.scenery, "Scenery_" + world.WorldId, materials, palette,
+                    TrackStartZ, trackEnd);
+                set.transform.SetParent(root.transform, false);
+                set.SetActive(w == 0);
+                sets[w] = set;
+                grounds[w] = materials.Ground;
+            }
+
+            track.sharedMaterial = (Material)grounds[0];
+            ApplyLook(catalog.Worlds[0].world.Look, sun, camera);
+            SetArray(scenery, "sets", sets);
+            SetArray(scenery, "trackMaterials", grounds);
+            SetRef(scenery, "track", track);
+            SetRef(scenery, "sun", sun);
+            SetRef(scenery, "sceneCamera", camera);
+            return scenery;
         }
 
         private static ClaybreakSfx CreateSfx(Transform parent)
@@ -460,7 +472,7 @@ namespace Claybreak.Editor
         }
 
         private static AssaultField CreateField(RunnerPool pool, AssaultTower tower, AssaultWall wall, SweeperDefense sweeper,
-            ClaybreakLevel level, ArtPalette palette)
+            ShieldDefense shield, ClaybreakLevel level, ArtPalette palette)
         {
             var root = new GameObject("AssaultField");
             AssaultField field = root.AddComponent<AssaultField>();
@@ -484,6 +496,7 @@ namespace Claybreak.Editor
             SetRef(field, "tower", tower);
             SetRef(field, "wall", wall);
             SetRef(field, "sweeper", sweeper);
+            SetRef(field, "shield", shield);
             SetArray(field, "gateVisuals", visuals);
             SetArray(field, "gateLabels", labels);
             SetArray(field, "gatePanels", panels);
@@ -496,12 +509,7 @@ namespace Claybreak.Editor
         {
             var root = new GameObject("Tower");
             root.transform.position = new Vector3(0f, 0f, level.TowerZ);
-            TowerStyle[] styles = { TowerArt.ChosenTower, TowerArt.SecondTower, TowerArt.ChosenBoss };
             int kinds = Enum.GetValues(typeof(TowerKind)).Length;
-            if (styles.Length != kinds)
-            {
-                throw new InvalidOperationException("One tower style per TowerKind.");
-            }
 
             var bodies = new UnityEngine.Object[kinds];
             var blocks = new UnityEngine.Object[kinds * AssaultTower.BlocksPerBody];
@@ -509,7 +517,7 @@ namespace Claybreak.Editor
             var heights = new float[kinds];
             for (int k = 0; k < kinds; k++)
             {
-                TowerParts parts = TowerArt.Build(styles[k], root.transform, palette);
+                TowerParts parts = TowerArt.Build(TowerArt.StyleFor((TowerKind)k), root.transform, palette);
                 parts.Body.name = ((TowerKind)k) + "Body";
                 bodies[k] = parts.Body;
                 muzzles[k] = parts.Muzzle;
@@ -589,6 +597,39 @@ namespace Claybreak.Editor
             SetRef(wall, "body", body);
             SetRef(wall, "healthLabel", label);
             return wall;
+        }
+
+        // The shield (GDD 4.3, fourth defense): a pylon with a glowing core on one lane, a ring of plates
+        // around it, and a translucent dome placed over the tower's front at level time.
+        private static ShieldDefense CreateShield(ArtPalette palette)
+        {
+            var root = new GameObject("Shield");
+            var generator = new GameObject("Generator").transform;
+            generator.SetParent(root.transform, false);
+            Prim.Cyl(generator, "Base", new Vector3(0f, 0.25f, 0f), new Vector3(1.6f, 0.25f, 1.6f), palette.IronWarm);
+            Prim.Cyl(generator, "Pylon", new Vector3(0f, 1.3f, 0f), new Vector3(0.7f, 1.05f, 0.7f), palette.Iron);
+            Prim.Ball(generator, "Core", new Vector3(0f, 2.55f, 0f), new Vector3(0.9f, 0.9f, 0.9f), palette.ShieldCore);
+            for (int i = 0; i < 4; i++)
+            {
+                float a = i * 90f + 45f;
+                float r = Mathf.Deg2Rad * a;
+                Prim.Box(generator, "Fin", new Vector3(Mathf.Cos(r) * 0.6f, 1.2f, Mathf.Sin(r) * 0.6f), new Vector3(0.12f, 1.8f, 0.5f),
+                    palette.IronWarm, new Vector3(0f, -a, 0f));
+            }
+
+            TextMesh label = CreateLabel("HealthLabel", root.transform, new Vector3(0f, 3.6f, 0f), 0.3f);
+            var dome = Prim.Ball(null, "ShieldDome", new Vector3(0f, 4f, 60f), new Vector3(TrackWidth + 2.5f, 9f, 4f),
+                palette.ShieldDome).transform;
+            dome.SetParent(root.transform, true);
+            ShieldDefense shield = root.AddComponent<ShieldDefense>();
+            SetRef(shield, "generator", generator);
+            SetRef(shield, "healthLabel", label);
+            SetRef(shield, "dome", dome);
+            root.SetActive(true);
+            generator.gameObject.SetActive(false);
+            label.gameObject.SetActive(false);
+            dome.gameObject.SetActive(false);
+            return shield;
         }
 
         private static SweeperDefense CreateSweeper(ArtPalette palette)

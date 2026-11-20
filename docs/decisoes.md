@@ -442,6 +442,39 @@ nem economia; tudo fica no jogo (se o Wild Pack precisar do mesmo, vira pauta do
 `economy` do `Tools/rt4-check.sh`). É a base de tempo da ficha D19 e a ferramenta para recalibrar com os
 dados do soft launch: trocar as premissas pelas medidas e rodar de novo.
 
+## 2026-11-20 — T-RT6-1 — Fases como dado gerado por perfil — técnica (sessão RT-6)
+
+Toda fase é um `LevelSpec` (dado puro) escrito no asset da fase pelo conteúdo. As fases novas saem de um
+`WorldRecipe` por mundo (o "ChallengeDifficultyProfile"-like do GDD 6) pelo `LevelGenerator`, determinístico
+(mesma semente, mesmas fases em qualquer máquina). A vida da torre é uma fração do potencial da fase vezes o
+dano esperado do mundo, então um layout mais difícil vem com torre mais fraca e vice-versa; fases feitas à
+mão (as 7 da fatia) entram por índice e as geradas sobem entre elas. Gerador e perfil ficam no jogo, não no
+kit: o kit não tem conceito de torre nem de fase de assalto (se o Wild Pack quiser fases por perfil, vira
+pauta do kit).
+
+## 2026-11-20 — T-RT6-2 — Visual por mundo pré-alocado na cena única — técnica (sessão RT-6)
+
+Cada mundo tem um `WorldLook` (estilo de cenário e paleta) no próprio asset do mundo. O construtor monta um
+conjunto de cenário por mundo e um material de pista por mundo; `WorldScenery` mostra um conjunto e aplica
+céu, luz ambiente e sol ao preparar a fase. Continua uma cena só, nada criado em jogo (2.2.1); o custo é
+memória de malhas estáticas inativas (pequena: primitivas). Torres: um corpo por `TowerKind`, como na RT-4;
+`TowerArt.StyleFor` diz o estilo de cada tipo (uma linha por tipo; trocar a arte aprovada é trocar a linha).
+
+## 2026-11-20 — T-RT6-3 — Escudo e regras de chefe como dado — técnica (sessão RT-6)
+
+Escudo (4ª defesa do GDD 4.3): gerador numa faixa, cúpula na frente da torre, fração de bloqueio por fase; o
+dano bloqueado usa a mesma sobra acumulada do upgrade de dano (metade bloqueada é exatamente metade). Chefe
+= fase com `BossRule` (antes, o tipo de torre "Boss" e um booleano); quatro regras escritas no jogo, uma por
+mundo. O nível de gate de cada mundo roda a regra e o escudo do mundo, com o escudo de pé o tempo todo (a
+cúpula transparente é a parte mais cara para a GPU).
+
+## 2026-11-20 — T-RT6-4 — Voltas ajustadas ao poder do jogador; save v3 — técnica (sessão RT-6)
+
+Correção pedida na ficha D19: nas voltas, a vida das torres também cresce com (poder ÷ dano esperado do
+mundo)^0,7, nunca abaixo de 1; a primeira passada nunca muda. O expoente fica no asset do mundo [P]. Save
+versão 3 por causa do mundo 1 com 10 fases (estrelas do chefe mudam de lugar); v1 e v2 migram, e os saves de
+exemplo e os testes cobrem as três versões.
+
 ## Fichas D19 e D12 (RT-5, aguardando resposta)
 
 ### DECISÃO D19 — Preços e curvas da loja (upgrades, elites, skins)

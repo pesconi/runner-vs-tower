@@ -38,6 +38,14 @@ namespace Claybreak
             Place();
         }
 
+        /// <summary>Boss rule "overheat": the arm swings faster (period times <paramref name="factor"/>), keeping its place.</summary>
+        public void SpeedUp(float factor)
+        {
+            float next = Mathf.Max(1f, period * Mathf.Clamp01(factor));
+            time *= next / period;
+            period = next;
+        }
+
         /// <summary>True when the arm's band covers <paramref name="x"/> right now.</summary>
         public bool Covers(float x)
         {

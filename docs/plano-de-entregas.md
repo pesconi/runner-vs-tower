@@ -195,6 +195,8 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** todos os mundos jogáveis do lançamento; `GameThemeCompleteness`-
   like sem falha; gate 3× em cada mundo; sem repetição visual óbvia.
 - **Exige o usuário:** aprovar arte dos mundos; aprovar nº de fases.
+- **Status: em andamento** (`rt6-conteudo.md`): `Stage RT.6a` feito (mundo 1 com 10 fases, geração por
+  dados, escudo, regras de chefe, visual por mundo, save v3; gate do mundo 1 aprovado no OPPO).
 
 ## RT-7 — Produção: monetização, retenção e analytics
 
