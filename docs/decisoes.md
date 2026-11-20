@@ -87,3 +87,19 @@ para o novo jogo.
 esperando enquanto o novo jogo avança (chance baixa, impacto alto: a conta da Play é a mesma).
 **Como mitigar sem mudar a decisão:** o maestro avisa o usuário na hora em que um incidente
 do Wild Pack aparecer, e a prioridade naquele caso volta a ser decisão dele.
+
+## 2026-11-20 — D1 — Nome do jogo — **nome de trabalho "Claybreak"** — usuário
+
+**Texto aprovado:** o nome de trabalho do jogo passa a ser **Claybreak** (antes: "Runner vs
+Tower"). É provisório: a checagem oficial de marca (bases de marcas) e a varredura de
+colisão na Play ainda precisam ser feitas antes de gastar com arte, ícone ou domínio
+(RT-4 e RT-9).
+
+**Base:** `docs/varredura.md` (busca web de 2026-11-20, não oficial): nenhum app com o nome
+exato; existem o jogo de navegador *Claybreak Range* e o histórico *Clay Jam* (colisão
+baixa a média).
+
+**Não alterado nesta decisão:** o nome do repositório (`runner-vs-tower`), da pasta, o
+application ID provisório (`com.jungledegree.runnervstower`) e o nome de exibição. Renomear
+fica para quando o nome for confirmado pela checagem de marca; o application ID, em
+especial, não deve mudar depois da primeira publicação.
