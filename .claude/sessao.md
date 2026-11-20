@@ -9,13 +9,14 @@
 - **Entrega:** `sed -n '/^## RT-X /,/^## RT-/p' docs/plano-de-entregas.md | head -60` (trocar X).
 - **Validação:** RT-0: documentos gerados e coerentes. RT-2 em diante, em batchmode com o Editor
   fechado (`-batchmode -nographics -buildTarget Android -projectPath <projeto> -logFile <log>`):
-  `-executeMethod Claybreak.Editor.PrototypeSceneBuilder.BuildAndQuit` (cena/dados),
+  `-executeMethod Claybreak.Editor.ClaybreakSceneBuilder.BuildAndQuit` (cena/dados),
   `-executeMethod Claybreak.Editor.ClaybreakValidation.RunAndQuit`,
   `-executeMethod JungleDegree.StudioKit.Editor.EngineIsolationValidation.RunAndQuit`,
   `-runTests -testPlatform EditMode` e `-runTests -testPlatform PlayMode`,
-  `-executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit [-claybreakMeasure]`; e o gate 3x no
-  OPPO CPH2791 com `Tools/rt2-gate.sh` (exige o usuário com o aparelho conectado; passo a passo em
-  `docs/rt2-prototipo.md` seção 6).
+  `-executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit [-claybreakMeasure]`. Tudo isso de uma
+  vez (mais as capturas de arte): `Tools/rt4-check.sh [/c/temp/rt4] ["passos"]`. E o gate 3x no OPPO
+  CPH2791 com `Tools/rt2-gate.sh <rótulo> 60 20 <apk de medição>` (aparelho conectado e desbloqueado;
+  passo a passo em `docs/rt4-fatia.md` seção 4).
 - **Custo:** liberado pesquisa web gratuita e edição de documentos. Qualquer gasto pago, upload
   ao Play Console/AdMob ou cópia de código do Wild Pack (reuso só pelo pacote studiokit): parar e perguntar.
 - **Contexto:** jogo hybrid-casual de multidão com portões matemáticos e assalto a uma torre,
@@ -37,3 +38,7 @@
 - 2026-11-20 (RT-2): se o Editor do Unity estiver aberto neste projeto, não fechá-lo sem o usuário;
   validar numa cópia em caminho curto (`C:\temp\rt2\proj`, manifest com caminho absoluto do kit; o
   scratchpad estoura o limite de 260 caracteres do Unity) e trazer de volta só os arquivos gerados.
+- 2026-11-20 (RT-4): o daemon do adb e o cabo do OPPO caem entre comandos; rodar `adb start-server` antes e
+  conferir `adb devices` na hora do gate. Unity em batchmode SEM `-nographics` renderiza (capturas de arte
+  com `ArtDirectionCapture`). Em Python no Windows, gravar com `newline='
+'` para não trocar o fim de linha.

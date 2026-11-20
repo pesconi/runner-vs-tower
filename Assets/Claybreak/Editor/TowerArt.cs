@@ -39,7 +39,7 @@ namespace Claybreak.Editor
     public static class TowerArt
     {
         /// <summary>
-        /// Styles used in the game until the art direction is approved (decision D14, ficha in
+        /// Styles used in the game until the art direction is approved (decision D17, ficha in
         /// docs/decisoes.md). Changing these two lines and rebuilding the scene swaps the art.
         /// </summary>
         public const TowerStyle ChosenTower = TowerStyle.StoneBastion;
@@ -70,8 +70,8 @@ namespace Claybreak.Editor
         private static void StoneBastion(Transform body, ArtPalette p, ref TowerParts parts)
         {
             Prim.Box(body, "Plinth", new Vector3(0f, 0.5f, 3f), new Vector3(10f, 1f, 7f), p.StoneDark);
-            Prim.Box(body, "FrontWall", new Vector3(0f, 2.6f, 0.9f), new Vector3(9f, 3.4f, 1.6f), p.Stone);
-            Prim.Box(body, "Keep", new Vector3(0f, 2.6f, 4f), new Vector3(8f, 3.4f, 5f), p.StoneWarm);
+            Prim.Box(body, "FrontWall", new Vector3(0f, 2.6f, 0.9f), new Vector3(9f, 3.4f, 1.6f), p.StoneLight);
+            Prim.Box(body, "Keep", new Vector3(0f, 2.6f, 4f), new Vector3(8f, 3.4f, 5f), p.Stone);
             Prim.Box(body, "Gate", new Vector3(0f, 2.1f, 0.05f), new Vector3(2.4f, 2.6f, 0.2f), p.Wood);
             Prim.Box(body, "GateArch", new Vector3(0f, 3.5f, 0.06f), new Vector3(3f, 0.4f, 0.25f), p.StoneDark);
             for (int side = -1; side <= 1; side += 2)
@@ -91,20 +91,21 @@ namespace Claybreak.Editor
                 Transform tier = Tier(body, i, ref parts);
                 float w = widths[i];
                 float h = i == 3 ? 1.6f : 1.9f;
-                Prim.Box(tier, "Block", new Vector3(0f, y + h * 0.5f, 3.6f), new Vector3(w, h, w * 0.65f), i % 2 == 0 ? p.Stone : p.StoneWarm);
+                Prim.Box(tier, "Block", new Vector3(0f, y + h * 0.5f, 3.6f), new Vector3(w, h, w * 0.65f), i % 2 == 0 ? p.StoneLight : p.Stone);
                 Prim.Box(tier, "Band", new Vector3(0f, y + h - 0.1f, 3.6f), new Vector3(w + 0.3f, 0.25f, w * 0.65f + 0.3f), p.StoneDark);
                 for (int c = 0; c < 4; c++)
                 {
                     float sx = (c % 2 == 0 ? -1f : 1f) * (w * 0.5f - 0.3f);
                     float sz = 3.6f + (c < 2 ? -1f : 1f) * (w * 0.325f - 0.3f);
-                    Prim.Box(tier, "Merlon", new Vector3(sx, y + h + 0.3f, sz), new Vector3(0.6f, 0.6f, 0.6f), p.Stone);
+                    Prim.Box(tier, "Merlon", new Vector3(sx, y + h + 0.3f, sz), new Vector3(0.6f, 0.6f, 0.6f), p.StoneLight);
                 }
 
                 Prim.Box(tier, "Slit", new Vector3(0f, y + h * 0.5f, 3.6f - w * 0.325f - 0.02f), new Vector3(0.3f, 0.8f, 0.05f), p.Glow);
                 if (i == 3)
                 {
-                    Prim.Cyl(tier, "Pole", new Vector3(0f, y + h + 1.4f, 3.6f), new Vector3(0.12f, 1.2f, 0.12f), p.Wood);
-                    Prim.Box(tier, "Flag", new Vector3(0.6f, y + h + 2.2f, 3.6f), new Vector3(1.1f, 0.7f, 0.06f), p.Banner);
+                    // A brazier, not a flag: a war post, not a toy castle (GDD 9; review of D17).
+                    Prim.Cyl(tier, "Brazier", new Vector3(0f, y + h + 0.5f, 3.6f), new Vector3(1f, 0.35f, 1f), p.Iron);
+                    Prim.Ball(tier, "Fire", new Vector3(0f, y + h + 0.95f, 3.6f), new Vector3(0.9f, 0.6f, 0.9f), p.Glow);
                 }
 
                 y += h + 0.15f;
@@ -153,9 +154,12 @@ namespace Claybreak.Editor
 
         private static void ForgeColossusExtras(Transform body, ArtPalette p)
         {
-            Prim.Box(body, "Core", new Vector3(0f, 6f, -0.3f), new Vector3(2.4f, 2.4f, 0.2f), p.GlowHot);
-            Prim.Box(body, "CoreCage", new Vector3(0f, 6f, -0.4f), new Vector3(0.25f, 2.8f, 0.25f), p.Iron);
-            Prim.Box(body, "CoreCage2", new Vector3(0f, 6f, -0.4f), new Vector3(2.8f, 0.25f, 0.25f), p.Iron);
+            // A furnace grate: vertical bars only, so the glow never reads as a face (GDD 2).
+            Prim.Box(body, "Core", new Vector3(0f, 6f, -0.3f), new Vector3(2.6f, 1.6f, 0.2f), p.GlowHot);
+            for (int bar = -2; bar <= 2; bar++)
+            {
+                Prim.Box(body, "Grate", new Vector3(bar * 0.55f, 6f, -0.4f), new Vector3(0.2f, 2f, 0.25f), p.Iron);
+            }
             for (int side = -1; side <= 1; side += 2)
             {
                 Prim.Cyl(body, "Stack", new Vector3(side * 4.6f, 6.5f, 5.5f), new Vector3(1.1f, 6f, 1.1f), p.Iron);

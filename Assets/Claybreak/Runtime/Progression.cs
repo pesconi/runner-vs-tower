@@ -27,6 +27,9 @@ namespace Claybreak
     /// </summary>
     public sealed class Progression
     {
+        /// <summary>Coin ceiling: a hand-edited save can never overflow the sums below.</summary>
+        public const int MaximumCoins = 99_999_999;
+
         private readonly ClaybreakWorld world;
 
         public Progression(ClaybreakWorld world, SaveData save)
@@ -89,7 +92,7 @@ namespace Claybreak
             ClaybreakLevel level = CurrentLevel;
             int stars = StarsFor(won, armyAtLine, armyLeft);
             int coins = CoinsFor(won, level.CoinReward, armyLeft, stars);
-            Save.coins += coins;
+            Save.coins = (int)System.Math.Min((long)Save.coins + coins, MaximumCoins);
             if (!won)
             {
                 Save.levelsLost++;
@@ -142,8 +145,8 @@ namespace Claybreak
 
             Save.nextLevel = Mathf.Clamp(Save.nextLevel, 0, count - 1);
             Save.startingArmyStep = Mathf.Clamp(Save.startingArmyStep, 0, world.StartingArmySteps.Count);
-            Save.coins = Mathf.Max(0, Save.coins);
-            Save.loop = Mathf.Max(0, Save.loop);
+            Save.coins = Mathf.Clamp(Save.coins, 0, MaximumCoins);
+            Save.loop = Mathf.Clamp(Save.loop, 0, 1000);
         }
     }
 }

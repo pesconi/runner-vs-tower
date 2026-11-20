@@ -17,6 +17,7 @@ namespace Claybreak.Editor
         public readonly Material Field = Solid("Field", new Color(0.2f, 0.17f, 0.17f));
         public readonly Material Stone = Solid("Stone", new Color(0.46f, 0.42f, 0.42f));
         public readonly Material StoneDark = Solid("StoneDark", new Color(0.24f, 0.21f, 0.22f));
+        public readonly Material StoneLight = Solid("StoneLight", new Color(0.72f, 0.69f, 0.64f));
         public readonly Material StoneWarm = Solid("StoneWarm", new Color(0.58f, 0.5f, 0.44f));
         public readonly Material Iron = Solid("Iron", new Color(0.12f, 0.12f, 0.13f));
         public readonly Material IronWarm = Solid("IronWarm", new Color(0.22f, 0.19f, 0.18f));

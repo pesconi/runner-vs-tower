@@ -626,7 +626,7 @@ namespace Claybreak.Editor
             Text army = Label("Army", root, new Vector2(0f, 1f), new Vector2(60f, -235f), 62, TextAnchor.UpperLeft);
             Text brutes = Label("Brutes", root, new Vector2(0f, 1f), new Vector2(60f, -315f), 46, TextAnchor.UpperLeft);
             brutes.color = new Color(1f, 0.55f, 0.45f);
-            Image coin = Img("CoinIcon", root, pill, new Vector2(1f, 1f), new Vector2(-250f, -150f), new Vector2(46f, 46f), Gold);
+            Image coin = Img("CoinIcon", root, pill, new Vector2(1f, 1f), new Vector2(-215f, -150f), new Vector2(46f, 46f), Gold);
             coin.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             Text coins = Label("Coins", root, new Vector2(1f, 1f), new Vector2(-60f, -150f), 52, TextAnchor.MiddleRight);
             coins.rectTransform.sizeDelta = new Vector2(170f, 90f);
@@ -677,20 +677,20 @@ namespace Claybreak.Editor
             RectTransform home = Stretch("Home", screensRect);
             Image veil = home.gameObject.AddComponent<Image>();
             veil.color = new Color(0.06f, 0.04f, 0.05f, 0.55f);
-            Image coin = Img("CoinIcon", home, pill, new Vector2(1f, 1f), new Vector2(-250f, -150f), new Vector2(46f, 46f), Gold);
+            Image coin = Img("CoinIcon", home, pill, new Vector2(1f, 1f), new Vector2(-215f, -150f), new Vector2(46f, 46f), Gold);
             coin.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             Text homeCoins = Label("Coins", home, new Vector2(1f, 1f), new Vector2(-60f, -150f), 52, TextAnchor.MiddleRight);
             homeCoins.rectTransform.sizeDelta = new Vector2(170f, 90f);
             homeCoins.rectTransform.pivot = new Vector2(1f, 0.5f);
             // No game name on screen until the name check (D1) clears: a call to action instead.
-            Text title = Label("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -330f), 112, TextAnchor.MiddleCenter);
+            Text title = Label("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -300f), 92, TextAnchor.MiddleCenter);
             title.text = "STORM THE TOWER";
             title.color = Orange;
-            Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -450f), 46, TextAnchor.MiddleCenter);
+            Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -440f), 46, TextAnchor.MiddleCenter);
             var dots = new UnityEngine.Object[LevelDots];
             for (int i = 0; i < LevelDots; i++)
             {
-                dots[i] = Img("Dot" + (i + 1), home, pill, new Vector2(0.5f, 1f), new Vector2((i - (LevelDots - 1) * 0.5f) * 96f, -545f),
+                dots[i] = Img("Dot" + (i + 1), home, pill, new Vector2(0.5f, 1f), new Vector2((i - (LevelDots - 1) * 0.5f) * 96f, -620f),
                     new Vector2(52f, 52f), Color.white);
             }
 

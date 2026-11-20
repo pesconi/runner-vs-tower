@@ -172,6 +172,15 @@ namespace Claybreak.Tests
         }
 
         [Test]
+        public void CoinsNeverOverflow()
+        {
+            var progression = new Progression(world, new SaveData { coins = int.MaxValue });
+            Assert.AreEqual(Progression.MaximumCoins, progression.Save.coins);
+            progression.Complete(true, 100, 100);
+            Assert.AreEqual(Progression.MaximumCoins, progression.Save.coins);
+        }
+
+        [Test]
         public void SaveRoundTrips()
         {
             var save = new SaveData { nextLevel = 3, loop = 1, coins = 250, startingArmyStep = 2, bruteUnlocked = true, stars = new[] { 3, 2, 1 } };

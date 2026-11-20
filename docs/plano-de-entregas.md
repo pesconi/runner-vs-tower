@@ -153,10 +153,18 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   menos 1 torre e 1 chefe, 1 upgrade e 1 unidade especial ponta-a-ponta, save.
   Objetivo: provar que o jogo se sustenta por uma sessão de 5 minutos.
 - **Depende de:** RT-3 (passou) — RT-3 dispensada em 2026-11-20; depende só da RT-2 concluída.
-- **Aceite:** fatia no OPPO; gate 3× aprovado com a torre mais pesada; segundo
-  teste informal com os mesmos 5 + 2 novos (sem critério numérico novo, só
-  "voltaria amanhã?"); lista do que falta para a produção.
+- **Aceite:** fatia no OPPO; gate 3× aprovado com a torre mais pesada; o
+  usuário e a Flávia jogam a fatia no OPPO e respondem "voltaria amanhã?" (sem
+  critério numérico); lista do que falta para a produção. (Antes: "os mesmos 5
+  + 2 novos" — trocado em 2026-11-20 porque a RT-3 foi dispensada, D13; registro
+  em `decisoes.md`.)
 - **Exige o usuário:** aprovar direção de arte da torre e do chefe; testar.
+- **Status: entregue em 2026-11-20, aceite pendente** (`Stage RT.4a`/`RT.4b`; detalhes em
+  `rt4-fatia.md`): 7 fases, 3 torres, 3 defesas, chefe, menu, HUD, resultado, som e vibração, upgrade,
+  Bruto e save no jogo; validações em batchmode passaram. Falta: gate 3× no OPPO com a torre do chefe
+  (aparelho desconectado na sessão), o usuário e a Flávia jogarem ("voltaria amanhã?"), fichas D17
+  (arte da torre e do chefe; o jogo usa A/A provisórias) e D18 (nome). Pendência "120 fps" da RT-2
+  analisada e fechada (`rt4-fatia.md` seção 3).
 
 ## RT-5 — Produção: núcleo de meta
 

@@ -196,3 +196,165 @@ portão RT-3) fica sem gatilho antes do lançamento — os critérios pós-lanç
 antes do RT-9. Risco aceito: o jogo só foi validado pelo próprio estúdio; a primeira opinião de fora
 virá no teste fechado da Play (se a conta exigir) ou no soft launch (RT-10). T-RT2-6 (multidão mínima
 de 150) fica como limite técnico, sem portão: o gate 3× já passou com 299 em voo.
+
+## 2026-11-20 — RT-4 — Aceite da fatia sem os testadores da RT-3 — ajuste de plano (sessão RT-4)
+
+Com a RT-3 dispensada (D13), o aceite da RT-4 "segundo teste informal com os mesmos 5 + 2 novos" não
+tem mais a quem se referir. Troca registrada no plano: **o usuário e a Flávia jogam a fatia no OPPO e
+respondem "voltaria amanhã?"** (sem critério numérico).
+
+## 2026-11-20 — T-RT4-1 — Fatia vertical numa cena só, conteúdo como código — técnica (sessão RT-4)
+
+O mundo inteiro (7 fases, 3 corpos de torre, defesas, menu, HUD, resultado) vive numa cena só, com
+tudo pré-alocado; trocar de fase reposiciona objetos, nunca cria (regra 2.2.1). As fases são escritas
+em `Assets/Claybreak/Editor/WorldContent.cs` e o construtor regrava os assets a cada build: ajuste de
+balanço vira mudança de código revisável, e um ajuste feito à mão no Inspector não se perde em silêncio.
+Módulo renomeado de `Prototype/` para `Content/` (cena `Claybreak.unity`), com os `.meta` preservados.
+
+## 2026-11-20 — T-RT4-2 — Menu, HUD e resultado escritos no jogo com as peças de UI do kit — técnica (sessão RT-4)
+
+O kit (até UI.4) tem as peças de interface (`ClayUi`: pílula, sombra, brilho, aperto, área de toque,
+ícones desenhados), mas não tem telas: `MainMenuView`/`GameResultView` ficaram no Wild Pack e falam de
+moedas, nível e URL dele; levá-las ao kit exigiria desmontar o fluxo do Wild Pack com o aceite dele.
+As telas deste jogo (`ClaybreakScreens`, `ClaybreakHud`) usam só as peças do kit. Candidatos ao kit
+quando houver segundo uso: "tela inicial com cartões" e "resultado com estrelas".
+
+## 2026-11-20 — T-RT4-3 — Sons próprios do jogo fora dos papéis do kit — técnica (sessão RT-4)
+
+O motor de som do kit tem papéis fixos (`GameSound`). Queda da torre, tiro do canhão, andar caindo,
+muralha, varredor, caixote e chefe são tocados por `ClaybreakSfx` (vozes pré-alocadas), respeitando o
+mudo e a vibração do kit. Pauta do kit: uma tabela de "sons extras" no `ThemeAudio` eliminaria a classe.
+
+## 2026-11-20 — T-RT4-4 — Unidade especial "Bruto", upgrade e save — técnica (sessão RT-4)
+
+- Unidade especial (GDD 6 "Pesada"): o **Bruto**. Destrava ao vencer a fase 3; aparece em caixotes na
+  corrida (gancho A: a corrida decide a composição); sai a cada 3º lançamento; maior, mais escuro, 4× de
+  dano na torre e na muralha, aguenta 1 golpe (canhão ou varredor). Clones dos portões ×N são comuns.
+- Upgrade (GDD 6): **exército inicial**, 6 degraus (+5 a +46 unidades), pago com moedas das fases.
+- Save: JSON versionado (`SaveData` v1) no PlayerPrefs, leitura tolerante (save danificado ou de versão
+  futura começa do zero, sem travar); valores fora da faixa são limitados. Preferências de som e
+  vibração continuam nas chaves do kit.
+- Depois do chefe o mundo recomeça com torres e muralhas 25% mais fortes por volta.
+- Estrelas por sobreviventes (≥ 50% = 3, ≥ 20% = 2, senão 1); moedas = prêmio da fase + sobreviventes +
+  bônus por estrela; derrota paga 1/8 do prêmio.
+
+## 2026-11-20 — T-RT4-5 — Nível do gate com a torre mais pesada — técnica (sessão RT-4)
+
+O nível de medição usa o corpo do chefe (o mais pesado), as três defesas ligadas (muralha, canhão com
+12 pedras, varredor) e 300 unidades em voo recicladas. O validador reprova se faltar alguma condição.
+
+## Fichas pendentes (aguardando o usuário)
+
+### DECISÃO D17 — Direção de arte da torre e do chefe
+
+O que você está aprovando: a aparência final da torre comum (fases 1, 2, 4 e 6) e do chefe (fase 7)
+do primeiro mundo, entre as opções desenhadas; a escolhida vira a arte final da fatia e o modelo das
+próximas torres.
+
+Por que agora: a RT-4 pede arte final de pelo menos 1 torre e 1 chefe, e o plano exige a sua aprovação
+da direção. Nada mais está travado: o jogo já roda com a opção recomendada (A e A) como provisória;
+trocar é mudar duas linhas e reconstruir a cena.
+
+Contexto que você precisa saber:
+- Imagens: `docs/art/rt4/torre-opcoes.png` e `docs/art/rt4/chefe-opcoes.png` (letras A, B, C da
+  esquerda para a direita); a torre A e o chefe A como aparecem no assalto (distância real de jogo)
+  em `docs/art/rt4/jogo-assalto-torre.png` e `docs/art/rt4/jogo-assalto-chefe.png`; o menu em
+  `docs/art/rt4/jogo-menu.png`. Cópias em `C:\temp\rt4\art\`.
+- Todas são feitas de formas simples (blocos, cilindros, esferas) montadas por código — meio gratuito e
+  próprio, sem ferramenta, asset ou geração de imagem paga (fato: é como a cena é construída).
+- Cada torre tem 4 andares empilhados; cada andar que cai some de cima para baixo durante o assalto (é
+  o que mostra o progresso). O canhão fica na frente.
+- Direção do GDD (fato, seção 9 e seção 2): adulta, paleta escura e quente, torres com atitude
+  (fortaleza, forja, fábrica, ruína), nada de castelo de brinquedo, sem rosto nem olhos.
+- A forja (opção B da torre) já é a segunda torre do mundo (fases 3 e 5), seja qual for a escolha.
+
+Opções (torre):
+A) Bastião de pedra — fortaleza quadrada de pedra clara, ameias, estandartes vermelhos, tochas e um
+   braseiro no topo (sem bandeira, depois da segunda opinião).
+   + Lê bem de longe; contrasta com a forja das fases 3 e 5 e com a pista marrom.
+   - Riscos: pode parecer "castelo genérico" (chance média; impacto baixo) — dá para dar atitude com
+     detalhes depois (espetos, rachaduras). Volta atrás? sim, fácil.
+B) Forja de ferro — tambores pretos com frestas brilhando, chaminé.
+   + A mais "adulta" e marcante.
+   - Riscos: torre comum e segunda torre ficariam iguais (chance alta; impacto médio: o mundo perde
+     variedade) — exigiria desenhar outra segunda torre. Volta atrás? sim.
+C) Ruína de barro — tambores de terracota tortos, rachaduras, musgo.
+   + Casa com o tema massinha.
+   - Riscos: a inclinação lê como "já quebrada" antes de levar dano (chance média; impacto médio na
+     leitura do progresso). Volta atrás? sim.
+
+Opções (chefe):
+A) Cidadela gêmea — duas torres redondas laterais, coroa de espetos, portão com grade incandescente.
+   + Silhueta claramente maior e diferente das torres comuns.
+   - Riscos: parecida com o bastião A (chance média; impacto baixo) — a coroa e as torres laterais
+     separam. Volta atrás? sim.
+B) Colosso-forja — fornalha gigante com núcleo brilhando atrás de uma grade e duas chaminés.
+   + Muito imponente.
+   - Riscos: o brilho laranja compete com o aviso do canhão e com os portões (chance média; impacto
+     médio na leitura). Volta atrás? sim.
+C) Totem de barro — anéis de barro empilhados com chifres de osso.
+   + O mais estranho e memorável.
+   - Riscos: os chifres leem como pedaços soltos (chance média; impacto baixo); fica próximo da ruína C.
+     Volta atrás? sim.
+D) Adiar — segue com A e A provisórias até você jogar a fatia. Custo: a RT-4 fica com "arte final"
+   pendente de aprovação.
+
+Recomendação: torre A + chefe A — a dupla com melhor leitura nas 3 faixas e a poucos pixels, e o mundo
+fica com três silhuetas distintas (bastião, forja, cidadela).
+Segunda opinião (fable): concorda com o chefe A; discordou da torre A como estava (marrom sobre
+cenário marrom, a de menor contraste, e com a bandeira lembrando "castelo de brinquedo") e pediu
+captura na distância de jogo. Incorporado: pedra clara, bandeira trocada por braseiro, captura
+`jogo-assalto-torre.png`. Sugeriu também, como alternativa, a ruína C "endireitada" (contrasta e casa
+com o barro) — se preferir, responda "torre C reta".
+Se você não responder: o jogo segue com A e A como provisórias; nada mais espera por isso.
+
+Responda: "torre A, chefe A" (ou outra combinação), ou "explica melhor".
+
+### DECISÃO D18 — O nome "Claybreak": seguir, trocar ou checar à mão
+
+O que você está aprovando: o que fazer com o nome de trabalho "Claybreak" depois da checagem gratuita
+de marca de 2026-11-20.
+
+Por que agora: o plano pede a checagem antes de arte final e ícone. Não trava a RT-4: as telas do jogo
+não mostram o nome (o menu diz "STORM THE TOWER"); só o nome do app instalado no celular ainda é
+"Claybreak", para testes internos. Precisa sair antes do ícone e da ficha da loja (RT-9).
+
+Contexto que você precisa saber (pesquisa gratuita de 2026-11-20):
+- Lojas: existe um jogo de navegador **"Claybreak Range"** (tiro ao prato, da Gudossi, listado para PC,
+  Android e iOS, lançado em jun/2026; fato: playgama.com/game/claybreak-range) e **"Claybreaker - VR
+  Clay Shooting"** no Steam (Ammonite Design; fato: store.steampowered.com/app/657450). Gênero
+  diferente do nosso. Na Google Play não apareceu app chamado "Claybreak".
+- Marcas: nas bases que abriram, nenhuma marca "CLAYBREAK" nas classes 9 (software e jogos) e 41
+  (entretenimento). Há "CLAYBREAKER" nos EUA na classe 1 (produto químico de perfuração), sem relação.
+  USPTO, EUIPO/TMview e WIPO não carregaram sem navegador (resultado parcial).
+- **O INPI (Brasil) não abriu** para a busca automática. Para conferir à mão (5 minutos, grátis):
+  busca.inpi.gov.br/pePI → "Continuar" → Marca → Pesquisa básica → CLAYBREAK com pesquisa "Radical" →
+  olhar as classes 9 e 41; repetir com "CLAY BREAK".
+- A varredura anterior (D1) também citou o histórico *Clay Jam* (nome parecido, colisão baixa a média).
+- Atenção (corrigido pela segunda opinião): "Claybreak Range" **também é jogo** listado para Android,
+  portanto nas mesmas classes 9 e 41 que as nossas; só o gênero é outro. Lançado em jun/2026, o dono
+  pode registrar a marca antes de nós (não verificado se já registrou).
+- Inferência nossa: risco jurídico baixo a médio; a busca na loja vai misturar os resultados.
+
+Opções:
+A) Seguir com "Claybreak" como nome de trabalho; você faz à mão a busca do INPI (passo acima) e, se
+   quiser, também a do TMview (tmdn.org/tmview) e a do USPTO (tmsearch.uspto.gov), grátis, com
+   CLAYBREAK; a sessão da RT-9 leva dois nomes reserva já checados; nome final antes da RT-9.
+   + Nada muda agora; o jogo continua sem o nome na arte.
+   - Riscos: se o INPI tiver registro, troca-se depois (chance baixa; impacto baixo agora, porque ícone
+     e ficha ainda não existem). Volta atrás? sim, fácil.
+B) Trocar já o nome de trabalho (ideias não checadas: "Clay Siege", "Mudstorm", "Clayforce") e fazer
+   nova checagem.
+   + Evita a mistura de busca com "Claybreak Range".
+   - Riscos: a nova checagem pode achar outro conflito (chance média); gasta uma sessão. Volta atrás? sim.
+C) Fixar "Claybreak" como nome final agora.
+   - Riscos: mistura de busca na loja (chance alta; impacto médio no tráfego orgânico) e INPI não
+     checado. Volta atrás? com custo depois da publicação.
+
+Recomendação: A — nada da fatia depende do nome, e a decisão final fica melhor perto da ficha da loja,
+com o INPI conferido por você.
+Segunda opinião (fable): concorda com A, desde que o risco seja dito como "mesma classe" (corrigido
+acima) e a checagem manual inclua TMview e USPTO (incluído na opção A).
+Se você não responder: segue A (o nome não aparece na arte do jogo).
+
+Responda: A, B (com o nome que preferir), C, ou "explica melhor".
