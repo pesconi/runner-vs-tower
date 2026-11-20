@@ -71,3 +71,19 @@ alternável para teste.
 foi achado jogo que una corrida real e assalto a torre com defesas. Limite: só texto de
 fichas, sem capturas. Substitui a linha "D2 — adiar" acima; o portão RT-3 (D16) continua
 sendo o teste de que o gancho é sentido como diferente.
+
+## 2026-11-20 — D14 — Plataforma da primeira versão — **A** — usuário
+
+**Texto aprovado:** a primeira versão do Runner vs Tower sai só para Android (Google Play).
+iOS fica fora até uma decisão nova, depois de ver o resultado do Android.
+
+## 2026-11-20 — D15 — Prioridade entre Wild Pack e Runner vs Tower — **B** — usuário
+
+**Texto aprovado (opção B, a recomendação era A):** os dois jogos andam no mesmo ritmo; o
+Wild Pack não passa automaticamente à frente quando precisar de atualização. Sem prazo fixo
+para o novo jogo.
+
+**Risco registrado:** um incidente no Wild Pack (bug, política da Play, anúncios) pode ficar
+esperando enquanto o novo jogo avança (chance baixa, impacto alto: a conta da Play é a mesma).
+**Como mitigar sem mudar a decisão:** o maestro avisa o usuário na hora em que um incidente
+do Wild Pack aparecer, e a prioridade naquele caso volta a ser decisão dele.
