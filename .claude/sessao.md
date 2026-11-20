@@ -14,7 +14,8 @@
   `-executeMethod JungleDegree.StudioKit.Editor.EngineIsolationValidation.RunAndQuit`,
   `-runTests -testPlatform EditMode` e `-runTests -testPlatform PlayMode`,
   `-executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit [-claybreakMeasure]`. Tudo isso de uma
-  vez (mais as capturas de arte): `Tools/rt4-check.sh [/c/temp/rt4] ["passos"]`. E o gate 3x no OPPO
+  vez (mais a tabela de economia `docs/rt5-economia.md` e as capturas de arte, que regravam
+  `docs/art/telas/`): `Tools/rt4-check.sh [/c/temp/rt4] ["passos"]`. E o gate 3x no OPPO
   CPH2791 com `Tools/rt2-gate.sh <rótulo> 60 20 <apk de medição>` (aparelho conectado e desbloqueado;
   passo a passo em `docs/rt4-fatia.md` seção 4).
 - **Custo:** liberado pesquisa web gratuita e edição de documentos. Qualquer gasto pago, upload
@@ -42,3 +43,8 @@
   conferir `adb devices` na hora do gate. Unity em batchmode SEM `-nographics` renderiza (capturas de arte
   com `ArtDirectionCapture`). Em Python no Windows, gravar com `newline='
 '` para não trocar o fim de linha.
+- 2026-11-20 (RT-5): no gate, a última janela de 5 s coincide com a coleta de memória do script e pode
+  estourar sozinha; se só ela falhar, rodar de novo uma vez e registrar as duas rodadas. O OPPO tem
+  bloqueio com senha: se `isKeyguardShowing=true`, seguir com o resto e conferir de novo antes de fechar.
+  O validador agora cobre catálogo e saves de exemplo (`Assets/Claybreak/Editor/SaveFixtures`); mudança
+  de catálogo exige reconstruir a cena (as listas da loja e dos mundos são montadas dele).
