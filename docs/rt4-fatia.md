@@ -1,4 +1,4 @@
-# RT-4 — Fatia vertical (Claybreak, nome de trabalho)
+# RT-4 — Fatia vertical (Clay Siege, nome de trabalho; código ainda "Claybreak")
 
 Data: 2026-11-20. Entrega RT-4 de `plano-de-entregas.md`. **[F]** = conferido nesta sessão;
 **[I]** = inferência ou proposta.
@@ -27,15 +27,15 @@ multidão, líder, câmera, bonecos de massinha, som, vibração, peças de UI);
 
 ## 2. Decisões desta entrega
 
-Técnicas, registradas em `decisoes.md` (T-RT4-1 a T-RT4-5): cena única com conteúdo como código; telas
+Técnicas, registradas em `decisoes.md` (T-RT4-1 a T-RT4-6): cena única com conteúdo como código; telas
 escritas no jogo com as peças de UI do kit; sons próprios fora dos papéis do kit; regras do Bruto,
-upgrade e save; nível do gate com a torre mais pesada.
+upgrade e save; nível do gate com a torre mais pesada; troca de nome só no que aparece.
 
-Do usuário (fichas em `decisoes.md`, seção "Fichas pendentes"):
-- **D17** — direção de arte da torre e do chefe (recomendação: torre A, chefe A).
-- **D18** — nome "Claybreak" depois da checagem gratuita de marca (recomendação: seguir como nome de
-  trabalho e conferir INPI/TMview/USPTO à mão). Enquanto isso **o nome não aparece nas telas**; o menu
-  mostra "STORM THE TOWER". O nome do app instalado continua "Claybreak" (só testes internos).
+Do usuário (respondidas em 2026-11-20, `decisoes.md`):
+- **D17** — torre A (bastião de pedra clara) e chefe A (cidadela): é a arte final da fatia.
+- **D18** — nome de trabalho **"Clay Siege"**. Checagem gratuita sem conflito no que abriu; INPI, USPTO,
+  TMview e WIPO ficam para conferir à mão antes da RT-9. O app instalado se chama "Clay Siege" e o menu
+  mostra "CLAY SIEGE". O ID do app e os nomes internos (`Claybreak`) não mudam (T-RT4-6).
 
 Ajuste de plano: o aceite "os mesmos 5 + 2 novos" virou "o usuário e a Flávia jogam a fatia no OPPO e
 respondem 'voltaria amanhã?'" (RT-3 dispensada, D13).
@@ -66,10 +66,10 @@ quisermos 120 Hz, é trabalho do kit (pedir o modo de tela ao Android) com o gat
    `[ClaybreakGate] tower=Boss inFlight=300 projectiles=12/12` (ou perto).
    Se falhar: baixar no `WorldContent.cs` (nível do gate) `maximumUnitsInFlight` 300 → 250 → 200 e
    `maximumProjectiles` 12 → 8, reconstruir (`Tools/rt4-check.sh /c/temp/rt4 "scene apk"`) e repetir.
-3. **Jogar a fatia** (você e a Flávia): `adb install -r C:\temp\rt4\Claybreak.apk` e abrir "Claybreak".
+3. **Jogar a fatia** (você e a Flávia): `adb install -r C:\temp\rt4\Claybreak.apk` e abrir "Clay Siege".
    Jogar do zero até o chefe (≈ 5 min). Cada um responde: **"voltaria amanhã?"** (sim/não e por quê).
    Durações por fase no log: `adb logcat -d -s Unity | findstr "WON LOST"`.
-4. **Responder as fichas D17 (arte) e D18 (nome).**
+4. Antes da RT-9: conferir "CLAY SIEGE" à mão no INPI, TMview e USPTO (passo em `decisoes.md`, D18).
 5. Anotar os resultados na seção 5 e na linha "Status" da RT-4 do plano; commit `docs: RT-4 aceite`.
 
 ## 5. Resultado no aparelho e dos jogadores (preencher)
@@ -104,8 +104,8 @@ O gate 3× **não** rodou: o OPPO apareceu no início da sessão com a tela bloq
 
 ## 7. O que falta para a produção (lista do aceite)
 
-1. **Arte final** conforme a D17 (e o mesmo nível de acabamento para a forja, defesas, caixote e
-   cenário); ícone e nome só depois da D18.
+1. **Arte final** no padrão da D17 também para a forja, defesas, caixote e cenário; ícone com o nome
+   "Clay Siege" depois da checagem manual de marca.
 2. **Balanço medido**: os números das 7 fases são estimativas [I]; ajustar com as partidas do aceite
    (duração por fase, onde perde) — RT-5.
 3. **Conteúdo de produção** (D12): mais mundos e fases por dados (o formato `ClaybreakLevel`/`WorldContent`

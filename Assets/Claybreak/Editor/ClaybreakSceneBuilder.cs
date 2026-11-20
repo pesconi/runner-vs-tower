@@ -257,6 +257,8 @@ namespace Claybreak.Editor
             light.intensity = 1.2f;
             light.shadows = LightShadows.None;
             sun.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            // Explicit: a scene made in batchmode (art captures) does not pick its sun by itself.
+            RenderSettings.sun = light;
 
             float middle = (TrackStartZ + trackEnd) * 0.5f;
             float length = trackEnd - TrackStartZ;
@@ -682,15 +684,17 @@ namespace Claybreak.Editor
             Text homeCoins = Label("Coins", home, new Vector2(1f, 1f), new Vector2(-60f, -150f), 52, TextAnchor.MiddleRight);
             homeCoins.rectTransform.sizeDelta = new Vector2(170f, 90f);
             homeCoins.rectTransform.pivot = new Vector2(1f, 0.5f);
-            // No game name on screen until the name check (D1) clears: a call to action instead.
-            Text title = Label("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -300f), 92, TextAnchor.MiddleCenter);
-            title.text = "STORM THE TOWER";
+            // Working name (D18), with the call to action under it.
+            Text title = Label("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -270f), 120, TextAnchor.MiddleCenter);
+            title.text = "CLAY SIEGE";
             title.color = Orange;
-            Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -440f), 46, TextAnchor.MiddleCenter);
+            Text tagline = Label("Tagline", home, new Vector2(0.5f, 1f), new Vector2(0f, -385f), 40, TextAnchor.MiddleCenter);
+            tagline.text = "STORM THE TOWER";
+            Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -470f), 46, TextAnchor.MiddleCenter);
             var dots = new UnityEngine.Object[LevelDots];
             for (int i = 0; i < LevelDots; i++)
             {
-                dots[i] = Img("Dot" + (i + 1), home, pill, new Vector2(0.5f, 1f), new Vector2((i - (LevelDots - 1) * 0.5f) * 96f, -620f),
+                dots[i] = Img("Dot" + (i + 1), home, pill, new Vector2(0.5f, 1f), new Vector2((i - (LevelDots - 1) * 0.5f) * 96f, -640f),
                     new Vector2(52f, 52f), Color.white);
             }
 

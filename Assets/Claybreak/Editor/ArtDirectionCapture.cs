@@ -89,6 +89,8 @@ namespace Claybreak.Editor
             Vector3 focus = new Vector3(0f, parts.BarHeight * 0.42f, 43f);
             cameraObject.transform.position = focus + new Vector3(-10f, 3f + parts.BarHeight * 0.15f, -19f);
             cameraObject.transform.LookAt(focus);
+            // A scene made in this frame has not registered its sun yet: the first render warms it up.
+            UnityEngine.Object.DestroyImmediate(Render(camera, 64, 64));
             return Render(camera, Width, Height);
         }
 

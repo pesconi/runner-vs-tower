@@ -23,7 +23,9 @@ namespace Claybreak.Editor
         public static void Apply()
         {
             PlayerSettings.companyName = "Jungle Degree";
-            PlayerSettings.productName = "Claybreak";
+            // Display name only (D18: working name "Clay Siege"). The application ID and the code namespaces stay
+            // as they are, so installs and saves are untouched (T-RT4-6).
+            PlayerSettings.productName = "Clay Siege";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, ApplicationId);
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
             PlayerSettings.Android.minSdkVersion = (AndroidSdkVersions)26;

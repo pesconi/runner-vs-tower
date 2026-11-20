@@ -243,7 +243,7 @@ mudo e a vibração do kit. Pauta do kit: uma tabela de "sons extras" no `ThemeA
 O nível de medição usa o corpo do chefe (o mais pesado), as três defesas ligadas (muralha, canhão com
 12 pedras, varredor) e 300 unidades em voo recicladas. O validador reprova se faltar alguma condição.
 
-## Fichas pendentes (aguardando o usuário)
+## Fichas D17 e D18 (respondidas em 2026-11-20; texto original mantido)
 
 ### DECISÃO D17 — Direção de arte da torre e do chefe
 
@@ -366,3 +366,38 @@ Responda: A, B (com o nome que preferir), C, ou "explica melhor".
 **Resposta do usuário (2026-11-20): B — trocar o nome de trabalho para "Clay Siege".** Próximo passo:
 checagem gratuita de marca e lojas para "Clay Siege" (mesmo roteiro da D1/D18, INPI à mão se não
 abrir) e troca do nome do app instalado; nome final continua confirmado antes da RT-9.
+
+## 2026-11-20 — D18 (continuação) — Checagem gratuita de "Clay Siege" — sessão RT-4
+
+Busca de 2026-11-20 por "Clay Siege", "ClaySiege", "Siege of Clay" e "Clay Sieges":
+- **Lojas:** Google Play, App Store (busca pública da Apple), Steam e itch.io (tag "clay") abriram e
+  **nenhum app ou jogo tem esse nome**. Os mais próximos são jogos só com "Siege" (Siege Arena da Voodoo,
+  City Siege, Hero Squad: Battle Siege) e jogos de massinha com outros nomes (Clay Guys, Clay Jam Classic,
+  Clay Soldiers, No Man's Clay).
+- **Marcas:** no espelho Trademarkia dos EUA não há CLAY SIEGE; "SIEGE" sozinho é palavra muito usada,
+  com marca viva na classe 41 (Georgia Game Developers Association) e outra nas classes 9/36 — o "Clay"
+  é o que torna o nome distinto (inferência nossa). **USPTO, EUIPO/TMview, WIPO e INPI não abriram** para
+  busca automática.
+- **Web:** nenhuma empresa ou marca com esses nomes.
+- **Resultado:** sem conflito no que foi acessível; **não é nome liberado**. Antes da RT-9, conferir à
+  mão (grátis, no navegador) INPI (busca.inpi.gov.br/pePI → Marca → Pesquisa básica → "CLAY SIEGE",
+  pesquisa "Radical", classes 9 e 41), TMview (tmdn.org/tmview) e USPTO (tmsearch.uspto.gov).
+- **Feito:** o nome exibido do app passou a "Clay Siege" e o menu mostra "CLAY SIEGE" com a chamada
+  "STORM THE TOWER".
+
+## 2026-11-20 — T-RT4-6 — Troca de nome só no que aparece — técnica (sessão RT-4)
+
+Com o nome de trabalho "Clay Siege" (D18), muda só o nome exibido (`PlayerSettings.productName`, que vira
+o rótulo do app no Android) e o título do menu. O application ID `com.jungledegree.runnervstower`, os
+namespaces e assemblies `Claybreak`, a pasta `Assets/Claybreak`, a chave do save (`Claybreak.Save`) e o
+repositório ficam como estão: trocar o ID quebraria a instalação por cima e o save do aparelho, e os
+nomes internos não aparecem para o jogador. Renomear o ID, se for preciso, só uma vez e antes da
+primeira publicação (RT-9).
+
+## 2026-11-20 — D17 (continuação) — Arte final aplicada — sessão RT-4
+
+Torre A (bastião de pedra clara, braseiro no topo) e chefe A (cidadela) passam de provisórios a arte
+final da fatia (`TowerArt.ChosenTower`/`ChosenBoss`). As imagens de comparação de `docs/art/rt4/` foram
+regeradas: a versão anterior saiu sem a luz do sol (só luz ambiente) e mostrava a torre A marrom escura;
+o jogo já usava a pedra clara.
+

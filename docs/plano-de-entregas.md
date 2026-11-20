@@ -162,9 +162,9 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Status: entregue em 2026-11-20, aceite pendente** (`Stage RT.4a`/`RT.4b`; detalhes em
   `rt4-fatia.md`): 7 fases, 3 torres, 3 defesas, chefe, menu, HUD, resultado, som e vibração, upgrade,
   Bruto e save no jogo; validações em batchmode passaram. Falta: gate 3× no OPPO com a torre do chefe
-  (aparelho desconectado na sessão), o usuário e a Flávia jogarem ("voltaria amanhã?"), fichas D17
-  (arte da torre e do chefe; o jogo usa A/A provisórias) e D18 (nome). Pendência "120 fps" da RT-2
-  analisada e fechada (`rt4-fatia.md` seção 3).
+  (aparelho desconectado na sessão) e o usuário e a Flávia jogarem ("voltaria amanhã?"). D17 (torre A,
+  chefe A, arte final aplicada) e D18 (nome de trabalho "Clay Siege", nome exibido trocado) respondidas
+  em 2026-11-20. Pendência "120 fps" da RT-2 analisada e fechada (`rt4-fatia.md` seção 3).
 
 ## RT-5 — Produção: núcleo de meta
 

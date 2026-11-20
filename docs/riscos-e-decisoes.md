@@ -177,7 +177,7 @@ uma antes da entrega indicada.
 | **D15** | **Prioridade em relação ao Wild Pack:** se o Wild Pack precisar de atualização, quem ganha as semanas | Uma pessoa só | RT-0 | Wild Pack tem prioridade nas semanas de incidente; o plano desliza — **decidido em 2026-11-20: B** (os dois jogos no mesmo ritmo) |
 | **D16** | **Critério de "parar":** aceitar os gatilhos dos riscos R1, R3, R4 | Evita insistir em jogo que não funciona | RT-0 | Aceitar — **decidido em 2026-11-20: A** (só o portão RT-3; critérios pós-lançamento ficam para antes do RT-9); **portão RT-3 dispensado em 2026-11-20** — sem gatilho de parada antes do RT-9 |
 | **D17** | **Direção de arte da torre e do chefe** (opções A/B/C de cada, em `docs/art/rt4/`) | Arte final da fatia (RT-4) e modelo das próximas torres | aceite da RT-4 | Torre A (bastião de pedra clara) + chefe A (cidadela) — ficha em `decisoes.md`; o jogo usa A/A provisórias |
-| **D18** | **Nome "Claybreak" depois da checagem de marca** (há o jogo "Claybreak Range"; INPI não conferido) | Ícone, ficha da loja e domínio dependem do nome | RT-9 | Seguir como nome de trabalho; o usuário confere INPI/TMview/USPTO à mão; dois nomes reserva checados na RT-9 — ficha em `decisoes.md` |
+| **D18** | **Nome "Claybreak" depois da checagem de marca** (há o jogo "Claybreak Range"; INPI não conferido) | Ícone, ficha da loja e domínio dependem do nome | RT-9 | Seguir como nome de trabalho; o usuário confere INPI/TMview/USPTO à mão; dois nomes reserva checados na RT-9 — ficha em `decisoes.md` — **checagem gratuita de "Clay Siege" em 2026-11-20: sem conflito no acessível; INPI/USPTO/TMview/WIPO a conferir à mão antes da RT-9** |
 
 ### Dúvidas abertas registradas pela sessão (sem resposta)
 
