@@ -516,6 +516,9 @@ Se você não responder: o jogo segue com esta tabela como provisória; nada mai
 
 Responda: A, B, C ou D, ou "A com <ajuste>", ou "explica melhor".
 
+**Resposta do usuário (2026-11-20): A** — a tabela atual é o ponto de partida da v1; total da loja e
+pagamento dos mundos novos acertados na RT-6; recalibração no soft launch.
+
 ### DECISÃO D12 — Quanto conteúdo no lançamento (mundos e fases)
 
 O que você está aprovando: a quantidade de mundos e de fases da versão de lançamento, que define o
@@ -573,3 +576,7 @@ launch), incluída.
 Se você não responder: a RT-6 começa pelo mundo 2 (que entra em qualquer opção) e para antes do 3º.
 
 Responda: A, B, C ou D, ou "A com <ajuste>", ou "explica melhor".
+
+**Resposta do usuário (2026-11-20): A** — 4 mundos de 10 fases (40 fases): o mundo 1 ganha 3 fases e
+entram 3 mundos novos (paleta, 1 torre nova e chefe novo cada; escudo no mundo 2). Se a RT-6 apertar,
+cai para C (4º mundo no soft launch) sem retrabalho.
