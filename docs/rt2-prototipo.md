@@ -165,8 +165,13 @@ da seção 6 gera de novo.
 
 | Data | APK | Teste | p95 quadro | >50 ms | main p95 | gpu p95 | PSS | em voo | pedras | Passou? |
 |---|---|---|---|---|---|---|---|---|---|---|
-| | measure | gate 60 fps | | | | | | | | |
-| | measure | gate 120 fps | | | | | | | | |
+| 2026-11-20 | measure (`bb8f1ff`) | gate 60 fps | 16 ms | 0,0% | 4,3–6,2 ms | 3,8–4,3 ms | 190 MB | 299 | 11–12/12 | **Sim** |
+| 2026-11-20 | measure (`bb8f1ff`) | gate 120 fps | 16 ms (max 33) | 0,0% | 4,3–5,3 ms | 3,8–4,2 ms | 190 MB | 299 | 11–12/12 | **Sim** (ver nota) |
+
+Nota: no teste "120 fps" o aparelho rodou a ~62 fps (avgFPS 62,4); o pedido de 120 Hz não foi atendido
+pelo app ou pelo modo de tela. Com main e gpu p95 abaixo de 6,2 ms contra o limite de 11 ms, a folga de 3×
+vale para 60 fps; 120 fps real fica para conferir na RT-4. Saídas completas: `C:\temp\rt2\gate-oppo-60.txt`
+e `C:\temp\rt2\gate-oppo-120.txt` (fora do repositório).
 
 Primeira impressão do usuário (3 partidas: duração, vitória/derrota, "de novo?"):
 
