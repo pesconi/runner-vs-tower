@@ -227,9 +227,9 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   isolamento do kit; teste offline de anúncios do Wild Pack 24/24 (o antigo `RewardedAdsValidation`), validadores
   1–3 do Wild Pack e save 87/87; revisão de segurança (3 achados corrigidos: toque duplo no continuar, intersticial
   sem reconferir consentimento, relógio adiantado travando o presente); APKs com anúncios de teste em
-  `C:\temp\rt7` (36,1 MB, +0,03 MB sobre a RT-6). **Pendente do usuário:** o OPPO não estava conectado; o gate 3×
-  do mundo 4 (`Tools/rt2-gate.sh rt7-w4 60 20 /c/temp/rt7/Claybreak-measure.apk 4`) e a instalação do APK normal
-  (`adb install -r /c/temp/rt7/Claybreak.apk`) ficam para quando ele ligar o celular; ver os anúncios de teste.
+  `C:\temp\rt7` (36,1 MB, +0,03 MB sobre a RT-6). **Gate 3× (2026-11-20, mundo 4, chefe, 299 em voo, 12/12
+  pedras):** quadro p95 16 ms, 0,0% > 50 ms, main p95 ≤ 5,4 ms, gpu p95 ≤ 4,7 ms, PSS 243 MB — **passou**
+  (`C:	empt2\gate-rt7-w4.txt`); APK normal instalado no OPPO. **Pendente do usuário:** ver os anúncios de teste.
 
 ## RT-8 — Produção: polimento, áudio e gate de release
 
