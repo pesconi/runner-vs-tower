@@ -21,7 +21,7 @@ lançamento jun/2027.
 | Entrega | Semanas base | Com ~20% | Janela [I] |
 |---|---|---|---|
 | RT-0 Decisões e varredura de loja | 1 | 1,2 | dez/2026 |
-| RT-1 Extração do kit do estúdio | 3 | 3,6 | jan/2027 |
+| ~~RT-1 Extração do kit do estúdio~~ — feita pelo plano K do `studiokit` (nov/2026) | 3 | 3,6 | ~~jan/2027~~ |
 | RT-2 Protótipo (1 semana) | 1 | 1,2 | início de fev |
 | RT-3 Teste do protótipo e portão de decisão | 0,5 | 0,6 | meados de fev |
 | RT-4 Fatia vertical | 2 | 2,4 | fev–início de mar |
@@ -56,7 +56,24 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 
 ## RT-1 — Extração do kit do estúdio
 
-- **Escopo:** executar a proposta de `reuso-tecnico.md` seção 5, em duas etapas.
+> **Feita pelo plano K do `studiokit` (2026-11-19 a 2026-11-20).** Por decisão K1
+> ([`decisoes.md`](decisoes.md)) a extração foi executada no repositório
+> [`studiokit`](https://github.com/pesconi/studiokit) pelas entregas K.0–K.6
+> ([plano de entregas do kit](../../studiokit/docs/plano-de-entregas.md)), não aqui. Resultado:
+> pacote `com.jungledegree.studiokit` `0.1.0`, tag `v0.1.0` no `studiokit`; o Wild Pack consome o
+> pacote por `file:` desde o commit `87834b5` do `MultiplierRunner` (registro 7.41 do
+> `SISTEMA.md` de lá: validadores iguais, save 87/87, AAB +0,01% contra o da tag
+> `wildpack-internal-0.1.0-2`, gate 3× aprovado no OPPO). Diferenças em relação ao escopo
+> original abaixo: o `GameManager` **não** foi dividido (K1: fica como módulo do Wild Pack; as
+> "regras da partida" só serão nomeadas comparando os dois jogos — pauta em
+> [`studiokit/docs/arquitetura.md` seção 5.1](../../studiokit/docs/arquitetura.md#51-pauta-de-observação-por-entrega-do-runner-vs-tower));
+> portões, percurso e fluxo ficaram no Wild Pack. O que está no pacote e o que ficou no jogo:
+> [`reuso-tecnico.md` seção 5.3](reuso-tecnico.md#53-fatiamento-real-kit-v0-studiokit-010).
+> Como este projeto referencia o kit:
+> [`studiokit/docs/consumo-runner-vs-tower.md`](../../studiokit/docs/consumo-runner-vs-tower.md)
+> (feito na primeira entrega de código, RT-2). O texto original fica abaixo como histórico.
+
+- **Escopo (original):** executar a proposta de `reuso-tecnico.md` seção 5, em duas etapas.
   (i) criar `.asmdef` dentro do projeto atual sem mover arquivos; compilar;
   validadores 1–4 iguais. (ii) mover para o pacote local, abrir o projeto
   novo e conferir que **o Wild Pack builda idêntico** (mesmos validadores, AAB

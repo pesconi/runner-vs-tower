@@ -11,5 +11,15 @@ Game: crowd runner with math gates, the army then attacks an enemy tower. Docs i
 - Work directly on `main`; no branches/worktrees unless the user asks. Never force-push.
 
 ## Reuse caveat
-Reusable Wild Pack code has NOT been extracted yet. It will become the `studiokit` package
-(delivery RT-1). Do not copy C# or assets from the Wild Pack repo (MultiplierRunner) before that.
+The shared engine now exists: package `com.jungledegree.studiokit` 0.1.0 (repo `studiokit`, tag
+`v0.1.0`), extracted from the Wild Pack by the studiokit K plan (RT-1 done). This project consumes it
+via `file:../../studiokit/com.jungledegree.studiokit` with the repos side by side in
+`C:\projects\games\` (setup: `../studiokit/docs/consumo-runner-vs-tower.md`). What is and is not in
+the package: `docs/reuso-tecnico.md` section 5.3.
+- Reuse goes through the package only. Never copy C# or assets from the Wild Pack repo
+  (MultiplierRunner). If something that stayed in the Wild Pack is needed here (gates, course,
+  screens, tools), move it into the kit first, as a studiokit delivery, keeping the `.meta` files.
+- The kit never names a game or theme; game content and this game's isolation term list
+  (`StudioKitIsolationTerms`) live here.
+- Changing the package also changes the Wild Pack: one session writing per repository, and the
+  studiokit acceptance (Wild Pack validators and save test) applies.

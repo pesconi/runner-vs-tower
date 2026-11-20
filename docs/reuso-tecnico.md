@@ -2,8 +2,15 @@
 
 Data: 2026-11-19. Fonte: `SISTEMA.md` (2.1–2.6, 3, 4, 5.4, 7.35) e listagem/
 tamanho dos arquivos de `Assets/Scripts`, lidos em 2026-11-19. **[F]** = lido no
-repositório; **[I]** = inferência/proposta nossa. Nada aqui foi executado: não
-há extração, refatoração nem código novo.
+repositório; **[I]** = inferência/proposta nossa. Seções 1–5.2 são a análise de
+2026-11-19, antes da extração (caminhos `Assets/Scripts/...` do Wild Pack daquela
+data). **Atualização 2026-11-20 (K.6 do `studiokit`):** a extração foi feita pelo
+plano K do [`studiokit`](https://github.com/pesconi/studiokit) (RT-1 em
+[`plano-de-entregas.md`](plano-de-entregas.md)); o que de fato está no pacote e o
+que ficou no Wild Pack está na **seção 5.3**, que substitui a proposta. Na tabela
+da seção 2, portões, percurso, obstáculos, moedas, `GameTheme`, `MainMenuView`,
+save e `ThemeKit` **não** estão no kit: reusá-los aqui exige primeiro levá-los ao
+kit (seção 5.3), nunca copiá-los do `MultiplierRunner`.
 
 ## 1. Estado atual do código [F]
 
@@ -81,7 +88,7 @@ Tudo isto é independente do que a multidão faz depois da corrida [I]:
 10. **Conteúdo**: arte de torres, defesas, unidades especiais e chefes; áudio
     de impacto/queda.
 
-## 5. Extração do "kit do estúdio" (proposta, **não executar**)
+## 5. Extração do "kit do estúdio" (feita pelo plano K do `studiokit`; 5.1–5.2 são a proposta original)
 
 ### 5.1 Problema
 
@@ -105,30 +112,65 @@ valida dependências); (ii) só então mover para o pacote e abrir o projeto nov
 B só se o usuário preferir velocidade ao custo de manutenção; C não, por quebrar
 a regra do motor.
 
-### 5.3 Fatiamento proposto de assemblies
+### 5.3 Fatiamento real: kit v0 (`studiokit` 0.1.0)
 
-Sugestão de limites, a validar quando abrir o código **[I]**:
+Fonte [F]: `studiokit` na tag `v0.1.0` (`com.jungledegree.studiokit/README.md`,
+`docs/arquitetura.md` seção 2, `docs/decisoes.md` T10–T18) e registro 7.41 do
+`SISTEMA.md` do Wild Pack (commit `87834b5`, K.5). A regra da decisão K1 foi:
+**o kit v0 contém só o que já era comum**; o `GameManager` não foi dividido.
 
-| Assembly | Conteúdo |
+**No pacote** (`com.jungledegree.studiokit`, um assembly por pasta, namespaces
+`JungleDegree.StudioKit.<Área>`):
+
+| Assembly / pasta | Conteúdo |
 |---|---|
-| `JungleDegree.Studio.Core` | Pool genérico, save/preferências, `GameAudio`/`ThemeAudio`/`GameHaptics`, tema base (estruturas de dados comuns), utilidades de dispositivo (`FrameRateGovernor`, `DevFrameTimingProbe`) |
-| `JungleDegree.Studio.Crowd` | `RunnerCrowd`, `RunnerUnit`, spatial hash, skins/visual/animação |
-| `JungleDegree.Studio.Gates` | portões, percurso, obstáculos, moedas |
-| `JungleDegree.Studio.UI` | `ClayUi` e componentes de UI |
-| `JungleDegree.Studio.Ads` | `RewardedAdService`, UMP (+ intersticial depois) |
-| `JungleDegree.Studio.Editor` | `ThemeKit`, validadores comuns, scripts de build/medição |
-| `<Jogo>.Game` | `GameManager` do jogo e seu contrato de tema |
+| `JungleDegree.StudioKit.Core` (`Runtime/Core`) | fase da partida `RunPhase` + classe base `RunPhaseSource` (o jogo herda e traduz o próprio estado; ordem `Menu, Playing, Lost, Won` é contrato com teste); `GameAudio`/`ThemeAudio` (motor de som, sem os clipes); `GameHaptics` + `Vibration.androidlib` (permissão `VIBRATE` vem do pacote); `FrameRateGovernor`; blocos de tema `ThemeWorldProfile`, `ThemeInterfaceStyle`, `ThemeColorRules`; `GeneratedEnvironmentAssets`; `RunnerTrackContactExtension` |
+| `JungleDegree.StudioKit.Characters` | visual de massinha (`RunnerSkin`, `RunnerBodyFrames`, malha/animação/pose/inclinação/sombra), `RunnerReactions`, `RunnerDeathEffects`, `ThemeCharacterRoster`, `IRunnerLook` |
+| `JungleDegree.StudioKit.Crowd` | `RunnerPool`, `RunnerUnit`, `RunnerCrowd`, `PlayerController`, `CameraFollow`, `DevFrameTimingProbe` |
+| `JungleDegree.StudioKit.World` | `RunnerEnvironmentView` (cenário, céu, neblina e pista por dados) |
+| `JungleDegree.StudioKit.UI` | `ClayUi`, `ClayPress`, `HudPulse`, `MobileHudLayout` |
+| `JungleDegree.StudioKit.Ads` | `RewardedAdService` (SDK `com.google.ads.mobile` 11.6.0, do OpenUPM) |
+| `JungleDegree.StudioKit.Editor` | `EngineIsolationValidation` (lê a lista de termos do jogo), `StageOProfileReport` |
+| `Shared/` | shaders `StudioKit/RunnerClay` e `StudioKit/RunnerGroundShadow`, materiais `RunnerClay`, `RunnerGroundShadow`, `RunnerSplat`, corpo `ClayRunner.fbx` + `ClayRunnerFrames.asset`, `ClayAccessories.fbx` |
+| `Tests/Editor` | testes EditMode do kit (pool sem alocação, ordem das fases, `RunPhaseSource`) |
+| `Tools~` | medição no aparelho (`stage7-measure.sh`, `v4-measure-run.sh`, exigem o application ID do jogo) e `compare-guids.py` |
 
-O ponto difícil é o **`GameManager`** (1.660 linhas, 1 classe): precisa ser
-dividido em um núcleo de estados + extensões por jogo. **Estimativa de esforço
-da extração: ver `plano-de-entregas.md` (RT-1)**; é inferência, sem prova.
+**Ficou no Wild Pack** (`MultiplierRunner`, assemblies `JungleDegree.WildPack` e
+`.Editor`):
+
+| O quê | Por quê |
+|---|---|
+| `GameManager` (fluxo, `GameState`, save v5 e migrações, loja, `PlayerColorCatalog`) | K1: não dividir agora; regra de vitória e save são do Wild Pack |
+| `GameTheme` (contrato agregado de tema) | junta blocos do kit com textos e regras do jogo; o kit recebe só os blocos (T7) |
+| portões e percurso (`CrowdGate`, `RandomGateCourse`, `GateVisualView`) | K1: só viram kit depois do segundo uso (este jogo muda a regra) |
+| nível (`CoinCollectible`, `FinishLine`, `FixedTrapCourse`, `RandomCoinCourse`, `RandomObstacleCourse`, `RunnerHazard`, `RunnerObstacle`) | dependem do `GameManager` e da geração de percurso |
+| telas (`GameUIController`, `MainMenuView`, `GameResultView`, HUD de moedas/contagem, link de privacidade) | falam de moedas, nível e URL do Wild Pack |
+| **áudio** (clipes em `Assets/Themes/Shared`) | conteúdo; o kit tem só o motor de som |
+| **`ClayZombie.fbx` e `ClayZombieFrames.asset`** | corpo de um tema do Wild Pack; levá-los poria conteúdo de jogo no kit (T14) |
+| **lista de isolamento** (`StudioKitIsolationTerms` do jogo) | os termos proibidos são de cada jogo; o kit só lê o arquivo (T12) |
+| **projeto Android** (`Assets/GoogleMobileAds`, templates do Gradle em `Assets/Plugins/Android`, application ID, assinatura, Player Settings) | identidade e build são de cada app |
+| **ferramentas de autoria** (`ClayRunnerAuthoring`, `ClaySkinAuthoring`, `LightweightVisualAuthoring`, `WorldVisualThemeAuthoring`, `Tools/blender/clay_runner.py` e `clay_accessories.py`) | continuam no Wild Pack, mas **gravam no pacote** (`StudioKitSharedPaths`): regenerar corpo, acessórios ou `RunnerSplat` muda o `studiokit`, e a mudança é commitada lá (T18) |
+| `ThemeKit`, demais validadores e editores, builds de release/medição, cenas, temas, módulos `Assets/Games/*` | citam o jogo ou abrem cenas dele; candidatos ao kit só quando este jogo precisar do mesmo |
+
+**Consequências para este jogo [I]:**
+- Reuso **só pelo pacote** (`file:../../studiokit/com.jungledegree.studiokit`,
+  ver [`studiokit/docs/consumo-runner-vs-tower.md`](../../studiokit/docs/consumo-runner-vs-tower.md)).
+  Nunca copiar C# ou assets do `MultiplierRunner`: o que este jogo precisar de lá
+  (portões, percurso, telas, ferramentas) vai primeiro ao kit, por entrega no
+  `studiokit` com os `.meta` preservados, para servir aos dois jogos.
+- Este jogo traz o próprio `GameManager`/fluxo (herdando `RunPhaseSource`), o
+  próprio contrato de tema, áudio, lista de isolamento e projeto Android.
+- As "regras da partida" (inimigo persistente, portão que dispara ação, condição
+  de vitória, HUD/save, geração de percurso) **não** têm API no kit: cada uma é
+  nomeada na primeira entrega deste jogo que tocar nela, comparando com o Wild
+  Pack (pauta em
+  [`studiokit/docs/arquitetura.md` seção 5.1](../../studiokit/docs/arquitetura.md#51-pauta-de-observação-por-entrega-do-runner-vs-tower)).
 
 ### 5.4 O que NÃO mexer
 
-Sem alterar o Wild Pack durante a publicação: a extração só começa depois que o
-Wild Pack estiver estável na Play, ou em **cópia de trabalho** com o mesmo
-histórico. Application ID, chaves de save e IDs do Wild Pack ficam intocados
-[F: SISTEMA.md 2.1].
+Application ID, chaves de save e IDs do Wild Pack ficam intocados [F:
+SISTEMA.md 2.1]. Mudança no kit que afete o Wild Pack passa pelo aceite do
+`studiokit` (validadores e save do Wild Pack; gate 3× quando tocar em desempenho).
 
 ## 6. Riscos de desempenho e o gate 3×
 
