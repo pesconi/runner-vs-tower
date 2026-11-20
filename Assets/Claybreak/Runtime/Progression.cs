@@ -465,6 +465,9 @@ namespace Claybreak
             Save.coins = Mathf.Clamp(Save.coins, 0, MaximumCoins);
             Save.levelsWon = Mathf.Clamp(Save.levelsWon, 0, MaximumCount);
             Save.levelsLost = Mathf.Clamp(Save.levelsLost, 0, MaximumCount);
+            Save.firstDay = Mathf.Max(0, Save.firstDay);
+            Save.dailyLastDay = Mathf.Max(0, Save.dailyLastDay);
+            Save.dailyClaims = Mathf.Clamp(Save.dailyClaims, 0, MaximumCount);
 
             var worlds = new WorldSave[catalog.Worlds.Count];
             for (int w = 0; w < worlds.Length; w++)
@@ -563,6 +566,41 @@ namespace Claybreak
         private bool UnlocksAt(UnitType unit, int world, int level)
         {
             return unit.UnlocksByLevel && unit.unlockLevel == level && catalog.WorldIndexOf(unit.unlockWorld) == world;
+        }
+
+        // ---------- rewards outside a level (RT-7) ----------
+
+        /// <summary>Coins from a rewarded ad (the level's coins once more); clamped like every other gain.</summary>
+        public void GrantBonusCoins(int coins)
+        {
+            AddCoins(coins);
+        }
+
+        /// <summary>Records the first launch day once (D1/D7); later calls keep the first one.</summary>
+        public void RecordFirstDay(int today)
+        {
+            if (Save.firstDay <= 0 && today > 0)
+            {
+                Save.firstDay = today;
+            }
+        }
+
+        public bool CanClaimDaily(int today) => DailyReward.CanClaim(Save, today);
+
+        /// <summary>Pays today's daily reward from <paramref name="cycle"/>; false (0 coins) when already claimed today.</summary>
+        public bool TryClaimDaily(int today, int[] cycle, out int coins)
+        {
+            coins = 0;
+            if (!CanClaimDaily(today))
+            {
+                return false;
+            }
+
+            coins = DailyReward.NextAmount(Save, cycle);
+            AddCoins(coins);
+            Save.dailyLastDay = today;
+            Save.dailyClaims = Mathf.Min(Save.dailyClaims + 1, MaximumCount);
+            return true;
         }
 
         private void AddCoins(int coins)

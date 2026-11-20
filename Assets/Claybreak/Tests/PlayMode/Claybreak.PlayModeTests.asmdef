@@ -5,6 +5,8 @@
         "Claybreak.Runtime",
         "JungleDegree.StudioKit.Core",
         "JungleDegree.StudioKit.Crowd",
+        "JungleDegree.StudioKit.Ads",
+        "JungleDegree.StudioKit.Analytics",
         "UnityEngine.UI",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

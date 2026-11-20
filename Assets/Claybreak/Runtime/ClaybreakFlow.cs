@@ -1,4 +1,5 @@
 using System;
+using JungleDegree.StudioKit.Analytics;
 using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Crowd;
@@ -13,7 +14,9 @@ namespace Claybreak
         Run,
         Assault,
         Won,
-        Lost
+        Lost,
+        /// <summary>The army fell in the assault and a rewarded continue is offered (RT-7, once per level).</summary>
+        ContinueOffer
     }
 
     /// <summary>
@@ -26,6 +29,10 @@ namespace Claybreak
     /// leader stays at the firing line (course speed 0) and its sideways drag picks the lane; the army is
     /// the leader's followers, launched one by one from the back. The whole world lives in one scene:
     /// changing level re-places preallocated objects, never creates them.
+    /// RT-7: the rewarded uses of GDD 7.2 (double the coins on the result, continue once per level after the army
+    /// falls in the assault; both optional, gain written on the button, a clear NO THANKS), the interstitial
+    /// between levels (off by configuration, D6), the daily reward on the home screen (D5), the privacy options
+    /// entry point (UMP) and the minimum measurement events (D4, no SDK yet).
     /// </summary>
     public sealed class ClaybreakFlow : RunPhaseSource
     {
@@ -62,6 +69,16 @@ namespace Claybreak
         [SerializeField] private Transform laneMarker;
         [SerializeField] private GameAudio gameAudio;
         [SerializeField] private FrameRateGovernor frameRateGovernor;
+        [SerializeField] private ClaybreakMonetization monetization;
+        [SerializeField] private ClaybreakAds ads;
+
+        private IAdGateway adGateway;
+        private bool continueUsed;
+        private int continueUnits;
+        private bool continueAdPending;
+        private bool resultBonusTaken;
+        private bool resultAdOffered;
+        private bool leavingResult;
 
         private Progression progression;
         private LevelOutcome lastOutcome;
@@ -101,6 +118,9 @@ namespace Claybreak
 
         /// <summary>Editor only (PlayMode tests): the save is not read nor written.</summary>
         public static bool EditorUsesFreshSave { get; set; }
+
+        /// <summary>Editor only (PlayMode tests): stands in for the scene's ads (the SDK has no ads in the Editor).</summary>
+        public static IAdGateway EditorAds { get; set; }
 #endif
 
         public FlowState State => state;
@@ -114,6 +134,7 @@ namespace Claybreak
         private ClaybreakLevel StressLevel => stressLevels[deviceGateWorld];
         public RunLoadout ActiveLoadout => runLoadout;
         public int LoadoutCount => loadoutCount;
+        public LevelOutcome LastOutcome => lastOutcome;
 
         /// <summary>Special units still in the army (all loadout slots).</summary>
         public int Specials
@@ -167,8 +188,19 @@ namespace Claybreak
             }
             else
             {
+                StartSession();
                 ShowMenu();
             }
+        }
+
+        // First launch day (D1/D7) and the session event; nothing leaves the device without a chosen tool (D4).
+        private void StartSession()
+        {
+            ClaybreakMetrics.Install();
+            int today = DailyReward.Today();
+            progression.RecordFirstDay(today);
+            WriteSave();
+            PlayerMetrics.SessionStarted(DailyReward.DaysSinceInstall(progression.Save, today));
         }
 
         private bool Configure(out string error)
@@ -176,14 +208,15 @@ namespace Claybreak
             if (catalog == null || stressLevels == null || scenery == null || theme == null || track == null || player == null || crowd == null
                 || pool == null || runCamera == null || assaultCamera == null || gates == null || field == null
                 || tower == null || cannon == null || hud == null || screens == null || sfx == null
-                || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null)
+                || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null
+                || monetization == null || ads == null)
             {
                 error = "a scene reference is missing (rebuild the scene with Claybreak > Build Scene).";
                 return false;
             }
 
             if (!catalog.TryValidate(pool.Capacity, out error) || !theme.TryValidate(out error) || !tower.TryValidate(out error)
-                || !scenery.TryValidate(catalog.Worlds.Count, out error))
+                || !scenery.TryValidate(catalog.Worlds.Count, out error) || !monetization.TryValidate(out error))
             {
                 return false;
             }
@@ -233,6 +266,16 @@ namespace Claybreak
             screens.WorldPressed += OnWorld;
             screens.PrimaryPressed += OnPrimary;
             screens.HomePressed += ShowMenu;
+            screens.DailyPressed += OnDaily;
+            screens.PrivacyPressed += () => adGateway.ShowPrivacyOptions();
+            screens.ResultAdPressed += OnResultAd;
+            screens.ContinueAdPressed += OnContinueAd;
+            screens.ContinueDeclined += OnContinueDeclined;
+            adGateway = ads;
+#if UNITY_EDITOR
+            adGateway = EditorAds ?? adGateway;
+#endif
+            adGateway.Changed += OnAdsChanged;
             error = null;
             return true;
         }
@@ -309,7 +352,169 @@ namespace Claybreak
             PrepareLevel(progression.CurrentLevel);
             hud.Show(false);
             screens.ShowHome(progression);
+            int today = DailyReward.Today();
+            screens.SetDaily(!deviceGate && progression.CanClaimDaily(today)
+                ? DailyReward.NextAmount(progression.Save, monetization.DailyRewards) : 0);
+            screens.SetPrivacyVisible(adGateway.PrivacyOptionsRequired);
             Enter(FlowState.Menu);
+        }
+
+        private void OnDaily()
+        {
+            if (state != FlowState.Menu || deviceGate
+                || !progression.TryClaimDaily(DailyReward.Today(), monetization.DailyRewards, out int coins))
+            {
+                return;
+            }
+
+            GameAudio.Play(GameSound.AdReward);
+            WriteSave();
+            Debug.Log($"[Claybreak] Daily reward: +{coins} coins (claim {progression.Save.dailyClaims}), total {progression.Save.coins}.", this);
+            ShowMenu();
+        }
+
+        // ---------- rewarded and interstitial (RT-7) ----------
+
+        private void OnAdsChanged()
+        {
+            if (state == FlowState.Menu)
+            {
+                screens.SetPrivacyVisible(adGateway.PrivacyOptionsRequired);
+            }
+
+            RefreshResultAd();
+        }
+
+        private bool OnResult => (state == FlowState.Won || state == FlowState.Lost) && resultShown;
+
+        // Double the coins of the level: offered only on a result that paid coins, once, and only when an ad is loaded.
+        private void RefreshResultAd()
+        {
+            if (!OnResult)
+            {
+                return;
+            }
+
+            bool offer = !deviceGate && monetization.DoubleCoins && !resultBonusTaken && !leavingResult && lastOutcome.Coins > 0
+                && adGateway.RewardedReady;
+            screens.SetResultAd(offer ? $"WATCH AD:  x2 COINS  +{lastOutcome.Coins} ¢" : null);
+            if (offer && !resultAdOffered)
+            {
+                resultAdOffered = true;
+                PlayerMetrics.RewardedAd(ClaybreakMetrics.DoubleCoinsPlacement, PlayerMetrics.Offered);
+            }
+        }
+
+        private void OnResultAd()
+        {
+            if (!OnResult || resultBonusTaken || leavingResult)
+            {
+                return;
+            }
+
+            resultBonusTaken = true;
+            screens.SetResultAd(null);
+            PlayerMetrics.RewardedAd(ClaybreakMetrics.DoubleCoinsPlacement, PlayerMetrics.Accepted);
+            ShowRewarded(earned =>
+            {
+                PlayerMetrics.RewardedAd(ClaybreakMetrics.DoubleCoinsPlacement, earned ? PlayerMetrics.Earned : PlayerMetrics.NotEarned);
+                if (!earned)
+                {
+                    resultBonusTaken = false;
+                    RefreshResultAd();
+                    return;
+                }
+
+                progression.GrantBonusCoins(lastOutcome.Coins);
+                WriteSave();
+                hud.SetCoins(progression.Save.coins);
+                screens.SetResultReward($"+{lastOutcome.Coins * 2} ¢  (x2)");
+                GameAudio.Play(GameSound.AdReward);
+                Debug.Log($"[Claybreak] Rewarded: coins doubled (+{lastOutcome.Coins}), total {progression.Save.coins}.", this);
+            });
+        }
+
+        // Continue: the army fell in the assault; offered once per level, only with an ad loaded and a real army.
+        private bool TryOfferContinue()
+        {
+            if (deviceGate || continueUsed || !monetization.ContinueOnce || armyAtLine < monetization.ContinueMinimumArmy
+                || !adGateway.RewardedReady)
+            {
+                return false;
+            }
+
+            continueUsed = true;
+            continueUnits = Mathf.Min(monetization.ContinueArmy(armyAtLine), crowd.MaximumCount - 1);
+            Enter(FlowState.ContinueOffer);
+            return true;
+        }
+
+        private void OnContinueAd()
+        {
+            // One ad per offer: a second tap before the ad covers the screen must not end the offer while the
+            // first ad plays (its reward would then be lost).
+            if (state != FlowState.ContinueOffer || continueAdPending)
+            {
+                return;
+            }
+
+            continueAdPending = true;
+            PlayerMetrics.RewardedAd(ClaybreakMetrics.ContinuePlacement, PlayerMetrics.Accepted);
+            ShowRewarded(earned =>
+            {
+                continueAdPending = false;
+                if (state != FlowState.ContinueOffer)
+                {
+                    return;
+                }
+
+                PlayerMetrics.RewardedAd(ClaybreakMetrics.ContinuePlacement, earned ? PlayerMetrics.Earned : PlayerMetrics.NotEarned);
+                if (earned)
+                {
+                    ResumeAssault();
+                }
+                else
+                {
+                    Enter(FlowState.Lost);
+                }
+            });
+        }
+
+        private void OnContinueDeclined()
+        {
+            if (state == FlowState.ContinueOffer && !continueAdPending)
+            {
+                Enter(FlowState.Lost);
+            }
+        }
+
+        // Back to the firing line with the units of the continue; the tower keeps its damage, the stars still count
+        // the army that first reached the line.
+        private void ResumeAssault()
+        {
+            screens.HideAll();
+            hud.Show(true);
+            crowd.SetCount(continueUnits + 1, true);
+            state = FlowState.Assault;
+            stateTime = 0f;
+            launchCredit = 0f;
+            holdTime = 0f;
+            field.Running = true;
+            cannon.Armed = activeLevel.CannonEnabled;
+            laneMarker.gameObject.SetActive(true);
+            hud.Banner("BACK IN THE FIGHT!");
+            Debug.Log($"[Claybreak] Continue: +{continueUnits} units at the firing line.", this);
+            RaisePhaseChanged(CurrentPhase);
+        }
+
+        private void ShowRewarded(Action<bool> earned)
+        {
+            gameAudio.SetExternalPause(true);
+            adGateway.ShowRewarded(result =>
+            {
+                gameAudio.SetExternalPause(false);
+                earned(result);
+            });
         }
 
         // Shop rows: buy, equip or wear (ShopTab says which list the index belongs to).
@@ -375,11 +580,28 @@ namespace Claybreak
 
         private void OnPrimary()
         {
-            if (state == FlowState.Won || state == FlowState.Lost)
+            if (!OnResult || leavingResult)
             {
-                // After a win the progress already points at the next level; after a loss, the same one.
-                StartLevel(progression.CurrentLevel);
+                return;
             }
+
+            // After a win the progress already points at the next level; after a loss, the same one. Between two
+            // levels after a win the interstitial may show (off by configuration, D6; never right after a
+            // rewarded ad the player chose to watch on this result).
+            if (!lastOutcome.Won || resultBonusTaken)
+            {
+                StartLevel(progression.CurrentLevel);
+                return;
+            }
+
+            leavingResult = true;
+            screens.SetResultAd(null);
+            gameAudio.SetExternalPause(true);
+            adGateway.ShowInterstitialIfDue(() =>
+            {
+                gameAudio.SetExternalPause(false);
+                StartLevel(progression.CurrentLevel);
+            });
         }
 
         // ---------- level ----------
@@ -439,8 +661,17 @@ namespace Claybreak
         private void StartLevel(ClaybreakLevel level)
         {
             PrepareLevel(level);
+            continueUsed = false;
+            continueAdPending = false;
+            leavingResult = false;
             screens.HideAll();
             hud.Show(true);
+            if (!deviceGate)
+            {
+                PlayerMetrics.LevelStarted(ClaybreakMetrics.LevelId(progression.World.WorldId, progression.LevelIndex),
+                    progression.WorldIndex + 1, progression.LevelIndex + 1);
+            }
+
             player.SetCourseSpeedMultiplier(level.RunSpeed);
             Debug.Log($"[Claybreak] Level '{level.name}' starts: army {crowd.CurrentCount - 1}, {level.RunGates.Count} gate pairs, "
                 + $"tower {level.Tower} {tower.MaximumHealth} in {level.Floors} floor(s), projectile limit {level.MaximumProjectiles}, "
@@ -499,6 +730,9 @@ namespace Claybreak
                         {
                             hud.Show(false);
                             screens.ShowResult(lastOutcome, lastDetail, progression.CurrentLevel.IsBoss);
+                            resultBonusTaken = false;
+                            resultAdOffered = false;
+                            RefreshResultAd();
                         }
                     }
 
@@ -530,7 +764,7 @@ namespace Claybreak
             }
 
             launchCredit = Mathf.Min(launchCredit, 1f);
-            if (tower.IsStanding && crowd.CurrentCount <= 1 && field.InFlight == 0)
+            if (tower.IsStanding && crowd.CurrentCount <= 1 && field.InFlight == 0 && !TryOfferContinue())
             {
                 Enter(FlowState.Lost);
             }
@@ -692,6 +926,14 @@ namespace Claybreak
                 case FlowState.Lost:
                     EndLevel(next == FlowState.Won);
                     break;
+                case FlowState.ContinueOffer:
+                    cannon.Armed = false;
+                    laneMarker.gameObject.SetActive(false);
+                    hud.SetHint(null);
+                    hud.Show(false);
+                    screens.ShowContinue(continueUnits);
+                    PlayerMetrics.RewardedAd(ClaybreakMetrics.ContinuePlacement, PlayerMetrics.Offered);
+                    break;
             }
 
             RaisePhaseChanged(CurrentPhase);
@@ -750,7 +992,12 @@ namespace Claybreak
                 return;
             }
 
+            string levelId = ClaybreakMetrics.LevelId(progression.World.WorldId, progression.LevelIndex);
+            int worldNumber = progression.WorldIndex + 1;
+            int levelNumber = progression.LevelIndex + 1;
             LevelOutcome outcome = progression.Complete(won, armyAtLine, armyLeft);
+            adGateway.LevelFinished();
+            PlayerMetrics.LevelEnded(levelId, worldNumber, levelNumber, won, Mathf.RoundToInt(levelTime));
             WriteSave();
             hud.SetCoins(progression.Save.coins);
             lastOutcome = outcome;

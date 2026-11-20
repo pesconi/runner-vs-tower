@@ -3,6 +3,8 @@
     "rootNamespace": "Claybreak.Tests",
     "references": [
         "Claybreak.Runtime",
+        "JungleDegree.StudioKit.Ads",
+        "JungleDegree.StudioKit.Analytics",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

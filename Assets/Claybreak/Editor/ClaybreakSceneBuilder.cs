@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using JungleDegree.StudioKit.Ads;
 using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Crowd;
@@ -60,6 +61,7 @@ namespace Claybreak.Editor
             EnsureFolder(GeneratedFolder);
             ProjectConfiguration.Apply();
             WorldContent.Write();
+            MonetizationContent.Write();
             BuildTheme();
             new ArtPalette();
             PlaceholderAudio.WriteCues(AudioFolder);
@@ -149,6 +151,7 @@ namespace Claybreak.Editor
             }
 
             var theme = Load<ClaybreakTheme>(ThemePath);
+            var monetization = Load<ClaybreakMonetization>(MonetizationContent.MonetizationPath);
             var palette = new ArtPalette();
             Mesh body = LoadFirstMesh(BodyPath);
             Material clay = Load<Material>(ClayMaterialPath);
@@ -175,6 +178,7 @@ namespace Claybreak.Editor
             GameAudio gameAudio = flowObject.AddComponent<GameAudio>();
             FrameRateGovernor governor = flowObject.AddComponent<FrameRateGovernor>();
             ClaybreakSfx sfx = CreateSfx(flowObject.transform);
+            ClaybreakAds ads = CreateAds(flowObject.transform, monetization);
 
             RunnerPool pool = CreatePool(body, clay);
 
@@ -251,6 +255,8 @@ namespace Claybreak.Editor
             SetRef(flow, "laneMarker", laneMarker);
             SetRef(flow, "gameAudio", gameAudio);
             SetRef(flow, "frameRateGovernor", governor);
+            SetRef(flow, "monetization", monetization);
+            SetRef(flow, "ads", ads);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
@@ -376,6 +382,23 @@ namespace Claybreak.Editor
 
             so.ApplyModifiedPropertiesWithoutUndo();
             return sfx;
+        }
+
+        // RT-7: the kit's rewarded and interstitial services (consent first, in the kit's MobileAdsGate) behind the
+        // game's gateway; both read the game's ad units (empty until RT-9: Google's test units).
+        private static ClaybreakAds CreateAds(Transform parent, ClaybreakMonetization monetization)
+        {
+            var adsObject = new GameObject("Ads");
+            adsObject.transform.SetParent(parent, false);
+            RewardedAdService rewarded = adsObject.AddComponent<RewardedAdService>();
+            InterstitialAdService interstitial = adsObject.AddComponent<InterstitialAdService>();
+            ClaybreakAds ads = adsObject.AddComponent<ClaybreakAds>();
+            SetRef(rewarded, "units", monetization.AdUnits);
+            SetRef(interstitial, "units", monetization.AdUnits);
+            SetRef(ads, "monetization", monetization);
+            SetRef(ads, "rewarded", rewarded);
+            SetRef(ads, "interstitial", interstitial);
+            return ads;
         }
 
         private static RunnerPool CreatePool(Mesh body, Material clay)
@@ -757,6 +780,16 @@ namespace Claybreak.Editor
                 new Vector2(320f, 100f), grey, "MUSIC ON", 36);
             (Button vibration, Text vibrationLabel) = PillButton("Vibration", home, pill, new Vector2(0.5f, 0f), new Vector2(340f, 80f),
                 new Vector2(320f, 100f), grey, "VIBRATION ON", 36);
+            // RT-7: the daily gift over PLAY (shown only when due) and the privacy options top left (only where
+            // UMP requires them).
+            (Button daily, Text dailyLabel) = PillButton("DailyGift", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 600f),
+                new Vector2(560f, 110f), new Color(0.3f, 0.55f, 0.3f), "DAILY GIFT", 44);
+            (Button privacy, Text _) = PillButton("Privacy", home, pill, new Vector2(0f, 1f), new Vector2(170f, -150f),
+                new Vector2(260f, 90f), grey, "PRIVACY", 34);
+            // Scene defaults show the usual case (the flow sets both when the home screen opens): a gift due on a
+            // first launch, and no privacy entry point outside the regions where UMP requires one.
+            dailyLabel.text = $"DAILY GIFT  +{MonetizationContent.DailyRewards[0]} ¢";
+            privacy.gameObject.SetActive(false);
 
             // Shop: three tabs over one list (rows = the longest catalog list), coins only (D6: no real money).
             RectTransform shopRoot = MenuPage("Shop", screensRect, 0.82f);
@@ -812,8 +845,25 @@ namespace Claybreak.Editor
                 new Vector2(600f, 170f), Orange, "NEXT", 80);
             (Button homeButton, Text _) = PillButton("Home", cardRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 30f),
                 new Vector2(340f, 96f), grey, "HOME", 40);
+            // RT-7: the optional rewarded offer under the card, the gain written on it.
+            (Button resultAd, Text resultAdLabel) = PillButton("RewardedOffer", result, pill, new Vector2(0.5f, 0f), new Vector2(0f, 330f),
+                new Vector2(760f, 130f), new Color(0.3f, 0.55f, 0.3f), "WATCH AD", 44);
 
-            foreach (RectTransform screen in new[] { home, shopRoot, worldsRoot, result })
+            // Continue offer: one card, what the ad gives, and NO THANKS as clear as the offer (GDD 7.1).
+            RectTransform continueRoot = MenuPage("Continue", screensRect, 0.6f);
+            Image continueCard = Img("Card", continueRoot, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 760f), CardColor);
+            ClayUi.MakePill(continueCard, pill, 140f);
+            RectTransform continueRect = continueCard.rectTransform;
+            Text continueTitle = Label("Title", continueRect, new Vector2(0.5f, 1f), new Vector2(0f, -120f), 88, TextAnchor.MiddleCenter);
+            continueTitle.text = "ARMY LOST";
+            Text continueText = Label("Offer", continueRect, new Vector2(0.5f, 1f), new Vector2(0f, -290f), 48, TextAnchor.MiddleCenter);
+            continueText.rectTransform.sizeDelta = new Vector2(820f, 160f);
+            (Button continueAd, Text continueAdLabel) = PillButton("WatchAd", continueRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 230f),
+                new Vector2(640f, 150f), new Color(0.3f, 0.55f, 0.3f), "WATCH AD", 60);
+            (Button continueDecline, Text _) = PillButton("NoThanks", continueRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 80f),
+                new Vector2(480f, 110f), grey, "NO THANKS", 48);
+
+            foreach (RectTransform screen in new[] { home, shopRoot, worldsRoot, result, continueRoot })
             {
                 screen.gameObject.SetActive(false);
             }
@@ -835,6 +885,9 @@ namespace Claybreak.Editor
             SetRef(screens, "musicLabel", musicLabel);
             SetRef(screens, "vibrationButton", vibration);
             SetRef(screens, "vibrationLabel", vibrationLabel);
+            SetRef(screens, "dailyButton", daily);
+            SetRef(screens, "dailyLabel", dailyLabel);
+            SetRef(screens, "privacyButton", privacy);
             SetRef(screens, "shop", shopRoot.gameObject);
             SetRef(screens, "shopCoins", shopCoins);
             SetArray(screens, "shopTabs", tabs);
@@ -856,6 +909,13 @@ namespace Claybreak.Editor
             SetRef(screens, "primaryButton", primary);
             SetRef(screens, "primaryLabel", primaryLabel);
             SetRef(screens, "homeButton", homeButton);
+            SetRef(screens, "resultAdButton", resultAd);
+            SetRef(screens, "resultAdLabel", resultAdLabel);
+            SetRef(screens, "continueOffer", continueRoot.gameObject);
+            SetRef(screens, "continueText", continueText);
+            SetRef(screens, "continueAdButton", continueAd);
+            SetRef(screens, "continueAdLabel", continueAdLabel);
+            SetRef(screens, "continueDecline", continueDecline);
             Set(screens, "rowStep", RowStep);
             return screens;
         }

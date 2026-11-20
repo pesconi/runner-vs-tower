@@ -40,6 +40,9 @@ namespace Claybreak
         [SerializeField] private Text musicLabel;
         [SerializeField] private Button vibrationButton;
         [SerializeField] private Text vibrationLabel;
+        [SerializeField] private Button dailyButton;
+        [SerializeField] private Text dailyLabel;
+        [SerializeField] private Button privacyButton;
 
         [Header("Shop")]
         [SerializeField] private GameObject shop;
@@ -67,6 +70,16 @@ namespace Claybreak
         [SerializeField] private Button primaryButton;
         [SerializeField] private Text primaryLabel;
         [SerializeField] private Button homeButton;
+        [Tooltip("Optional rewarded offer under the result card (gain written on it; hidden when no ad is loaded).")]
+        [SerializeField] private Button resultAdButton;
+        [SerializeField] private Text resultAdLabel;
+
+        [Header("Continue offer (rewarded, once per level, with a clear NO THANKS)")]
+        [SerializeField] private GameObject continueOffer;
+        [SerializeField] private Text continueText;
+        [SerializeField] private Button continueAdButton;
+        [SerializeField] private Text continueAdLabel;
+        [SerializeField] private Button continueDecline;
 
         [Header("Layout and colors")]
         [Tooltip("Vertical distance between two list rows (the builder places row i at -i * rowStep).")]
@@ -94,6 +107,11 @@ namespace Claybreak
         public event Action<int> WorldPressed;
         public event Action PrimaryPressed;
         public event Action HomePressed;
+        public event Action DailyPressed;
+        public event Action PrivacyPressed;
+        public event Action ResultAdPressed;
+        public event Action ContinueAdPressed;
+        public event Action ContinueDeclined;
 
         public ShopTab Tab => tab;
         public int ShopRowCapacity => shopRows == null ? 0 : shopRows.Length;
@@ -101,6 +119,10 @@ namespace Claybreak
         public int DotCapacity => levelDots == null ? 0 : levelDots.Length;
         public bool ShopShown => shop != null && shop.activeSelf;
         public bool WorldsShown => worlds != null && worlds.activeSelf;
+        public bool ResultShown => result != null && result.activeSelf;
+        public bool ContinueShown => continueOffer != null && continueOffer.activeSelf;
+        public bool ResultAdShown => resultAdButton != null && resultAdButton.gameObject.activeSelf;
+        public bool DailyShown => dailyButton != null && dailyButton.gameObject.activeSelf;
 
         public bool HasParts => home != null && homeCoins != null && worldText != null && starsText != null
             && loadoutText != null && levelDots != null && levelDots.Length > 0 && playButton != null && playLabel != null
@@ -112,7 +134,9 @@ namespace Claybreak
             && Array.TrueForAll(worldRows, r => r != null && r.HasParts) && worldsFooter != null && worldsBack != null
             && result != null && resultTitle != null && stars != null && stars.Length == 3 && resultDetail != null
             && resultReward != null && resultUnlock != null && primaryButton != null && primaryLabel != null
-            && homeButton != null;
+            && homeButton != null && dailyButton != null && dailyLabel != null && privacyButton != null
+            && resultAdButton != null && resultAdLabel != null && continueOffer != null && continueText != null
+            && continueAdButton != null && continueAdLabel != null && continueDecline != null;
 
         private void Awake()
         {
@@ -130,6 +154,11 @@ namespace Claybreak
             worldsBack.onClick.AddListener(() => Raise(BackPressed));
             primaryButton.onClick.AddListener(() => Raise(PrimaryPressed));
             homeButton.onClick.AddListener(() => Raise(HomePressed));
+            dailyButton.onClick.AddListener(() => Raise(DailyPressed));
+            privacyButton.onClick.AddListener(() => Raise(PrivacyPressed));
+            resultAdButton.onClick.AddListener(() => Raise(ResultAdPressed));
+            continueAdButton.onClick.AddListener(() => Raise(ContinueAdPressed));
+            continueDecline.onClick.AddListener(() => Raise(ContinueDeclined));
             for (int i = 0; i < shopTabs.Length; i++)
             {
                 var pick = (ShopTab)i;
@@ -200,6 +229,7 @@ namespace Claybreak
             shop.SetActive(false);
             worlds.SetActive(false);
             result.SetActive(false);
+            continueOffer.SetActive(false);
         }
 
         // ---------- home ----------
@@ -238,6 +268,19 @@ namespace Claybreak
             loadoutText.text = LoadoutLine(progression);
             shopBadge.SetActive(progression.CanBuyAnything);
             RefreshSwitches();
+        }
+
+        /// <summary>The daily reward button: shown with its coins when a claim is due, hidden otherwise.</summary>
+        public void SetDaily(int coins)
+        {
+            dailyButton.gameObject.SetActive(coins > 0);
+            dailyLabel.text = coins > 0 ? $"DAILY GIFT  +{NumberLabels.Plain(coins)} ¢" : string.Empty;
+        }
+
+        /// <summary>The privacy options entry point, shown only where UMP requires it.</summary>
+        public void SetPrivacyVisible(bool visible)
+        {
+            privacyButton.gameObject.SetActive(visible);
         }
 
         private static string LoadoutLine(Progression progression)
@@ -438,6 +481,31 @@ namespace Claybreak
             resultUnlock.text = unlock;
             resultUnlock.gameObject.SetActive(unlock.Length > 0);
             primaryLabel.text = outcome.Won ? (nextIsBoss ? "BOSS" : "NEXT") : "AGAIN";
+            SetResultAd(null);
+        }
+
+        /// <summary>The coins line of the result (after a rewarded bonus it shows the doubled amount).</summary>
+        public void SetResultReward(string text)
+        {
+            resultReward.text = text;
+        }
+
+        /// <summary>The rewarded offer under the result card; null hides it.</summary>
+        public void SetResultAd(string caption)
+        {
+            resultAdButton.gameObject.SetActive(caption != null);
+            resultAdLabel.text = caption ?? string.Empty;
+        }
+
+        // ---------- continue offer ----------
+
+        /// <summary>Shows the continue offer: what the ad gives, and a clear way to say no.</summary>
+        public void ShowContinue(int units)
+        {
+            HideAll();
+            continueOffer.SetActive(true);
+            continueText.text = $"Watch a short ad to send\n{units} more units at the tower?";
+            continueAdLabel.text = $"WATCH AD  +{units}";
         }
 
         // Rows sit at fixed steps from the top of the scroll content; the content is as tall as the rows shown

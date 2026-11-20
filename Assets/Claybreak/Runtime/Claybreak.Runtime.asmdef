@@ -6,6 +6,8 @@
         "JungleDegree.StudioKit.Characters",
         "JungleDegree.StudioKit.Crowd",
         "JungleDegree.StudioKit.UI",
+        "JungleDegree.StudioKit.Ads",
+        "JungleDegree.StudioKit.Analytics",
         "Unity.InputSystem",
         "UnityEngine.UI"
     ],

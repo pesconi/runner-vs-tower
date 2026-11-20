@@ -494,6 +494,43 @@ Vale para as próximas entregas e para o aceite da RT-6. Na RT-6 a decisão cheg
 mundo; o caso mais pesado foi o mundo 4 (CPU p95 até 9,1 ms, GPU 4,4 ms, quadro p95 16 ms, 197 MB), que
 vale como a rodada final. O app de medição é fechado no celular ao terminar.
 
+## 2026-11-20 — T-RT7-1 — Consentimento único e IDs de anúncio como dado, no kit — técnica (sessão RT-7)
+
+O serviço de premiado do kit fazia sozinho o fluxo UMP e trazia a unidade de produção do Wild Pack fixa no
+código: num segundo jogo, um build de release mostraria a unidade de outro app. Agora o kit tem
+`MobileAdsGate` (UMP → `MobileAds.Initialize` uma vez por app, só com `CanRequestAds`), `AdUnitSettings`
+(asset com as unidades de produção do jogo; vazio = unidades de teste do Google) e `InterstitialAdService`
++ `InterstitialPacing` (limites como dado, testados em EditMode). O premiado passou a usar o portão comum e
+lê o `AdUnitSettings` quando atribuído; sem ele, mantém a unidade antiga (o Wild Pack não muda de cena nem de
+comportamento). Pendência para o Wild Pack/kit: dar ao Wild Pack o seu `AdUnitSettings` e tirar a constante
+do kit.
+
+## 2026-11-20 — T-RT7-2 — Medição atrás de uma porta, sem SDK — técnica (sessão RT-7)
+
+D4 diz "nada é instalado antes" da escolha da ferramenta. O kit ganhou `PlayerMetrics` (lista fechada de 4
+eventos: `game_session` com dias desde a instalação, `level_start`, `level_end`, `rewarded_ad` com
+oferecido/aceito/ganho; valores curtos, sem nenhum ID) e `IMetricsSink`. O release instala `NullMetricsSink`
+e não permite coleta; builds de desenvolvimento escrevem só no log do aparelho. Escolhida a ferramenta (D21),
+entra um adaptador e a coleta passa a seguir o consentimento.
+
+## 2026-11-20 — T-RT7-3 — Premiado, continuar, intersticial e presente diário no jogo — técnica (sessão RT-7)
+
+Usos do GDD 7.2 implementados: **dobrar as moedas** no resultado (uma vez por resultado) e **continuar uma
+vez por fase** quando o exército cai no assalto (volta metade do exército que chegou à linha; oferta com "NO
+THANKS" claro; só com pelo menos 10 unidades na linha). Os dois só aparecem com anúncio carregado e o ganho
+escrito no botão. "Girar a recompensa do chefe" e "reforço no início" ficaram de fora (o GDD os marca como
+propostas; dois usos bastam para medir o aceite). Intersticial: só depois de vitória, ao tocar NEXT, nunca
+logo depois de um premiado escolhido; limites [P] 3 fases e 3 min antes do primeiro e entre dois; **desligado**
+por `MonetizationContent.InterstitialOn` (D6). Presente diário (D5): um por dia do calendário local, ciclo
+50-75-100-125-150-200-300 moedas [P] que só anda quando se pega (faltar não zera). Save continua na versão 3
+(campos novos aditivos: `firstDay`, `dailyLastDay`, `dailyClaims`; ausentes leem 0 = "nunca").
+
+## 2026-11-20 — T-RT7-4 — Estatística de hardware do Unity desligada — técnica (sessão RT-7)
+
+`ProjectConfiguration` grava `submitAnalytics = 0` (Player setting de estatística de hardware enviada ao
+Unity), para que o único SDK de rede do build seja o de anúncios que a política declara. Serviços Unity já
+estavam desligados (`UnityConnectSettings`).
+
 ## Ficha D20 (RT-6, respondida em 2026-11-20: A)
 
 ### DECISÃO D20 — Arte dos mundos 2, 3 e 4 (paleta, torre e chefe)
@@ -725,3 +762,95 @@ Responda: A, B, C ou D, ou "A com <ajuste>", ou "explica melhor".
 **Resposta do usuário (2026-11-20): A** — 4 mundos de 10 fases (40 fases): o mundo 1 ganha 3 fases e
 entram 3 mundos novos (paleta, 1 torre nova e chefe novo cada; escudo no mundo 2). Se a RT-6 apertar,
 cai para C (4º mundo no soft launch) sem retrabalho.
+
+## Ficha D21 (RT-7, aguardando resposta)
+
+### DECISÃO D21 — Qual ferramenta gratuita mede os jogadores (analytics)
+
+O que você está aprovando: o Clay Siege passa a usar o **Firebase Analytics** (do Google) para medir só o que
+a D4 aprovou (quem volta 1 e 7 dias depois de instalar, início e fim de cada fase, e quantos aceitam o anúncio
+premiado), na configuração mínima: **sem o ID de publicidade, com a coleta desligada até o jogo liberar**, e
+com a política de privacidade e a seção "Segurança dos dados" da Play atualizadas antes do lançamento. Você
+cria o projeto gratuito no Firebase (conta Google) quando a sessão pedir; a sessão instala o SDK (o kit de
+programação da ferramenta), liga o adaptador e mede o peso no celular.
+
+Por que agora: a D4 mandou escolher a ferramenta numa ficha própria e "nada é instalado antes disso". Não
+trava nada hoje: a RT-7 já deixou os eventos prontos atrás de uma porta que não manda nada para fora do
+aparelho. Trava a medição do soft launch (lançamento de teste, RT-10): sem ferramenta, as metas D1 ≥ 35% e
+D7 ≥ 12% (D1/D7 = % de jogadores que voltam 1 / 7 dias depois de instalar) ficam sem número. Precisa sair
+antes da RT-9 (preparação da loja), porque a política e o formulário da Play mudam com ela.
+
+Contexto que você precisa saber:
+- O jogo já tem os 4 eventos prontos e testados (fato, RT-7): sessão de jogo com "dias desde a instalação",
+  início de fase, fim de fase (venceu/perdeu e segundos) e anúncio premiado (oferecido, aceito, ganho). Nenhum
+  leva nome, e-mail ou ID do jogador.
+- Hoje o único SDK que fala com a rede é o de anúncios do Google (AdMob), com o UMP (a janela de
+  consentimento do Google). A política e o rascunho de Data safety da RT-7 dizem "sem analytics" (fato).
+- **A janela UMP só aparece onde a lei europeia/britânica exige** (fato: documentação do Google). No Brasil e
+  na maioria dos países ninguém vê pergunta nenhuma. Então "medir com consentimento" precisa de uma regra para
+  fora da Europa: a recomendação é medir lá com aviso na política e a base legal de "interesse legítimo" da
+  LGPD, dados mínimos e sem ID de publicidade, e na Europa/Reino Unido só com o "sim" da janela (inferência
+  nossa; não é parecer jurídico).
+- A Data safety é preenchida por **tipo de dado**, não por empresa: qualquer ferramenta acrescenta "atividade
+  no app" (finalidade: análise) e um ID de instalação (fato: documentação de cada uma).
+- Com poucas dezenas de instalações o D1/D7 é ruído; os relatórios do Firebase também escondem números muito
+  pequenos e chegam com 1–2 dias de atraso (fato).
+
+O que cada opção coleta e pesa:
+- **Firebase Analytics (Google):** gratuito. Cria um ID da instalação do app, deduz localização aproximada pelo
+  IP e registra sozinho primeiro uso e sessões; coleta o ID de publicidade **se não for desligado** (fato:
+  página de Data safety do Firebase). Retenção por coorte (D1/D7) pronta. Conversa com o UMP pelo "modo de
+  consentimento" do Google (fato; exige UMP recente e ajuste no painel do AdMob; não conferido no plugin Unity).
+  O SDK do Firebase para Unity é o mais pesado das opções (inferência nossa: alguns MB; a medir no gate).
+- **GameAnalytics:** gratuito, feito para jogos, painéis de funil e retenção prontos. Cria um ID aleatório
+  próprio; o ID de publicidade pode ser desligado (fato: documentação dela). Uma empresa a mais na política.
+  Consentimento ligado à mão no código. SDK leve (inferência nossa).
+- **Unity Analytics:** gratuito até 50 mil jogadores ativos por mês, somando todos os jogos da conta (fato:
+  tabela de preços do Unity). Coleta só os eventos que o jogo manda mais um ID de instalação; o consentimento é
+  todo nosso, por uma API própria (fato). Uma empresa a mais na política.
+- **Nenhum SDK, só Play Console:** zero peso, nada novo na política. Mas o relatório de retenção D1/D7 do Play
+  Console é para jogos com **Play Games Services** (login de jogos do Google), que não temos; sem ele só existe
+  "quem ainda tem o app instalado", que não é "voltou a jogar" (fato, conferido pela segunda opinião). Não dá o
+  funil de fases nem o aceite do premiado.
+
+Opções:
+A) Firebase Analytics, configuração mínima (sem ID de publicidade, sem sinais do Google, coleta liberada pelo
+   jogo).
+   + D1/D7 e funil prontos sem servidor; mesmo fornecedor e mesma janela de consentimento dos anúncios.
+   - Riscos: APK maior (chance alta; impacto baixo, medido no gate); o gerenciador de dependências do Firebase
+     brigar com o do AdMob (chance média; impacto baixo, resolvido na sessão); configurar errado e coletar antes
+     da hora (chance baixa; impacto médio) — mitigação: coleta desligada no manifesto e teste; Google concentra
+     anúncios e dados (impacto baixo, jogo sem conta).
+   Custo: grátis; ~1 sessão + você cria o projeto Firebase. Dá para voltar atrás? sim (tirar o SDK; a política
+   volta ao texto atual).
+B) GameAnalytics.
+   + Painéis de jogo prontos; SDK leve.
+   - Riscos: mais uma empresa na política (certo; impacto baixo); consentimento fora do UMP, ligado à mão (chance
+     média de erro; impacto médio) — o kit só manda evento quando o jogo libera.
+   Custo: grátis; ~1 sessão + conta GameAnalytics. Volta atrás? sim.
+C) Unity Analytics.
+   + Integrado ao Unity; só coleta o que o jogo manda.
+   - Riscos: limite de 50 mil ativos por mês somando os jogos (chance baixa no soft launch; impacto médio se o
+     Wild Pack crescer); consentimento por API própria (chance média de erro; impacto médio).
+   Custo: grátis até o limite; ~1 sessão + projeto na nuvem Unity. Volta atrás? sim.
+D) Nenhum SDK: só Play Console e AdMob.
+   + Nada novo na política, na Data safety nem no APK.
+   - Riscos: sem D1/D7 real, sem funil e sem aceite do premiado (certo; impacto alto: as metas do soft launch e o
+     ajuste de dificuldade da RT-10 ficam sem número).
+   Custo: zero. Volta atrás? sim.
+E) Adiar até a RT-9.
+   + Nada muda agora (o jogo já não manda nada).
+   - Custo de adiar: política e Data safety da RT-9 podem ter de ser refeitas; o soft launch pode começar sem
+     medição.
+
+Recomendação: A — é a única que dá D1/D7 e funil sem servidor usando a mesma janela de consentimento dos
+anúncios; na configuração mínima acrescenta à Data safety só "atividade no app" e o ID de instalação. O peso no
+APK é medido no gate antes de ligar.
+Segunda opinião (fable): concorda com A, com três ajustes (incorporados): ligar o Firebase sem ID de
+publicidade e com a coleta desligada até o jogo liberar; renomear o evento de sessão (o nome `session_start` é
+reservado do Firebase e seria descartado — já trocado para `game_session`); e definir o que vale no Brasil,
+onde a janela UMP não aparece. Corrigiu a opção D: o D1/D7 do Play Console exige Play Games Services.
+Se você não responder: nada é instalado; o jogo segue sem mandar nenhum evento para fora (como hoje) e a RT-8
+continua normalmente.
+
+Responda: A, B, C, D ou E, ou "A com <ajuste>", ou "explica melhor".

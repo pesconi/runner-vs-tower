@@ -59,6 +59,13 @@ namespace Claybreak
         public string skin = string.Empty;
         public int levelsWon;
         public int levelsLost;
+        // RT-7 (additive, so still version 3: a save without them reads 0 = "never", which is right).
+        [Tooltip("Local day number (since 1970-01-01) of the first launch; 0 = not yet recorded. Used for D1/D7 only.")]
+        public int firstDay;
+        [Tooltip("Local day number of the last daily reward claim; 0 = never.")]
+        public int dailyLastDay;
+        [Tooltip("Daily rewards claimed so far (picks the next amount of the cycle; never reset).")]
+        public int dailyClaims;
 
         public SaveData Clone()
         {
@@ -289,6 +296,9 @@ namespace Claybreak
             save.coins = Mathf.Max(0, save.coins);
             save.levelsWon = Mathf.Max(0, save.levelsWon);
             save.levelsLost = Mathf.Max(0, save.levelsLost);
+            save.firstDay = Mathf.Max(0, save.firstDay);
+            save.dailyLastDay = Mathf.Max(0, save.dailyLastDay);
+            save.dailyClaims = Mathf.Max(0, save.dailyClaims);
             save.world ??= string.Empty;
             save.skin ??= string.Empty;
             save.worlds = Cut(save.worlds ?? new WorldSave[0]);

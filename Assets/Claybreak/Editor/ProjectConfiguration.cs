@@ -17,7 +17,7 @@ namespace Claybreak.Editor
         public const string ApplicationId = "com.jungledegree.runnervstower";
         private const string AdsSettingsPath = "Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset";
         // Google's public sample AdMob app ID (not an account of the studio). The ads SDK the kit depends on
-        // stops the app at launch without an app ID; the prototype shows no ads. Real IDs come with RT-7.
+        // stops the app at launch without an app ID; RT-7 shows Google test ads with it; the real app ID comes with RT-9 (D7).
         public const string SampleAdMobAppId = "ca-app-pub-3940256099942544~3347511713";
 
         public static void Apply()
@@ -34,6 +34,26 @@ namespace Claybreak.Editor
             // The kit's frame timing probe (measurement builds) reads FrameTimingManager.
             PlayerSettings.enableFrameTimingStats = true;
             ApplyAdsSampleAppId();
+            DisableEngineHardwareStatistics();
+        }
+
+        // RT-7 (privacy): the player does not send Unity its hardware statistics (Player setting
+        // "submitAnalytics"), so the only network SDK of the build is the ads SDK the policy declares.
+        private static void DisableEngineHardwareStatistics()
+        {
+            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (assets.Length == 0)
+            {
+                return;
+            }
+
+            var so = new SerializedObject(assets[0]);
+            SerializedProperty submit = so.FindProperty("submitAnalytics");
+            if (submit != null && submit.boolValue)
+            {
+                submit.boolValue = false;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
 
         private static void ApplyAdsSampleAppId()

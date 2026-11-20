@@ -53,3 +53,8 @@
   comando for morto, o Unity em batchmode continua rodando e trava o projeto para a próxima rodada: conferir
   `tasklist | grep Unity.exe` antes de rodar de novo. Conteúdo novo = dado em `WorldContent` (mundo por
   `WorldDefinition` + `WorldRecipe`), arte em `TowerArt`/`WorldSceneryArt`, e reconstruir a cena.
+- 2026-11-20 (RT-7): a ferramenta Bash deste app troca as sequências barra-t, barra-r e barra-n dentro do comando e quebra heredoc com
+  apóstrofo; scripts Python de edição vão para um arquivo (Write) e rodam de lá. `/security-review` falha aqui (sem
+  `origin/HEAD` e com mudanças não commitadas): usar um revisor independente só leitura. O teste offline de anúncios do
+  Wild Pack (`MultiplierRunner/Tests/RewardedAds`) compila por caminho os arquivos de `Runtime/Ads` do kit que o
+  premiado usa: arquivo novo ali precisa entrar no `.csproj` dele (24/24 é a linha de base).
