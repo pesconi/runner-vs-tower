@@ -154,7 +154,9 @@ sem medida.
 ## 2. Decisões pendentes do usuário
 
 Cada decisão tem **por que importa**, **prazo** (antes de qual entrega) e
-**recomendação [I]**. Nenhuma foi tomada. Marcar a resposta e a data.
+**recomendação [I]**. Marcar a resposta e a data. Situação em 2026-11-20 (fim da
+RT-0): D1–D6, D11 e D14–D16 decididas; D7–D10, D12 e D13 seguem pendentes, cada
+uma antes da entrega indicada.
 
 | # | Decisão | Por que importa | Antes de | Recomendação [I] |
 |---|---|---|---|---|

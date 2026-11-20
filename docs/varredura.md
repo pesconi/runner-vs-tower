@@ -10,8 +10,9 @@ verificado** = não consegui confirmar. **Limite importante:** li o *texto* das 
 do ícone" estão quase todos **não verificados**. Isto não é busca oficial de marca.
 Esta varredura **não decide nada**: D2 (gancho) e D1 (nome) voltam ao usuário.
 
-Nota: o plano cita `docs/runner-vs-tower/varredura.md`; gravei em `docs/varredura.md`
-conforme o pedido da tarefa.
+Nota: o plano citava `docs/runner-vs-tower/varredura.md`; o caminho oficial é este
+(`docs/varredura.md`), já alinhado no plano na RT-0. Depois desta varredura, D2 foi
+decidida como **A** e D1 como nome de trabalho "Claybreak" (`decisoes.md`, 2026-11-20).
 
 ---
 

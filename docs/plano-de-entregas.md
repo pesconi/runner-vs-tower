@@ -20,7 +20,7 @@ lançamento jun/2027.
 
 | Entrega | Semanas base | Com ~20% | Janela [I] |
 |---|---|---|---|
-| RT-0 Decisões e varredura de loja | 1 | 1,2 | dez/2026 |
+| ~~RT-0 Decisões e varredura de loja~~ — concluída em 2026-11-20 (D1–D6 em `decisoes.md`) | 1 | 1,2 | ~~dez/2026~~ |
 | ~~RT-1 Extração do kit do estúdio~~ — feita pelo plano K do `studiokit` (nov/2026) | 3 | 3,6 | ~~jan/2027~~ |
 | RT-2 Protótipo (1 semana) | 1 | 1,2 | início de fev |
 | RT-3 Teste do protótipo e portão de decisão | 0,5 | 0,6 | meados de fev |
@@ -46,13 +46,26 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   contas). Varredura de 1–2 horas nas lojas (Google Play, App Store só para
   referência) com capturas: quem já faz "correr e depois empurrar", o que
   mostram nos primeiros 30 s, nomes e ícones parecidos. Saída:
-  `docs/runner-vs-tower/varredura.md` (fatos com data e URL).
+  `docs/varredura.md` (fatos com data e URL).
 - **Depende de:** nada técnico; ideal depois que o Wild Pack estiver em
   produção ou estável em teste.
 - **Aceite:** decisões D1–D6 respondidas (ou decisão explícita de adiar); gancho
   confirmado ou trocado; lista de "jogos que o testador vai citar como
   parecidos".
 - **Exige o usuário:** responder as decisões; aprovar nome de trabalho.
+- **Status: concluída em 2026-11-20** (`Stage RT.0`). Aceite conferido:
+  - D1–D6 respondidas em 2026-11-20 (registro em `docs/decisoes.md`; tabela da
+    seção 2 de `docs/riscos-e-decisoes.md`): D1 nome de trabalho "Claybreak"
+    (checagem de marca fica para antes de RT-4/RT-9), D2 gancho **A** (com traço
+    de B só em chefes, conforme GDD 5), D3 A, D4 A, D5 B, D6 B. Também decididas
+    D14 (só Android), D15 (B) e D16 (só o portão RT-3).
+  - Gancho confirmado: **A**, reapresentado e decidido após a varredura.
+  - Varredura em `docs/varredura.md` (2026-11-20, `Stage RT.0a`); lista de
+    "jogos que o testador vai citar como parecidos" na seção 4.
+  - Limite aceito: a varredura foi só por pesquisa web gratuita, **sem capturas,
+    vídeos nem ícones**; nomes e ícones ficam para conferir na Play antes da arte
+    (RT-4). O jogo ainda não tem `SISTEMA.md`; o registro desta entrega fica aqui
+    e em `decisoes.md`.
 
 ## RT-1 — Extração do kit do estúdio
 
