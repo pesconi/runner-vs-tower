@@ -16,7 +16,8 @@
   `-executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit [-claybreakMeasure]`. Tudo isso de uma
   vez (mais a tabela de economia e de fases `docs/rt6-economia.md` e as capturas de arte, que regravam
   `docs/art/telas/` e `docs/art/rt6/`): `Tools/rt4-check.sh [/c/temp/rt4] ["passos"]`. E o gate 3x no OPPO
-  CPH2791 com `Tools/rt2-gate.sh <rótulo> 60 20 <apk de medição> [mundo]` (RT-6: um gate por mundo) (aparelho conectado e desbloqueado;
+  CPH2791 com `Tools/rt2-gate.sh <rótulo> 60 20 <apk de medição> [mundo]` (decisão do usuário 2026-11-20: o gate roda UMA vez por entrega, no fim, no mundo/nível mais pesado;
+  repetir só se sair do limite; ao terminar, fechar o app no celular com `adb shell am force-stop com.jungledegree.runnervstower`) (aparelho conectado e desbloqueado;
   passo a passo em `docs/rt4-fatia.md` seção 4).
 - **Custo:** liberado pesquisa web gratuita e edição de documentos. Qualquer gasto pago, upload
   ao Play Console/AdMob ou cópia de código do Wild Pack (reuso só pelo pacote studiokit): parar e perguntar.

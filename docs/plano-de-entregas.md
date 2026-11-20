@@ -193,7 +193,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   fora de alcance no lançamento).
 - **Depende de:** RT-5.
 - **Aceite:** todos os mundos jogáveis do lançamento; `GameThemeCompleteness`-
-  like sem falha; gate 3× em cada mundo; sem repetição visual óbvia.
+  like sem falha; gate 3× uma vez, no mundo mais pesado (decisão do usuário, 2026-11-20; nesta entrega rodou nos 4); sem repetição visual óbvia.
 - **Exige o usuário:** aprovar arte dos mundos; aprovar nº de fases.
 - **Status: concluída em 2026-11-20** (`Stage RT.6a`–`RT.6d`; `rt6-conteudo.md`): 4 mundos × 10 fases
   jogáveis (D12 = A), geração de fases por perfil de dificuldade, escudo, um chefe com regra própria por

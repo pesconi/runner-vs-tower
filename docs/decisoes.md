@@ -486,6 +486,14 @@ o resto sai em ~10 min de voltas do mundo 4 (loja inteira em ~53 min simulados, 
 de cada mundo (1,0 / 1,3 / 1,5 / 1,75) acompanha os upgrades que a simulação já comprou ao chegar nele.
 Recalibrar no soft launch com dados reais.
 
+## 2026-11-20 — Gate 3× uma vez por entrega — usuário
+
+Resposta do usuário ("Sim, uma vez só", via maestro): a medição de desempenho no OPPO (gate 3×) roda **uma
+vez por entrega**, no fim, no mundo/nível mais pesado, e não mais por mundo; repete só se sair do limite.
+Vale para as próximas entregas e para o aceite da RT-6. Na RT-6 a decisão chegou depois das medições por
+mundo; o caso mais pesado foi o mundo 4 (CPU p95 até 9,1 ms, GPU 4,4 ms, quadro p95 16 ms, 197 MB), que
+vale como a rodada final. O app de medição é fechado no celular ao terminar.
+
 ## Ficha D20 (RT-6, aguardando resposta)
 
 ### DECISÃO D20 — Arte dos mundos 2, 3 e 4 (paleta, torre e chefe)
