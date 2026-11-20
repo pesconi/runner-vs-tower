@@ -58,3 +58,16 @@ falhar no portão RT-3 (menos de 3 de 5 testadores pedem "de novo" sem incentivo
 parar, reduzimos limites por dados para tentar passar no gate 3× do OPPO; se o jogo agradar
 mas o gancho não, testamos a Opção B uma vez (+1 semana). Critérios pós-lançamento
 (retenção, receita) ficam para outra decisão antes do RT-9. Sem teto de esforço por ora.
+
+## 2026-11-20 — D2 — Gancho do jogo (reapresentada após a varredura) — **A** — usuário
+
+**Texto aprovado:** o protótipo (RT-2) será construído com a Opção A: o jogador corre uma
+fase de verdade que define a quantidade e a composição do exército, e depois o exército é
+lançado contra uma torre com vida e defesas. A promessa de venda é a torre, não a corrida.
+Um traço da Opção B (a torre mexe nos portões) só nos chefes, e o protótipo deixa a B
+alternável para teste.
+
+**Base:** `docs/varredura.md` (2026-11-20): "corra e depois ataque" é padrão do gênero; não
+foi achado jogo que una corrida real e assalto a torre com defesas. Limite: só texto de
+fichas, sem capturas. Substitui a linha "D2 — adiar" acima; o portão RT-3 (D16) continua
+sendo o teste de que o gancho é sentido como diferente.
