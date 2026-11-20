@@ -172,10 +172,10 @@ uma antes da entrega indicada.
 | **D10** | **Idiomas** | Ficha e textos | RT-9 | Os mesmos do Wild Pack (P6) |
 | **D11** | **Extração do kit:** pacote local (A), fork (B) | Reuso técnico, 5.2 | RT-1 | **Decidido em 2026-11-19: A** (ver `decisoes.md`, K1) |
 | **D12** | **Quantidade de conteúdo no lançamento** (mundos, fases) | Define RT-6 e o prazo | RT-5 | Poucos mundos e 30–50 fases por dados; resto no pós-lançamento |
-| **D13** | **Quem são os 5 testadores** do protótipo (portão) | Sem testadores não há portão | RT-3 | Gente fora do estúdio, que joga celular, com alguns que não conhecem o Wild Pack |
+| **D13** | **Quem são os 5 testadores** do protótipo (portão) | Sem testadores não há portão | RT-3 | Gente fora do estúdio, que joga celular, com alguns que não conhecem o Wild Pack — **decidido em 2026-11-20: dispensado** (RT-3 cancelada; o usuário segue sem teste externo; ver `decisoes.md`) |
 | **D14** | **Plataforma:** só Android | iOS exige conta Apple, build e revisão | RT-0 | Só Android na v1 — **decidido em 2026-11-20: A** (só Android na v1) |
 | **D15** | **Prioridade em relação ao Wild Pack:** se o Wild Pack precisar de atualização, quem ganha as semanas | Uma pessoa só | RT-0 | Wild Pack tem prioridade nas semanas de incidente; o plano desliza — **decidido em 2026-11-20: B** (os dois jogos no mesmo ritmo) |
-| **D16** | **Critério de "parar":** aceitar os gatilhos dos riscos R1, R3, R4 | Evita insistir em jogo que não funciona | RT-0 | Aceitar — **decidido em 2026-11-20: A** (só o portão RT-3; critérios pós-lançamento ficam para antes do RT-9) |
+| **D16** | **Critério de "parar":** aceitar os gatilhos dos riscos R1, R3, R4 | Evita insistir em jogo que não funciona | RT-0 | Aceitar — **decidido em 2026-11-20: A** (só o portão RT-3; critérios pós-lançamento ficam para antes do RT-9); **portão RT-3 dispensado em 2026-11-20** — sem gatilho de parada antes do RT-9 |
 
 ### Dúvidas abertas registradas pela sessão (sem resposta)
 

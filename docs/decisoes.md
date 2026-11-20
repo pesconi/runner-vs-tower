@@ -182,3 +182,17 @@ script `Tools/rt2-gate.sh` sobre as ferramentas do kit. Falhou → baixar limite
 
 150 unidades em voo (metade do pool). Se o gate 3× só passar abaixo disso, o gatilho de parada do
 R3 (`riscos-e-decisoes.md`) dispara e o RT-3 decide.
+
+## 2026-11-20 — D13 / RT-3 — Portão de teste com 5 testadores — **dispensado** — usuário
+
+Pergunta: o RT-3 (5 testadores de fora, portão "3 de 5 pedem de novo") é preciso para publicar?
+Resposta dada: não é exigência da Google Play; era um portão interno para evitar investir ~17 semanas
+num jogo que não agrada. Opções apresentadas: leve (5 pessoas do círculo, 1 fim de semana —
+recomendada), mínimo (só o casal decide), juntar com o teste fechado da Play.
+**Decisão do usuário:** seguir sem os testes. Ele jogou o protótipo, gostou, venceu na 2ª tentativa
+e quer terminar o projeto de qualquer forma ("é um projeto legal que quero terminar").
+Consequências: RT-3 dispensada; D13 deixa de existir; o critério de parada de D16 (que era só o
+portão RT-3) fica sem gatilho antes do lançamento — os critérios pós-lançamento continuam para
+antes do RT-9. Risco aceito: o jogo só foi validado pelo próprio estúdio; a primeira opinião de fora
+virá no teste fechado da Play (se a conta exigir) ou no soft launch (RT-10). T-RT2-6 (multidão mínima
+de 150) fica como limite técnico, sem portão: o gate 3× já passou com 299 em voo.

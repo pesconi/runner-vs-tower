@@ -23,7 +23,7 @@ lançamento jun/2027.
 | ~~RT-0 Decisões e varredura de loja~~ — concluída em 2026-11-20 (D1–D6 em `decisoes.md`) | 1 | 1,2 | ~~dez/2026~~ |
 | ~~RT-1 Extração do kit do estúdio~~ — feita pelo plano K do `studiokit` (nov/2026) | 3 | 3,6 | ~~jan/2027~~ |
 | RT-2 Protótipo (1 semana) — concluída em 2026-11-20 (gate 3× aprovado no OPPO, usuário jogou e aprovou; `rt2-prototipo.md`) | 1 | 1,2 | início de fev |
-| RT-3 Teste do protótipo e portão de decisão | 0,5 | 0,6 | meados de fev |
+| ~~RT-3 Teste do protótipo e portão de decisão~~ — dispensada em 2026-11-20 pelo usuário (`decisoes.md`, D13) | 0,5 | 0,6 | ~~meados de fev~~ |
 | RT-4 Fatia vertical | 2 | 2,4 | fev–início de mar |
 | RT-5 Produção — núcleo de meta | 2 | 2,4 | mar |
 | RT-6 Produção — conteúdo (mundos, torres, chefes) | 2,5 | 3 | mar–abr |
@@ -127,6 +127,9 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 
 ## RT-3 — Teste do protótipo e portão de decisão
 
+- **Status: dispensada em 2026-11-20** pelo usuário (`decisoes.md`, D13): ele jogou o protótipo,
+  aprovou e segue para a RT-4 sem teste externo. O texto abaixo fica como histórico.
+
 - **Escopo:** teste com 5 testadores (sem analytics: cronômetro e contagem
   manual, como na pesquisa). Medir: (i) tentativas até vencer a 1ª fase; (ii)
   tempo da fase; (iii) **pedem "de novo" sem incentivo**; (iv) aceitam o anúncio
@@ -149,7 +152,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   defesas, 1 chefe, menu, HUD, resultado, som e vibração, arte final de pelo
   menos 1 torre e 1 chefe, 1 upgrade e 1 unidade especial ponta-a-ponta, save.
   Objetivo: provar que o jogo se sustenta por uma sessão de 5 minutos.
-- **Depende de:** RT-3 (passou).
+- **Depende de:** RT-3 (passou) — RT-3 dispensada em 2026-11-20; depende só da RT-2 concluída.
 - **Aceite:** fatia no OPPO; gate 3× aprovado com a torre mais pesada; segundo
   teste informal com os mesmos 5 + 2 novos (sem critério numérico novo, só
   "voltaria amanhã?"); lista do que falta para a produção.
