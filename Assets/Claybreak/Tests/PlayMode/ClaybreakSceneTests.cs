@@ -193,11 +193,44 @@ namespace Claybreak.Tests
             Assert.AreEqual("Level02", flow.ActiveLevel.name);
         }
 
-        private static IEnumerator LoadScene(bool deviceGate)
+        // RT-6: every world's device gate shows its own scenery and boss tower; from world 2 on the shield
+        // stands over the tower for the whole measurement and takes part of every hit.
+        [UnityTest]
+        public IEnumerator EveryWorldDeviceGateRunsItsSceneryBossAndShield()
+        {
+            var catalog = UnityEditor.AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>("Assets/Claybreak/Content/Data/Catalog.asset");
+            Assert.IsNotNull(catalog);
+            for (int world = 1; world <= catalog.Worlds.Count; world++)
+            {
+                yield return LoadScene(true, world);
+                var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
+                Assert.IsTrue(flow.enabled, $"world {world}: the flow disabled itself (see the log)");
+                ClaybreakWorld data = catalog.Worlds[world - 1].world;
+                Assert.AreEqual(world - 1, flow.Scenery.Shown, "the world's scenery set is shown");
+                Assert.AreEqual(data.Levels[data.LevelCount - 1].Tower, flow.ActiveLevel.Tower, "the gate runs the world's boss tower");
+                float deadline = Time.realtimeSinceStartup + 20f;
+                while (Time.realtimeSinceStartup < deadline && flow.Field.PeakInFlight < 300)
+                {
+                    yield return null;
+                }
+
+                Assert.AreEqual(300, flow.Field.PeakInFlight, $"world {world}: units in flight never reached the pool");
+                Assert.AreEqual(flow.ActiveLevel.ShieldEnabled, flow.Field.Shield.IsStanding, "the shield stands when the world has one");
+                if (flow.ActiveLevel.ShieldEnabled)
+                {
+                    Assert.Greater(flow.Field.Shield.Block, 0f);
+                }
+            }
+
+            ClaybreakFlow.EditorDeviceGateWorld = 1;
+        }
+
+        private static IEnumerator LoadScene(bool deviceGate, int world = 1)
         {
 #if UNITY_EDITOR
             ClaybreakFlow.EditorUsesFreshSave = true;
             ClaybreakFlow.EditorUsesDeviceGateLevel = deviceGate;
+            ClaybreakFlow.EditorDeviceGateWorld = world;
             // The test runner swaps the build scene list, so the Editor loads the scene by path.
             AsyncOperation load = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneAsyncInPlayMode(
                 ScenePath, new LoadSceneParameters(LoadSceneMode.Single));

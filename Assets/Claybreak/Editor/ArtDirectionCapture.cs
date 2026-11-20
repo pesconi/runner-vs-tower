@@ -19,6 +19,10 @@ namespace Claybreak.Editor
         public const string RepositoryFolder = "docs/art/rt4";
         /// <summary>The game screens as they are now (rewritten on every capture; the RT-4 sheets stay as the D17 record).</summary>
         public const string ScreensFolder = "docs/art/telas";
+        /// <summary>RT-6 world art options (palette, tower, boss per new world), at the real play distance.</summary>
+        public const string WorldOptionsFolder = "docs/art/rt6";
+        private const int PanelWidth = 540;
+        private const int PanelHeight = 960;
         private const int Width = 720;
         private const int Height = 960;
 
@@ -46,7 +50,99 @@ namespace Claybreak.Editor
             TowerStyle[] bosses = { TowerStyle.Citadel, TowerStyle.ForgeColossus, TowerStyle.ClayTotem };
             Sheet(folder, "torre-opcoes", towers);
             Sheet(folder, "chefe-opcoes", bosses);
+            WorldSheets(folder);
             GameShots(folder);
+        }
+
+        // ---------- RT-6: world options at the real play distance ----------
+
+        // Per new world: palettes (chosen tower in each), towers and bosses (chosen palette), side by side, A first.
+        private static void WorldSheets(string folder)
+        {
+            Directory.CreateDirectory(WorldOptionsFolder);
+            WorldDefinition[] worlds = WorldContent.Worlds;
+            for (int w = 1; w < worlds.Length; w++)
+            {
+                WorldDefinition world = worlds[w];
+                string prefix = $"mundo{w + 1}";
+                TowerStyle tower = world.TowerOptions[world.ChosenTower];
+                WorldLook look = world.LookOptions[world.ChosenLook];
+                var palettes = new Color[world.LookOptions.Length][];
+                for (int i = 0; i < palettes.Length; i++)
+                {
+                    palettes[i] = PlayDistanceShot(world.Id, world.LookOptions[i], tower, false);
+                }
+
+                WriteSheet(folder, prefix + "-paletas", palettes);
+                var towers = new Color[world.TowerOptions.Length][];
+                for (int i = 0; i < towers.Length; i++)
+                {
+                    towers[i] = PlayDistanceShot(world.Id, look, world.TowerOptions[i], false);
+                }
+
+                WriteSheet(folder, prefix + "-torres", towers);
+                var bosses = new Color[world.BossOptions.Length][];
+                for (int i = 0; i < bosses.Length; i++)
+                {
+                    bosses[i] = PlayDistanceShot(world.Id, look, world.BossOptions[i], true);
+                }
+
+                WriteSheet(folder, prefix + "-chefes", bosses);
+            }
+        }
+
+        // The assault camera's framing (AssaultCamera): 17 m up (20 for a boss) behind the firing line, looking
+        // past the gate row at the tower 34 m ahead, portrait, with the world's scenery and look.
+        private static Color[] PlayDistanceShot(string worldId, WorldLook look, TowerStyle style, bool boss)
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var palette = new ArtPalette();
+            const float line = 8f;
+            const float towerZ = line + 34f;
+            Renderer track = ClaybreakSceneBuilder.CreateEnvironment(palette, towerZ + 30f, out Light sun);
+            var root = new GameObject("Tower").transform;
+            root.position = new Vector3(0f, 0f, towerZ);
+            TowerArt.Build(style, root, palette);
+            float laneWidth = ClaybreakSceneBuilder.TrackWidth / ClaybreakLevel.LaneCount;
+            for (int lane = 0; lane < ClaybreakLevel.LaneCount; lane++)
+            {
+                float x = -ClaybreakSceneBuilder.TrackWidth * 0.5f + laneWidth * (lane + 0.5f);
+                Prim.Box(null, "GatePanel", new Vector3(x, 0.9f, line + 9f), new Vector3(laneWidth * 0.92f, 1.8f, 0.12f),
+                    lane == 1 ? palette.GateBad : palette.GateGood);
+            }
+
+            var cameraObject = new GameObject("Camera", typeof(Camera));
+            Camera camera = cameraObject.GetComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.fieldOfView = 60f;
+            camera.farClipPlane = 170f;
+            ClaybreakSceneBuilder.DressWorld(worldId, look, palette, towerZ + 30f, track, sun, camera);
+            float height = boss ? 20f : 17f;
+            Vector3 from = new Vector3(0f, 0f, line);
+            camera.transform.position = from + new Vector3(0f, height, height - 31f);
+            camera.transform.LookAt(Vector3.Lerp(from, new Vector3(0f, 0f, towerZ), 0.55f));
+            UnityEngine.Object.DestroyImmediate(Render(camera, 64, 64));
+            Texture2D shot = Render(camera, PanelWidth, PanelHeight);
+            Color[] pixels = shot.GetPixels();
+            UnityEngine.Object.DestroyImmediate(shot);
+            return pixels;
+        }
+
+        private static void WriteSheet(string folder, string name, Color[][] panels)
+        {
+            var sheet = new Texture2D(PanelWidth * panels.Length, PanelHeight, TextureFormat.RGB24, false);
+            for (int i = 0; i < panels.Length; i++)
+            {
+                sheet.SetPixels(i * PanelWidth, 0, PanelWidth, PanelHeight, panels[i]);
+                DrawLetter(sheet, i * PanelWidth + 24, PanelHeight - 110, i);
+            }
+
+            sheet.Apply();
+            byte[] png = sheet.EncodeToPNG();
+            File.WriteAllBytes(Path.Combine(folder, name + ".png"), png);
+            File.WriteAllBytes(Path.Combine(WorldOptionsFolder, name + ".png"), png);
+            UnityEngine.Object.DestroyImmediate(sheet);
+            Debug.Log("[ArtDirectionCapture] " + name);
         }
 
         private static void Sheet(string folder, string name, TowerStyle[] styles)
@@ -139,6 +235,18 @@ namespace Claybreak.Editor
             InvokeAwake(tower);
             AssaultShot(folder, "jogo-assalto-torre", tower, camera, world.Levels[1], 17f);
             AssaultShot(folder, "jogo-assalto-chefe", tower, camera, world.Levels[world.LevelCount - 1], 20f);
+
+            // RT-6: every world in the real scene (its scenery set, look and towers), a plain level and the boss.
+            var scenery = UnityEngine.Object.FindAnyObjectByType<WorldScenery>(FindObjectsInactive.Include);
+            for (int w = 0; w < catalog.Worlds.Count; w++)
+            {
+                ClaybreakWorld each = catalog.Worlds[w].world;
+                scenery.Apply(w, each.Look);
+                AssaultShot(folder, $"jogo-mundo{w + 1}-fase", tower, camera, each.Levels[3], 17f);
+                AssaultShot(folder, $"jogo-mundo{w + 1}-chefe", tower, camera, each.Levels[each.LevelCount - 1], 20f);
+            }
+
+            scenery.Apply(0, catalog.Worlds[0].world.Look);
         }
 
         // The tab buttons are wired in Awake; a capture presses them through the same listener.

@@ -15,6 +15,8 @@ MonoBehaviour:
   worlds:
   - world: {fileID: 11400000, guid: 6f1c50a48a3d56f49a365351d66f6f2a, type: 2}
     starsToUnlock: 0
+  - world: {fileID: 11400000, guid: c59d6b580a3954841b571e795937982a, type: 2}
+    starsToUnlock: 10
   upgrades:
   - id: army
     title: ARMY

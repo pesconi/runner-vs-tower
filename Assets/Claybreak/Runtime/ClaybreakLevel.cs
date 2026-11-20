@@ -31,7 +31,9 @@ namespace Claybreak
     {
         Keep,
         Forge,
-        Boss
+        Boss,
+        World2Tower,
+        World2Boss
     }
 
     /// <summary>

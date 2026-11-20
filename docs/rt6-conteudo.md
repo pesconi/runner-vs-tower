@@ -21,6 +21,18 @@ visual por mundo, save v3), `RT.6b` (mundo 2), `RT.6c` (mundo 3), `RT.6d` (mundo
 | Save | Versão 3: o mundo 1 passou de 7 para 10 fases (as novas antes do chefe). Saves v1 e v2 migram: estrelas das fases 1–6 ficam, as do chefe vão do 7º para o 10º lugar, quem estava no chefe encontra a primeira fase nova; moedas, voltas e o resto ficam. |
 | Validador de completude do tema | `ClaybreakValidation` agora confere por mundo: aparência definida, estilo de cenário e céu que nenhum outro mundo usa, torre principal e chefe que nenhum mundo anterior usa, chefe com regra e 3+ andares, vida que não cai de uma fase para a outra e chefe acima de todas, e o nível de gate do mundo (torre do chefe, regra, escudo se o mundo tem). |
 
+## 1.1 Os mundos
+
+| Mundo | Cenário (recomendação em uso) | Torre própria | Chefe e regra | Defesas novas | Dano esperado | Abre com |
+|---|---|---|---|---|---|---|
+| 1 — marchas | crepúsculo, pedras, pilares, braseiros (RT-4) | bastião de pedra (+ forja) | cidadela — a fileira de portões gira | muralha, canhão, varredor | ×1,0 | — |
+| 2 — pântano | noite verde-azulada, juncos, palafitas, lanternas verdes | forte de palafita (+ forja) | campanário afundado — o escudo volta a cada andar | **escudo** (da fase 3) | ×1,3 | chefe do 1 + 10 estrelas |
+
+Rampa do mundo 2 (vida): 110 → 220 → 380 → 500 → 540 → 550 → 650 → 680 → 720 → chefe 800 (tabela
+completa em `docs/rt6-economia.md`). As opções de arte de cada mundo novo estão em `docs/art/rt6/`
+(`mundoN-paletas.png`, `-torres.png`, `-chefes.png`, A à esquerda) e o assalto de cada mundo na cena real em
+`docs/art/telas/jogo-mundoN-fase.png` e `-chefe.png`.
+
 ## 2. Decisões
 
 Técnicas (`decisoes.md`, T-RT6-1 a T-RT6-4): fases como `LevelSpec` gerado por perfil; visual por mundo
@@ -31,6 +43,7 @@ pré-alocado; escudo e regras de chefe como dado; ajuste das voltas pelo poder d
 | Data | Etapa | Resultado |
 |---|---|---|
 | 2026-11-20 | RT.6a: cena, validador, isolamento do kit, EditMode, PlayMode, economia, APKs (`Tools/rt4-check.sh /c/temp/rt6`) | PASS; EditMode 101/101 (+ testes do gerador, do escudo, das regras e da migração v3), PlayMode 5/5 |
+| 2026-11-20 | RT.6b (mundo 2): as mesmas etapas + capturas | PASS; EditMode 101/101, PlayMode 6/6 (novo: o gate de cada mundo mostra o cenário e a torre do chefe dele, com o escudo de pé onde o mundo tem) |
 
 ## 4. Gate 3× no OPPO CPH2791 (torre mais pesada de cada mundo, loadout máximo)
 
@@ -40,3 +53,4 @@ com 300 em voo e 12 pedras.
 | Data | Mundo | p95 quadro | >50 ms | main p95 | gpu p95 | PSS | em voo | elites | pedras | Passou? |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-20 | 1 (cidadela) | 16 ms (max 16) | 0,0% | 4,5–5,5 ms | 3,9–4,3 ms | 182 MB | 299 | 100 | 11–12/12 | **Sim** |
+| 2026-11-20 | 2 (campanário, escudo de pé) | 16 ms (max 16) | 0,0% | 4,4–5,6 ms | 4,1–4,5 ms | 195 MB | 299 | 100 | 11–12/12 | **Sim** |

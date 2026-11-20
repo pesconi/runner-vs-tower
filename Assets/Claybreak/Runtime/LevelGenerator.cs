@@ -93,14 +93,15 @@ namespace Claybreak
                 specs[i] = fixedSpec;
             }
 
-            specs[boss] ??= Generate(recipe, boss);
+            specs[boss] ??= StrongestBoss(recipe, boss);
             for (int i = 0; i < boss; i++)
             {
                 if (generated[i])
                 {
                     int lower = i > 0 ? specs[i - 1].towerHealth + 10 : 0;
                     int upper = specs[boss].towerHealth - 10 * (boss - i);
-                    specs[i] = Closest(recipe, i, lower, upper);
+                    int target = Mathf.RoundToInt(specs[boss].towerHealth * Mathf.Lerp(FirstLevelShareOfBoss, LastLevelShareOfBoss, (float)i / boss));
+                    specs[i] = Closest(recipe, i, lower, upper, target);
                 }
             }
 
@@ -111,21 +112,43 @@ namespace Claybreak
         /// <summary>Layout variants tried per level so its own health (a fair share of its potential) fits the ramp.</summary>
         public const int Variants = 12;
 
-        // The variant whose natural health lands inside [lower, upper], or the nearest one: the ramp then has
-        // little to force, and a forced health never strays far from the level's real potential.
-        private static LevelSpec Closest(WorldRecipe recipe, int index, int lower, int upper)
+        /// <summary>The ramp a world aims at: its first level near this share of the boss's health, its last plain level near the second.</summary>
+        public const float FirstLevelShareOfBoss = 0.2f;
+        public const float LastLevelShareOfBoss = 0.9f;
+
+        // The boss is the world's peak: of its layouts, the one with the most potential hits.
+        private static LevelSpec StrongestBoss(WorldRecipe recipe, int index)
         {
             LevelSpec best = null;
-            int bestDistance = int.MaxValue;
-            for (int variant = 0; variant < Variants && bestDistance > 0; variant++)
+            for (int variant = 0; variant < Variants; variant++)
+            {
+                LevelSpec candidate = Generate(recipe, index, variant);
+                if (best == null || PotentialHits(candidate) > PotentialHits(best))
+                {
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
+        // The variant whose natural health lands inside [lower, upper] and nearest the target curve (or the
+        // nearest to the interval): the ramp then has little to force, and a forced health never strays far
+        // from the level's real potential.
+        private static LevelSpec Closest(WorldRecipe recipe, int index, int lower, int upper, int target)
+        {
+            LevelSpec best = null;
+            long bestScore = long.MaxValue;
+            for (int variant = 0; variant < Variants; variant++)
             {
                 LevelSpec candidate = Generate(recipe, index, variant);
                 int health = candidate.towerHealth;
-                int distance = health < lower ? lower - health : health > upper ? health - upper : 0;
-                if (distance < bestDistance)
+                int outside = health < lower ? lower - health : health > upper ? health - upper : 0;
+                long score = outside * 100000L + Math.Abs(health - target);
+                if (score < bestScore)
                 {
                     best = candidate;
-                    bestDistance = distance;
+                    bestScore = score;
                 }
             }
 

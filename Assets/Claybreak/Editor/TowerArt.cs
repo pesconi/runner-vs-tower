@@ -17,7 +17,11 @@ namespace Claybreak.Editor
         /// <summary>Boss option B: forge colossus, a furnace drum with a glowing core and two stacks.</summary>
         ForgeColossus,
         /// <summary>Boss option C: clay totem, stacked rings with horns, no face.</summary>
-        ClayTotem
+        ClayTotem,
+        /// <summary>World 2 tower option: a tarred wooden fort on stilts, palisade and lanterns.</summary>
+        StiltFort,
+        /// <summary>World 2 boss option: a half-sunken stone bell tower with lit arches and a bell cage.</summary>
+        SunkenBell
     }
 
     /// <summary>What the game needs from a built tower body.</summary>
@@ -58,6 +62,8 @@ namespace Claybreak.Editor
                 case TowerKind.Keep: return ChosenTower;
                 case TowerKind.Forge: return SecondTower;
                 case TowerKind.Boss: return ChosenBoss;
+                case TowerKind.World2Tower: return WorldContent.ChosenTowerStyle(1);
+                case TowerKind.World2Boss: return WorldContent.ChosenBossStyle(1);
                 default: throw new System.ArgumentOutOfRangeException(nameof(kind), kind, "no art style for this tower kind");
             }
         }
@@ -74,7 +80,10 @@ namespace Claybreak.Editor
                 case TowerStyle.ClayRuin: ClayRuin(body, p, ref parts, 1f); break;
                 case TowerStyle.Citadel: Citadel(body, p, ref parts); break;
                 case TowerStyle.ForgeColossus: IronForge(body, p, ref parts, 1.3f); ForgeColossusExtras(body, p); break;
-                default: ClayRuin(body, p, ref parts, 1.3f); ClayTotemExtras(body, p, parts); break;
+                case TowerStyle.ClayTotem: ClayRuin(body, p, ref parts, 1.3f); ClayTotemExtras(body, p, parts); break;
+                case TowerStyle.StiltFort: StiltFort(body, p, ref parts); break;
+                case TowerStyle.SunkenBell: SunkenBell(body, p, ref parts); break;
+                default: throw new System.ArgumentOutOfRangeException(nameof(style), style, "no builder for this style");
             }
 
             return parts;
@@ -296,6 +305,125 @@ namespace Claybreak.Editor
             }
 
             parts.BarHeight = y + 3.4f;
+        }
+
+        // ---------- world 2 tower: stilt fort ----------
+
+        private static void StiltFort(Transform body, ArtPalette p, ref TowerParts parts)
+        {
+            Prim.Ball(body, "Mound", new Vector3(0f, 0.1f, 3.4f), new Vector3(11f, 1.2f, 8f), p.ClayDark);
+            for (int sx = -1; sx <= 1; sx += 2)
+            {
+                for (int sz = 0; sz < 2; sz++)
+                {
+                    Prim.Cyl(body, "Stilt", new Vector3(sx * 3.4f, 1.6f, 1.2f + sz * 4.6f), new Vector3(0.7f, 1.7f, 0.7f), p.Wood);
+                }
+
+                Prim.Box(body, "Brace", new Vector3(sx * 3.4f, 1.6f, 3.5f), new Vector3(0.25f, 0.25f, 4.8f), p.WoodDark,
+                    new Vector3(25f, 0f, 0f));
+                Prim.Cyl(body, "LanternPole", new Vector3(sx * 4.7f, 2.6f, 0.2f), new Vector3(0.18f, 2.6f, 0.18f), p.Wood);
+                Prim.Ball(body, "Lantern", new Vector3(sx * 4.7f, 5.35f, 0.2f), new Vector3(0.6f, 0.75f, 0.6f), p.Lantern);
+            }
+
+            Prim.Box(body, "Deck", new Vector3(0f, 3.4f, 3.4f), new Vector3(8.8f, 0.45f, 6.6f), p.WoodDark);
+            for (int i = 0; i < 11; i++)
+            {
+                float x = -4f + i * 0.8f;
+                float h = 2.2f + (i % 3) * 0.35f;
+                Prim.Cyl(body, "Stake", new Vector3(x, 3.5f + h * 0.5f, 0.35f), new Vector3(0.55f, h * 0.5f, 0.55f), i % 2 == 0 ? p.Wood : p.WoodDark);
+            }
+
+            Prim.Box(body, "Gate", new Vector3(0f, 1.6f, 0.9f), new Vector3(2.2f, 2.8f, 0.2f), p.Iron);
+            Prim.Box(body, "Ramp", new Vector3(0f, 0.9f, -0.6f), new Vector3(2.4f, 0.15f, 3.2f), p.Wood, new Vector3(-28f, 0f, 0f));
+            Cannon(body, p, new Vector3(0f, 6.4f, 0.6f), ref parts);
+            float[] widths = { 7f, 5.8f, 4.6f, 3.4f };
+            float y = 3.65f;
+            for (int i = 0; i < 4; i++)
+            {
+                Transform tier = Tier(body, i, ref parts);
+                float w = widths[i];
+                float h = 1.9f;
+                Prim.Box(tier, "Hut", new Vector3(0f, y + h * 0.5f, 3.8f), new Vector3(w, h, w * 0.7f), i % 2 == 0 ? p.WoodDark : p.Wood);
+                Prim.Box(tier, "Eave", new Vector3(0f, y + h + 0.05f, 3.8f), new Vector3(w + 0.6f, 0.22f, w * 0.7f + 0.6f), p.Thatch);
+                for (int plank = -1; plank <= 1; plank++)
+                {
+                    Prim.Box(tier, "Plank", new Vector3(plank * w * 0.3f, y + h * 0.5f, 3.8f - w * 0.35f - 0.03f),
+                        new Vector3(0.12f, h * 0.9f, 0.06f), p.Iron);
+                }
+
+                Prim.Box(tier, "Window", new Vector3(w * 0.15f, y + h * 0.55f, 3.8f - w * 0.35f - 0.04f), new Vector3(0.5f, 0.45f, 0.05f), p.Lantern);
+                if (i == 3)
+                {
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        Prim.Box(tier, "Roof", new Vector3(side * 0.95f, y + h + 0.95f, 3.8f), new Vector3(2.4f, 0.3f, w * 0.85f), p.Thatch,
+                            new Vector3(0f, 0f, -side * 38f));
+                    }
+
+                    Prim.Ball(tier, "TopLantern", new Vector3(0f, y + h + 2.05f, 3.8f), new Vector3(0.7f, 0.85f, 0.7f), p.Lantern);
+                }
+
+                y += h + 0.25f;
+            }
+
+            parts.BarHeight = y + 3.6f;
+        }
+
+        // ---------- world 2 boss: sunken bell tower ----------
+
+        private static void SunkenBell(Transform body, ArtPalette p, ref TowerParts parts)
+        {
+            Prim.Cyl(body, "Pool", new Vector3(0f, 0.05f, 4.2f), new Vector3(12f, 0.05f, 9f), p.StoneDark);
+            Prim.Cyl(body, "Base", new Vector3(0f, 2.2f, 4.4f), new Vector3(8.6f, 2.2f, 8.6f), p.Stone, new Vector3(0f, 0f, -4f));
+            for (int k = 0; k < 6; k++)
+            {
+                float a = (k - 2.5f) * 0.42f;
+                Prim.Ball(body, "Moss", new Vector3(Mathf.Sin(a) * 4.2f, 0.6f + (k % 2) * 0.5f, 4.4f - Mathf.Cos(a) * 4.2f),
+                    new Vector3(1.6f, 0.6f, 1.1f), p.Moss);
+            }
+
+            Prim.Box(body, "Arch", new Vector3(0f, 2.1f, 0.15f), new Vector3(2.6f, 3f, 0.3f), p.Iron);
+            Prim.Box(body, "ArchLight", new Vector3(0f, 2.1f, 0.05f), new Vector3(1.8f, 2.2f, 0.1f), p.Lantern);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Prim.Box(body, "Chain", new Vector3(side * 3.2f, 5.5f, 0.6f), new Vector3(0.15f, 6f, 0.15f), p.Iron, new Vector3(0f, 0f, side * 20f));
+                Prim.Ball(body, "Weight", new Vector3(side * 4.2f, 2.6f, 0.6f), new Vector3(0.9f, 0.9f, 0.9f), p.Iron);
+            }
+
+            Cannon(body, p, new Vector3(0f, 5f, 0.4f), ref parts);
+            float[] diameters = { 7.4f, 6.2f, 5f, 3.8f };
+            float y = 4.4f;
+            for (int i = 0; i < 4; i++)
+            {
+                Transform tier = Tier(body, i, ref parts);
+                float d = diameters[i];
+                float h = 1.8f;
+                Prim.Cyl(tier, "Drum", new Vector3(0f, y + h * 0.5f, 4.4f), new Vector3(d, h * 0.5f, d), i % 2 == 0 ? p.StoneWarm : p.Stone);
+                Prim.Cyl(tier, "Lip", new Vector3(0f, y + h, 4.4f), new Vector3(d + 0.4f, 0.12f, d + 0.4f), p.StoneDark);
+                for (int w = -1; w <= 1; w++)
+                {
+                    Prim.Box(tier, "Arch", new Vector3(w * d * 0.28f, y + h * 0.5f, 4.4f - d * 0.47f), new Vector3(0.55f, 1.1f, 0.12f), p.Lantern);
+                }
+
+                Prim.Ball(tier, "Moss", new Vector3(-d * 0.3f, y + h - 0.1f, 4.4f - d * 0.38f), new Vector3(1.1f, 0.4f, 0.8f), p.Moss);
+                if (i == 3)
+                {
+                    for (int post = 0; post < 4; post++)
+                    {
+                        float a = post * Mathf.PI * 0.5f + Mathf.PI * 0.25f;
+                        Prim.Box(tier, "CagePost", new Vector3(Mathf.Cos(a) * 1.3f, y + h + 1.2f, 4.4f + Mathf.Sin(a) * 1.3f),
+                            new Vector3(0.25f, 2.4f, 0.25f), p.Iron);
+                    }
+
+                    Prim.Box(tier, "CageRoof", new Vector3(0f, y + h + 2.5f, 4.4f), new Vector3(3.2f, 0.3f, 3.2f), p.Iron, new Vector3(0f, 45f, 0f));
+                    Prim.Ball(tier, "Bell", new Vector3(0f, y + h + 1.3f, 4.4f), new Vector3(1.6f, 1.9f, 1.6f), p.Bone);
+                    Prim.Ball(tier, "Clapper", new Vector3(0f, y + h + 0.45f, 4.4f), new Vector3(0.5f, 0.5f, 0.5f), p.Lantern);
+                }
+
+                y += h + 0.15f;
+            }
+
+            parts.BarHeight = y + 3.9f;
         }
 
         // ---------- shared ----------

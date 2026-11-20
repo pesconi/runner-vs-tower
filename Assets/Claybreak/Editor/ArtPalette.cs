@@ -38,6 +38,10 @@ namespace Claybreak.Editor
         public readonly Material Marker = Clear("LaneMarker", new Color(1f, 0.8f, 0.25f, 0.35f));
         public readonly Material Shadow = Clear("Shadow", new Color(0f, 0f, 0f, 0.5f));
         public readonly Material Danger = Clear("Danger", new Color(0.95f, 0.3f, 0.15f, 0.35f));
+        // World 2 towers (RT-6): tarred wood, thatch, swamp lanterns.
+        public readonly Material WoodDark = Solid("WoodDark", new Color(0.17f, 0.12f, 0.09f));
+        public readonly Material Thatch = Solid("Thatch", new Color(0.45f, 0.4f, 0.24f));
+        public readonly Material Lantern = Unlit("Lantern", new Color(0.72f, 0.95f, 0.38f));
         public readonly Material ShieldDome = Clear("ShieldDome", new Color(0.35f, 0.85f, 0.95f, 0.22f));
         public readonly Material ShieldCore = Unlit("ShieldCore", new Color(0.45f, 0.95f, 1f));
 

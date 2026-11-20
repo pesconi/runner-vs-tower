@@ -8,7 +8,9 @@ namespace Claybreak
     public enum SceneryStyle
     {
         /// <summary>World 1: rocks, pillars, dead trees and braziers under a dusk ridge.</summary>
-        Marches
+        Marches,
+        /// <summary>World 2: reeds, stilt huts, mossy dead trees, lantern poles and dark pools; far gnarled trees.</summary>
+        Mire
     }
 
     /// <summary>

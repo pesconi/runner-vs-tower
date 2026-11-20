@@ -16,6 +16,22 @@ namespace Claybreak.Editor
         public int StarsToUnlock;
         public float HealthPerLoop = 0.25f;
         public float CoinsPerLoop = 0.25f;
+
+        /// <summary>Art options compared for the user (docs/art/rt6); index 0 is the recommendation in use until approved.</summary>
+        public WorldLook[] LookOptions;
+        public string[] LookNames;
+        public TowerStyle[] TowerOptions;
+        public TowerStyle[] BossOptions;
+        public int ChosenLook;
+        public int ChosenTower;
+        public int ChosenBoss;
+
+        /// <summary>Sets <see cref="Look"/> from the chosen palette option.</summary>
+        public WorldDefinition WithChosenLook()
+        {
+            Look = LookOptions[ChosenLook];
+            return this;
+        }
     }
 
     /// <summary>
@@ -41,7 +57,21 @@ namespace Claybreak.Editor
             world == 0 ? $"{DataFolder}/DeviceGateLevel.asset" : $"{DataFolder}/DeviceGateLevelWorld{world + 1}.asset";
 
         /// <summary>Every world in catalog order.</summary>
-        public static WorldDefinition[] Worlds => new[] { World1() };
+        public static WorldDefinition[] Worlds => new[] { World1(), World2() };
+
+        /// <summary>The art style in use for a world's own tower (TowerArt.StyleFor).</summary>
+        public static TowerStyle ChosenTowerStyle(int world)
+        {
+            WorldDefinition definition = Worlds[world];
+            return definition.TowerOptions[definition.ChosenTower];
+        }
+
+        /// <summary>The art style in use for a world's boss.</summary>
+        public static TowerStyle ChosenBossStyle(int world)
+        {
+            WorldDefinition definition = Worlds[world];
+            return definition.BossOptions[definition.ChosenBoss];
+        }
 
         /// <summary>Writes every level, the device-gate levels, the worlds and the catalog. Returns the catalog.</summary>
         public static ClaybreakCatalog Write()
@@ -149,8 +179,12 @@ namespace Claybreak.Editor
             {
                 Id = SaveMigration.V1WorldId,
                 Name = "WORLD 1",
+                // Approved art (D17): bastion and citadel; the forge is the world's second tower.
+                TowerOptions = new[] { TowerArt.ChosenTower },
+                BossOptions = new[] { TowerArt.ChosenBoss },
                 FixedLevels = fixedLevels,
                 StarsToUnlock = 0,
+                LookNames = new[] { "dusk marches (RT-4)" },
                 Look = new WorldLook
                 {
                     scenery = SceneryStyle.Marches,
@@ -197,6 +231,85 @@ namespace Claybreak.Editor
                     bossReward = 200
                 }
             };
+        }
+
+        // ---------- world 2: the mire (shield world) ----------
+
+        // Swamp ruins at night. Teaches the shield from level 3; the boss raises it again at every floor.
+        private static WorldDefinition World2()
+        {
+            return new WorldDefinition
+            {
+                Id = "world2",
+                Name = "WORLD 2",
+                StarsToUnlock = 10,
+                LookNames = new[] { "night mire (teal, lantern green)", "amber bog (ochre, orange lamps)" },
+                LookOptions = new[]
+                {
+                    new WorldLook
+                    {
+                        scenery = SceneryStyle.Mire,
+                        sky = new Color(0.07f, 0.12f, 0.12f),
+                        ambient = new Color(0.3f, 0.38f, 0.36f),
+                        sun = new Color(0.72f, 0.88f, 0.82f),
+                        sunIntensity = 1.05f,
+                        ground = new Color(0.29f, 0.26f, 0.18f),
+                        field = new Color(0.11f, 0.17f, 0.14f),
+                        prop = new Color(0.36f, 0.4f, 0.26f),
+                        propDark = new Color(0.08f, 0.12f, 0.11f),
+                        accent = new Color(0.72f, 0.95f, 0.38f)
+                    },
+                    new WorldLook
+                    {
+                        scenery = SceneryStyle.Mire,
+                        sky = new Color(0.22f, 0.15f, 0.08f),
+                        ambient = new Color(0.44f, 0.36f, 0.26f),
+                        sun = new Color(1f, 0.78f, 0.5f),
+                        sunIntensity = 1.15f,
+                        ground = new Color(0.4f, 0.31f, 0.18f),
+                        field = new Color(0.25f, 0.2f, 0.1f),
+                        prop = new Color(0.52f, 0.44f, 0.24f),
+                        propDark = new Color(0.17f, 0.12f, 0.07f),
+                        accent = new Color(1f, 0.6f, 0.2f)
+                    }
+                },
+                TowerOptions = new[] { TowerStyle.StiltFort, TowerStyle.ClayRuin },
+                BossOptions = new[] { TowerStyle.SunkenBell, TowerStyle.ClayTotem },
+                Recipe = new WorldRecipe
+                {
+                    worldId = "world2",
+                    seed = 202,
+                    levelCount = 10,
+                    mainTower = TowerKind.World2Tower,
+                    secondTower = TowerKind.Forge,
+                    secondTowerEvery = 4,
+                    bossTower = TowerKind.World2Boss,
+                    bossRule = BossRule.ShieldReturns,
+                    expectedDamage = 1.3f,
+                    startFirst = 14,
+                    startLast = 20,
+                    runSpeedFirst = 5.5f,
+                    runSpeedLast = 6.5f,
+                    shareFirst = 0.52f,
+                    shareLast = 0.64f,
+                    bossShare = 0.68f,
+                    addFirst = 10,
+                    addLast = 35,
+                    wallFrom = 0,
+                    sweeperFrom = 1,
+                    shieldFrom = 2,
+                    cratesFrom = 1,
+                    cannonIntervalFirst = 2.2f,
+                    cannonIntervalLast = 1.5f,
+                    projectilesFirst = 4,
+                    projectilesLast = 7,
+                    shieldBlockFirst = 0.4f,
+                    shieldBlockLast = 0.6f,
+                    rewardFirst = 110,
+                    rewardLast = 170,
+                    bossReward = 350
+                }
+            }.WithChosenLook();
         }
 
         // ---------- device gate (reuso-tecnico 6.3), one per world ----------
