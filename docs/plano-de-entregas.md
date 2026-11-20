@@ -229,7 +229,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   sem reconferir consentimento, relógio adiantado travando o presente); APKs com anúncios de teste em
   `C:\temp\rt7` (36,1 MB, +0,03 MB sobre a RT-6). **Gate 3× (2026-11-20, mundo 4, chefe, 299 em voo, 12/12
   pedras):** quadro p95 16 ms, 0,0% > 50 ms, main p95 ≤ 5,4 ms, gpu p95 ≤ 4,7 ms, PSS 243 MB — **passou**
-  (`C:	empt2\gate-rt7-w4.txt`); APK normal instalado no OPPO. **Pendente do usuário:** ver os anúncios de teste.
+  (`C:	empt2gate-rt7-w4.txt`); APK normal instalado no OPPO. **Pendente do usuário:** ver os anúncios de teste.
 
 ## RT-8 — Produção: polimento, áudio e gate de release
 
