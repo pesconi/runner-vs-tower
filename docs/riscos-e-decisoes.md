@@ -67,8 +67,8 @@ sem medida.
   pool, limites por dados (reuso-tecnico.md 6.2 e 6.3); **medição no protótipo
   antes de arte**; se falhar, reduzir limites, não o gate.
 - **Gatilho de parada:** protótipo não fecha o gate com no mínimo um número de
-  unidades em voo que o jogo ainda considere "multidão" (definir no RT-2;
-  inferência).
+  unidades em voo que o jogo ainda considere "multidão" — **definido no RT-2
+  (2026-11-20, T-RT2-6): 150 em voo**, a confirmar no RT-3; inferência.
 
 ### R4 — Monetização sem dados
 

@@ -1,0 +1,21 @@
+{
+    "name": "Claybreak.Runtime",
+    "rootNamespace": "Claybreak",
+    "references": [
+        "JungleDegree.StudioKit.Core",
+        "JungleDegree.StudioKit.Characters",
+        "JungleDegree.StudioKit.Crowd",
+        "JungleDegree.StudioKit.UI",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

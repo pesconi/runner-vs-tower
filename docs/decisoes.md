@@ -143,3 +143,42 @@ launch quer medir (segunda opinião do Fable).
 
 **Risco registrado:** avaliações reclamando de anúncio quando o intersticial for ligado sem
 opção paga de remoção (chance média, impacto baixo; limites conservadores).
+
+## 2026-11-20 — T-RT2-1 — Variante de lançamento do protótipo — **L1 "soltar em ondas"** — técnica (sessão RT-2)
+
+L1 (arrastar escolhe a faixa, segurar solta um fluxo contínuo) em vez de L2 (avalanche de um
+toque). Motivo: a fileira de portões do assalto e a muralha só viram decisão se o jogador pode
+trocar de faixa enquanto lança; L1 também é o caso mais caro da entrada. L2 cabe depois como
+variante se o RT-3 pedir. Detalhes em `docs/rt2-prototipo.md` seção 2.
+
+## 2026-11-20 — T-RT2-2 — Portões do Claybreak escritos no jogo, não levados ao kit — técnica (sessão RT-2)
+
+Os portões e o percurso do Wild Pack ficaram fora do kit (K1) presos ao `GameManager` dele.
+Levá-los ao kit agora exigiria desmontar o fluxo do Wild Pack e passar pelo aceite dele, grande
+e arriscado para um protótipo de uma semana; a regra aqui é outra (o portão também age sobre um
+fluxo de unidades no assalto). Código pequeno no jogo (`GateMath`, `RunGateCourse`); a comparação
+para a pauta do kit está em `docs/rt2-prototipo.md` seção 4.
+
+## 2026-11-20 — T-RT2-3 — Sons placeholder sintetizados — técnica (sessão RT-2)
+
+O kit 0.1.0 só tem o motor de som; os clipes são conteúdo do Wild Pack e não podem ser copiados.
+O construtor do protótipo gera WAVs simples por código (sem fonte de terceiros, sem licença a
+controlar). Trocados por áudio de verdade na RT-8.
+
+## 2026-11-20 — T-RT2-4 — ID de app de exemplo do AdMob no protótipo — técnica (sessão RT-2)
+
+O SDK de anúncios de que o kit depende exige um ID de app no manifesto Android. O protótipo não
+mostra anúncio; usa o ID público de exemplo do Google (`ca-app-pub-3940256099942544~3347511713`),
+que não pertence ao estúdio. IDs reais só na RT-7 (decisão D6).
+
+## 2026-11-20 — T-RT2-5 — Medição do gate no protótipo — técnica (sessão RT-2)
+
+APK de medição = release com `RELEASE_MEASUREMENT`; nível próprio (`DeviceGateLevel`) que começa
+sozinho e mantém 300 unidades em voo e o canhão no limite de 12 pedras pelo tempo da medição;
+script `Tools/rt2-gate.sh` sobre as ferramentas do kit. Falhou → baixar limites por dado
+(unidades em voo, depois pedras), nunca o gate.
+
+## 2026-11-20 — T-RT2-6 — "Multidão" mínima do gatilho de parada do R3 — técnica, a confirmar no RT-3
+
+150 unidades em voo (metade do pool). Se o gate 3× só passar abaixo disso, o gatilho de parada do
+R3 (`riscos-e-decisoes.md`) dispara e o RT-3 decide.

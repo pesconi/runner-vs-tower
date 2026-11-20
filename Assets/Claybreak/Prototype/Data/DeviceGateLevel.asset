@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13bb24070fdcf1d4b8798f005145b724, type: 3}
+  m_Name: DeviceGateLevel
+  m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.PrototypeLevel
+  startCount: 300
+  runSpeed: 12
+  runGates: []
+  firingLineZ: 24
+  launchRate: 150
+  unitSpeed: 5
+  laneSpread: 1.1
+  maximumUnitsInFlight: 300
+  assaultGateDistance: 9
+  assaultGates:
+  - operation: 2
+    value: 1
+  - operation: 2
+    value: 1
+  - operation: 2
+    value: 1
+  autoLaunch: 1
+  recycleUnits: 1
+  towerDistance: 62
+  towerHealth: 4096
+  damagePerUnit: 1
+  wallLane: 2
+  wallDistance: 20
+  wallHealth: 1
+  cannonInterval: 0.05
+  projectileFlightTime: 1
+  blastRadius: 1.2
+  maximumProjectiles: 12

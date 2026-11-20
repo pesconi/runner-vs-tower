@@ -1,0 +1,20 @@
+# Isolation list of this game (Claybreak, working title; repository RunnerVsTower), read by the kit's
+# EngineIsolationValidation (Tools > Validation > Engine Isolation). The kit must never name this game
+# or its content. Directives:
+#   term <regex>           forbidden term, case-insensitive
+#   folder <path>          extra project folder that follows the same rule (none)
+#   allow <file> <text>    text removed from that file's lines before the search (none)
+# Keep the studiokit TestProject list in step when a term is added here.
+
+# Game names and application ID.
+term claybreak
+term runner ?vs ?tower
+term com\.jungledegree\.runnervstower
+term Assets/Claybreak
+
+# Content that is still this game's, not a kit role (tower, defenses, assault).
+term tower
+term cannon
+term assault
+term battlement
+term projectile

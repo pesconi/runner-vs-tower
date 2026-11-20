@@ -1,0 +1,26 @@
+{
+    "name": "Claybreak.Editor",
+    "rootNamespace": "Claybreak.Editor",
+    "references": [
+        "Claybreak.Runtime",
+        "JungleDegree.StudioKit.Core",
+        "JungleDegree.StudioKit.Characters",
+        "JungleDegree.StudioKit.Crowd",
+        "JungleDegree.StudioKit.UI",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "UnityEngine.UI",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
