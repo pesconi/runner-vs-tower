@@ -199,8 +199,8 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   jogáveis (D12 = A), geração de fases por perfil de dificuldade, escudo, um chefe com regra própria por
   mundo, visual próprio por mundo, voltas ajustadas ao poder do jogador (correção da D19), save v3 com
   migração, economia acertada (D19 A: +3 skins, loja de 19.380); validador sem falha e gate 3× aprovado no
-  OPPO em cada mundo. Pendentes do usuário: jogar os 4 mundos e responder a ficha D20 (arte dos mundos;
-  o jogo roda com as recomendações).
+  OPPO em cada mundo. D20 respondida em 2026-11-20: A (arte recomendada
+  como provisória até o soft launch). Pendente do usuário: jogar os 4 mundos no OPPO.
 
 ## RT-7 — Produção: monetização, retenção e analytics
 

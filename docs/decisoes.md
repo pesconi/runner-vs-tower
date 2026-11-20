@@ -494,7 +494,7 @@ Vale para as próximas entregas e para o aceite da RT-6. Na RT-6 a decisão cheg
 mundo; o caso mais pesado foi o mundo 4 (CPU p95 até 9,1 ms, GPU 4,4 ms, quadro p95 16 ms, 197 MB), que
 vale como a rodada final. O app de medição é fechado no celular ao terminar.
 
-## Ficha D20 (RT-6, aguardando resposta)
+## Ficha D20 (RT-6, respondida em 2026-11-20: A)
 
 ### DECISÃO D20 — Arte dos mundos 2, 3 e 4 (paleta, torre e chefe)
 
@@ -581,6 +581,11 @@ e o chefe do mundo 4 parecido demais com a torre; sugeriu a opção C (incluída
 Se você não responder: o jogo segue com as recomendações como provisórias; nada mais espera por isso.
 
 Responda: A, B + itens, C, D, ou "explica melhor".
+
+**Resposta do usuário (2026-11-20): A** — "Segue como está, opção A". As recomendações (mundo 2: paleta A,
+forte de palafitas, campanário; mundo 3: paleta B, moinho, martelo-pilão; mundo 4: paleta A, agulha,
+agulha coroada) são a arte dos mundos 2–4 até o soft launch. Os ajustes da opção C ficam anotados para
+rever se, jogando, o mundo 2 parecer escuro ou os portões do mundo 4 lerem mal.
 
 ## Fichas D19 e D12 (RT-5, aguardando resposta)
 
