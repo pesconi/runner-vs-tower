@@ -175,4 +175,9 @@ e `C:\temp\rt2\gate-oppo-120.txt` (fora do repositório).
 
 Primeira impressão do usuário (3 partidas: duração, vitória/derrota, "de novo?"):
 
--
+- 2026-11-20 (depois da correção `bb8f1ff`): **gostou**; venceu na **2ª tentativa**. Avaliação: "é apenas um
+  protótipo, mas merece a continuação". Duração das partidas não registrada (o log do aparelho foi
+  sobrescrito antes da leitura); na RT-3 cronometrar à mão, como previsto.
+- Ideia do usuário para o kit (não é decisão): a mesma base serve para variações como **multidão contra
+  multidão** (crowd x crowd), em vez de multidão contra torre. Levar como candidato de variação ao
+  pensar o que sobe para o `studiokit` depois do portão da RT-3.

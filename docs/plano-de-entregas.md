@@ -22,7 +22,7 @@ lançamento jun/2027.
 |---|---|---|---|
 | ~~RT-0 Decisões e varredura de loja~~ — concluída em 2026-11-20 (D1–D6 em `decisoes.md`) | 1 | 1,2 | ~~dez/2026~~ |
 | ~~RT-1 Extração do kit do estúdio~~ — feita pelo plano K do `studiokit` (nov/2026) | 3 | 3,6 | ~~jan/2027~~ |
-| RT-2 Protótipo (1 semana) — código concluído em 2026-11-20; aceite no OPPO pendente (`rt2-prototipo.md`) | 1 | 1,2 | início de fev |
+| RT-2 Protótipo (1 semana) — concluída em 2026-11-20 (gate 3× aprovado no OPPO, usuário jogou e aprovou; `rt2-prototipo.md`) | 1 | 1,2 | início de fev |
 | RT-3 Teste do protótipo e portão de decisão | 0,5 | 0,6 | meados de fev |
 | RT-4 Fatia vertical | 2 | 2,4 | fev–início de mar |
 | RT-5 Produção — núcleo de meta | 2 | 2,4 | mar |
@@ -116,7 +116,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   limites por dados e registrar o limite que passou); registro do que foi
   cortado.
 - **Exige o usuário:** OPPO conectado; jogar e dar a primeira impressão.
-- **Status: código concluído em 2026-11-20** (`Stage RT.2`); **aceite no aparelho pendente**.
+- **Status: concluída em 2026-11-20** (`Stage RT.2` + correção `bb8f1ff`); gate 3× aprovado no OPPO a 60 fps (120 fps real a conferir na RT-4); usuário jogou, venceu na 2ª tentativa e aprovou seguir.
   Fase jogável em `Assets/Claybreak/` (L1, 4 pares de portões, torre, canhão, muralha, fileira
   de portões no assalto, 300 unidades e 32 projéteis pré-alocados), consumindo o kit 0.1.0.
   Validadores do jogo e do kit PASS, testes EditMode 24/24 e PlayMode 2/2 (o nível do gate
