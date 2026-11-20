@@ -103,3 +103,43 @@ baixa a média).
 application ID provisório (`com.jungledegree.runnervstower`) e o nome de exibição. Renomear
 fica para quando o nome for confirmado pela checagem de marca; o application ID, em
 especial, não deve mudar depois da primeira publicação.
+
+## 2026-11-20 — D4 — Medição de jogadores (analytics) — **A** — usuário
+
+**Texto aprovado:** o Claybreak terá, a partir da RT-7, medição mínima e consentida: só D1 e
+D7 (quem volta 1 e 7 dias depois de instalar), aceite do anúncio recompensado e início/fim
+de fase (onde o jogador começa e desiste). Ferramenta gratuita, escolhida numa ficha própria
+antes da RT-7; nada é instalado antes disso.
+
+**Ajustes da segunda opinião (Fable), incorporados:** funil de fases (início/fim) incluído
+para o ajuste de dificuldade da RT-10; definir um número mínimo de instalações antes de ler
+D1/D7 (com poucas dezenas, o número é ruído); o Claybreak terá política de privacidade e Data
+safety próprias, declarando tudo o que o SDK coleta (a do Wild Pack diz "sem analytics").
+Play Console não dá D1/D7 de "voltou a jogar" (memória, não verificado).
+
+## 2026-11-20 — D5 — Recompensas de retorno — **B** — usuário
+
+**Texto aprovado:** só no Claybreak (a regra do Wild Pack continua valendo lá), reabrir o
+escopo para uma **recompensa diária** simples, local, sem servidor e sem punição por faltar.
+Missões diárias só se o D7 do soft launch ficar abaixo da meta (12%). Eventos temporários só
+depois do lançamento.
+
+**Riscos registrados:** sem notificação push (regra do GDD), a recompensa diária tem efeito
+menor; relógio local pode ser burlado (impacto baixo, jogo sem ranking); valores dependem da
+economia da RT-5.
+
+## 2026-11-20 — D6 — Monetização da v1 — **B** — usuário
+
+**Texto aprovado:** a v1 terá anúncio recompensado (opcional, ganho explicado antes) e
+anúncio intersticial entre fases com limite. O intersticial fica **pronto mas desligado** na
+primeira turma do soft launch, até haver uma medida limpa de retenção; os limites (mínimo de
+fases e intervalo) são definidos depois do RT-3, com o eCPM real do Wild Pack. **Sem compra
+dentro do app** na v1 (nem "remover anúncios"); reavaliar com dados do soft launch.
+
+**Por quê:** compra no app exige Play Billing, perfil de comerciante, dados fiscais,
+testadores de licença, restauração de compra sem backend e suporte a reembolsos — peso
+contínuo para duas pessoas. O intersticial ligado cedo pode derrubar o D1/D7 que o soft
+launch quer medir (segunda opinião do Fable).
+
+**Risco registrado:** avaliações reclamando de anúncio quando o intersticial for ligado sem
+opção paga de remoção (chance média, impacto baixo; limites conservadores).
