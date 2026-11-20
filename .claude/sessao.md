@@ -14,9 +14,9 @@
   `-executeMethod JungleDegree.StudioKit.Editor.EngineIsolationValidation.RunAndQuit`,
   `-runTests -testPlatform EditMode` e `-runTests -testPlatform PlayMode`,
   `-executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit [-claybreakMeasure]`. Tudo isso de uma
-  vez (mais a tabela de economia `docs/rt5-economia.md` e as capturas de arte, que regravam
-  `docs/art/telas/`): `Tools/rt4-check.sh [/c/temp/rt4] ["passos"]`. E o gate 3x no OPPO
-  CPH2791 com `Tools/rt2-gate.sh <rótulo> 60 20 <apk de medição>` (aparelho conectado e desbloqueado;
+  vez (mais a tabela de economia e de fases `docs/rt6-economia.md` e as capturas de arte, que regravam
+  `docs/art/telas/` e `docs/art/rt6/`): `Tools/rt4-check.sh [/c/temp/rt4] ["passos"]`. E o gate 3x no OPPO
+  CPH2791 com `Tools/rt2-gate.sh <rótulo> 60 20 <apk de medição> [mundo]` (RT-6: um gate por mundo) (aparelho conectado e desbloqueado;
   passo a passo em `docs/rt4-fatia.md` seção 4).
 - **Custo:** liberado pesquisa web gratuita e edição de documentos. Qualquer gasto pago, upload
   ao Play Console/AdMob ou cópia de código do Wild Pack (reuso só pelo pacote studiokit): parar e perguntar.
@@ -48,3 +48,7 @@
   bloqueio com senha: se `isKeyguardShowing=true`, seguir com o resto e conferir de novo antes de fechar.
   O validador agora cobre catálogo e saves de exemplo (`Assets/Claybreak/Editor/SaveFixtures`); mudança
   de catálogo exige reconstruir a cena (as listas da loja e dos mundos são montadas dele).
+- 2026-11-20 (RT-6): o `Tools/rt4-check.sh` completo passa de 10 min; rodar em segundo plano e esperar. Se um
+  comando for morto, o Unity em batchmode continua rodando e trava o projeto para a próxima rodada: conferir
+  `tasklist | grep Unity.exe` antes de rodar de novo. Conteúdo novo = dado em `WorldContent` (mundo por
+  `WorldDefinition` + `WorldRecipe`), arte em `TowerArt`/`WorldSceneryArt`, e reconstruir a cena.
