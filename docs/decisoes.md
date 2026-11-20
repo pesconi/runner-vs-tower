@@ -310,6 +310,10 @@ Se você não responder: o jogo segue com A e A como provisórias; nada mais esp
 
 Responda: "torre A, chefe A" (ou outra combinação), ou "explica melhor".
 
+**Resposta do usuário (2026-11-20): torre A, chefe A** — a recomendação. As provisórias viram a arte
+final da fatia. Conferir no aparelho que a pedra da torre A ficou clara (a imagem de comparação
+`torre-opcoes.png` ainda mostra a versão marrom).
+
 ### DECISÃO D18 — O nome "Claybreak": seguir, trocar ou checar à mão
 
 O que você está aprovando: o que fazer com o nome de trabalho "Claybreak" depois da checagem gratuita
@@ -358,3 +362,7 @@ acima) e a checagem manual inclua TMview e USPTO (incluído na opção A).
 Se você não responder: segue A (o nome não aparece na arte do jogo).
 
 Responda: A, B (com o nome que preferir), C, ou "explica melhor".
+
+**Resposta do usuário (2026-11-20): B — trocar o nome de trabalho para "Clay Siege".** Próximo passo:
+checagem gratuita de marca e lojas para "Clay Siege" (mesmo roteiro da D1/D18, INPI à mão se não
+abrir) e troca do nome do app instalado; nome final continua confirmado antes da RT-9.
