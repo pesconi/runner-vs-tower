@@ -109,18 +109,18 @@ namespace Claybreak.Editor
             }
             else
             {
-                // Played level: about 18 s of run and 15-20 s of assault (GDD 3: 30-90 s in all). The
+                // Played level: about 19 s of run and 14-20 s of assault (GDD 3: 30-90 s in all). The
                 // good gates give 160 units; x2 lane then wins with room (GDD 3: the 1st level is won
                 // at the 1st try); a careless run (about 60) loses unless it uses the x3 behind the wall.
                 Set(so, "startCount", 10);
-                Set(so, "runSpeed", 5.5f);
+                Set(so, "runSpeed", 5f);
                 SetRunGates(so.FindProperty("runGates"),
                     (20f, new GateSpec(GateOperation.Add, 10), new GateSpec(GateOperation.Multiply, 2)),
                     (40f, new GateSpec(GateOperation.Multiply, 3), new GateSpec(GateOperation.Subtract, 8)),
                     (60f, new GateSpec(GateOperation.Subtract, 15), new GateSpec(GateOperation.Add, 20)),
                     (80f, new GateSpec(GateOperation.Divide, 2), new GateSpec(GateOperation.Multiply, 2)));
                 Set(so, "firingLineZ", 96f);
-                Set(so, "launchRate", 14f);
+                Set(so, "launchRate", 12f);
                 Set(so, "unitSpeed", 9f);
                 Set(so, "laneSpread", 0.7f);
                 Set(so, "maximumUnitsInFlight", PoolSize);
@@ -128,7 +128,7 @@ namespace Claybreak.Editor
                 SetAssaultGates(so.FindProperty("assaultGates"), GateOperation.Multiply, 2, GateOperation.Divide, 2,
                     GateOperation.Multiply, 3);
                 Set(so, "towerDistance", 32f);
-                Set(so, "towerHealth", 150);
+                Set(so, "towerHealth", 250);
                 Set(so, "damagePerUnit", 1);
                 Set(so, "wallLane", 2);
                 Set(so, "wallDistance", 20f);
@@ -258,6 +258,9 @@ namespace Claybreak.Editor
             float trackEnd = Mathf.Max(level.TowerZ, stress.TowerZ) + 16f;
             Renderer track = CreateBlock("Track", null, new Vector3(0f, -0.1f, (TrackStartZ + trackEnd) * 0.5f),
                 new Vector3(TrackWidth, 0.2f, trackEnd - TrackStartZ), palette.Ground);
+            // The track is the one prop that keeps a collider: the kit's leader is a CharacterController
+            // with gravity and stands on it (without it the crowd falls through the floor).
+            track.gameObject.AddComponent<BoxCollider>();
             CreateBlock("FieldLeft", null, new Vector3(-TrackWidth - 6f, -0.15f, (TrackStartZ + trackEnd) * 0.5f),
                 new Vector3(TrackWidth + 4f, 0.2f, trackEnd - TrackStartZ), palette.Field);
             CreateBlock("FieldRight", null, new Vector3(TrackWidth + 6f, -0.15f, (TrackStartZ + trackEnd) * 0.5f),
@@ -602,7 +605,7 @@ namespace Claybreak.Editor
             return CreatePrimitive(PrimitiveType.Cube, name, parent, position, scale, material).GetComponent<MeshRenderer>();
         }
 
-        // Scene props carry no collider: the prototype never uses physics queries.
+        // Scene props carry no collider: the prototype never uses physics queries (the track adds its own).
         private static GameObject CreatePrimitive(PrimitiveType type, string name, Transform parent, Vector3 position,
             Vector3 scale, Material material)
         {

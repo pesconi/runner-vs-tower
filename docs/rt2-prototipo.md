@@ -12,18 +12,18 @@ foi copiado do Wild Pack.
 
 | Bloco | Como ficou |
 |---|---|
-| Corrida | 4 pares de portões (`+10 / x2`, `x3 / -8`, `-15 / +20`, `÷2 / x2`) em z = 20, 40, 60, 80; líder e multidão do kit (`PlayerController`, `RunnerCrowd`, `RunnerPool` com 300 unidades), câmera do kit (`CameraFollow`). Começa com 10. Corrida ≈ 18 s a 5,5 m/s. Portões bons dão 160 unidades. |
-| Assalto | **L1 "soltar em ondas"**: o líder para na linha de tiro; arrastar escolhe a faixa (3 faixas), segurar solta um fluxo de 14 unidades/s. Unidades em voo andam em lote (`AssaultField`: um `Update`, arrays pré-alocados, sem física, sem colisão entre unidades). |
+| Corrida | 4 pares de portões (`+10 / x2`, `x3 / -8`, `-15 / +20`, `÷2 / x2`) em z = 20, 40, 60, 80; líder e multidão do kit (`PlayerController`, `RunnerCrowd`, `RunnerPool` com 300 unidades), câmera do kit (`CameraFollow`). Começa com 10. Corrida ≈ 19 s a 5 m/s. Portões bons dão 160 unidades. |
+| Assalto | **L1 "soltar em ondas"**: o líder para na linha de tiro; arrastar escolhe a faixa (3 faixas), segurar solta um fluxo de 12 unidades/s. Unidades em voo andam em lote (`AssaultField`: um `Update`, arrays pré-alocados, sem física, sem colisão entre unidades). |
 | Fileira de portões do assalto | uma fileira, um portão por faixa: `x2`, `÷2`, `x3` (o `x3` fica atrás da muralha). |
-| Torre | 150 de vida, 1 de dano por unidade, barra e número; cai afundando ao zerar. |
+| Torre | 250 de vida, 1 de dano por unidade, barra e número; cai afundando ao zerar. |
 | Defesas | **Canhão**: pedra em arco na faixa com mais unidades, um tiro a cada 2,2 s, sombra avisa 0,9 s antes, mata num raio de 1,1 m; até 4 pedras no ar. **Muralha**: bloqueia a faixa da direita, 60 de vida, encolhe ao apanhar. |
 | Projéteis | 32 pedras e 32 sombras pré-alocadas na cena; o nível limita quantas voam (regra 2.2.1: nada de Instantiate/Destroy em runtime). |
 | Som | placeholders sintetizados pelo construtor (um por papel do kit + 2 loops), tocados pelo motor de som do kit (`GameAudio`, 6 vozes, intervalo mínimo por som). Vibração no impacto do canhão e na vitória (`GameHaptics` do kit). |
 | Resultado | "TOWER DOWN!" / "ARMY LOST" e botão "AGAIN" (reinício imediato, sem recarregar a cena). |
 | Nível do gate | `DeviceGateLevel.asset`: começa sozinho, 300 unidades em voo o tempo todo (unidade que acerta ou morre volta para a linha de tiro), canhão disparando no limite de 12 pedras. Só é usado pelo APK de medição com `--ez stress true`. |
 
-Duração esperada da fase [I]: corrida ≈ 18 s + assalto ≈ 15–20 s (lançar até 160 unidades a
-14/s, 3,5 s de voo, torre de 150) → 33–40 s, dentro dos 30–90 s do GDD, perto do piso.
+Duração esperada da fase [I]: corrida ≈ 19 s + assalto ≈ 14–20 s (lançar até 160 unidades a
+12/s, 3,5 s de voo, torre de 250) → 33–40 s, dentro dos 30–90 s do GDD, perto do piso.
 Balanço [I]: com os portões bons (160) e a faixa `x2`, vence com folga (o GDD pede que a 1ª fase
 vença na 1ª tentativa); uma corrida descuidada (~60) perde, a não ser que derrube a muralha e use o
 `x3`. Se no aparelho a fase ficar abaixo de 30 s, subir a vida da torre ou baixar `launchRate` no
@@ -143,6 +143,23 @@ e ficou idêntico à cópia validada, exceto dois assets de URP que o batchmode 
 
 Os APKs ficam fora do repositório (`*.apk` no `.gitignore`); se sumirem de `C:\temp\rt2`, o passo 1
 da seção 6 gera de novo.
+
+## 7.1 Correção depois do primeiro teste no aparelho (2026-11-20) [F]
+
+- **Bug:** ao tocar para começar, os bonecos caíam da pista e o jogo parecia travado até o assalto.
+  Causa: o construtor tirava o colisor de todos os blocos de cenário, inclusive da pista; o líder do
+  kit é um `CharacterController` com gravidade e caía no vazio (a multidão e a câmera junto), enquanto
+  o avanço em z seguia disparando portões e o assalto. Os testes do Editor não jogavam a corrida.
+- **Correção:** a pista mantém um `BoxCollider` (único colisor da cena); o validador reprova pista
+  sem colisor ou líder fora dela; novo teste PlayMode joga a corrida inteira e exige o líder sobre a
+  pista até a linha de tiro, com exército > 0 e corrida de 10–40 s. Logs `[ClaybreakGate] ... run`
+  durante a corrida e `Run reached the firing line` no fim dela.
+- **No OPPO, APK corrigido:** corrida com o líder em y = 0,08 o tempo todo e o exército mudando nos
+  portões (caminho descuidado 10→20→60→45→22, perdeu em 22,6 s; caminho bom 10→20→60→80→160,
+  **venceu em 28,4 s**, abaixo do piso de 30 s). Ajuste por dado depois disso: corrida a 5 m/s,
+  lançamento 12/s, torre 250 (estimativa ≈ 33 s, com folga de ~50 acertos para vencer). **A duração
+  com esse ajuste não foi medida no aparelho** (a tela do celular bloqueou): confirmar na partida do
+  usuário (`adb logcat -d -s Unity | findstr Claybreak`, linha `Level WON/LOST in N s`).
 
 ## 8. Resultado no aparelho (preencher)
 

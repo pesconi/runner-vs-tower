@@ -20,7 +20,44 @@ namespace Claybreak.Tests
         {
 #if UNITY_EDITOR
             ClaybreakFlow.EditorUsesDeviceGateLevel = false;
+            ClaybreakFlow.EditorStartsWithoutTap = false;
 #endif
+        }
+
+        // RT-2 device bug: the track had no collider, so the leader (a CharacterController with gravity)
+        // and the crowd fell through the floor while the run kept going.
+        [UnityTest]
+        public IEnumerator RunKeepsTheCrowdOnTheTrackUntilTheFiringLine()
+        {
+#if UNITY_EDITOR
+            ClaybreakFlow.EditorStartsWithoutTap = true;
+#endif
+            yield return LoadScene(false);
+            var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
+            Assert.IsTrue(flow.enabled, "the flow disabled itself (see the log)");
+            var leader = Object.FindFirstObjectByType<PlayerController>().transform;
+            var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
+            float startZ = leader.position.z;
+            float lowestY = leader.position.y;
+            float runStart = -1f;
+            float deadline = Time.realtimeSinceStartup + 60f;
+            while (Time.realtimeSinceStartup < deadline && flow.State != FlowState.Assault)
+            {
+                if (flow.State == FlowState.Run && runStart < 0f)
+                {
+                    runStart = Time.time;
+                }
+
+                lowestY = Mathf.Min(lowestY, leader.position.y);
+                yield return null;
+            }
+
+            Assert.AreEqual(FlowState.Assault, flow.State, "the run never reached the firing line");
+            Assert.Greater(lowestY, -0.3f, "the leader fell through the track");
+            Assert.Greater(leader.position.z - startZ, flow.ActiveLevel.FiringLineZ - 1f);
+            Assert.Greater(crowd.CurrentCount, 1, "the army is empty at the firing line");
+            float runSeconds = Time.time - runStart;
+            Assert.That(runSeconds, Is.InRange(10f, 40f), "run length out of the GDD block (15-30 s)");
         }
 
         [UnityTest]

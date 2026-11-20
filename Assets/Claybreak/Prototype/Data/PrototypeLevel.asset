@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PrototypeLevel
   m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.PrototypeLevel
   startCount: 10
-  runSpeed: 5.5
+  runSpeed: 5
   runGates:
   - z: 20
     left:
@@ -44,7 +44,7 @@ MonoBehaviour:
       operation: 2
       value: 2
   firingLineZ: 96
-  launchRate: 14
+  launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
   maximumUnitsInFlight: 300
@@ -59,7 +59,7 @@ MonoBehaviour:
   autoLaunch: 0
   recycleUnits: 0
   towerDistance: 32
-  towerHealth: 150
+  towerHealth: 250
   damagePerUnit: 1
   wallLane: 2
   wallDistance: 20

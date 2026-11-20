@@ -84,6 +84,8 @@ MonoBehaviour:
     voiceLimit: 6
     soundOnLabel: 'SOUND: ON'
     soundOffLabel: 'SOUND: OFF'
+    musicOnLabel: 'MUSIC: ON'
+    musicOffLabel: 'MUSIC: OFF'
     haptics:
     - sound: 3
       milliseconds: 25

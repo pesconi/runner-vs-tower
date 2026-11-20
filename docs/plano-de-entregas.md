@@ -122,6 +122,8 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   Validadores do jogo e do kit PASS, testes EditMode 24/24 e PlayMode 2/2 (o nível do gate
   segura 300 em voo e 12 pedras no ar no Editor), APKs gerados. Cortes, decisões e o passo a
   passo do gate 3× no OPPO: `docs/rt2-prototipo.md`.
+  Correção pós-aparelho (`Stage RT.2 fix`): pista sem colisor derrubava a multidão; corrigida,
+  com teste de regressão e conferida no OPPO (seção 7.1 do `rt2-prototipo.md`).
 
 ## RT-3 — Teste do protótipo e portão de decisão
 

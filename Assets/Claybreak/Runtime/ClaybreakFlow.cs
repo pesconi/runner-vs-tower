@@ -63,6 +63,9 @@ namespace Claybreak
 #if UNITY_EDITOR
         /// <summary>Editor only (PlayMode tests): the next flow to start runs the device-gate level.</summary>
         public static bool EditorUsesDeviceGateLevel { get; set; }
+
+        /// <summary>Editor only (PlayMode tests): the next flow starts the run without a tap.</summary>
+        public static bool EditorStartsWithoutTap { get; set; }
 #endif
 
         public FlowState State => state;
@@ -217,7 +220,7 @@ namespace Claybreak
             {
                 case FlowState.Ready:
                     if ((stateTime > 0.2f && PointerInput.WasPressedThisFrame)
-                        || (activeLevel.AutoLaunch && stateTime > 1f))
+                        || ((activeLevel.AutoLaunch || StartsWithoutTap) && stateTime > 1f))
                     {
                         Enter(FlowState.Run);
                     }
@@ -333,8 +336,22 @@ namespace Claybreak
             RaisePhaseChanged(CurrentPhase);
         }
 
+        private static bool StartsWithoutTap
+        {
+            get
+            {
+#if UNITY_EDITOR
+                return EditorStartsWithoutTap;
+#else
+                return false;
+#endif
+            }
+        }
+
         private void BeginAssault()
         {
+            Debug.Log($"[Claybreak] Run reached the firing line in {levelTime:0.0} s: army {crowd.CurrentCount - 1}, "
+                + $"leader at y={player.transform.position.y:0.00} (track top {track.bounds.max.y:0.00}).", this);
             player.SetCourseSpeedMultiplier(0f);
             launchCredit = 0f;
             GameAudio.Play(GameSound.Finish);
@@ -373,7 +390,12 @@ namespace Claybreak
             }
 
             nextDevLog = Time.unscaledTime + 2f;
-            if (state == FlowState.Assault)
+            if (state == FlowState.Run)
+            {
+                Vector3 leader = player.transform.position;
+                Debug.Log($"[ClaybreakGate] t={levelTime:0.0} run army={crowd.CurrentCount - 1} leader z={leader.z:0.0} y={leader.y:0.00}");
+            }
+            else if (state == FlowState.Assault)
             {
                 Debug.Log($"[ClaybreakGate] t={levelTime:0.0} inFlight={field.InFlight} projectiles={cannon.ActiveCount}/"
                     + $"{activeLevel.MaximumProjectiles} reserve={crowd.CurrentCount - 1} tower={tower.Health}");

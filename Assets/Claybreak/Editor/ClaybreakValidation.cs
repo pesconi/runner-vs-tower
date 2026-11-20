@@ -158,6 +158,19 @@ namespace Claybreak.Editor
                 }
             }
 
+            // The kit's leader is a CharacterController with gravity: it needs a collider to stand on.
+            var track = so.FindProperty("track").objectReferenceValue as Renderer;
+            var leader = Object.FindFirstObjectByType<PlayerController>();
+            if (track == null || !track.TryGetComponent(out Collider ground) || !ground.enabled)
+            {
+                failures.Add("the track needs an enabled collider (the leader would fall through it)");
+            }
+            else if (leader == null || !ground.bounds.Contains(new Vector3(leader.transform.position.x,
+                         ground.bounds.max.y - 0.01f, leader.transform.position.z)))
+            {
+                failures.Add("the leader does not start above the track collider");
+            }
+
             var pool = Object.FindFirstObjectByType<RunnerPool>(FindObjectsInactive.Include);
             if (pool == null || pool.Capacity != PrototypeSceneBuilder.PoolSize)
             {
