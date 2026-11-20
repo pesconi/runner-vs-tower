@@ -76,7 +76,7 @@ quisermos 120 Hz, é trabalho do kit (pedir o modo de tela ao Android) com o gat
 
 | Data | Teste | p95 quadro | >50 ms | main p95 | gpu p95 | PSS | em voo | pedras | Passou? |
 |---|---|---|---|---|---|---|---|---|---|
-| | gate 60 fps, torre do chefe | | | | | | | | |
+| 2026-11-20 | gate 60 fps, torre do chefe (`8f66afb`) | 16 ms (max 16) | 0,0% | 4,0–5,1 ms | 4,0–4,3 ms | 200 MB | 299 | 11–12/12 | **Sim** |
 
 | Jogador | Chegou ao chefe? | Tempo | Voltaria amanhã? | Comentário |
 |---|---|---|---|---|
