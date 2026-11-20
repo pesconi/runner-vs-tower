@@ -80,8 +80,8 @@ quisermos 120 Hz, é trabalho do kit (pedir o modo de tela ao Android) com o gat
 
 | Jogador | Chegou ao chefe? | Tempo | Voltaria amanhã? | Comentário |
 |---|---|---|---|---|
-| Usuário | | | | |
-| Flávia | | | | |
+| Usuário | — | — | **Sim** | Respondeu "sim" em 2026-11-20 depois de jogar a fatia no OPPO; tempo não medido |
+| Flávia | — | — | — | Não informado; o usuário respondeu pelo estúdio |
 
 ## 6. Validação (sessão de 2026-11-20) [F]
 

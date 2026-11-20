@@ -24,7 +24,7 @@ lançamento jun/2027.
 | ~~RT-1 Extração do kit do estúdio~~ — feita pelo plano K do `studiokit` (nov/2026) | 3 | 3,6 | ~~jan/2027~~ |
 | RT-2 Protótipo (1 semana) — concluída em 2026-11-20 (gate 3× aprovado no OPPO, usuário jogou e aprovou; `rt2-prototipo.md`) | 1 | 1,2 | início de fev |
 | ~~RT-3 Teste do protótipo e portão de decisão~~ — dispensada em 2026-11-20 pelo usuário (`decisoes.md`, D13) | 0,5 | 0,6 | ~~meados de fev~~ |
-| RT-4 Fatia vertical | 2 | 2,4 | fev–início de mar |
+| ~~RT-4 Fatia vertical~~ — concluída em 2026-11-20 (`rt4-fatia.md`) | 2 | 2,4 | ~~fev–início de mar~~ |
 | RT-5 Produção — núcleo de meta | 2 | 2,4 | mar |
 | RT-6 Produção — conteúdo (mundos, torres, chefes) | 2,5 | 3 | mar–abr |
 | RT-7 Produção — monetização, retenção e analytics | 1,5 | 1,8 | abr |
@@ -159,7 +159,10 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   + 2 novos" — trocado em 2026-11-20 porque a RT-3 foi dispensada, D13; registro
   em `decisoes.md`.)
 - **Exige o usuário:** aprovar direção de arte da torre e do chefe; testar.
-- **Status: entregue em 2026-11-20, aceite pendente** (`Stage RT.4a`/`RT.4b`; detalhes em
+- **Status: concluída em 2026-11-20** — gate 3× aprovado no OPPO com a torre do chefe (`f04fd32`);
+  D17 torre A + chefe A, D18 nome de trabalho "Clay Siege" (`Stage RT.4c`); usuário jogou e voltaria
+  amanhã. Pendente para antes da RT-9: checar "Clay Siege" à mão no INPI, TMview e USPTO.
+- Histórico: entregue em 2026-11-20 (`Stage RT.4a`/`RT.4b`; detalhes em
   `rt4-fatia.md`): 7 fases, 3 torres, 3 defesas, chefe, menu, HUD, resultado, som e vibração, upgrade,
   Bruto e save no jogo; validações em batchmode passaram. Falta: gate 3× no OPPO com a torre do chefe
   (aparelho desconectado na sessão) e o usuário e a Flávia jogarem ("voltaria amanhã?"). D17 (torre A,
