@@ -112,8 +112,8 @@ MonoBehaviour:
     armor: 3
     speed: 0.85
     price: 900
-    unlockWorld: world1
-    unlockLevel: 5
+    unlockWorld: 
+    unlockLevel: 0
   skins:
   - id: clay
     title: CLAY

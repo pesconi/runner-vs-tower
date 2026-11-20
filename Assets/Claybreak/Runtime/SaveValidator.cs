@@ -23,7 +23,8 @@ namespace Claybreak
 
             Check(save.version == SaveData.CurrentVersion, $"version {save.version} is not {SaveData.CurrentVersion}.", problems);
             Check(save.coins >= 0 && save.coins <= Progression.MaximumCoins, $"coins {save.coins} out of range.", problems);
-            Check(save.levelsWon >= 0 && save.levelsLost >= 0, "negative win or loss count.", problems);
+            Check(save.levelsWon >= 0 && save.levelsLost >= 0 && save.levelsWon <= Progression.MaximumCount
+                && save.levelsLost <= Progression.MaximumCount, "win or loss count out of range.", problems);
 
             int worldCount = catalog.Worlds.Count;
             Check(save.worlds != null && save.worlds.Length == worldCount, "one world entry per catalog world is expected.", problems);

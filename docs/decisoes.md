@@ -401,3 +401,175 @@ final da fatia (`TowerArt.ChosenTower`/`ChosenBoss`). As imagens de comparação
 regeradas: a versão anterior saiu sem a luz do sol (só luz ambiente) e mostrava a torre A marrom escura;
 o jogo já usava a pedra clara.
 
+## 2026-11-20 — T-RT5-1 — Meta como catálogo de dados — técnica (sessão RT-5)
+
+Tudo o que a meta oferece fica num asset só, `ClaybreakCatalog` (escrito por `WorldContent.WriteCatalog`):
+mundos em ordem com a trava de estrelas, 4 trilhas de upgrade (exército, dano, portão, lançamento), 3
+elites (Bruto, Corredor, Guardião) com loadout de 2 vagas, 6 skins. O mundo (`ClaybreakWorld`) ficou só
+com id, fases e regra da volta; o upgrade e o Bruto saíram dele. As regras ficam em `Progression`
+(pura, testada). O construtor monta uma linha de loja por item e uma linha por mundo a partir do
+catálogo: mundo, item ou preço novo é dado + reconstruir, nunca código. O kit `studiokit` não tem save
+nem economia; tudo fica no jogo (se o Wild Pack precisar do mesmo, vira pauta do kit).
+
+## 2026-11-20 — T-RT5-2 — Save versão 2 por ids estáveis, migração do v1 — técnica (sessão RT-5)
+
+- O save guarda só ids e contagens (`world1`, `army`, `brute`, ...), nunca índices: conteúdo novo não
+  quebra save; id removido some na normalização. Os ids do save v1 ficam no catálogo para sempre (o
+  validador reprova se saírem).
+- Save v1 da fatia migra para v2 mantendo moedas, estrelas, volta, degrau do exército e o Bruto (que
+  continua equipado, como era na fatia). O JSON original fica uma vez em `Claybreak.Save.backup.v1`.
+- Leitura tolerante e limitada: JSON acima de 64 KB recusado, listas cortadas em 256, números limitados,
+  save danificado ou de versão futura começa do zero sem travar (entrada externa, `decisao.md` seção 5).
+- **Validador de save** (`SaveValidator`) roda no validador do jogo sobre saves de exemplo de cada versão
+  (`Assets/Claybreak/Editor/SaveFixtures`) e nos testes; o save normalizado tem de passar e sobreviver a
+  gravar e ler de novo.
+
+## 2026-11-20 — T-RT5-3 — Elites, upgrades e skins no jogo — técnica (sessão RT-5)
+
+- Elites por vaga do loadout: cada tipo tem tamanho, cor, dano, armadura e velocidade próprios; os
+  caixotes da corrida alternam entre os tipos equipados; sai um elite a cada 3 lançamentos (dado).
+- Dano: multiplicador com sobra acumulada (um +15% é exato num fluxo de golpes inteiros). Portão: soma
+  em todo portão "+" da corrida (o rótulo mostra o valor final). Lançamento: multiplica unidades/segundo.
+- Skin: cor da massinha do líder, da multidão e de toda a reserva, aplicada no menu (nada criado em
+  jogo). A cor do respingo continua a do tema: o kit não permite trocá-la em tempo de jogo (pauta do kit).
+- Guardião só na loja (a segunda opinião mostrou que, grátis na fase 6, o preço de 900 virava armadilha).
+- O nível do gate roda o **loadout máximo** (todos os upgrades no topo, 2 elites, skin mais cara) e mantém
+  o dano fixo da fatia na torre, para a torre sem fim durar a medição inteira.
+
+## 2026-11-20 — T-RT5-4 — Tabela de economia gerada — técnica (sessão RT-5)
+
+`EconomyReport` joga um jogador simulado com as regras reais e escreve `docs/rt5-economia.md` (passo
+`economy` do `Tools/rt4-check.sh`). É a base de tempo da ficha D19 e a ferramenta para recalibrar com os
+dados do soft launch: trocar as premissas pelas medidas e rodar de novo.
+
+## Fichas D19 e D12 (RT-5, aguardando resposta)
+
+### DECISÃO D19 — Preços e curvas da loja (upgrades, elites, skins)
+
+O que você está aprovando: a forma da loja que está no jogo agora (os efeitos e preços abaixo, subindo
+~1,5× por degrau) como ponto de partida da v1, sabendo que o total da loja e o quanto cada mundo novo
+paga serão acertados juntos na RT-6 (conteúdo) e recalibrados com dados reais no soft launch (lançamento
+de teste).
+
+Por que agora: a RT-5 pede a sua aprovação dos preços e curvas. Nada está travado: o jogo já roda com
+estes valores marcados como provisórios [P]; mudar é editar números numa tabela e reconstruir, sem
+quebrar saves (o save guarda só o degrau comprado). Mas a RT-6 vai calibrar a dificuldade dos mundos
+supondo um nível de upgrade, então mexer muito nos preços depois desloca a dificuldade.
+
+Contexto que você precisa saber:
+- Moeda única, só ganha jogando (fato). Sem compra com dinheiro real na v1 (D6). A D6 permite anúncio
+  recompensado na v1 (RT-7), e o GDD prevê "dobrar a moeda da fase" por anúncio e a recompensa diária
+  (D5): os dois vão acelerar esta curva quando entrarem.
+- Vitória paga: prêmio da fase (40 a 200) + 1 moeda por sobrevivente + ¼ do prêmio por estrela. Derrota
+  paga ⅛ do prêmio. Depois do chefe o mundo recomeça 25% mais forte e paga 25% a mais por volta (fato:
+  regras do jogo).
+- Loja no jogo agora, 4 upgrades de 6 degraus (efeito total — preço do degrau):
+  - EXÉRCITO (unidades a mais no início): +5 — 60 · +10 — 120 · +16 — 200 · +24 — 320 · +34 — 480 · +46 — 700
+    (é o upgrade da fatia, sem mudança: quem já comprou mantém).
+  - DANO (na torre e na muralha): +15% — 80 · +30% — 150 · +45% — 250 · +60% — 400 · +80% — 600 · +100% — 900
+  - PORTÃO (somado a todo portão "+" da corrida): +1 — 100 · +2 — 180 · +3 — 300 · +5 — 450 · +7 — 650 · +10 — 950
+  - LANÇAMENTO (unidades por segundo): +10% — 70 · +20% — 130 · +30% — 220 · +45% — 350 · +60% — 520 · +80% — 750
+- Elites (unidades especiais; 2 equipadas; vêm em caixotes na corrida e saem a cada 3 lançamentos):
+  BRUTO (bate 4×, aguenta 1 tiro) grátis ao vencer a fase 3; CORREDOR (bate 2×, 60% mais rápido) 600;
+  GUARDIÃO (bate 2×, aguenta 3 tiros, mais lento) 900.
+- Skins (cor da massinha do exército, feitas por código): BARRO grátis, BRASA 150, MUSGO 300, ARDÓSIA 500,
+  OSSO 800, TINTA 1200. Loja inteira: 13.380 moedas.
+- Tempo estimado (inferência nossa: jogador simulado com as regras reais, 80% de vitórias, ~55 s por
+  vitória, compra sempre o mais barato; sem dado real, D4; tabela em `docs/rt5-economia.md`):
+  - ~240 moedas por minuto; uma compra a cada 1–3 min no começo;
+  - 1º degrau de cada upgrade: 1,5 a 4,3 min de jogo; 3º: 8 a 14 min; 5º: 23 a 30 min; último: 34 a 43 min;
+  - Corredor ~45 min, Guardião ~48 min, loja inteira ~57 min (67 fases, 9 voltas do mundo 1);
+  - a primeira passada do mundo 1 paga ~1.075 moedas (8% da loja).
+  - A simulação não sabe se o tempo real será maior ou menor: ela ignora que os upgrades aumentam
+    sobreviventes e estrelas (mais moedas) e que as voltas mais fortes fazem perder mais (menos moedas).
+- No topo, dano +100% com lançamento +80% multiplicam o ataque por ~3,6, contra +25% de vida por volta:
+  o mundo 1 fica fácil nas voltas altas (inferência nossa).
+
+Opções:
+A) Aprovar a forma desta tabela como ponto de partida; o total da loja e o pagamento dos mundos novos são
+   acertados juntos na RT-6, e tudo recalibrado no soft launch.
+   + Progresso visível já nos primeiros minutos, bom para o teste de vocês dois.
+   + Não amarra o total antes de existirem os outros mundos.
+   - Riscos: a loja pode acabar cedo e o jogador ficar sem meta (chance média; impacto médio na volta no
+     7º dia) — mitigação: a RT-6 ajusta os pagamentos e traz itens novos; o soft launch mede.
+     O topo dos upgrades deixa o mundo 1 fácil (chance média; impacto baixo) — ajustar na RT-6.
+   Custo: nenhum. Dá para voltar atrás? sim, fácil (números numa tabela).
+B) Preços ×2 (mesmos efeitos) — loja inteira em ~88 min (simulado).
+   + Meta mais longa.
+   - Riscos: começo mais lento (1º upgrade em ~3 min) e mais repetição do mundo 1 (chance média; impacto
+     médio na diversão do teste). Volta atrás? sim, fácil.
+C) Preços ×3 — loja inteira em ~112 min (simulado).
+   + Meta longa, mais perto de jogos do gênero com centenas de níveis.
+   - Riscos: com poucas dezenas de fases vira repetição (chance alta; impacto alto na volta no dia
+     seguinte). Volta atrás? sim.
+D) Adiar — a tabela fica provisória até o soft launch. Custo: a RT-6 calibra os mundos sobre uma curva
+   sem aprovação.
+
+Recomendação: A — sem dado de mercado, o melhor ponto de partida é uma curva com compra visível nos
+primeiros minutos e barata de mudar; o total só faz sentido fixar quando os outros mundos existirem
+(RT-6), e o soft launch existe para calibrar com dados.
+Segunda opinião (fable): concorda com A como provisória. Apontou erros da primeira versão desta ficha,
+já corrigidos: a D6 permite anúncio na v1; os tempos de B e C não escalam ×2 e ×3 (agora simulados); a
+loja não "termina junto com o conteúdo" (a primeira passada paga só 8%); o Guardião a 900 era armadilha
+porque saía grátis na fase 6 (agora é só da loja); e mexer em preço depois desloca a dificuldade.
+Se você não responder: o jogo segue com esta tabela como provisória; nada mais espera por isso.
+
+Responda: A, B, C ou D, ou "A com <ajuste>", ou "explica melhor".
+
+### DECISÃO D12 — Quanto conteúdo no lançamento (mundos e fases)
+
+O que você está aprovando: a quantidade de mundos e de fases da versão de lançamento, que define o
+tamanho da entrega RT-6 (conteúdo).
+
+Por que agora: o plano pede esta decisão antes do fim da RT-5, porque ela define a RT-6. Não trava o
+código: a tela de mundos já serve a qualquer número (cada mundo é um bloco de dados; a lista se monta
+sozinha; abrir um mundo pede vencer o chefe do anterior e, se quisermos, um mínimo de estrelas). Trava o
+tamanho e o prazo da RT-6.
+
+Contexto que você precisa saber:
+- Hoje existe 1 mundo de 7 fases (6 comuns + chefe); a primeira passada leva ~6–8 min (estimativa da
+  fatia e da simulação; não medido); depois do chefe o mundo recomeça 25% mais forte, sem fim. Você jogou
+  e respondeu "voltaria amanhã" (fato: aceite da RT-4).
+- Uma fase nova custa pouco (um bloco de dados de ~15 linhas). O caro é cada **mundo**: paleta e
+  cenário, 1–2 torres novas, um chefe com regra própria, talvez a 4ª defesa (o "escudo" do GDD), arte para
+  você aprovar e o teste de desempenho (gate 3×) no OPPO de cada mundo (fato: aceite da RT-6). Cada mundo
+  aceita de 5 a 10 fases (limite atual da tela, ajustável).
+- O plano estima a RT-6 em 2,5 semanas (3 com folga) [I], sem dizer quantos mundos; ela inclui também
+  "geração de fases por dados" e "ajuste de dificuldade por perfil".
+- A pesquisa cita ~30–50 fases por dados como ordem de grandeza (inferência dela). Jogos híbridos que
+  buscam D30 ≥ 5% (5% dos jogadores voltando no 30º dia) têm ~500 níveis e eventos (fato, Azur,
+  2026-04-28) — fora do alcance do lançamento.
+- Metas do soft launch: D1 ≥ 35% e D7 ≥ 12% (% que volta 1 e 7 dias depois de instalar). Qualquer opção
+  abaixo (25 a 50 min de conteúdo) é jogada no 1º ou 2º dia: o 7º dia vai depender mais da volta mais
+  forte, da loja e da recompensa diária (D5, RT-7) do que de 30 ou 48 fases (inferência nossa).
+- A loja (D19) custa ~57 min de jogo no ritmo do mundo 1; os mundos novos vão pagar mais (RT-6).
+- Estúdio de 2 pessoas, sem prazo.
+
+Opções:
+A) 4 mundos de 10 fases (40 fases): o mundo 1 ganha 3 fases e entram 3 mundos novos, cada um com paleta,
+   1 torre nova e chefe novo; o escudo entra no mundo 2.
+   + Dentro da faixa 30–50 com o menor número de mundos (o caro é o mundo, não a fase).
+   + RT-6 com 3 mundos de arte e 3 gates no aparelho.
+   - Riscos: 3 mundos podem não caber nas 2,5–3 semanas do plano (chance média; impacto médio no prazo,
+     que não existe) — mitigação: entregar mundo a mundo. Pouca variedade visual com 10 fases por mundo
+     (chance média; impacto baixo) — 2 torres por mundo.
+   Custo: tempo da RT-6. Dá para voltar atrás? sim (mais mundos depois é dado + arte).
+B) 6 mundos de 8 fases (48 fases).
+   + Mais variedade visual.
+   - Riscos: RT-6 com 5 mundos de arte e 5 gates, ~2× a opção A (chance alta; impacto médio: o soft
+     launch atrasa). Volta atrás? sim.
+C) 3 mundos de 10 fases (30 fases) no lançamento e o 4º mundo durante o soft launch.
+   + Chega antes ao soft launch, que é quem mede de verdade; o 4º mundo vira a primeira novidade.
+   - Riscos: no limite de baixo da faixa (chance média; impacto baixo, pelo motivo do contexto acima).
+     Volta atrás? sim.
+D) Adiar até jogarem a loja nova — custo: a RT-6 começa só pelo mundo 2 (que entra em qualquer opção).
+
+Recomendação: A — 40 fases no meio da faixa com o menor custo de arte e de gate por fase; se a RT-6
+apertar, cai naturalmente para C (o 4º mundo entra no soft launch) sem retrabalho.
+Segunda opinião (fable): concorda com A, preferindo 10 fases por mundo (incorporado: a primeira versão
+tinha ~9). Apontou que a primeira versão comparava mal o conteúdo com a loja e atribuía ao número de
+fases um efeito no 7º dia sem base (corrigido no contexto), e sugeriu a opção C (3 mundos + 1 no soft
+launch), incluída.
+Se você não responder: a RT-6 começa pelo mundo 2 (que entra em qualquer opção) e para antes do 3º.
+
+Responda: A, B, C ou D, ou "A com <ajuste>", ou "explica melhor".

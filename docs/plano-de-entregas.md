@@ -25,7 +25,7 @@ lançamento jun/2027.
 | RT-2 Protótipo (1 semana) — concluída em 2026-11-20 (gate 3× aprovado no OPPO, usuário jogou e aprovou; `rt2-prototipo.md`) | 1 | 1,2 | início de fev |
 | ~~RT-3 Teste do protótipo e portão de decisão~~ — dispensada em 2026-11-20 pelo usuário (`decisoes.md`, D13) | 0,5 | 0,6 | ~~meados de fev~~ |
 | ~~RT-4 Fatia vertical~~ — concluída em 2026-11-20 (`rt4-fatia.md`) | 2 | 2,4 | ~~fev–início de mar~~ |
-| RT-5 Produção — núcleo de meta | 2 | 2,4 | mar |
+| ~~RT-5 Produção — núcleo de meta~~ — concluída em 2026-11-20 (gate 3× aprovado; fichas D12/D19 pendentes; `rt5-meta.md`) | 2 | 2,4 | ~~mar~~ |
 | RT-6 Produção — conteúdo (mundos, torres, chefes) | 2,5 | 3 | mar–abr |
 | RT-7 Produção — monetização, retenção e analytics | 1,5 | 1,8 | abr |
 | RT-8 Produção — polimento, áudio e gate de release | 1 | 1,2 | fim de abr |
@@ -179,6 +179,10 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   com loadout máximo.
 - **Exige o usuário:** aprovar preços e curvas dos upgrades (sem dado de
   mercado; ficam [P], calibrados no soft launch).
+- **Status: concluída em 2026-11-20** (`Stage RT.5a`, `RT.5b`; `rt5-meta.md`): upgrades, elites com
+  loadout, skins, loja, estrelas, tela de mundos, save v2 com migração do v1 e validador de save; gate 3×
+  aprovado no OPPO com o loadout máximo. Pendentes do usuário: jogar a meta e responder as fichas D19
+  (preços) e D12 (conteúdo, define a RT-6) em `decisoes.md`.
 
 ## RT-6 — Produção: conteúdo
 

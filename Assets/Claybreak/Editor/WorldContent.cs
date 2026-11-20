@@ -152,7 +152,8 @@ namespace Claybreak.Editor
 
         // ---------- meta (RT-5), every number [P] until the user approves the curve (D19) ----------
 
-        // Prices grow about 1.5x per step; the whole shop costs about 9 world-1 passes (see docs/rt5-meta.md).
+        // Prices grow about 1.5x per step; the simulated player buys the whole shop in about 7 loops of world 1
+        // (docs/rt5-economia.md, written by EconomyReport). Elites: one free by a level, the others sold.
         private static ClaybreakCatalog WriteCatalog(ClaybreakWorld world1)
         {
             var catalog = LoadOrCreate<ClaybreakCatalog>(CatalogPath);
@@ -187,7 +188,7 @@ namespace Claybreak.Editor
                 {
                     id = "warden", title = "WARDEN", description = "Shield bearer: walks through blasts.",
                     color = new Color(0.33f, 0.52f, 0.78f), scale = 1.25f, damage = 2, armor = 3, speed = 0.85f,
-                    price = 900, unlockWorld = world1.WorldId, unlockLevel = 5
+                    price = 900
                 }
             };
             CrowdSkin[] skins =

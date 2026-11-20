@@ -36,10 +36,20 @@ Média: **239 moedas por minuto** de jogo.
 | 23 | DAMAGE 6 | 900 | 47 | 39,8 | 5 |
 | 24 | GATE BOOST 6 | 950 | 50 | 42,5 | 5 |
 | 25 | SPRINTER | 600 | 53 | 44,9 | 6 |
-| 26 | skin EMBER | 150 | 53 | 44,9 | 6 |
-| 27 | skin MOSS | 300 | 53 | 44,9 | 6 |
-| 28 | skin SLATE | 500 | 57 | 48,3 | 6 |
-| 29 | skin BONE | 800 | 59 | 50,1 | 6 |
-| 30 | skin INK | 1200 | 62 | 52,5 | 7 |
+| 26 | WARDEN | 900 | 57 | 48,3 | 6 |
+| 27 | skin EMBER | 150 | 57 | 48,3 | 6 |
+| 28 | skin MOSS | 300 | 58 | 49,2 | 6 |
+| 29 | skin SLATE | 500 | 60 | 51,0 | 6 |
+| 30 | skin BONE | 800 | 62 | 52,5 | 7 |
+| 31 | skin INK | 1200 | 67 | 56,8 | 7 |
 
-Total: **12480 moedas**, tudo comprado em **53 minutos** (62 fases).
+Total: **13380 moedas**, tudo comprado em **57 minutos** (67 fases).
+
+## Sensibilidade
+
+- Primeira passada do mundo 1 (7 fases, sem comprar): **1075 moedas** = 8% da loja.
+- Preços x2: tudo comprado em **88 minutos** (104 fases, volta 11).
+- Preços x3: tudo comprado em **112 minutos** (132 fases, volta 15).
+
+Vieses conhecidos: a taxa de vitória e os sobreviventes não mudam com os upgrades nem com as voltas mais
+fortes, e a renda futura de anúncio recompensado e recompensa diária (RT-7) não entra.

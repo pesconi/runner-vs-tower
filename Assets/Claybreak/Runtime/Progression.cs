@@ -56,6 +56,8 @@ namespace Claybreak
         /// <summary>Coin ceiling: a hand-edited save can never overflow the sums below.</summary>
         public const int MaximumCoins = 99_999_999;
         public const int MaximumLoop = 1000;
+        /// <summary>Ceiling of the win and loss counters (a hand-edited save can never wrap them negative).</summary>
+        public const int MaximumCount = 1_000_000_000;
 
         private readonly ClaybreakCatalog catalog;
         private int worldIndex;
@@ -170,11 +172,11 @@ namespace Claybreak
             AddCoins(coins);
             if (!won)
             {
-                Save.levelsLost++;
+                Save.levelsLost = Mathf.Min(Save.levelsLost + 1, MaximumCount);
                 return new LevelOutcome(false, 0, coins, null, false, null);
             }
 
-            Save.levelsWon++;
+            Save.levelsWon = Mathf.Min(Save.levelsWon + 1, MaximumCount);
             progress.stars[index] = Mathf.Max(progress.stars[index], stars);
             UnitType unlocked = UnlockUnitsAt(worldIndex, index);
             bool cleared = index == World.LevelCount - 1;
@@ -435,8 +437,8 @@ namespace Claybreak
         {
             Save.version = SaveData.CurrentVersion;
             Save.coins = Mathf.Clamp(Save.coins, 0, MaximumCoins);
-            Save.levelsWon = Mathf.Max(0, Save.levelsWon);
-            Save.levelsLost = Mathf.Max(0, Save.levelsLost);
+            Save.levelsWon = Mathf.Clamp(Save.levelsWon, 0, MaximumCount);
+            Save.levelsLost = Mathf.Clamp(Save.levelsLost, 0, MaximumCount);
 
             var worlds = new WorldSave[catalog.Worlds.Count];
             for (int w = 0; w < worlds.Length; w++)
