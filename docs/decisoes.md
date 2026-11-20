@@ -33,3 +33,28 @@ pelo usuário: studiokit antes das demais decisões do Runner vs Tower.
 
 Jungle Degree é uma empresa de duas pessoas, sem prazo definido. As datas do roadmap são
 inspiração, não compromisso.
+
+## 2026-11-20 — D3 — Autorizar o segundo app — **A** — usuário
+
+**Texto aprovado:** o estúdio desenvolve e pretende publicar o Runner vs Tower como segundo
+app. A regra do SISTEMA.md do Wild Pack ("publicar vários apps quase idênticos" fora do
+escopo até decisão contrária) passa a significar: não fazer clones do mesmo jogo. Antes do
+soft launch conferimos a política da Play e a identidade do app.
+
+**Nota:** a política de Spam da Play lista como violação "criar vários apps com
+funcionalidade, conteúdo e experiência muito parecidos"; o efeito na conta única é inferência
+nossa. Se as duas lojas usam a mesma conta é a D7 (pendente).
+
+## 2026-11-20 — D2 — Gancho do jogo — **D (adiar)** — usuário
+
+**Texto aprovado:** a escolha do gancho espera a varredura de loja do RT-0 (1–2 h, gratuita).
+A ficha D2 volta ao usuário com o resultado. Direção provisória (não decidida): Opção A com
+traço da B nos chefes e protótipo com B alternável.
+
+## 2026-11-20 — D16 — Critério de parada do protótipo — **A** — usuário
+
+**Texto aprovado:** o Runner vs Tower para e voltamos à pesquisa de jogos se o protótipo
+falhar no portão RT-3 (menos de 3 de 5 testadores pedem "de novo" sem incentivo). Antes de
+parar, reduzimos limites por dados para tentar passar no gate 3× do OPPO; se o jogo agradar
+mas o gancho não, testamos a Opção B uma vez (+1 semana). Critérios pós-lançamento
+(retenção, receita) ficam para outra decisão antes do RT-9. Sem teto de esforço por ora.

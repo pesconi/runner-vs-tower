@@ -159,8 +159,8 @@ Cada decisão tem **por que importa**, **prazo** (antes de qual entrega) e
 | # | Decisão | Por que importa | Antes de | Recomendação [I] |
 |---|---|---|---|---|
 | **D1** | **Nome do jogo** (e checagem de marca) | Nome de trabalho "Runner vs Tower" é genérico, difícil de proteger e parecido com títulos de gênero; domínio, ícone e ficha dependem dele | RT-4 (arte), definitivo antes de RT-9 | Escolher 3 candidatos próprios e verificar marca antes de investir em arte; nome sem termos do líder |
-| **D2** | **Gancho** (A, B ou C do GDD 5) | Define o protótipo | RT-2 | **A**, com o traço B só em chefes |
-| **D3** | **Reler a regra "apps quase idênticos"** e aprovar o segundo app | Regra do SISTEMA.md; sem decisão não há entrega | RT-0 | Aprovar: o jogo é diferente |
+| **D2** | **Gancho** (A, B ou C do GDD 5) | Define o protótipo | RT-2 | **A**, com o traço B só em chefes — **decidido em 2026-11-20: D** (adiar até a varredura de loja do RT-0; ficha volta com o resultado) |
+| **D3** | **Reler a regra "apps quase idênticos"** e aprovar o segundo app | Regra do SISTEMA.md; sem decisão não há entrega | RT-0 | Aprovar: o jogo é diferente — **decidido em 2026-11-20: A** (aprovado, com checagem de política da Play e identidade antes do soft launch) |
 | **D4** | **Analytics** (nenhum / mínimo consentido / outro) | Sem dado não há D1/D7; muda política de privacidade, UMP e Data safety; contraria o "fora do escopo" | RT-7 (antes: RT-3 se medir no teste) | Analytics **mínimo** (só D1, D7, aceite de anúncio), com consentimento, e escolha da ferramenta pelo usuário (**sem chamadas pagas sem aprovação**) |
 | **D5** | **Escopo de retenção:** recompensa diária, missões, eventos | SISTEMA.md veda "missões diárias, login ou analytics" | RT-7 | Reabrir só recompensa diária e missões locais; eventos só depois do lançamento |
 | **D6** | **Monetização aprovada para v1:** intersticial? IAP remover anúncios? passe? | Cada item adiciona SDK, declarações, política e teste | RT-7 | v1 com recompensado + intersticial com limite + remover anúncios; passe só pós-lançamento |
@@ -173,7 +173,7 @@ Cada decisão tem **por que importa**, **prazo** (antes de qual entrega) e
 | **D13** | **Quem são os 5 testadores** do protótipo (portão) | Sem testadores não há portão | RT-3 | Gente fora do estúdio, que joga celular, com alguns que não conhecem o Wild Pack |
 | **D14** | **Plataforma:** só Android | iOS exige conta Apple, build e revisão | RT-0 | Só Android na v1 |
 | **D15** | **Prioridade em relação ao Wild Pack:** se o Wild Pack precisar de atualização, quem ganha as semanas | Uma pessoa só | RT-0 | Wild Pack tem prioridade nas semanas de incidente; o plano desliza |
-| **D16** | **Critério de "parar":** aceitar os gatilhos dos riscos R1, R3, R4 | Evita insistir em jogo que não funciona | RT-0 | Aceitar |
+| **D16** | **Critério de "parar":** aceitar os gatilhos dos riscos R1, R3, R4 | Evita insistir em jogo que não funciona | RT-0 | Aceitar — **decidido em 2026-11-20: A** (só o portão RT-3; critérios pós-lançamento ficam para antes do RT-9) |
 
 ### Dúvidas abertas registradas pela sessão (sem resposta)
 
