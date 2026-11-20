@@ -17,9 +17,11 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// Flow of the RT-4 vertical slice: home menu, the short run through the math gates (and the Brute
-    /// crates), the assault at the firing line (L1: drag to aim, hold to stream units; Brutes go out
-    /// every third launch), and the result, which saves the progress and offers NEXT / AGAIN in one tap.
+    /// Flow of the game: home menu (with the shop and the world list, RT-5), the short run through the math
+    /// gates (and the special-unit crates of the loadout), the assault at the firing line (L1: drag to aim,
+    /// hold to stream units; a special goes out every few launches), and the result, which saves the
+    /// progress and offers NEXT / AGAIN in one tap. Upgrades, loadout and skin come from
+    /// <see cref="Progression"/> when a level is prepared; the device gate runs the maximum loadout.
     /// Owns the run phase the kit reads: Menu is Menu, Run and Assault are Playing. In the assault the
     /// leader stays at the firing line (course speed 0) and its sideways drag picks the lane; the army is
     /// the leader's followers, launched one by one from the back. The whole world lives in one scene:
@@ -29,11 +31,12 @@ namespace Claybreak
     {
         private const string RunHint = "DRAG TO PICK A GATE";
         private const string AssaultHint = "DRAG TO AIM - HOLD TO LAUNCH";
-        private const int BruteEvery = 3;
+        // The device gate streams specials for as long as it runs (never written anywhere).
+        private const int DeviceGateSpecials = 1_000_000;
         private const float WonResultDelay = 1.5f;
         private const float LostResultDelay = 0.8f;
 
-        [SerializeField] private ClaybreakWorld world;
+        [SerializeField] private ClaybreakCatalog catalog;
         [Tooltip("Device-gate level (300 units in flight, every defense at its limit, the heaviest tower). Development and measurement builds pick it with `--ez stress true`.")]
         [SerializeField] private ClaybreakLevel stressLevel;
         [SerializeField] private bool useStressLevelInEditor;
@@ -66,7 +69,12 @@ namespace Claybreak
         private float launchCredit;
         private int autoLane;
         private int launches;
-        private int brutes;
+        private readonly UnitType[] loadout = new UnitType[ClaybreakCatalog.MaximumLoadoutSlots];
+        private readonly int[] specials = new int[ClaybreakCatalog.MaximumLoadoutSlots];
+        private int loadoutCount;
+        private int nextSpecialSlot;
+        private RunLoadout runLoadout = RunLoadout.None;
+        private CharacterController leader;
         private int armyAtLine;
         private float holdTime;
         private float stateTime;
@@ -93,7 +101,24 @@ namespace Claybreak
         public AssaultTower Tower => tower;
         public ClaybreakLevel ActiveLevel => activeLevel;
         public Progression Progress => progression;
-        public int Brutes => brutes;
+        public ClaybreakScreens Screens => screens;
+        public RunLoadout ActiveLoadout => runLoadout;
+        public int LoadoutCount => loadoutCount;
+
+        /// <summary>Special units still in the army (all loadout slots).</summary>
+        public int Specials
+        {
+            get
+            {
+                int total = 0;
+                for (int i = 0; i < loadoutCount; i++)
+                {
+                    total += specials[i];
+                }
+
+                return total;
+            }
+        }
 
         public override RunPhase CurrentPhase
         {
@@ -120,10 +145,12 @@ namespace Claybreak
             }
 
             configured = true;
-            Debug.Log($"[Claybreak] Ready: {world.WorldName}, {world.LevelCount} levels, next {progression.CurrentLevel.name}, "
-                + $"coins {progression.Save.coins}, upgrade step {progression.Save.startingArmyStep}, "
-                + $"brute {(progression.Save.bruteUnlocked ? "unlocked" : "locked")}, pool {pool.Capacity}"
-                + (deviceGate ? ", DEVICE GATE" : string.Empty) + ".", this);
+            RunLoadout ready = progression.Loadout;
+            Debug.Log($"[Claybreak] Ready: {catalog.Worlds.Count} world(s), {progression.World.WorldName}, next {progression.CurrentLevel.name}, "
+                + $"coins {progression.Save.coins}, stars {progression.TotalStars}, army +{ready.StartingArmy}, damage x{ready.DamageMultiplier:0.##}, "
+                + $"gates +{ready.GateBonus}, launch x{ready.LaunchRateMultiplier:0.##}, loadout [{string.Join(", ", progression.Save.loadout)}], "
+                + $"skin {progression.Skin.id}, pool {pool.Capacity}"
+                + (deviceGate ? ", DEVICE GATE (maximum loadout)" : string.Empty) + ".", this);
             if (deviceGate)
             {
                 StartLevel(stressLevel);
@@ -136,7 +163,7 @@ namespace Claybreak
 
         private bool Configure(out string error)
         {
-            if (world == null || stressLevel == null || theme == null || track == null || player == null || crowd == null
+            if (catalog == null || stressLevel == null || theme == null || track == null || player == null || crowd == null
                 || pool == null || runCamera == null || assaultCamera == null || gates == null || field == null
                 || tower == null || cannon == null || hud == null || screens == null || sfx == null
                 || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null)
@@ -145,19 +172,17 @@ namespace Claybreak
                 return false;
             }
 
-            if (!world.TryValidate(pool.Capacity, out error) || !stressLevel.TryValidate(pool.Capacity, out error)
+            if (!catalog.TryValidate(pool.Capacity, out error) || !stressLevel.TryValidate(pool.Capacity, out error)
                 || !theme.TryValidate(out error) || !tower.TryValidate(out error))
             {
                 return false;
             }
 
-            progression = new Progression(world, LoadSave());
-            CharacterController leader = player.GetComponent<CharacterController>();
-            if (!player.TryApplyColorLook(theme.Roster, ClaybreakTheme.CrowdColorId, theme.CrowdColor)
-                || !crowd.ApplyColorLook(theme.Roster, ClaybreakTheme.CrowdColorId, theme.CrowdColor)
-                || !field.Initialize(track, theme, world, leader, Vector3.one * 0.5f * player.transform.lossyScale.x))
+            progression = new Progression(catalog, LoadSave());
+            leader = player.GetComponent<CharacterController>();
+            if (!field.Initialize(track, theme, Vector3.one * 0.5f * player.transform.lossyScale.x) || !ApplySkin())
             {
-                error = "the crowd look or the assault field did not configure (see the log above).";
+                error = "the crowd skin or the assault field did not configure (see the log above).";
                 return false;
             }
 
@@ -173,7 +198,11 @@ namespace Claybreak
             tower.FloorFallen += OnFloorFallen;
             crowd.CountChanged += count => hud.SetArmy(count - 1);
             screens.PlayPressed += () => StartLevel(progression.CurrentLevel);
-            screens.UpgradePressed += OnUpgrade;
+            screens.ShopPressed += () => screens.ShowShop(progression);
+            screens.WorldsPressed += () => screens.ShowWorlds(progression);
+            screens.BackPressed += ShowMenu;
+            screens.ShopItemPressed += OnShopItem;
+            screens.WorldPressed += OnWorld;
             screens.PrimaryPressed += OnPrimary;
             screens.HomePressed += ShowMenu;
             error = null;
@@ -210,15 +239,20 @@ namespace Claybreak
         }
 #endif
 
+        // The device gate always runs the maximum loadout (RT-5) and never reads nor writes the player's save.
         private SaveData LoadSave()
         {
+            if (deviceGate)
+            {
+                return Progression.MaximumLoadout(catalog);
+            }
 #if UNITY_EDITOR
             if (EditorUsesFreshSave)
             {
                 return new SaveData();
             }
 #endif
-            return deviceGate ? new SaveData() : SaveStore.Load();
+            return SaveStore.Load();
         }
 
         private void WriteSave()
@@ -241,20 +275,69 @@ namespace Claybreak
         {
             PrepareLevel(progression.CurrentLevel);
             hud.Show(false);
-            screens.ShowHome(world, progression);
+            screens.ShowHome(progression);
             Enter(FlowState.Menu);
         }
 
-        private void OnUpgrade()
+        // Shop rows: buy, equip or wear (ShopTab says which list the index belongs to).
+        private void OnShopItem(ShopTab tab, int index)
         {
-            if (state == FlowState.Menu && progression.TryBuyUpgrade())
+            if (state != FlowState.Menu)
             {
-                GameAudio.Play(GameSound.AdReward);
-                WriteSave();
-                Debug.Log($"[Claybreak] Upgrade bought: step {progression.Save.startingArmyStep}, +{progression.StartingArmyBonus} units, coins {progression.Save.coins}.", this);
-                PrepareLevel(progression.CurrentLevel);
-                screens.ShowHome(world, progression);
+                return;
             }
+
+            bool changed;
+            bool bought;
+            switch (tab)
+            {
+                case ShopTab.Upgrades:
+                    changed = bought = progression.TryBuyUpgrade(index);
+                    break;
+                case ShopTab.Units:
+                    bought = progression.TryBuyUnit(index);
+                    changed = bought || progression.TryToggleUnit(index);
+                    break;
+                default:
+                    bought = progression.TryBuySkin(index);
+                    changed = bought || progression.TryWearSkin(index);
+                    if (changed && !ApplySkin())
+                    {
+                        Debug.LogError("[Claybreak] The crowd skin did not apply.", this);
+                    }
+
+                    break;
+            }
+
+            if (!changed)
+            {
+                return;
+            }
+
+            GameAudio.Play(bought ? GameSound.AdReward : GameSound.ButtonClick);
+            WriteSave();
+            Debug.Log($"[Claybreak] Shop: {tab} #{index} {(bought ? "bought" : "toggled")}; coins {progression.Save.coins}, "
+                + $"loadout [{string.Join(", ", progression.Save.loadout)}], skin {progression.Save.skin}.", this);
+            PrepareLevel(progression.CurrentLevel);
+            screens.ShowShop(progression);
+        }
+
+        private void OnWorld(int index)
+        {
+            if (state == FlowState.Menu && progression.TrySelectWorld(index))
+            {
+                WriteSave();
+                ShowMenu();
+            }
+        }
+
+        // The crowd wears the skin: the leader, its followers and every idle pool unit (menu time only).
+        private bool ApplySkin()
+        {
+            Color color = progression.Skin.color;
+            return player.TryApplyColorLook(theme.Roster, ClaybreakTheme.CrowdColorId, color)
+                && crowd.ApplyColorLook(theme.Roster, ClaybreakTheme.CrowdColorId, color)
+                && field.DressIdleUnits(theme.Roster, color, leader);
         }
 
         private void OnPrimary()
@@ -273,13 +356,16 @@ namespace Claybreak
         {
             activeLevel = level;
             bool played = !level.IsDeviceGateLevel;
+            runLoadout = progression.Loadout;
+            loadoutCount = progression.FillLoadout(loadout);
+            field.ConfigureLoadout(loadout, progression.Skin.color, runLoadout.DamageMultiplier);
             int towerHealth = played ? progression.ScaleHealth(level.TowerHealth) : level.TowerHealth;
             int wallHealth = played ? progression.ScaleHealth(level.WallHealth) : level.WallHealth;
             field.ResetField();
             field.Configure(level, track, wallHealth, level.DamagePerUnit);
             tower.ResetTower(level.Tower, towerHealth, level.Floors);
             if (!cannon.Configure(level, field, tower.Muzzle)
-                || !gates.Configure(level, track, played && progression.Save.bruteUnlocked))
+                || !gates.Configure(level, track, played && loadoutCount > 0, runLoadout.GateBonus))
             {
                 Debug.LogError("[Claybreak] The cannon or the run gates did not configure for " + level.name, this);
             }
@@ -287,10 +373,15 @@ namespace Claybreak
             RunnerDeathEffects.ClearAll();
             player.ResetForNewRun();
             player.SetCourseSpeedMultiplier(0f);
-            int army = level.StartCount + (played ? progression.StartingArmyBonus : 0);
+            int army = level.StartCount + (played ? runLoadout.StartingArmy : 0);
             crowd.SetCount(Mathf.Min(army, crowd.MaximumCount - 1) + 1);
             crowd.SnapFollowersToFormation();
-            brutes = 0;
+            for (int i = 0; i < specials.Length; i++)
+            {
+                specials[i] = played || i >= loadoutCount ? 0 : DeviceGateSpecials;
+            }
+
+            nextSpecialSlot = 0;
             launches = 0;
             holdTime = 0f;
             assaultCamera.Stop();
@@ -303,7 +394,7 @@ namespace Claybreak
             hud.SetLevel(level.Title);
             hud.SetCoins(progression.Save.coins);
             hud.SetArmy(crowd.CurrentCount - 1);
-            hud.SetBrutes(0, false);
+            hud.SetSpecials(0, false);
             hud.ShowTower(false, towerHealth);
             hud.ClearBanner();
             levelTime = 0f;
@@ -395,7 +486,7 @@ namespace Claybreak
                     hud.SetHint(null);
                 }
 
-                launchCredit += activeLevel.LaunchRate * Time.deltaTime;
+                launchCredit += activeLevel.LaunchRate * runLoadout.LaunchRateMultiplier * Time.deltaTime;
                 while (launchCredit >= 1f && LaunchOne(activeLevel.AutoLaunch ? autoLane++ % ClaybreakLevel.LaneCount : lane))
                 {
                     launchCredit -= 1f;
@@ -418,15 +509,27 @@ namespace Claybreak
 
             Vector3 from = follower.transform.position;
             crowd.RemoveHitFollower(follower);
-            bool brute = brutes > 0 && launches % BruteEvery == 0;
-            if (brute)
+            int slot = launches % catalog.SpecialEvery == 0 ? TakeSpecial() : -1;
+            launches++;
+            return field.TryLaunch(lane, new Vector3(from.x, from.y, Mathf.Max(from.z, activeLevel.FiringLineZ)), slot);
+        }
+
+        // Round robin over the loadout slots that still hold specials; -1 when none is left.
+        private int TakeSpecial()
+        {
+            for (int tried = 0; tried < loadoutCount; tried++)
             {
-                brutes--;
-                hud.SetBrutes(brutes, true);
+                int slot = nextSpecialSlot;
+                nextSpecialSlot = (nextSpecialSlot + 1) % loadoutCount;
+                if (specials[slot] > 0)
+                {
+                    specials[slot]--;
+                    hud.SetSpecials(Specials, true);
+                    return slot;
+                }
             }
 
-            launches++;
-            return field.TryLaunch(lane, new Vector3(from.x, from.y, Mathf.Max(from.z, activeLevel.FiringLineZ)), brute);
+            return -1;
         }
 
         private void OnGateCrossed(GateSpec gate)
@@ -435,7 +538,7 @@ namespace Claybreak
             if (army == 0)
             {
                 crowd.SetCount(1);
-                brutes = 0;
+                TrimSpecials(0);
                 Enter(FlowState.Lost);
                 return;
             }
@@ -448,27 +551,47 @@ namespace Claybreak
                 RunnerDeathEffects.Play(player.transform.position, Mathf.Min(before - army, 6));
             }
 
-            // Brutes are part of the army: a gate that shrinks it below them takes Brutes too.
-            if (brutes > army)
+            // Specials are part of the army: a gate that shrinks it below them takes specials too.
+            if (Specials > army)
             {
-                brutes = army;
-                hud.SetBrutes(brutes, true);
+                TrimSpecials(army);
             }
         }
 
-        private void OnCratePicked(int units)
+        // Takes specials away (the largest slot first) until at most <paramref name="army"/> are left.
+        private void TrimSpecials(int army)
+        {
+            int total = Specials;
+            while (total > army)
+            {
+                int largest = 0;
+                for (int i = 1; i < loadoutCount; i++)
+                {
+                    largest = specials[i] > specials[largest] ? i : largest;
+                }
+
+                specials[largest]--;
+                total--;
+            }
+
+            hud.SetSpecials(total, loadoutCount > 0);
+        }
+
+        // A crate holds specials of one loadout slot: crates alternate between the equipped types.
+        private void OnCratePicked(int crate, int units)
         {
             int army = crowd.CurrentCount - 1;
             int added = Mathf.Min(units, crowd.MaximumCount - 1 - army);
-            if (added <= 0)
+            if (added <= 0 || loadoutCount == 0)
             {
                 return;
             }
 
+            int slot = crate % loadoutCount;
             crowd.SetCount(army + added + 1, true);
-            brutes += added;
-            hud.SetBrutes(brutes, true);
-            hud.Banner("+" + added + " BRUTE");
+            specials[slot] += added;
+            hud.SetSpecials(Specials, true);
+            hud.Banner("+" + added + " " + loadout[slot].title);
         }
 
         private void OnFloorFallen(int floorsLeft)
@@ -532,7 +655,7 @@ namespace Claybreak
         private void BeginAssault()
         {
             armyAtLine = crowd.CurrentCount - 1;
-            Debug.Log($"[Claybreak] Run reached the firing line in {levelTime:0.0} s: army {armyAtLine} ({brutes} brutes), "
+            Debug.Log($"[Claybreak] Run reached the firing line in {levelTime:0.0} s: army {armyAtLine} ({Specials} specials), "
                 + $"leader at y={player.transform.position.y:0.00} (track top {track.bounds.max.y:0.00}).", this);
             player.SetCourseSpeedMultiplier(0f);
             launchCredit = 0f;
@@ -576,9 +699,10 @@ namespace Claybreak
             lastOutcome = outcome;
             lastDetail = won ? armyLeft + " left standing" : "the tower holds";
             Debug.Log($"[Claybreak] Result: {outcome.Stars} stars, +{outcome.Coins} coins (total {progression.Save.coins}), "
-                + $"next {progression.CurrentLevel.name}, loop {progression.Save.loop}"
-                + (outcome.UnlockedBrute ? ", BRUTE UNLOCKED" : string.Empty)
-                + (outcome.ClearedWorld ? ", WORLD CLEARED" : string.Empty) + ".", this);
+                + $"next {progression.World.WorldId}/{progression.CurrentLevel.name}, loop {progression.WorldProgress.loop}, stars {progression.TotalStars}"
+                + (outcome.UnlockedUnit != null ? ", UNIT UNLOCKED " + outcome.UnlockedUnit.id : string.Empty)
+                + (outcome.ClearedWorld ? ", WORLD CLEARED" : string.Empty)
+                + (outcome.OpenedWorld != null ? ", WORLD OPENED " + outcome.OpenedWorld.WorldId : string.Empty) + ".", this);
         }
 
         // Development builds: one line every 2 s with what the device gate needs on record (units in
@@ -599,8 +723,9 @@ namespace Claybreak
             }
             else if (state == FlowState.Assault)
             {
-                Debug.Log($"[ClaybreakGate] t={levelTime:0.0} tower={activeLevel.Tower} inFlight={field.InFlight} projectiles={cannon.ActiveCount}/"
-                    + $"{activeLevel.MaximumProjectiles} reserve={crowd.CurrentCount - 1} towerHealth={tower.Health}");
+                Debug.Log($"[ClaybreakGate] t={levelTime:0.0} tower={activeLevel.Tower} inFlight={field.InFlight} specials={field.SpecialsInFlight} "
+                    + $"projectiles={cannon.ActiveCount}/{activeLevel.MaximumProjectiles} reserve={crowd.CurrentCount - 1} towerHealth={tower.Health} "
+                    + $"loadout={loadoutCount} damage=x{runLoadout.DamageMultiplier:0.##} launch=x{runLoadout.LaunchRateMultiplier:0.##}");
             }
 #endif
         }

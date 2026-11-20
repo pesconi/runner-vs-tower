@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Full batchmode validation of the game (RT-4), Unity Editor CLOSED on this project:
-# scene build, game validator, kit isolation, EditMode and PlayMode tests, art captures (needs a GPU,
-# so no -nographics there) and the two Android APKs (game and measurement).
-# Usage (Git Bash, repository root): Tools/rt4-check.sh [out=/c/temp/rt4] [steps="scene validate isolation editmode playmode capture apk"]
+# Full batchmode validation of the game (RT-4, RT-5), Unity Editor CLOSED on this project:
+# scene build, game validator (catalog, worlds, save fixtures, scene, code rules), kit isolation, EditMode
+# and PlayMode tests, the economy table (docs/rt5-economia.md), art captures (needs a GPU, so no
+# -nographics there) and the two Android APKs (game and measurement).
+# Usage (Git Bash, repository root): Tools/rt4-check.sh [out=/c/temp/rt4] [steps="scene validate isolation editmode playmode economy capture apk"]
 # Prints one PASS/FAIL line per step; logs in <out>/logs. Exit 1 if any step failed.
 set -uo pipefail
 OUT=${1:-/c/temp/rt4}
-STEPS=${2:-"scene validate isolation editmode playmode capture apk"}
+STEPS=${2:-"scene validate isolation editmode playmode economy capture apk"}
 UNITY=${UNITY:-"/c/Program Files/Unity/Hub/Editor/6000.6.7f1/Editor/Unity.exe"}
 PROJECT=$(cd "$(dirname "$0")/.." && pwd -W 2>/dev/null || pwd)
 WIN_OUT=$(cd "$OUT" 2>/dev/null && pwd -W 2>/dev/null || echo "$OUT")
@@ -33,6 +34,7 @@ for step in $STEPS; do
     isolation) run isolation -nographics -executeMethod JungleDegree.StudioKit.Editor.EngineIsolationValidation.RunAndQuit ;;
     editmode) tests EditMode ;;
     playmode) tests PlayMode ;;
+    economy) run economy -nographics -executeMethod Claybreak.Editor.EconomyReport.WriteAndQuit -claybreakReport "$PROJECT/docs/rt5-economia.md" ;;
     capture) run capture -executeMethod Claybreak.Editor.ArtDirectionCapture.CaptureAndQuit -claybreakCaptureDir "$WIN_OUT/art" ;;
     apk)
       run apk-game -nographics -executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit -claybreakApk "$WIN_OUT/Claybreak.apk"

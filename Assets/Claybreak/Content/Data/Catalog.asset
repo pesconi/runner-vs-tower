@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1619a04c16b142d40a09231a06ccebeb, type: 3}
+  m_Name: Catalog
+  m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakCatalog
+  worlds:
+  - world: {fileID: 11400000, guid: 6f1c50a48a3d56f49a365351d66f6f2a, type: 2}
+    starsToUnlock: 0
+  upgrades:
+  - id: army
+    title: ARMY
+    kind: 0
+    steps:
+    - cost: 60
+      bonus: 5
+    - cost: 120
+      bonus: 10
+    - cost: 200
+      bonus: 16
+    - cost: 320
+      bonus: 24
+    - cost: 480
+      bonus: 34
+    - cost: 700
+      bonus: 46
+  - id: damage
+    title: DAMAGE
+    kind: 1
+    steps:
+    - cost: 80
+      bonus: 15
+    - cost: 150
+      bonus: 30
+    - cost: 250
+      bonus: 45
+    - cost: 400
+      bonus: 60
+    - cost: 600
+      bonus: 80
+    - cost: 900
+      bonus: 100
+  - id: gates
+    title: GATE BOOST
+    kind: 2
+    steps:
+    - cost: 100
+      bonus: 1
+    - cost: 180
+      bonus: 2
+    - cost: 300
+      bonus: 3
+    - cost: 450
+      bonus: 5
+    - cost: 650
+      bonus: 7
+    - cost: 950
+      bonus: 10
+  - id: launch
+    title: LAUNCH SPEED
+    kind: 3
+    steps:
+    - cost: 70
+      bonus: 10
+    - cost: 130
+      bonus: 20
+    - cost: 220
+      bonus: 30
+    - cost: 350
+      bonus: 45
+    - cost: 520
+      bonus: 60
+    - cost: 750
+      bonus: 80
+  units:
+  - id: brute
+    title: BRUTE
+    description: Heavy hitter, slow to fall.
+    color: {r: 0.5, g: 0.14, b: 0.1, a: 1}
+    scale: 1.45
+    damage: 4
+    armor: 1
+    speed: 1
+    price: 0
+    unlockWorld: world1
+    unlockLevel: 2
+  - id: sprinter
+    title: SPRINTER
+    description: 'Light and fast: first to the tower.'
+    color: {r: 0.98, g: 0.82, b: 0.22, a: 1}
+    scale: 0.9
+    damage: 2
+    armor: 0
+    speed: 1.6
+    price: 600
+    unlockWorld: 
+    unlockLevel: 0
+  - id: warden
+    title: WARDEN
+    description: 'Shield bearer: walks through blasts.'
+    color: {r: 0.33, g: 0.52, b: 0.78, a: 1}
+    scale: 1.25
+    damage: 2
+    armor: 3
+    speed: 0.85
+    price: 900
+    unlockWorld: world1
+    unlockLevel: 5
+  skins:
+  - id: clay
+    title: CLAY
+    color: {r: 0.95, g: 0.55, b: 0.18, a: 1}
+    price: 0
+  - id: ember
+    title: EMBER
+    color: {r: 0.86, g: 0.24, b: 0.16, a: 1}
+    price: 150
+  - id: moss
+    title: MOSS
+    color: {r: 0.42, g: 0.62, b: 0.3, a: 1}
+    price: 300
+  - id: slate
+    title: SLATE
+    color: {r: 0.46, g: 0.52, b: 0.62, a: 1}
+    price: 500
+  - id: bone
+    title: BONE
+    color: {r: 0.9, g: 0.86, b: 0.74, a: 1}
+    price: 800
+  - id: ink
+    title: INK
+    color: {r: 0.22, g: 0.2, b: 0.27, a: 1}
+    price: 1200
+  loadoutSlots: 2
+  specialEvery: 3
+  worldsFooter: MORE WORLDS SOON

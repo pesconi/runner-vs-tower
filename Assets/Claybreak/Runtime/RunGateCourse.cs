@@ -29,19 +29,21 @@ namespace Claybreak
         private float trackCenterX;
         private float crateOffsetX;
         private bool cratesShown;
+        private int addBonus;
         private int next;
         private int nextCrate;
 
         /// <summary>Raised when the leader crosses a gate: the gate taken.</summary>
         public event Action<GateSpec> GateCrossed;
 
-        /// <summary>Raised when the leader takes a crate: the special units it holds.</summary>
-        public event Action<int> CratePicked;
+        /// <summary>Raised when the leader takes a crate: its index in the level and the special units it holds.</summary>
+        public event Action<int, int> CratePicked;
 
         public int Capacity => pairRoots == null ? 0 : pairRoots.Length;
         public int CrateCapacity => crateRoots == null ? 0 : crateRoots.Length;
 
-        public bool Configure(ClaybreakLevel levelData, Renderer track, bool showCrates)
+        /// <summary>Places the level's gates and crates; <paramref name="gateBonus"/> (upgrade) is added to every "+" gate.</summary>
+        public bool Configure(ClaybreakLevel levelData, Renderer track, bool showCrates, int gateBonus)
         {
             int capacity = Capacity;
             if (levelData == null || track == null || goodMaterial == null || badMaterial == null
@@ -56,6 +58,7 @@ namespace Claybreak
 
             level = levelData;
             cratesShown = showCrates;
+            addBonus = Mathf.Max(0, gateBonus);
             Bounds bounds = track.bounds;
             trackCenterX = bounds.center.x;
             crateOffsetX = bounds.size.x * 0.25f;
@@ -102,7 +105,7 @@ namespace Claybreak
             while (level != null && next < level.RunGates.Count && leader.z >= level.RunGates[next].z)
             {
                 RunGatePair pair = level.RunGates[next];
-                GateSpec taken = leader.x < trackCenterX ? pair.left : pair.right;
+                GateSpec taken = Boost(leader.x < trackCenterX ? pair.left : pair.right);
                 pairRoots[next].gameObject.SetActive(false);
                 next++;
                 GameAudio.Play(taken.IsGood ? GameSound.GateGood : GameSound.GateBad);
@@ -117,15 +120,22 @@ namespace Claybreak
                 {
                     crateRoots[nextCrate].gameObject.SetActive(false);
                     ClaybreakSfx.Play(ClaybreakSfx.Cue.Crate);
-                    CratePicked?.Invoke(crate.units);
+                    CratePicked?.Invoke(nextCrate, crate.units);
                 }
 
                 nextCrate++;
             }
         }
 
-        private void Dress(TextMesh label, Renderer panel, GateSpec gate)
+        // The gate-value upgrade: "+" gates give more; the other operations stay as designed.
+        private GateSpec Boost(GateSpec gate)
         {
+            return gate.operation == GateOperation.Add ? new GateSpec(gate.operation, gate.value + addBonus) : gate;
+        }
+
+        private void Dress(TextMesh label, Renderer panel, GateSpec spec)
+        {
+            GateSpec gate = Boost(spec);
             label.text = gate.Label;
             panel.sharedMaterial = gate.IsGood ? goodMaterial : badMaterial;
         }

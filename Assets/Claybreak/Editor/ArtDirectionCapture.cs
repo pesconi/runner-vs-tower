@@ -11,11 +11,14 @@ namespace Claybreak.Editor
     /// Renders the art-direction options (RT-4, decision D17) and a few in-game shots to PNG, so the user
     /// can choose on the phone. Needs a graphics device: batchmode WITHOUT -nographics.
     /// -executeMethod Claybreak.Editor.ArtDirectionCapture.CaptureAndQuit [-claybreakCaptureDir C:\temp\rt4\art]
-    /// Writes into the capture folder and copies the option sheets into docs/art/rt4.
+    /// Writes into the capture folder, copies the option sheets into docs/art/rt4 and the game screens into
+    /// docs/art/telas.
     /// </summary>
     public static class ArtDirectionCapture
     {
         public const string RepositoryFolder = "docs/art/rt4";
+        /// <summary>The game screens as they are now (rewritten on every capture; the RT-4 sheets stay as the D17 record).</summary>
+        public const string ScreensFolder = "docs/art/telas";
         private const int Width = 720;
         private const int Height = 960;
 
@@ -38,6 +41,7 @@ namespace Claybreak.Editor
         {
             Directory.CreateDirectory(folder);
             Directory.CreateDirectory(RepositoryFolder);
+            Directory.CreateDirectory(ScreensFolder);
             TowerStyle[] towers = { TowerStyle.StoneBastion, TowerStyle.IronForge, TowerStyle.ClayRuin };
             TowerStyle[] bosses = { TowerStyle.Citadel, TowerStyle.ForgeColossus, TowerStyle.ClayTotem };
             Sheet(folder, "torre-opcoes", towers);
@@ -94,11 +98,12 @@ namespace Claybreak.Editor
             return Render(camera, Width, Height);
         }
 
-        // The game scene as the player sees it: the home screen and the assault of the boss.
+        // The game scene as the player sees it: home, shop, world list and the assault of the boss.
         private static void GameShots(string folder)
         {
             EditorSceneManager.OpenScene(ClaybreakSceneBuilder.ScenePath, OpenSceneMode.Single);
-            var world = AssetDatabase.LoadAssetAtPath<ClaybreakWorld>(WorldContent.WorldPath);
+            var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
+            ClaybreakWorld world = catalog.Worlds[0].world;
             var screens = UnityEngine.Object.FindAnyObjectByType<ClaybreakScreens>(FindObjectsInactive.Include);
             var hud = UnityEngine.Object.FindAnyObjectByType<ClaybreakHud>(FindObjectsInactive.Include);
             Camera camera = Camera.main;
@@ -107,11 +112,25 @@ namespace Claybreak.Editor
             canvas.worldCamera = camera;
             canvas.planeDistance = 1f;
 
-            var save = new SaveData { nextLevel = 3, coins = 140, startingArmyStep = 1, bruteUnlocked = true, stars = new[] { 3, 2, 3 } };
+            // A slice player after the migration: level 4, the Brute, one army step, some coins.
+            var save = SaveMigration.FromV1(new SaveDataV1
+            {
+                nextLevel = 3, coins = 640, startingArmyStep = 1, bruteUnlocked = true, stars = new[] { 3, 2, 3 }
+            });
+            var progression = new Progression(catalog, save);
+            progression.TryBuySkin(1);
             InvokeAwake(screens);
-            screens.ShowHome(world, new Progression(world, save));
+            screens.ShowHome(progression);
             hud.gameObject.SetActive(false);
             Shot(folder, "jogo-menu", camera);
+            screens.ShowShop(progression);
+            Shot(folder, "jogo-loja-upgrades", camera);
+            PickTab(screens, ShopTab.Units, progression);
+            Shot(folder, "jogo-loja-elites", camera);
+            PickTab(screens, ShopTab.Skins, progression);
+            Shot(folder, "jogo-loja-skins", camera);
+            screens.ShowWorlds(progression);
+            Shot(folder, "jogo-mundos", camera);
 
             screens.HideAll();
             hud.gameObject.SetActive(true);
@@ -119,6 +138,15 @@ namespace Claybreak.Editor
             InvokeAwake(tower);
             AssaultShot(folder, "jogo-assalto-torre", tower, camera, world.Levels[1], 17f);
             AssaultShot(folder, "jogo-assalto-chefe", tower, camera, world.Levels[world.LevelCount - 1], 20f);
+        }
+
+        // The tab buttons are wired in Awake; a capture presses them through the same listener.
+        private static void PickTab(ClaybreakScreens screens, ShopTab tab, Progression progression)
+        {
+            var so = new SerializedObject(screens);
+            var button = (UnityEngine.UI.Button)so.FindProperty("shopTabs").GetArrayElementAtIndex((int)tab).objectReferenceValue;
+            screens.ShowShop(progression);
+            button.onClick.Invoke();
         }
 
         // The assault camera's framing (AssaultCamera: 17 m up and 11 m back, plus the boss offset).
@@ -139,7 +167,7 @@ namespace Claybreak.Editor
             Texture2D shot = Render(camera, 1080, 1920);
             byte[] png = shot.EncodeToPNG();
             File.WriteAllBytes(Path.Combine(folder, name + ".png"), png);
-            File.WriteAllBytes(Path.Combine(RepositoryFolder, name + ".png"), png);
+            File.WriteAllBytes(Path.Combine(ScreensFolder, name + ".png"), png);
             UnityEngine.Object.DestroyImmediate(shot);
             Debug.Log("[ArtDirectionCapture] " + name);
         }

@@ -1,0 +1,1 @@
+{"version":2,"coins":120,"world":"world1","worlds":[{"id":"world1","nextLevel":2,"loop":0,"stars":[3,1,0,0,0,0,0]},{"id":"gone","nextLevel":3,"loop":1,"stars":[3]}],"upgrades":[{"id":"army","level":1},{"id":"damage","level":99},{"id":"retired","level":2}],"units":["brute","nobody","brute"],"loadout":["nobody","brute"],"skins":["ember"],"skin":"ember","levelsWon":2,"levelsLost":0}

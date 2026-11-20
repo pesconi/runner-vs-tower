@@ -1,82 +1,62 @@
+using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor;
-using UnityEngine;
 
 namespace Claybreak.Tests
 {
-    /// <summary>The meta rules (stars, coins, next level, upgrade, Brute, loop) and the save format.</summary>
+    /// <summary>The meta rules: stars, coins, next level, loop, worlds, upgrades, units and loadout, skins.</summary>
     public sealed class ProgressionTests
     {
-        private const int Levels = 6;
-        private ClaybreakWorld world;
-        private ClaybreakLevel[] levels;
+        private const int Levels = TestContent.LevelsPerWorld;
+        private TestContent content;
+        private ClaybreakCatalog catalog;
 
         [SetUp]
         public void SetUp()
         {
-            levels = new ClaybreakLevel[Levels];
-            for (int i = 0; i < Levels; i++)
-            {
-                levels[i] = ScriptableObject.CreateInstance<ClaybreakLevel>();
-                levels[i].name = "Level" + (i + 1);
-                var level = new SerializedObject(levels[i]);
-                level.FindProperty("coinReward").intValue = 40;
-                if (i == Levels - 1)
-                {
-                    level.FindProperty("tower").enumValueIndex = (int)TowerKind.Boss;
-                    level.FindProperty("floors").intValue = 4;
-                    level.FindProperty("shiftGatesOnFloor").boolValue = true;
-                }
-
-                level.ApplyModifiedPropertiesWithoutUndo();
-            }
-
-            world = ScriptableObject.CreateInstance<ClaybreakWorld>();
-            var so = new SerializedObject(world);
-            SerializedProperty array = so.FindProperty("levels");
-            array.arraySize = Levels;
-            for (int i = 0; i < Levels; i++)
-            {
-                array.GetArrayElementAtIndex(i).objectReferenceValue = levels[i];
-            }
-
-            (int cost, int bonus)[] steps = { (60, 5), (120, 10), (200, 16), (320, 24), (480, 34) };
-            SerializedProperty upgrade = so.FindProperty("startingArmySteps");
-            upgrade.arraySize = steps.Length;
-            for (int i = 0; i < steps.Length; i++)
-            {
-                upgrade.GetArrayElementAtIndex(i).FindPropertyRelative("cost").intValue = steps[i].cost;
-                upgrade.GetArrayElementAtIndex(i).FindPropertyRelative("bonus").intValue = steps[i].bonus;
-            }
-
-            so.FindProperty("bruteUnlockLevel").intValue = 2;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            content = new TestContent();
+            catalog = content.Catalog;
         }
 
         [TearDown]
         public void TearDown()
         {
-            Object.DestroyImmediate(world);
-            foreach (ClaybreakLevel level in levels)
-            {
-                Object.DestroyImmediate(level);
-            }
+            content.Dispose();
+        }
+
+        private Progression Fresh(int coins = 0)
+        {
+            return new Progression(catalog, new SaveData { coins = coins });
+        }
+
+        private static void Valid(Progression progression)
+        {
+            var problems = new List<string>();
+            Assert.IsTrue(SaveValidator.Validate(progression.Save, progression.Catalog, problems), string.Join("; ", problems));
         }
 
         [Test]
-        public void TestWorldIsValid()
+        public void TestCatalogIsValid()
         {
-            Assert.IsTrue(world.TryValidate(300, out string error), error);
+            Assert.IsTrue(catalog.TryValidate(300, out string error), error);
         }
 
         [Test]
-        public void WorldNeedsTheBossLast()
+        public void CatalogRejectsAUnitNobodyCanGet()
         {
-            var so = new SerializedObject(levels[Levels - 1]);
-            so.FindProperty("tower").enumValueIndex = (int)TowerKind.Keep;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(world.TryValidate(300, out string error));
-            StringAssert.Contains("boss", error);
+            catalog.Units[1].price = 0;
+            Assert.IsFalse(catalog.TryValidate(300, out string error));
+            StringAssert.Contains("never be had", error);
+        }
+
+        [Test]
+        public void CatalogRejectsDuplicateIdsAndAPaidDefaultSkin()
+        {
+            catalog.Upgrades[1].id = catalog.Upgrades[0].id;
+            Assert.IsFalse(catalog.TryValidate(300, out _));
+            catalog.Upgrades[1].id = "damage";
+            catalog.Skins[0].price = 10;
+            Assert.IsFalse(catalog.TryValidate(300, out string error));
+            StringAssert.Contains("free", error);
         }
 
         [TestCase(false, 100, 90, 0)]
@@ -90,9 +70,19 @@ namespace Claybreak.Tests
         }
 
         [Test]
+        public void FreshSaveIsValidAndWearsTheFreeSkin()
+        {
+            Progression progression = Fresh();
+            Valid(progression);
+            Assert.AreEqual("clay", progression.Skin.id);
+            Assert.AreEqual(0, progression.EquippedCount);
+            Assert.AreEqual(SaveMigration.V1WorldId, progression.Save.world);
+        }
+
+        [Test]
         public void WinAdvancesAndPays()
         {
-            var progression = new Progression(world, new SaveData());
+            Progression progression = Fresh();
             LevelOutcome outcome = progression.Complete(true, 100, 60);
             Assert.IsTrue(outcome.Won);
             Assert.AreEqual(3, outcome.Stars);
@@ -100,12 +90,13 @@ namespace Claybreak.Tests
             Assert.AreEqual(1, progression.LevelIndex);
             Assert.AreEqual(outcome.Coins, progression.Save.coins);
             Assert.AreEqual(3, progression.StarsAt(0));
+            Assert.AreEqual(3, progression.TotalStars);
         }
 
         [Test]
         public void LossKeepsTheLevelAndPaysALittle()
         {
-            var progression = new Progression(world, new SaveData());
+            Progression progression = Fresh();
             LevelOutcome outcome = progression.Complete(false, 100, 0);
             Assert.IsFalse(outcome.Won);
             Assert.AreEqual(5, outcome.Coins);
@@ -114,94 +105,192 @@ namespace Claybreak.Tests
         }
 
         [Test]
-        public void BruteUnlocksOnTheThirdWin()
+        public void BestStarsAreKept()
         {
-            var progression = new Progression(world, new SaveData());
-            Assert.IsFalse(progression.Complete(true, 10, 1).UnlockedBrute);
-            Assert.IsFalse(progression.Complete(true, 10, 1).UnlockedBrute);
-            Assert.IsTrue(progression.Complete(true, 10, 1).UnlockedBrute);
-            Assert.IsTrue(progression.Save.bruteUnlocked);
-            Assert.IsFalse(progression.Complete(true, 10, 1).UnlockedBrute);
+            Progression progression = Fresh();
+            progression.Complete(true, 100, 60);
+            progression.Save.worlds[0].nextLevel = 0;
+            progression.Complete(true, 100, 5);
+            Assert.AreEqual(3, progression.StarsAt(0));
         }
 
         [Test]
-        public void BeatingTheBossLoopsTheWorldTougher()
+        public void TheBruteUnlocksOnTheThirdWinAndIsEquipped()
         {
-            var progression = new Progression(world, new SaveData { nextLevel = Levels - 1 });
+            Progression progression = Fresh();
+            Assert.IsNull(progression.Complete(true, 10, 1).UnlockedUnit);
+            Assert.IsNull(progression.Complete(true, 10, 1).UnlockedUnit);
+            Assert.AreEqual(SaveMigration.V1BruteId, progression.Complete(true, 10, 1).UnlockedUnit?.id);
+            Assert.IsTrue(progression.IsUnitOwned(0));
+            Assert.IsTrue(progression.IsUnitEquipped(0));
+            Assert.IsNull(progression.Complete(true, 10, 1).UnlockedUnit);
+            Valid(progression);
+        }
+
+        [Test]
+        public void BeatingTheBossLoopsTheWorldTougherAndRicher()
+        {
+            var save = new SaveData();
+            save.worlds = new[] { new WorldSave { id = SaveMigration.V1WorldId, nextLevel = Levels - 1 } };
+            var progression = new Progression(catalog, save);
             Assert.AreEqual(100, progression.ScaleHealth(100));
             LevelOutcome outcome = progression.Complete(true, 10, 5);
             Assert.IsTrue(outcome.ClearedWorld);
+            Assert.IsNull(outcome.OpenedWorld, "there is no second world");
             Assert.AreEqual(0, progression.LevelIndex);
-            Assert.AreEqual(1, progression.Save.loop);
+            Assert.AreEqual(1, progression.WorldProgress.loop);
             Assert.AreEqual(125, progression.ScaleHealth(100));
+            Assert.AreEqual(1.25f, progression.CoinMultiplier, 1e-5f);
+            int coins = progression.Save.coins;
+            Assert.AreEqual(Progression.CoinsFor(true, 50, 5, 3), progression.Complete(true, 10, 5).Coins, "a loop pays 25% more reward");
+            Assert.Greater(progression.Save.coins, coins);
         }
 
         [Test]
-        public void UpgradeCostsCoinsAndRaisesTheStartingArmy()
+        public void UpgradeCostsCoinsAndRaisesItsBonus()
         {
-            var progression = new Progression(world, new SaveData { coins = 100 });
-            Assert.AreEqual(0, progression.StartingArmyBonus);
-            Assert.IsTrue(progression.TryBuyUpgrade());
+            Progression progression = Fresh(100);
+            Assert.AreEqual(0, progression.Loadout.StartingArmy);
+            Assert.IsTrue(progression.TryBuyUpgrade(0));
             Assert.AreEqual(40, progression.Save.coins);
-            Assert.AreEqual(5, progression.StartingArmyBonus);
-            Assert.AreEqual(120, progression.NextUpgradeCost);
-            Assert.IsFalse(progression.TryBuyUpgrade(), "not enough coins");
-            Assert.AreEqual(1, progression.Save.startingArmyStep);
+            Assert.AreEqual(5, progression.Loadout.StartingArmy);
+            Assert.AreEqual(120, progression.NextUpgradeCost(0));
+            Assert.IsFalse(progression.TryBuyUpgrade(0), "not enough coins");
+            Assert.AreEqual(1, progression.UpgradeLevel(0));
+            Valid(progression);
+        }
+
+        [Test]
+        public void EveryUpgradeKindReachesTheRunLoadout()
+        {
+            Progression progression = Fresh(10_000);
+            for (int track = 0; track < catalog.Upgrades.Count; track++)
+            {
+                Assert.IsTrue(progression.TryBuyUpgrade(track));
+                Assert.IsTrue(progression.TryBuyUpgrade(track));
+            }
+
+            RunLoadout loadout = progression.Loadout;
+            Assert.AreEqual(10, loadout.StartingArmy);
+            Assert.AreEqual(1.3f, loadout.DamageMultiplier, 1e-5f);
+            Assert.AreEqual(2, loadout.GateBonus);
+            Assert.AreEqual(1.2f, loadout.LaunchRateMultiplier, 1e-5f);
         }
 
         [Test]
         public void UpgradeStopsAtTheLastStep()
         {
-            var progression = new Progression(world, new SaveData { coins = 10000, startingArmyStep = 5 });
-            Assert.IsTrue(progression.UpgradeMaxed);
-            Assert.IsFalse(progression.TryBuyUpgrade());
-            Assert.AreEqual(34, progression.StartingArmyBonus);
+            var save = new SaveData { coins = 10_000, upgrades = new[] { new UpgradeSave { id = SaveMigration.V1StartingArmyId, level = 5 } } };
+            var progression = new Progression(catalog, save);
+            Assert.IsTrue(progression.IsUpgradeMaxed(0));
+            Assert.IsFalse(progression.TryBuyUpgrade(0));
+            Assert.AreEqual(34, progression.Loadout.StartingArmy);
+            Assert.AreEqual(10_000, progression.Save.coins);
+        }
+
+        [Test]
+        public void UnitsAreBoughtEquippedAndSwapped()
+        {
+            Progression progression = Fresh(2_000);
+            Assert.IsFalse(progression.TryBuyUnit(0), "the Brute is not sold");
+            Assert.IsTrue(progression.TryBuyUnit(1));
+            Assert.AreEqual(1_400, progression.Save.coins);
+            Assert.IsTrue(progression.IsUnitEquipped(1), "a bought unit goes in a free slot");
+            Assert.IsTrue(progression.TryBuyUnit(2));
+            Assert.AreEqual(2, progression.EquippedCount);
+
+            var slots = new UnitType[ClaybreakCatalog.MaximumLoadoutSlots];
+            Assert.AreEqual(2, progression.FillLoadout(slots));
+            Assert.AreEqual("sprinter", slots[0].id);
+            Assert.AreEqual("warden", slots[1].id);
+
+            Assert.IsFalse(progression.TryToggleUnit(0), "the Brute is not owned");
+            Assert.IsTrue(progression.TryToggleUnit(1), "take the Sprinter off");
+            Assert.AreEqual(1, progression.FillLoadout(slots));
+            Assert.AreEqual("warden", slots[0].id);
+            Assert.IsNull(slots[1]);
+            Valid(progression);
+        }
+
+        [Test]
+        public void ALoadoutHasAtMostItsSlots()
+        {
+            Progression progression = Fresh(5_000);
+            progression.Save.units = new[] { "brute", "sprinter", "warden" };
+            progression.Save.loadout = new[] { "brute", "sprinter" };
+            Assert.IsFalse(progression.TryToggleUnit(2), "both slots are taken");
+            Assert.IsTrue(progression.TryToggleUnit(0));
+            Assert.IsTrue(progression.TryToggleUnit(2));
+            CollectionAssert.AreEqual(new[] { "sprinter", "warden" }, progression.Save.loadout);
+        }
+
+        [Test]
+        public void SkinsAreBoughtAndWorn()
+        {
+            Progression progression = Fresh(200);
+            Assert.IsFalse(progression.TryBuySkin(2), "too dear");
+            Assert.IsTrue(progression.TryBuySkin(1));
+            Assert.AreEqual(50, progression.Save.coins);
+            Assert.AreEqual("ember", progression.Skin.id);
+            Assert.IsTrue(progression.TryWearSkin(0));
+            Assert.AreEqual("clay", progression.Skin.id);
+            Assert.IsFalse(progression.TryWearSkin(2), "not owned");
+            Valid(progression);
+        }
+
+        [Test]
+        public void CanBuyAnythingFollowsTheCheapestItem()
+        {
+            Assert.IsFalse(Fresh(59).CanBuyAnything);
+            Assert.IsTrue(Fresh(60).CanBuyAnything);
+        }
+
+        [Test]
+        public void MaximumLoadoutHasEverythingAndPassesTheValidator()
+        {
+            var progression = new Progression(catalog, Progression.MaximumLoadout(catalog));
+            for (int track = 0; track < catalog.Upgrades.Count; track++)
+            {
+                Assert.IsTrue(progression.IsUpgradeMaxed(track));
+            }
+
+            Assert.AreEqual(catalog.LoadoutSlots, progression.EquippedCount);
+            Assert.AreEqual("ink", progression.Skin.id);
+            Assert.AreEqual(80, progression.Bonus(UpgradeKind.Damage));
+            Valid(progression);
         }
 
         [Test]
         public void HandEditedSaveIsClamped()
         {
-            var save = new SaveData { nextLevel = 99, startingArmyStep = 42, coins = -5, stars = new[] { 9, -1 } };
-            var progression = new Progression(world, save);
+            var save = new SaveData
+            {
+                coins = -5,
+                worlds = new[] { new WorldSave { id = SaveMigration.V1WorldId, nextLevel = 99, loop = -2, stars = new[] { 9, -1 } } },
+                upgrades = new[] { new UpgradeSave { id = SaveMigration.V1StartingArmyId, level = 42 } },
+                loadout = new[] { "sprinter" },
+                skin = "ink"
+            };
+            var progression = new Progression(catalog, save);
             Assert.AreEqual(Levels - 1, progression.LevelIndex);
-            Assert.AreEqual(5, progression.Save.startingArmyStep);
+            Assert.AreEqual(0, progression.WorldProgress.loop);
+            Assert.AreEqual(5, progression.UpgradeLevel(0));
             Assert.AreEqual(0, progression.Save.coins);
-            Assert.AreEqual(Levels, progression.Save.stars.Length);
+            Assert.AreEqual(Levels, progression.WorldProgress.stars.Length);
             Assert.AreEqual(3, progression.StarsAt(0));
             Assert.AreEqual(0, progression.StarsAt(1));
+            Assert.AreEqual(0, progression.EquippedCount, "an unowned unit cannot be equipped");
+            Assert.AreEqual("clay", progression.Skin.id, "an unowned skin cannot be worn");
+            Valid(progression);
         }
 
         [Test]
         public void CoinsNeverOverflow()
         {
-            var progression = new Progression(world, new SaveData { coins = int.MaxValue });
+            Progression progression = Fresh(int.MaxValue);
             Assert.AreEqual(Progression.MaximumCoins, progression.Save.coins);
             progression.Complete(true, 100, 100);
             Assert.AreEqual(Progression.MaximumCoins, progression.Save.coins);
-        }
-
-        [Test]
-        public void SaveRoundTrips()
-        {
-            var save = new SaveData { nextLevel = 3, loop = 1, coins = 250, startingArmyStep = 2, bruteUnlocked = true, stars = new[] { 3, 2, 1 } };
-            Assert.IsTrue(SaveStore.TryDeserialize(SaveStore.Serialize(save), out SaveData read));
-            Assert.AreEqual(3, read.nextLevel);
-            Assert.AreEqual(1, read.loop);
-            Assert.AreEqual(250, read.coins);
-            Assert.AreEqual(2, read.startingArmyStep);
-            Assert.IsTrue(read.bruteUnlocked);
-            CollectionAssert.AreEqual(new[] { 3, 2, 1 }, read.stars);
-        }
-
-        [TestCase("")]
-        [TestCase("not json at all")]
-        [TestCase("{\"version\":99,\"coins\":5}")]
-        [TestCase("{\"version\":0}")]
-        public void DamagedOrFutureSaveStartsFresh(string json)
-        {
-            Assert.IsFalse(SaveStore.TryDeserialize(json, out SaveData read));
-            Assert.AreEqual(0, read.coins);
-            Assert.AreEqual(SaveData.CurrentVersion, read.version);
         }
     }
 }

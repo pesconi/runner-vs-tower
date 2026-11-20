@@ -11,7 +11,8 @@ namespace Claybreak
     /// walks preallocated arrays; no per-unit Update, no physics, no allocation. A unit in flight never
     /// collides with another; it only meets the gate row, the sweeper, the wall and the tower, by distance
     /// along its lane (R-D4). Units come from the kit's RunnerPool and go back to it when they hit or die.
-    /// A unit can be a Brute (the special unit): bigger, darker, more damage, and armor against one hit.
+    /// A unit can be special (a type from the loadout, RT-5): its own size, color, damage, armor and speed.
+    /// The damage upgrade multiplies every hit; fractions carry over, so +15% is exact over a stream.
     /// </summary>
     public sealed class AssaultField : MonoBehaviour
     {
@@ -35,23 +36,24 @@ namespace Claybreak
         private readonly float[] laneZSum = new float[ClaybreakLevel.LaneCount];
         private RunnerUnit[] units;
         private Transform[] transforms;
-        private Renderer[] bruteRenderers;
+        private Renderer[] specialRenderers;
         private float[] xs;
         private float[] targetXs;
         private float[] zs;
         private int[] lanes;
         private int[] armor;
-        private bool[] brutes;
+        private int[] kinds;
+        private float[] speeds;
         private int count;
         private int capacity;
         private int gateShift;
         private uint spreadSeed = 1u;
         private Vector3 unitScale = Vector3.one * 0.5f;
         private Color crowdColor = Color.white;
-        private Color bruteColor = Color.red;
-        private float bruteScale = 1.4f;
-        private int bruteDamage = 1;
-        private int bruteArmor;
+        private readonly UnitType[] slotTypes = new UnitType[ClaybreakCatalog.MaximumLoadoutSlots];
+        private float damageMultiplier = 1f;
+        private float towerCarry;
+        private float wallCarry;
         private int towerDamage = 1;
         private MaterialPropertyBlock colorBlock;
 
@@ -62,25 +64,35 @@ namespace Claybreak
         public int GateShift => gateShift;
         public bool Running { get; set; }
 
-        /// <summary>One-time setup: lane positions, preallocated arrays and the crowd look on every pool unit.</summary>
-        public bool Initialize(Renderer track, ClaybreakTheme theme, ClaybreakWorld world, CharacterController leader,
-            Vector3 followerScale)
+        /// <summary>Special units in flight now (the device gate logs it).</summary>
+        public int SpecialsInFlight
+        {
+            get
+            {
+                int specials = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    specials += kinds[i] >= 0 ? 1 : 0;
+                }
+
+                return specials;
+            }
+        }
+
+        /// <summary>One-time setup: lane positions and preallocated arrays (the flow then dresses the pool in the skin).</summary>
+        public bool Initialize(Renderer track, ClaybreakTheme theme, Vector3 followerScale)
         {
             if (runnerPool == null || tower == null || wall == null || sweeper == null || gateVisuals == null
                 || gateVisuals.Length != ClaybreakLevel.LaneCount || gateLabels.Length != ClaybreakLevel.LaneCount
                 || gatePanels.Length != ClaybreakLevel.LaneCount || goodGateMaterial == null || badGateMaterial == null
-                || track == null || theme == null || world == null)
+                || track == null || theme == null)
             {
-                Debug.LogError("AssaultField needs the pool, tower, wall, sweeper, one gate per lane, the track, theme and world.", this);
+                Debug.LogError("AssaultField needs the pool, tower, wall, sweeper, one gate per lane, the track and the theme.", this);
                 return false;
             }
 
             unitScale = followerScale;
             crowdColor = theme.CrowdColor;
-            bruteColor = world.BruteColor;
-            bruteScale = world.BruteScale;
-            bruteDamage = world.BruteDamage;
-            bruteArmor = world.BruteArmor;
             colorBlock = new MaterialPropertyBlock();
             Bounds bounds = track.bounds;
             float laneWidth = bounds.size.x / ClaybreakLevel.LaneCount;
@@ -92,14 +104,15 @@ namespace Claybreak
             capacity = runnerPool.Capacity;
             units = new RunnerUnit[capacity];
             transforms = new Transform[capacity];
-            bruteRenderers = new Renderer[capacity];
+            specialRenderers = new Renderer[capacity];
             xs = new float[capacity];
             targetXs = new float[capacity];
             zs = new float[capacity];
             lanes = new int[capacity];
             armor = new int[capacity];
-            brutes = new bool[capacity];
-            return DressIdleUnits(theme, leader);
+            kinds = new int[capacity];
+            speeds = new float[capacity];
+            return true;
         }
 
         /// <summary>Per-level setup: defenses placed and dressed for <paramref name="levelData"/>.</summary>
@@ -122,7 +135,49 @@ namespace Claybreak
             }
 
             gateShift = 0;
+            towerCarry = 0f;
+            wallCarry = 0f;
             DressGates();
+        }
+
+        /// <summary>
+        /// Per-run loadout (menu time, field empty): the special unit types by slot, the crowd skin color a
+        /// special goes back to, and the damage upgrade.
+        /// </summary>
+        public void ConfigureLoadout(UnitType[] slots, Color skinColor, float damage)
+        {
+            for (int i = 0; i < slotTypes.Length; i++)
+            {
+                slotTypes[i] = slots != null && i < slots.Length ? slots[i] : null;
+            }
+
+            crowdColor = skinColor;
+            damageMultiplier = Mathf.Max(1f, damage);
+        }
+
+        /// <summary>
+        /// Menu time only: every idle pool unit wears the crowd skin, so a unit cloned by a xN gate (never part
+        /// of the crowd) looks like the others without dressing it mid-assault.
+        /// </summary>
+        public bool DressIdleUnits(ThemeCharacterRoster roster, Color color, CharacterController leader)
+        {
+            crowdColor = color;
+            int available = runnerPool.AvailableCount;
+            RunnerUnit[] taken = new RunnerUnit[available];
+            bool dressed = true;
+            for (int i = 0; i < available; i++)
+            {
+                runnerPool.TryGet(out taken[i]);
+                taken[i].transform.localScale = unitScale;
+                dressed &= taken[i].TryApplyColorLook(roster, ClaybreakTheme.CrowdColorId, color, leader);
+            }
+
+            for (int i = 0; i < available; i++)
+            {
+                runnerPool.Release(taken[i]);
+            }
+
+            return dressed;
         }
 
         public float GetLaneX(int lane)
@@ -159,10 +214,10 @@ namespace Claybreak
             DressGates();
         }
 
-        /// <summary>Takes a free pool unit and sends it down <paramref name="lane"/> from <paramref name="from"/>.</summary>
-        public bool TryLaunch(int lane, Vector3 from, bool brute)
+        /// <summary>Takes a free pool unit and sends it down <paramref name="lane"/>; <paramref name="slot"/> is the special type (-1 = plain).</summary>
+        public bool TryLaunch(int lane, Vector3 from, int slot)
         {
-            return TrySpawn(lane, from.x, from.z, brute);
+            return TrySpawn(lane, from.x, from.z, slot >= 0 && slot < slotTypes.Length && slotTypes[slot] != null ? slot : -1);
         }
 
         /// <summary>Kills every unit within <paramref name="radius"/> of <paramref name="center"/> (cannon blast); armor absorbs one.</summary>
@@ -242,7 +297,7 @@ namespace Claybreak
             }
 
             float deltaTime = Time.deltaTime;
-            float step = level.UnitSpeed * deltaTime;
+            float baseStep = level.UnitSpeed * deltaTime;
             float steer = 1f - Mathf.Exp(-SteerResponse * deltaTime);
             float gateZ = level.AssaultGateZ;
             float wallZ = level.WallZ;
@@ -258,6 +313,7 @@ namespace Claybreak
             for (int i = count - 1; i >= 0; i--)
             {
                 float previousZ = zs[i];
+                float step = baseStep * speeds[i];
                 float z = previousZ + step;
                 int lane = lanes[i];
 
@@ -274,7 +330,7 @@ namespace Claybreak
                     {
                         // Clones are plain units that trail the original a little (a burst, not a stack)
                         // but never behind the gate, or they would cross it again.
-                        if (!TrySpawn(lane, xs[i], Mathf.Max(gateZ, z - 0.35f * clone), false))
+                        if (!TrySpawn(lane, xs[i], Mathf.Max(gateZ, z - 0.35f * clone), -1))
                         {
                             break;
                         }
@@ -291,7 +347,7 @@ namespace Claybreak
 
                 if (lane == wallLane && wall.IsStanding && z >= wallZ)
                 {
-                    wall.Hit(brutes[i] ? bruteDamage : 1);
+                    wall.Hit(Damage(i, 1, ref wallCarry));
                     Remove(i);
                     lostAtWall++;
                     continue;
@@ -300,7 +356,8 @@ namespace Claybreak
                 if (z >= towerZ)
                 {
                     TowerHits++;
-                    tower.Hit(brutes[i] ? bruteDamage * towerDamage : towerDamage);
+                    // The device gate keeps the slice's flat damage so its endless tower outlasts the measurement.
+                    tower.Hit(level.RecycleUnits ? towerDamage : Damage(i, towerDamage, ref towerCarry));
                     RemoveOrRecycle(i);
                     continue;
                 }
@@ -318,6 +375,16 @@ namespace Claybreak
             }
         }
 
+        // Whole damage of one hit (base x special x upgrade); the fraction carries to the next hit.
+        private int Damage(int index, int baseDamage, ref float carry)
+        {
+            int special = kinds[index] >= 0 ? slotTypes[kinds[index]].damage : 1;
+            carry += baseDamage * special * damageMultiplier;
+            int whole = (int)carry;
+            carry -= whole;
+            return Mathf.Max(1, whole);
+        }
+
         private bool AbsorbHit(int index)
         {
             if (armor[index] <= 0)
@@ -329,7 +396,7 @@ namespace Claybreak
             return true;
         }
 
-        private bool TrySpawn(int lane, float x, float z, bool brute)
+        private bool TrySpawn(int lane, float x, float z, int slot)
         {
             if (count >= capacity || !runnerPool.TryGet(out RunnerUnit unit))
             {
@@ -337,7 +404,8 @@ namespace Claybreak
             }
 
             Transform unitTransform = unit.transform;
-            unitTransform.localScale = brute ? unitScale * bruteScale : unitScale;
+            UnitType type = slot >= 0 ? slotTypes[slot] : null;
+            unitTransform.localScale = type != null ? unitScale * type.scale : unitScale;
             unitTransform.rotation = Quaternion.identity;
             unitTransform.position = new Vector3(x, transform.position.y, z);
             units[count] = unit;
@@ -346,15 +414,16 @@ namespace Claybreak
             targetXs[count] = laneX[lane] + NextSpread() * level.LaneSpread;
             zs[count] = z;
             lanes[count] = lane;
-            brutes[count] = brute;
-            armor[count] = brute ? bruteArmor : 0;
-            bruteRenderers[count] = null;
-            if (brute)
+            kinds[count] = type != null ? slot : -1;
+            armor[count] = type != null ? type.armor : 0;
+            speeds[count] = type != null ? type.speed : 1f;
+            specialRenderers[count] = null;
+            if (type != null)
             {
-                // Only Brutes pay for a component lookup (a handful per level).
+                // Only special units pay for a component lookup (a handful per level).
                 Renderer renderer = unit.GetComponent<Renderer>();
-                bruteRenderers[count] = renderer;
-                Tint(renderer, bruteColor);
+                specialRenderers[count] = renderer;
+                Tint(renderer, type.color);
             }
 
             count++;
@@ -382,25 +451,26 @@ namespace Claybreak
         private void Remove(int index)
         {
             RunnerUnit unit = units[index];
-            if (brutes[index])
+            if (kinds[index] >= 0)
             {
-                Tint(bruteRenderers[index], crowdColor);
+                Tint(specialRenderers[index], crowdColor);
                 unit.transform.localScale = unitScale;
             }
 
             int last = count - 1;
             units[index] = units[last];
             transforms[index] = transforms[last];
-            bruteRenderers[index] = bruteRenderers[last];
+            specialRenderers[index] = specialRenderers[last];
             xs[index] = xs[last];
             targetXs[index] = targetXs[last];
             zs[index] = zs[last];
             lanes[index] = lanes[last];
             armor[index] = armor[last];
-            brutes[index] = brutes[last];
+            kinds[index] = kinds[last];
+            speeds[index] = speeds[last];
             units[last] = null;
             transforms[last] = null;
-            bruteRenderers[last] = null;
+            specialRenderers[last] = null;
             count = last;
             runnerPool.Release(unit);
         }
@@ -434,28 +504,6 @@ namespace Claybreak
                 gateLabels[i].text = gate.Label;
                 gatePanels[i].sharedMaterial = gate.IsGood ? goodGateMaterial : badGateMaterial;
             }
-        }
-
-        // Every pool unit wears the crowd's clay look before the run starts, so a unit cloned by a xN gate
-        // (never part of the crowd) looks like the others without dressing it mid-assault.
-        private bool DressIdleUnits(ClaybreakTheme theme, CharacterController leader)
-        {
-            int available = runnerPool.AvailableCount;
-            RunnerUnit[] taken = new RunnerUnit[available];
-            bool dressed = true;
-            for (int i = 0; i < available; i++)
-            {
-                runnerPool.TryGet(out taken[i]);
-                taken[i].transform.localScale = unitScale;
-                dressed &= taken[i].TryApplyColorLook(theme.Roster, ClaybreakTheme.CrowdColorId, theme.CrowdColor, leader);
-            }
-
-            for (int i = 0; i < available; i++)
-            {
-                runnerPool.Release(taken[i]);
-            }
-
-            return dressed;
         }
     }
 }

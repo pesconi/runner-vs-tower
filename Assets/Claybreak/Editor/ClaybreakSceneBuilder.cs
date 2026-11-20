@@ -16,11 +16,12 @@ using UnityEngine.UI;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// Builds the game module from code (RT-4 vertical slice): Android settings, the world data
-    /// (<see cref="WorldContent"/>), generated materials, placeholder sounds, the theme and the one scene
+    /// Builds the game module from code: Android settings, the content (<see cref="WorldContent"/>: worlds,
+    /// levels and the meta catalog), generated materials, placeholder sounds, the theme and the one scene
     /// with everything preallocated: the 300-unit runner pool, every projectile, the gate pairs and crates,
-    /// the three tower bodies (<see cref="TowerArt"/>), the wall, the sweeper, the HUD and the menu/result
-    /// screens (rule 2.2.1: nothing is created or destroyed while playing). Idempotent.
+    /// the three tower bodies (<see cref="TowerArt"/>), the wall, the sweeper, the HUD and the menu screens
+    /// with one shop row and one world row per catalog entry (rule 2.2.1: nothing is created or destroyed
+    /// while playing). Idempotent.
     /// Batchmode (Editor closed): -executeMethod Claybreak.Editor.ClaybreakSceneBuilder.BuildAndQuit
     /// </summary>
     public static class ClaybreakSceneBuilder
@@ -31,7 +32,8 @@ namespace Claybreak.Editor
         public const int PoolSize = 300;
         public const int ProjectilePoolSize = 32;
         public const int SfxVoices = 4;
-        public const int LevelDots = 8;
+        public const int LevelDots = ClaybreakWorld.MaximumLevels;
+        public const float RowStep = 230f;
 
         private const string AudioFolder = Root + "/Audio";
         private const string GeneratedFolder = Root + "/Generated";
@@ -139,7 +141,7 @@ namespace Claybreak.Editor
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             // Load every asset after NewScene: opening a scene unloads assets nothing references, and a
             // reference taken before it would be serialized as missing.
-            var world = Load<ClaybreakWorld>(WorldContent.WorldPath);
+            var catalog = Load<ClaybreakCatalog>(WorldContent.CatalogPath);
             var stress = Load<ClaybreakLevel>(WorldContent.StressLevelPath);
             var theme = Load<ClaybreakTheme>(ThemePath);
             var palette = new ArtPalette();
@@ -147,13 +149,16 @@ namespace Claybreak.Editor
             Material clay = Load<Material>(ClayMaterialPath);
 
             float trackEnd = stress.TowerZ + 16f;
-            for (int i = 0; i < world.LevelCount; i++)
+            foreach (WorldEntry entry in catalog.Worlds)
             {
-                trackEnd = Mathf.Max(trackEnd, world.Levels[i].TowerZ + 16f);
+                foreach (ClaybreakLevel level in entry.world.Levels)
+                {
+                    trackEnd = Mathf.Max(trackEnd, level.TowerZ + 16f);
+                }
             }
 
             Renderer track = CreateEnvironment(palette, trackEnd);
-            ClaybreakLevel first = world.Levels[0];
+            ClaybreakLevel first = catalog.Worlds[0].world.Levels[0];
 
             var flowObject = new GameObject("ClaybreakFlow");
             ClaybreakFlow flow = flowObject.AddComponent<ClaybreakFlow>();
@@ -210,10 +215,10 @@ namespace Claybreak.Editor
             Sprite star = Load<Sprite>(StarTexturePath);
             Transform canvas = CreateCanvas();
             ClaybreakHud hud = CreateHud(canvas, pill);
-            ClaybreakScreens screens = CreateScreens(canvas, pill, star);
+            ClaybreakScreens screens = CreateScreens(canvas, pill, star, catalog);
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
 
-            SetRef(flow, "world", world);
+            SetRef(flow, "catalog", catalog);
             SetRef(flow, "stressLevel", stress);
             SetRef(flow, "theme", theme);
             SetRef(flow, "track", track);
@@ -236,7 +241,8 @@ namespace Claybreak.Editor
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
-            Debug.Log($"[Claybreak] Scene {ScenePath}: {world.LevelCount} levels, pool {PoolSize}, {ProjectilePoolSize} projectiles, "
+            Debug.Log($"[Claybreak] Scene {ScenePath}: {catalog.Worlds.Count} world(s), {catalog.LevelCount} levels, "
+                + $"{catalog.Upgrades.Count} upgrades, {catalog.Units.Count} units, {catalog.Skins.Count} skins, pool {PoolSize}, {ProjectilePoolSize} projectiles, "
                 + $"{RunGateCourse.MaximumPairs} gate pairs, {ClaybreakLevel.MaximumCrates} crates, track to z={trackEnd:0}.");
         }
 
@@ -626,8 +632,8 @@ namespace Claybreak.Editor
             RectTransform root = Stretch("Hud", canvas);
             Text level = Label("Level", root, new Vector2(0.5f, 1f), new Vector2(0f, -150f), 54, TextAnchor.MiddleCenter);
             Text army = Label("Army", root, new Vector2(0f, 1f), new Vector2(60f, -235f), 62, TextAnchor.UpperLeft);
-            Text brutes = Label("Brutes", root, new Vector2(0f, 1f), new Vector2(60f, -315f), 46, TextAnchor.UpperLeft);
-            brutes.color = new Color(1f, 0.55f, 0.45f);
+            Text specials = Label("Specials", root, new Vector2(0f, 1f), new Vector2(60f, -315f), 46, TextAnchor.UpperLeft);
+            specials.color = new Color(1f, 0.55f, 0.45f);
             Image coin = Img("CoinIcon", root, pill, new Vector2(1f, 1f), new Vector2(-215f, -150f), new Vector2(46f, 46f), Gold);
             coin.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             Text coins = Label("Coins", root, new Vector2(1f, 1f), new Vector2(-60f, -150f), 52, TextAnchor.MiddleRight);
@@ -655,7 +661,7 @@ namespace Claybreak.Editor
             SetRef(hud, "root", root.gameObject);
             SetRef(hud, "levelText", level);
             SetRef(hud, "armyText", army);
-            SetRef(hud, "bruteText", brutes);
+            SetRef(hud, "specialText", specials);
             SetRef(hud, "coinsText", coins);
             SetRef(hud, "towerBar", barBack.gameObject);
             SetRef(hud, "towerFill", fill);
@@ -665,7 +671,7 @@ namespace Claybreak.Editor
             return hud;
         }
 
-        private static ClaybreakScreens CreateScreens(Transform canvas, Sprite pill, Sprite star)
+        private static ClaybreakScreens CreateScreens(Transform canvas, Sprite pill, Sprite star, ClaybreakCatalog catalog)
         {
             var screensObject = new GameObject("Screens", typeof(RectTransform));
             RectTransform screensRect = screensObject.GetComponent<RectTransform>();
@@ -674,46 +680,75 @@ namespace Claybreak.Editor
             screensRect.anchorMax = Vector2.one;
             screensRect.sizeDelta = Vector2.zero;
             ClaybreakScreens screens = screensObject.AddComponent<ClaybreakScreens>();
+            Color grey = new Color(0.3f, 0.26f, 0.26f);
 
-            // Home: the level waits behind a dark veil; cards stack from the bottom (thumb reach).
-            RectTransform home = Stretch("Home", screensRect);
-            Image veil = home.gameObject.AddComponent<Image>();
-            veil.color = new Color(0.06f, 0.04f, 0.05f, 0.55f);
-            Image coin = Img("CoinIcon", home, pill, new Vector2(1f, 1f), new Vector2(-215f, -150f), new Vector2(46f, 46f), Gold);
-            coin.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            Text homeCoins = Label("Coins", home, new Vector2(1f, 1f), new Vector2(-60f, -150f), 52, TextAnchor.MiddleRight);
-            homeCoins.rectTransform.sizeDelta = new Vector2(170f, 90f);
-            homeCoins.rectTransform.pivot = new Vector2(1f, 0.5f);
+            // Home: the level waits behind a dark veil; buttons stack from the bottom (thumb reach).
+            RectTransform home = MenuPage("Home", screensRect, 0.55f);
+            Text homeCoins = Coins(home, pill);
             // Working name (D18), with the call to action under it.
             Text title = Label("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -270f), 120, TextAnchor.MiddleCenter);
             title.text = "CLAY SIEGE";
             title.color = Orange;
             Text tagline = Label("Tagline", home, new Vector2(0.5f, 1f), new Vector2(0f, -385f), 40, TextAnchor.MiddleCenter);
             tagline.text = "STORM THE TOWER";
-            Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -470f), 46, TextAnchor.MiddleCenter);
+            Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -440f), 46, TextAnchor.MiddleCenter);
+            Text worldStars = Label("Stars", home, new Vector2(0.5f, 1f), new Vector2(0f, -505f), 44, TextAnchor.MiddleCenter);
+            worldStars.color = Gold;
             var dots = new UnityEngine.Object[LevelDots];
             for (int i = 0; i < LevelDots; i++)
             {
-                dots[i] = Img("Dot" + (i + 1), home, pill, new Vector2(0.5f, 1f), new Vector2((i - (LevelDots - 1) * 0.5f) * 96f, -640f),
-                    new Vector2(52f, 52f), Color.white);
+                dots[i] = Img("Dot" + (i + 1), home, pill, new Vector2(0.5f, 1f), new Vector2((i - (LevelDots - 1) * 0.5f) * 92f, -650f),
+                    new Vector2(50f, 50f), Color.white);
             }
 
-            (Button upgradeButton, Text upgradeLabel, Text upgradeTitle, Text upgradeDetail) =
-                Card(home, pill, "UpgradeCard", 760f, "BUY");
-            (Button _, Text _, Text unitTitle, Text unitDetail) = Card(home, pill, "UnitCard", 510f, null);
-            (Button play, Text playLabel) = PillButton("Play", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 250f),
+            Text loadout = Label("Loadout", home, new Vector2(0.5f, 1f), new Vector2(0f, -720f), 38, TextAnchor.MiddleCenter);
+            loadout.color = new Color(1f, 0.86f, 0.72f);
+            (Button play, Text playLabel) = PillButton("Play", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 420f),
                 new Vector2(640f, 180f), Orange, "PLAY", 84);
+            (Button shop, Text _) = PillButton("ShopButton", home, pill, new Vector2(0.5f, 0f), new Vector2(-235f, 235f),
+                new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "SHOP", 56);
+            Image badge = Img("Badge", shop.transform, pill, new Vector2(1f, 1f), new Vector2(-30f, -22f), new Vector2(46f, 46f), Gold);
+            (Button worldsButton, Text _) = PillButton("WorldsButton", home, pill, new Vector2(0.5f, 0f), new Vector2(235f, 235f),
+                new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "WORLDS", 56);
             (Button sound, Text soundLabel) = PillButton("Sound", home, pill, new Vector2(0.5f, 0f), new Vector2(-340f, 80f),
-                new Vector2(320f, 100f), new Color(0.3f, 0.26f, 0.26f), "SOUND ON", 36);
+                new Vector2(320f, 100f), grey, "SOUND ON", 36);
             (Button music, Text musicLabel) = PillButton("Music", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 80f),
-                new Vector2(320f, 100f), new Color(0.3f, 0.26f, 0.26f), "MUSIC ON", 36);
+                new Vector2(320f, 100f), grey, "MUSIC ON", 36);
             (Button vibration, Text vibrationLabel) = PillButton("Vibration", home, pill, new Vector2(0.5f, 0f), new Vector2(340f, 80f),
-                new Vector2(320f, 100f), new Color(0.3f, 0.26f, 0.26f), "VIBRATION ON", 36);
+                new Vector2(320f, 100f), grey, "VIBRATION ON", 36);
+
+            // Shop: three tabs over one list (rows = the longest catalog list), coins only (D6: no real money).
+            RectTransform shopRoot = MenuPage("Shop", screensRect, 0.82f);
+            Text shopCoins = Coins(shopRoot, pill);
+            Heading(shopRoot, "SHOP");
+            string[] tabNames = { "UPGRADES", "ELITES", "SKINS" };
+            var tabs = new UnityEngine.Object[tabNames.Length];
+            for (int i = 0; i < tabNames.Length; i++)
+            {
+                (Button tab, Text _) = PillButton("Tab" + tabNames[i], shopRoot, pill, new Vector2(0.5f, 1f),
+                    new Vector2((i - 1) * 330f, -350f), new Vector2(310f, 110f), grey, tabNames[i], 40);
+                tabs[i] = tab;
+            }
+
+            int shopCount = Mathf.Max(catalog.Upgrades.Count, Mathf.Max(catalog.Units.Count, catalog.Skins.Count));
+            (RectTransform shopContent, UnityEngine.Object[] shopRows) = List(shopRoot, pill, "ShopList", -430f, 250f, shopCount);
+            (Button shopBack, Text _) = PillButton("Back", shopRoot, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
+                new Vector2(420f, 120f), grey, "BACK", 48);
+
+            // Worlds: one row per catalog world, any number (RT-6 adds them as data).
+            RectTransform worldsRoot = MenuPage("Worlds", screensRect, 0.82f);
+            Heading(worldsRoot, "WORLDS");
+            Text worldsStars = Label("Stars", worldsRoot, new Vector2(0.5f, 1f), new Vector2(0f, -300f), 52, TextAnchor.MiddleCenter);
+            worldsStars.color = Gold;
+            (RectTransform worldsContent, UnityEngine.Object[] worldRows) =
+                List(worldsRoot, pill, "WorldList", -400f, 330f, catalog.Worlds.Count);
+            Text footer = Label("Footer", worldsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 255f), 40, TextAnchor.MiddleCenter);
+            footer.color = new Color(1f, 1f, 1f, 0.6f);
+            (Button worldsBack, Text _) = PillButton("Back", worldsRoot, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
+                new Vector2(420f, 120f), grey, "BACK", 48);
 
             // Result: veil, one card, one big button (NEXT / AGAIN) and a small HOME.
-            RectTransform result = Stretch("Result", screensRect);
-            Image resultVeil = result.gameObject.AddComponent<Image>();
-            resultVeil.color = new Color(0.04f, 0.03f, 0.04f, 0.6f);
+            RectTransform result = MenuPage("Result", screensRect, 0.6f);
             Image card = Img("Card", result, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 1060f), CardColor);
             ClayUi.MakePill(card, pill, 140f);
             RectTransform cardRect = card.rectTransform;
@@ -735,28 +770,42 @@ namespace Claybreak.Editor
             (Button primary, Text primaryLabel) = PillButton("Primary", cardRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 150f),
                 new Vector2(600f, 170f), Orange, "NEXT", 80);
             (Button homeButton, Text _) = PillButton("Home", cardRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 30f),
-                new Vector2(340f, 96f), new Color(0.3f, 0.26f, 0.26f), "HOME", 40);
-            home.gameObject.SetActive(false);
-            result.gameObject.SetActive(false);
+                new Vector2(340f, 96f), grey, "HOME", 40);
+
+            foreach (RectTransform screen in new[] { home, shopRoot, worldsRoot, result })
+            {
+                screen.gameObject.SetActive(false);
+            }
 
             SetRef(screens, "home", home.gameObject);
             SetRef(screens, "homeCoins", homeCoins);
             SetRef(screens, "worldText", world);
+            SetRef(screens, "starsText", worldStars);
+            SetRef(screens, "loadoutText", loadout);
             SetArray(screens, "levelDots", dots);
             SetRef(screens, "playButton", play);
             SetRef(screens, "playLabel", playLabel);
-            SetRef(screens, "upgradeTitle", upgradeTitle);
-            SetRef(screens, "upgradeDetail", upgradeDetail);
-            SetRef(screens, "upgradeButton", upgradeButton);
-            SetRef(screens, "upgradeButtonLabel", upgradeLabel);
-            SetRef(screens, "unitTitle", unitTitle);
-            SetRef(screens, "unitDetail", unitDetail);
+            SetRef(screens, "shopButton", shop);
+            SetRef(screens, "shopBadge", badge.gameObject);
+            SetRef(screens, "worldsButton", worldsButton);
             SetRef(screens, "soundButton", sound);
             SetRef(screens, "soundLabel", soundLabel);
             SetRef(screens, "musicButton", music);
             SetRef(screens, "musicLabel", musicLabel);
             SetRef(screens, "vibrationButton", vibration);
             SetRef(screens, "vibrationLabel", vibrationLabel);
+            SetRef(screens, "shop", shopRoot.gameObject);
+            SetRef(screens, "shopCoins", shopCoins);
+            SetArray(screens, "shopTabs", tabs);
+            SetRef(screens, "shopContent", shopContent);
+            SetArray(screens, "shopRows", shopRows);
+            SetRef(screens, "shopBack", shopBack);
+            SetRef(screens, "worlds", worldsRoot.gameObject);
+            SetRef(screens, "worldsStars", worldsStars);
+            SetRef(screens, "worldsContent", worldsContent);
+            SetArray(screens, "worldRows", worldRows);
+            SetRef(screens, "worldsFooter", footer);
+            SetRef(screens, "worldsBack", worldsBack);
             SetRef(screens, "result", result.gameObject);
             SetRef(screens, "resultTitle", resultTitle);
             SetArray(screens, "stars", stars);
@@ -766,29 +815,93 @@ namespace Claybreak.Editor
             SetRef(screens, "primaryButton", primary);
             SetRef(screens, "primaryLabel", primaryLabel);
             SetRef(screens, "homeButton", homeButton);
+            Set(screens, "rowStep", RowStep);
             return screens;
         }
 
-        // A clay card anchored to the bottom: title, detail and (optionally) a button on the right.
-        private static (Button, Text, Text, Text) Card(RectTransform parent, Sprite pill, string name, float y, string buttonCaption)
+        // A full-screen menu page over a dark veil.
+        private static RectTransform MenuPage(string name, RectTransform parent, float veilAlpha)
         {
-            Image card = Img(name, parent, pill, new Vector2(0.5f, 0f), new Vector2(0f, y), new Vector2(940f, 210f), CardColor);
-            ClayUi.MakePill(card, pill, 110f);
-            ClayUi.AddSlab(card, 8f);
-            RectTransform rect = card.rectTransform;
-            Text title = Label("Title", rect, new Vector2(0f, 1f), new Vector2(50f, -30f), 48, TextAnchor.UpperLeft);
-            title.color = Orange;
-            Text detail = Label("Detail", rect, new Vector2(0f, 1f), new Vector2(50f, -95f), 36, TextAnchor.UpperLeft);
-            detail.rectTransform.sizeDelta = new Vector2(buttonCaption == null ? 840f : 600f, 100f);
-            detail.horizontalOverflow = HorizontalWrapMode.Wrap;
-            if (buttonCaption == null)
+            RectTransform screen = Stretch(name, parent);
+            Image veil = screen.gameObject.AddComponent<Image>();
+            veil.color = new Color(0.06f, 0.04f, 0.05f, veilAlpha);
+            return screen;
+        }
+
+        private static Text Coins(RectTransform screen, Sprite pill)
+        {
+            Image coin = Img("CoinIcon", screen, pill, new Vector2(1f, 1f), new Vector2(-215f, -150f), new Vector2(46f, 46f), Gold);
+            coin.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            Text coins = Label("Coins", screen, new Vector2(1f, 1f), new Vector2(-60f, -150f), 52, TextAnchor.MiddleRight);
+            coins.rectTransform.sizeDelta = new Vector2(170f, 90f);
+            coins.rectTransform.pivot = new Vector2(1f, 0.5f);
+            return coins;
+        }
+
+        private static void Heading(RectTransform screen, string caption)
+        {
+            Text heading = Label("Heading", screen, new Vector2(0.5f, 1f), new Vector2(0f, -150f), 96, TextAnchor.MiddleCenter);
+            heading.text = caption;
+            heading.color = Orange;
+        }
+
+        // A vertical scroll list between <paramref name="top"/> (from the top) and <paramref name="bottom"/>
+        // (from the bottom), with <paramref name="rows"/> preallocated rows at RowStep apart.
+        private static (RectTransform, UnityEngine.Object[]) List(RectTransform screen, Sprite pill, string name, float top,
+            float bottom, int rows)
+        {
+            RectTransform viewport = Stretch(name, screen);
+            viewport.offsetMin = new Vector2(70f, bottom);
+            viewport.offsetMax = new Vector2(-70f, top);
+            Image hit = viewport.gameObject.AddComponent<Image>();
+            hit.color = new Color(0f, 0f, 0f, 0.001f);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var contentObject = new GameObject("Content", typeof(RectTransform));
+            RectTransform content = contentObject.GetComponent<RectTransform>();
+            content.SetParent(viewport, false);
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = new Vector2(1f, 1f);
+            content.pivot = new Vector2(0.5f, 1f);
+            content.sizeDelta = new Vector2(0f, rows * RowStep);
+            ScrollRect scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.content = content;
+            scroll.viewport = viewport;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 30f;
+            var created = new UnityEngine.Object[rows];
+            for (int i = 0; i < rows; i++)
             {
-                return (null, null, title, detail);
+                created[i] = ListRow(content, pill, i);
             }
 
-            (Button button, Text label) = PillButton("Buy", rect, pill, new Vector2(1f, 0.5f), new Vector2(-150f, 0f),
-                new Vector2(240f, 120f), Orange, buttonCaption, 44);
-            return (button, label, title, detail);
+            return (content, created);
+        }
+
+        private static ClaybreakListRow ListRow(RectTransform content, Sprite pill, int index)
+        {
+            const float height = 210f;
+            Image card = Img("Row" + (index + 1), content, pill, new Vector2(0.5f, 1f),
+                new Vector2(0f, -index * RowStep - height * 0.5f), new Vector2(930f, height), CardColor);
+            ClayUi.MakePill(card, pill, 100f);
+            ClayUi.AddSlab(card, 8f);
+            RectTransform rect = card.rectTransform;
+            Text title = Label("Title", rect, new Vector2(0f, 1f), new Vector2(50f, -26f), 44, TextAnchor.UpperLeft);
+            title.color = Orange;
+            Text detail = Label("Detail", rect, new Vector2(0f, 1f), new Vector2(50f, -84f), 30, TextAnchor.UpperLeft);
+            detail.rectTransform.sizeDelta = new Vector2(590f, 120f);
+            detail.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Image swatch = Img("Swatch", rect, pill, new Vector2(1f, 1f), new Vector2(-310f, -48f), new Vector2(54f, 54f), Color.white);
+            (Button button, Text label) = PillButton("Action", rect, pill, new Vector2(1f, 0.5f), new Vector2(-140f, -10f),
+                new Vector2(220f, 110f), Orange, "BUY", 40);
+            ClaybreakListRow row = card.gameObject.AddComponent<ClaybreakListRow>();
+            SetRef(row, "title", title);
+            SetRef(row, "detail", detail);
+            SetRef(row, "swatch", swatch);
+            SetRef(row, "button", button);
+            SetRef(row, "buttonLabel", label);
+            return row;
         }
 
         private static (Button, Text) PillButton(string name, RectTransform parent, Sprite pill, Vector2 anchor, Vector2 position,

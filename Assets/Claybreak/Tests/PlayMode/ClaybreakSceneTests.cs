@@ -96,6 +96,11 @@ namespace Claybreak.Tests
             Assert.AreEqual(TowerKind.Boss, flow.ActiveLevel.Tower, "the gate runs the heaviest tower");
             Assert.AreEqual(300, flow.Field.PeakInFlight, "units in flight never reached the pool");
             Assert.AreEqual(flow.ActiveLevel.MaximumProjectiles, flow.Cannon.PeakActive, "the cannon never reached its limit");
+            // RT-5: the gate runs the maximum loadout (every upgrade, both elite slots, the dearest skin).
+            Assert.AreEqual(ClaybreakCatalog.MaximumLoadoutSlots, flow.LoadoutCount, "the loadout is not full");
+            Assert.Greater(flow.ActiveLoadout.DamageMultiplier, 1f);
+            Assert.Greater(flow.ActiveLoadout.LaunchRateMultiplier, 1f);
+            Assert.Greater(flow.Field.SpecialsInFlight, 0, "no elite units in flight");
 
             // Recycled units keep the field full while the measurement runs.
             for (int i = 0; i < 60; i++)
@@ -105,6 +110,53 @@ namespace Claybreak.Tests
 
             Assert.AreEqual(300, flow.Field.InFlight);
             Assert.LessOrEqual(flow.Cannon.ActiveCount, flow.ActiveLevel.MaximumProjectiles);
+        }
+
+        // RT-5 end to end: the shop sells an upgrade, an elite and a skin through its buttons, and the next
+        // run starts with them (bigger army, elite crates, new color).
+        [UnityTest]
+        public IEnumerator ShopPurchasesReachTheNextRun()
+        {
+            yield return LoadScene(false);
+            var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
+            var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
+            Assert.AreEqual(FlowState.Menu, flow.State);
+            flow.Progress.Save.coins = 5000;
+            Press("/Ui/Screens/Home/ShopButton");
+            Assert.IsTrue(flow.Screens.ShopShown, "the shop did not open");
+
+            Press("/Ui/Screens/Shop/ShopList/Content/Row1/Action");
+            Assert.AreEqual(1, flow.Progress.UpgradeLevel(0), "the army upgrade was not bought");
+            Press("/Ui/Screens/Shop/TabELITES");
+            Assert.AreEqual(ShopTab.Units, flow.Screens.Tab);
+            Press("/Ui/Screens/Shop/ShopList/Content/Row2/Action");
+            Assert.IsTrue(flow.Progress.IsUnitEquipped(1), "the Sprinter was not bought into the loadout");
+            Press("/Ui/Screens/Shop/TabSKINS");
+            Press("/Ui/Screens/Shop/ShopList/Content/Row2/Action");
+            Assert.AreEqual("ember", flow.Progress.Skin.id, "the skin was not bought and worn");
+            Assert.Less(flow.Progress.Save.coins, 5000);
+
+            Press("/Ui/Screens/Shop/Back");
+            Assert.IsTrue(GameObject.Find("Home") != null, "BACK did not return home");
+            Assert.AreEqual(flow.ActiveLevel.StartCount + flow.ActiveLoadout.StartingArmy + 1, crowd.CurrentCount);
+            Assert.AreEqual(5, flow.ActiveLoadout.StartingArmy);
+            Assert.AreEqual(1, flow.LoadoutCount);
+
+            Press("/Ui/Screens/Home/WorldsButton");
+            Assert.IsTrue(flow.Screens.WorldsShown, "the world list did not open");
+            Press("/Ui/Screens/Worlds/Back");
+            Press("/Ui/Screens/Home/Play");
+            Assert.AreEqual(FlowState.Run, flow.State);
+            yield return null;
+        }
+
+        private static void Press(string path)
+        {
+            GameObject target = GameObject.Find(path);
+            Assert.IsNotNull(target, path + " is not on screen");
+            var button = target.GetComponent<UnityEngine.UI.Button>();
+            Assert.IsTrue(button.interactable, path + " is disabled");
+            button.onClick.Invoke();
         }
 
         // End to end without touch: reach the assault, bring the tower down, check the saved progress and

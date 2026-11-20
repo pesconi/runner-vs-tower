@@ -9,15 +9,18 @@ using UnityEngine;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// The game's validator (RT-4): the world and every level against the pool, the device-gate level
-    /// (heaviest tower, every defense at its limit), the theme, the scene wiring (tower bodies, HUD,
-    /// screens, sounds, preallocated pools), and the code rules (no Instantiate/Destroy at run time,
-    /// rule 2.2.1; no physics queries, rule 2.2.7).
+    /// The game's validator: the meta catalog (RT-5) and every world and level against the pool, the
+    /// device-gate level (heaviest tower, every defense at its limit), the theme, the save validator over
+    /// the fixture saves (every version a phone may hold must migrate and pass <see cref="SaveValidator"/>),
+    /// the scene wiring (tower bodies, HUD, screens with one row per catalog entry, sounds, preallocated
+    /// pools), and the code rules (no Instantiate/Destroy at run time, rule 2.2.1; no physics queries,
+    /// rule 2.2.7).
     /// Batchmode: -executeMethod Claybreak.Editor.ClaybreakValidation.RunAndQuit
     /// </summary>
     public static class ClaybreakValidation
     {
         private const string RuntimeFolder = "Assets/Claybreak/Runtime";
+        public const string SaveFixtureFolder = "Assets/Claybreak/Editor/SaveFixtures";
         private static readonly Regex ForbiddenRuntimeCalls = new Regex(
             @"\b(Instantiate|Destroy|DestroyImmediate)\s*\(|new\s+GameObject\s*\(|\.AddComponent\s*<|\bPhysics\.",
             RegexOptions.Compiled);
@@ -39,6 +42,7 @@ namespace Claybreak.Editor
         {
             var failures = new List<string>();
             CheckData(failures);
+            CheckSaves(failures);
             CheckRuntimeCode(failures);
             CheckScene(failures);
             return failures;
@@ -48,7 +52,7 @@ namespace Claybreak.Editor
         {
             if (failures.Count == 0)
             {
-                Debug.Log("PASS Claybreak validation: world, levels, device-gate level, theme, scene, pools and runtime code rules.");
+                Debug.Log("PASS Claybreak validation: catalog, worlds, levels, device-gate level, theme, saves, scene, pools and runtime code rules.");
             }
             else
             {
@@ -58,45 +62,52 @@ namespace Claybreak.Editor
 
         private static void CheckData(List<string> failures)
         {
-            var world = AssetDatabase.LoadAssetAtPath<ClaybreakWorld>(WorldContent.WorldPath);
+            var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
             var stress = AssetDatabase.LoadAssetAtPath<ClaybreakLevel>(WorldContent.StressLevelPath);
             var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(ClaybreakSceneBuilder.ThemePath);
-            if (world == null || stress == null || theme == null)
+            if (catalog == null || stress == null || theme == null)
             {
-                failures.Add("missing world, device-gate level or theme (run Claybreak > Build Scene)");
+                failures.Add("missing catalog, device-gate level or theme (run Claybreak > Build Scene)");
                 return;
             }
 
-            if (!world.TryValidate(ClaybreakSceneBuilder.PoolSize, out string error))
+            if (!catalog.TryValidate(ClaybreakSceneBuilder.PoolSize, out string error))
             {
-                failures.Add("world: " + error);
+                failures.Add("catalog: " + error);
+                return;
             }
 
-            if (world.LevelCount > ClaybreakSceneBuilder.LevelDots)
+            // The slice's save (version 1) names these; they must stay in the catalog forever.
+            if (catalog.WorldIndexOf(SaveMigration.V1WorldId) != 0 || catalog.UpgradeIndexOf(SaveMigration.V1StartingArmyId) < 0
+                || catalog.UnitIndexOf(SaveMigration.V1BruteId) < 0)
             {
-                failures.Add($"world: {world.LevelCount} levels but the menu has {ClaybreakSceneBuilder.LevelDots} dots");
+                failures.Add("catalog: the version-1 save ids (world1 first, army, brute) must stay in the catalog");
             }
 
-            var kinds = new HashSet<TowerKind>();
-            for (int i = 0; i < world.LevelCount; i++)
+            foreach (WorldEntry entry in catalog.Worlds)
             {
-                ClaybreakLevel level = world.Levels[i];
-                if (level == null)
+                ClaybreakWorld world = entry.world;
+                if (world.LevelCount > ClaybreakSceneBuilder.LevelDots)
                 {
-                    continue;
+                    failures.Add($"{world.name}: {world.LevelCount} levels but the menu has {ClaybreakSceneBuilder.LevelDots} dots");
                 }
 
-                CheckLevel(level, failures);
-                kinds.Add(level.Tower);
-                if (level.RunGates.Count < 3 || level.RunGates.Count > RunGateCourse.MaximumPairs)
+                var kinds = new HashSet<TowerKind>();
+                for (int i = 0; i < world.LevelCount; i++)
                 {
-                    failures.Add($"{level.name}: 3-{RunGateCourse.MaximumPairs} run gate pairs, has {level.RunGates.Count}");
+                    ClaybreakLevel level = world.Levels[i];
+                    CheckLevel(level, failures);
+                    kinds.Add(level.Tower);
+                    if (level.RunGates.Count < 3 || level.RunGates.Count > RunGateCourse.MaximumPairs)
+                    {
+                        failures.Add($"{level.name}: 3-{RunGateCourse.MaximumPairs} run gate pairs, has {level.RunGates.Count}");
+                    }
                 }
-            }
 
-            if (kinds.Count < 3)
-            {
-                failures.Add("world: RT-4 asks for 2-3 towers and a boss; the levels use " + kinds.Count + " tower kinds");
+                if (kinds.Count < 3)
+                {
+                    failures.Add($"{world.name}: a world shows 2-3 towers and a boss; its levels use {kinds.Count} tower kinds");
+                }
             }
 
             CheckLevel(stress, failures);
@@ -115,6 +126,66 @@ namespace Claybreak.Editor
             if (!theme.TryValidate(out error))
             {
                 failures.Add("theme: " + error);
+            }
+        }
+
+        // The save validator (RT-5 acceptance) over every fixture: real-format saves of each version.
+        private static void CheckSaves(List<string> failures)
+        {
+            var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
+            if (catalog == null || !catalog.TryValidate(ClaybreakSceneBuilder.PoolSize, out _))
+            {
+                return; // CheckData already reported it.
+            }
+
+            string[] files = Directory.GetFiles(SaveFixtureFolder, "*.json");
+            if (files.Length == 0)
+            {
+                failures.Add("no save fixtures in " + SaveFixtureFolder);
+            }
+
+            var problems = new List<string>();
+            foreach (string file in files)
+            {
+                string name = Path.GetFileName(file);
+                bool read = SaveStore.TryDeserialize(File.ReadAllText(file), out SaveData save, out int version);
+                if (name.StartsWith("damaged-"))
+                {
+                    if (read)
+                    {
+                        failures.Add($"save {name}: a damaged save was accepted");
+                    }
+
+                    continue;
+                }
+
+                if (!read)
+                {
+                    failures.Add($"save {name}: could not be read (version {version})");
+                    continue;
+                }
+
+                problems.Clear();
+                var progression = new Progression(catalog, save);
+                if (!SaveValidator.Validate(progression.Save, catalog, problems))
+                {
+                    failures.Add($"save {name}: " + string.Join("; ", problems));
+                }
+
+                // Normalized saves must survive a write and a read unchanged.
+                string written = SaveStore.Serialize(progression.Save);
+                if (!SaveStore.TryDeserialize(written, out SaveData again)
+                    || SaveStore.Serialize(new Progression(catalog, again).Save) != written)
+                {
+                    failures.Add($"save {name}: not stable across a write and a read");
+                }
+            }
+
+            problems.Clear();
+            if (!SaveValidator.Validate(new Progression(catalog, new SaveData()).Save, catalog, problems)
+                || !SaveValidator.Validate(new Progression(catalog, Progression.MaximumLoadout(catalog)).Save, catalog, problems))
+            {
+                failures.Add("save: a fresh or maximum-loadout save fails the validator: " + string.Join("; ", problems));
             }
         }
 
@@ -239,10 +310,16 @@ namespace Claybreak.Editor
 
             var hud = Object.FindFirstObjectByType<ClaybreakHud>(FindObjectsInactive.Include);
             var screens = Object.FindFirstObjectByType<ClaybreakScreens>(FindObjectsInactive.Include);
+            var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
             if (hud == null || !hud.HasParts || screens == null || !screens.HasParts
                 || screens.DotCapacity != ClaybreakSceneBuilder.LevelDots)
             {
                 failures.Add("the HUD and the menu/result screens need every part");
+            }
+            else if (catalog != null && (screens.WorldRowCapacity != catalog.Worlds.Count
+                || screens.ShopRowCapacity != Mathf.Max(catalog.Upgrades.Count, Mathf.Max(catalog.Units.Count, catalog.Skins.Count))))
+            {
+                failures.Add("the shop and world lists need one row per catalog entry (rebuild the scene after a catalog change)");
             }
 
             var sfx = Object.FindFirstObjectByType<ClaybreakSfx>(FindObjectsInactive.Include);

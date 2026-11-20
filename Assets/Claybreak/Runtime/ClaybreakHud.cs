@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace Claybreak
 {
     /// <summary>
-    /// In-level HUD (RT-4): level name, army and Brute count, coins, the tower bar during the assault, a
+    /// In-level HUD (RT-4): level name, army and special-unit count, coins, the tower bar during the assault, a
     /// hint line and a short banner (floor down, boss rule). Texts change only when their value changes;
     /// the counters use cached strings (<see cref="NumberLabels"/>), so a frame never allocates.
     /// </summary>
@@ -13,7 +13,7 @@ namespace Claybreak
         [SerializeField] private GameObject root;
         [SerializeField] private Text levelText;
         [SerializeField] private Text armyText;
-        [SerializeField] private Text bruteText;
+        [SerializeField] private Text specialText;
         [SerializeField] private Text coinsText;
         [SerializeField] private GameObject towerBar;
         [SerializeField] private Image towerFill;
@@ -23,12 +23,12 @@ namespace Claybreak
         [SerializeField, Min(0.5f)] private float bannerSeconds = 1.8f;
 
         private int shownArmy = -1;
-        private int shownBrutes = -1;
+        private int shownSpecials = -1;
         private int shownTower = -1;
         private int towerMaximum = 1;
         private float bannerTime;
 
-        public bool HasParts => root != null && levelText != null && armyText != null && bruteText != null
+        public bool HasParts => root != null && levelText != null && armyText != null && specialText != null
             && coinsText != null && towerBar != null && towerFill != null && towerText != null && hintText != null
             && bannerText != null;
 
@@ -65,13 +65,14 @@ namespace Claybreak
             }
         }
 
-        public void SetBrutes(int brutes, bool visible)
+        /// <summary>Special units left in the army (all loadout types together).</summary>
+        public void SetSpecials(int count, bool visible)
         {
-            bruteText.gameObject.SetActive(visible);
-            if (visible && brutes != shownBrutes)
+            specialText.gameObject.SetActive(visible);
+            if (visible && count != shownSpecials)
             {
-                shownBrutes = brutes;
-                bruteText.text = NumberLabels.Brutes(brutes);
+                shownSpecials = count;
+                specialText.text = NumberLabels.Specials(count);
             }
         }
 

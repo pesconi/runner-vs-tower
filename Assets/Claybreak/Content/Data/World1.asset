@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72d76d5bf8e65f14ea53e1612d70f4c8, type: 3}
   m_Name: World1
   m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakWorld
+  worldId: world1
   worldName: WORLD 1
   levels:
   - {fileID: 11400000, guid: 3947c47c25157384db1a0ab8ad821661, type: 2}
@@ -22,21 +23,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d71ed09e826b0b7419f4e96f76ac1530, type: 2}
   - {fileID: 11400000, guid: 8094524aa4c1320428fc8d784b3496a8, type: 2}
   healthPerLoop: 0.25
-  startingArmySteps:
-  - cost: 60
-    bonus: 5
-  - cost: 120
-    bonus: 10
-  - cost: 200
-    bonus: 16
-  - cost: 320
-    bonus: 24
-  - cost: 480
-    bonus: 34
-  - cost: 700
-    bonus: 46
-  bruteUnlockLevel: 2
-  bruteDamage: 4
-  bruteArmor: 1
-  bruteColor: {r: 0.5, g: 0.14, b: 0.1, a: 1}
-  bruteScale: 1.45
+  coinsPerLoop: 0.25

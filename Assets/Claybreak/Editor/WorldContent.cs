@@ -4,16 +4,18 @@ using UnityEngine;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// World 1 of the vertical slice (RT-4) as code: 7 levels (the last is the boss), the starting-army
-    /// upgrade track, the Brute, and the device-gate level. The scene builder rewrites the assets from here
-    /// on every build, so tuning is a reviewed code change (not an Inspector edit that a rebuild loses).
-    /// Session target (GDD 3, RT-4): about 35-50 s per level, 7 levels plus menus in about 5 minutes.
+    /// The game's content as code: world 1 (7 levels, the last is the boss), the device-gate level and the
+    /// meta catalog (RT-5: upgrade tracks, special units, skins, world list). The scene builder rewrites the
+    /// assets from here on every build, so tuning is a reviewed code change (not an Inspector edit that a
+    /// rebuild loses). Session target (GDD 3, RT-4): about 35-50 s per level, 7 levels plus menus in about
+    /// 5 minutes. Every price and curve in <see cref="WriteCatalog"/> is provisional [P] (decisoes.md, D19).
     /// </summary>
     public static class WorldContent
     {
         public const string DataFolder = ClaybreakSceneBuilder.Root + "/Data";
         public const string WorldPath = DataFolder + "/World1.asset";
         public const string StressLevelPath = DataFolder + "/DeviceGateLevel.asset";
+        public const string CatalogPath = DataFolder + "/Catalog.asset";
         public const int LevelCount = 7;
 
         public static string LevelPath(int index) => $"{DataFolder}/Level{index + 1:00}.asset";
@@ -29,8 +31,8 @@ namespace Claybreak.Editor
         private static CratePlacement Crate(float z, bool right, int units) =>
             new CratePlacement { z = z, right = right, units = units };
 
-        /// <summary>Writes every level, the device-gate level and the world asset. Returns the world.</summary>
-        public static ClaybreakWorld Write()
+        /// <summary>Writes every level, the device-gate level, the world and the catalog. Returns the catalog.</summary>
+        public static ClaybreakCatalog Write()
         {
             var levels = new ClaybreakLevel[LevelCount];
 
@@ -145,7 +147,73 @@ namespace Claybreak.Editor
             });
 
             WriteDeviceGateLevel();
-            return WriteWorld(levels);
+            return WriteCatalog(WriteWorld(levels));
+        }
+
+        // ---------- meta (RT-5), every number [P] until the user approves the curve (D19) ----------
+
+        // Prices grow about 1.5x per step; the whole shop costs about 9 world-1 passes (see docs/rt5-meta.md).
+        private static ClaybreakCatalog WriteCatalog(ClaybreakWorld world1)
+        {
+            var catalog = LoadOrCreate<ClaybreakCatalog>(CatalogPath);
+            UpgradeTrack[] upgrades =
+            {
+                // The slice's starting-army track, unchanged: a migrated save keeps the same bonus.
+                Track(SaveMigration.V1StartingArmyId, "ARMY", UpgradeKind.StartingArmy,
+                    (60, 5), (120, 10), (200, 16), (320, 24), (480, 34), (700, 46)),
+                Track("damage", "DAMAGE", UpgradeKind.Damage,
+                    (80, 15), (150, 30), (250, 45), (400, 60), (600, 80), (900, 100)),
+                Track("gates", "GATE BOOST", UpgradeKind.GateBonus,
+                    (100, 1), (180, 2), (300, 3), (450, 5), (650, 7), (950, 10)),
+                Track("launch", "LAUNCH SPEED", UpgradeKind.LaunchRate,
+                    (70, 10), (130, 20), (220, 30), (350, 45), (520, 60), (750, 80))
+            };
+            UnitType[] units =
+            {
+                // The slice's Brute, unchanged: free when level 3 of world 1 falls.
+                new UnitType
+                {
+                    id = SaveMigration.V1BruteId, title = "BRUTE", description = "Heavy hitter, slow to fall.",
+                    color = new Color(0.5f, 0.14f, 0.1f), scale = 1.45f, damage = 4, armor = 1, speed = 1f,
+                    price = 0, unlockWorld = world1.WorldId, unlockLevel = 2
+                },
+                new UnitType
+                {
+                    id = "sprinter", title = "SPRINTER", description = "Light and fast: first to the tower.",
+                    color = new Color(0.98f, 0.82f, 0.22f), scale = 0.9f, damage = 2, armor = 0, speed = 1.6f,
+                    price = 600
+                },
+                new UnitType
+                {
+                    id = "warden", title = "WARDEN", description = "Shield bearer: walks through blasts.",
+                    color = new Color(0.33f, 0.52f, 0.78f), scale = 1.25f, damage = 2, armor = 3, speed = 0.85f,
+                    price = 900, unlockWorld = world1.WorldId, unlockLevel = 5
+                }
+            };
+            CrowdSkin[] skins =
+            {
+                new CrowdSkin { id = "clay", title = "CLAY", color = new Color(0.95f, 0.55f, 0.18f), price = 0 },
+                new CrowdSkin { id = "ember", title = "EMBER", color = new Color(0.86f, 0.24f, 0.16f), price = 150 },
+                new CrowdSkin { id = "moss", title = "MOSS", color = new Color(0.42f, 0.62f, 0.3f), price = 300 },
+                new CrowdSkin { id = "slate", title = "SLATE", color = new Color(0.46f, 0.52f, 0.62f), price = 500 },
+                new CrowdSkin { id = "bone", title = "BONE", color = new Color(0.9f, 0.86f, 0.74f), price = 800 },
+                new CrowdSkin { id = "ink", title = "INK", color = new Color(0.22f, 0.2f, 0.27f), price = 1200 }
+            };
+            WorldEntry[] worlds = { new WorldEntry { world = world1, starsToUnlock = 0 } };
+            catalog.EditorAssign(worlds, upgrades, units, skins, ClaybreakCatalog.MaximumLoadoutSlots, 3);
+            EditorUtility.SetDirty(catalog);
+            return catalog;
+        }
+
+        private static UpgradeTrack Track(string id, string title, UpgradeKind kind, params (int cost, int bonus)[] steps)
+        {
+            var track = new UpgradeTrack { id = id, title = title, kind = kind, steps = new UpgradeStep[steps.Length] };
+            for (int i = 0; i < steps.Length; i++)
+            {
+                track.steps[i] = new UpgradeStep { cost = steps[i].cost, bonus = steps[i].bonus };
+            }
+
+            return track;
         }
 
         // Device gate (reuso-tecnico 6.3): the heaviest tower (boss body), every defense on, 300 units in
@@ -172,6 +240,7 @@ namespace Claybreak.Editor
         {
             var world = LoadOrCreate<ClaybreakWorld>(WorldPath);
             var so = new SerializedObject(world);
+            so.FindProperty("worldId").stringValue = SaveMigration.V1WorldId;
             so.FindProperty("worldName").stringValue = "WORLD 1";
             SerializedProperty array = so.FindProperty("levels");
             array.arraySize = levels.Length;
@@ -181,20 +250,7 @@ namespace Claybreak.Editor
             }
 
             so.FindProperty("healthPerLoop").floatValue = 0.25f;
-            (int cost, int bonus)[] steps = { (60, 5), (120, 10), (200, 16), (320, 24), (480, 34), (700, 46) };
-            SerializedProperty upgrade = so.FindProperty("startingArmySteps");
-            upgrade.arraySize = steps.Length;
-            for (int i = 0; i < steps.Length; i++)
-            {
-                upgrade.GetArrayElementAtIndex(i).FindPropertyRelative("cost").intValue = steps[i].cost;
-                upgrade.GetArrayElementAtIndex(i).FindPropertyRelative("bonus").intValue = steps[i].bonus;
-            }
-
-            so.FindProperty("bruteUnlockLevel").intValue = 2;
-            so.FindProperty("bruteDamage").intValue = 4;
-            so.FindProperty("bruteArmor").intValue = 1;
-            so.FindProperty("bruteColor").colorValue = new Color(0.5f, 0.14f, 0.1f);
-            so.FindProperty("bruteScale").floatValue = 1.45f;
+            so.FindProperty("coinsPerLoop").floatValue = 0.25f;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(world);
             return world;
