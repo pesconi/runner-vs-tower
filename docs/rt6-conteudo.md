@@ -27,6 +27,7 @@ visual por mundo, save v3), `RT.6b` (mundo 2), `RT.6c` (mundo 3), `RT.6d` (mundo
 |---|---|---|---|---|---|---|
 | 1 — marchas | crepúsculo, pedras, pilares, braseiros (RT-4) | bastião de pedra (+ forja) | cidadela — a fileira de portões gira | muralha, canhão, varredor | ×1,0 | — |
 | 2 — pântano | noite verde-azulada, juncos, palafitas, lanternas verdes | forte de palafita (+ forja) | campanário afundado — o escudo volta a cada andar | **escudo** (da fase 3) | ×1,3 | chefe do 1 + 10 estrelas |
+| 3 — fundição | fuligem e brasa, barris, chaminés, cadinhos, silhueta de fábrica | moinho de chaminés (+ forte de palafita) | martelo-pilão — canhão e varredor esquentam a cada andar | todas desde a fase 1; escudo da fase 4 | ×1,6 | chefe do 2 + 25 estrelas |
 
 Rampa do mundo 2 (vida): 110 → 220 → 380 → 500 → 540 → 550 → 650 → 680 → 720 → chefe 800 (tabela
 completa em `docs/rt6-economia.md`). As opções de arte de cada mundo novo estão em `docs/art/rt6/`
@@ -44,6 +45,7 @@ pré-alocado; escudo e regras de chefe como dado; ajuste das voltas pelo poder d
 |---|---|---|
 | 2026-11-20 | RT.6a: cena, validador, isolamento do kit, EditMode, PlayMode, economia, APKs (`Tools/rt4-check.sh /c/temp/rt6`) | PASS; EditMode 101/101 (+ testes do gerador, do escudo, das regras e da migração v3), PlayMode 5/5 |
 | 2026-11-20 | RT.6b (mundo 2): as mesmas etapas + capturas | PASS; EditMode 101/101, PlayMode 6/6 (novo: o gate de cada mundo mostra o cenário e a torre do chefe dele, com o escudo de pé onde o mundo tem) |
+| 2026-11-20 | RT.6c (mundo 3): as mesmas etapas | PASS; EditMode 101/101, PlayMode 6/6 |
 
 ## 4. Gate 3× no OPPO CPH2791 (torre mais pesada de cada mundo, loadout máximo)
 
@@ -54,3 +56,4 @@ com 300 em voo e 12 pedras.
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-20 | 1 (cidadela) | 16 ms (max 16) | 0,0% | 4,5–5,5 ms | 3,9–4,3 ms | 182 MB | 299 | 100 | 11–12/12 | **Sim** |
 | 2026-11-20 | 2 (campanário, escudo de pé) | 16 ms (max 16) | 0,0% | 4,4–5,6 ms | 4,1–4,5 ms | 195 MB | 299 | 100 | 11–12/12 | **Sim** |
+| 2026-11-20 | 3 (martelo-pilão, escudo de pé) | 16 ms (max 16) | 0,0% | 4,1–6,5 ms | 4,0–4,4 ms | 199 MB | 299 | 100 | 12/12 | **Sim** |

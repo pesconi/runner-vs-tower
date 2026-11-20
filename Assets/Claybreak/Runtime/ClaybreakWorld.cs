@@ -10,7 +10,9 @@ namespace Claybreak
         /// <summary>World 1: rocks, pillars, dead trees and braziers under a dusk ridge.</summary>
         Marches,
         /// <summary>World 2: reeds, stilt huts, mossy dead trees, lantern poles and dark pools; far gnarled trees.</summary>
-        Mire
+        Mire,
+        /// <summary>World 3: barrels, chimneys, pipe arches and crucibles; a far factory skyline with lit windows.</summary>
+        Foundry
     }
 
     /// <summary>

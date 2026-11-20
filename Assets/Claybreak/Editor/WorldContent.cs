@@ -57,7 +57,7 @@ namespace Claybreak.Editor
             world == 0 ? $"{DataFolder}/DeviceGateLevel.asset" : $"{DataFolder}/DeviceGateLevelWorld{world + 1}.asset";
 
         /// <summary>Every world in catalog order.</summary>
-        public static WorldDefinition[] Worlds => new[] { World1(), World2() };
+        public static WorldDefinition[] Worlds => new[] { World1(), World2(), World3() };
 
         /// <summary>The art style in use for a world's own tower (TowerArt.StyleFor).</summary>
         public static TowerStyle ChosenTowerStyle(int world)
@@ -308,6 +308,87 @@ namespace Claybreak.Editor
                     rewardFirst = 110,
                     rewardLast = 170,
                     bossReward = 350
+                }
+            }.WithChosenLook();
+        }
+
+        // ---------- world 3: the foundry (overheat boss) ----------
+
+        // Ironworks at night. Harder cannons and sweepers; the boss heats its guns at every floor.
+        private static WorldDefinition World3()
+        {
+            return new WorldDefinition
+            {
+                Id = "world3",
+                Name = "WORLD 3",
+                StarsToUnlock = 25,
+                LookNames = new[] { "soot and ember (black-red, molten orange)", "smog (yellow haze, white-blue lamps)" },
+                LookOptions = new[]
+                {
+                    new WorldLook
+                    {
+                        scenery = SceneryStyle.Foundry,
+                        sky = new Color(0.14f, 0.06f, 0.05f),
+                        ambient = new Color(0.4f, 0.3f, 0.28f),
+                        sun = new Color(1f, 0.62f, 0.42f),
+                        sunIntensity = 1.15f,
+                        ground = new Color(0.22f, 0.2f, 0.2f),
+                        field = new Color(0.1f, 0.09f, 0.09f),
+                        prop = new Color(0.36f, 0.3f, 0.27f),
+                        propDark = new Color(0.07f, 0.06f, 0.06f),
+                        accent = new Color(1f, 0.45f, 0.1f)
+                    },
+                    new WorldLook
+                    {
+                        scenery = SceneryStyle.Foundry,
+                        sky = new Color(0.26f, 0.25f, 0.17f),
+                        ambient = new Color(0.46f, 0.46f, 0.38f),
+                        sun = new Color(0.95f, 0.95f, 0.8f),
+                        sunIntensity = 1f,
+                        ground = new Color(0.33f, 0.32f, 0.28f),
+                        field = new Color(0.2f, 0.2f, 0.16f),
+                        prop = new Color(0.45f, 0.42f, 0.34f),
+                        propDark = new Color(0.16f, 0.16f, 0.13f),
+                        accent = new Color(0.75f, 0.92f, 1f)
+                    }
+                },
+                TowerOptions = new[] { TowerStyle.SmokestackMill, TowerStyle.Gasholder },
+                BossOptions = new[] { TowerStyle.PistonHammer, TowerStyle.ForgeColossus },
+                Recipe = new WorldRecipe
+                {
+                    worldId = "world3",
+                    seed = 303,
+                    levelCount = 10,
+                    mainTower = TowerKind.World3Tower,
+                    secondTower = TowerKind.World2Tower,
+                    secondTowerEvery = 4,
+                    bossTower = TowerKind.World3Boss,
+                    bossRule = BossRule.Overheat,
+                    expectedDamage = 1.6f,
+                    startFirst = 18,
+                    startLast = 24,
+                    runSpeedFirst = 6f,
+                    runSpeedLast = 7f,
+                    shareFirst = 0.54f,
+                    shareLast = 0.66f,
+                    bossShare = 0.7f,
+                    addFirst = 12,
+                    addLast = 40,
+                    wallFrom = 0,
+                    sweeperFrom = 0,
+                    shieldFrom = 3,
+                    cratesFrom = 0,
+                    cannonIntervalFirst = 1.9f,
+                    cannonIntervalLast = 1.3f,
+                    projectilesFirst = 5,
+                    projectilesLast = 8,
+                    sweeperPeriodFirst = 3.1f,
+                    sweeperPeriodLast = 2.5f,
+                    shieldBlockFirst = 0.45f,
+                    shieldBlockLast = 0.6f,
+                    rewardFirst = 170,
+                    rewardLast = 240,
+                    bossReward = 500
                 }
             }.WithChosenLook();
         }

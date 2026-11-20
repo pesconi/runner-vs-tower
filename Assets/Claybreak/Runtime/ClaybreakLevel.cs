@@ -33,7 +33,9 @@ namespace Claybreak
         Forge,
         Boss,
         World2Tower,
-        World2Boss
+        World2Boss,
+        World3Tower,
+        World3Boss
     }
 
     /// <summary>

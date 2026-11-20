@@ -42,6 +42,10 @@ namespace Claybreak.Editor
         public readonly Material WoodDark = Solid("WoodDark", new Color(0.17f, 0.12f, 0.09f));
         public readonly Material Thatch = Solid("Thatch", new Color(0.45f, 0.4f, 0.24f));
         public readonly Material Lantern = Unlit("Lantern", new Color(0.72f, 0.95f, 0.38f));
+        // World 3 towers (RT-6): brick, soot, steel.
+        public readonly Material Brick = Solid("Brick", new Color(0.4f, 0.17f, 0.12f));
+        public readonly Material Soot = Solid("Soot", new Color(0.09f, 0.08f, 0.08f));
+        public readonly Material Steel = Solid("Steel", new Color(0.44f, 0.46f, 0.48f));
         public readonly Material ShieldDome = Clear("ShieldDome", new Color(0.35f, 0.85f, 0.95f, 0.22f));
         public readonly Material ShieldCore = Unlit("ShieldCore", new Color(0.45f, 0.95f, 1f));
 

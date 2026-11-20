@@ -64,6 +64,7 @@ namespace Claybreak.Editor
                     {
                         case SceneryStyle.Marches: Marches(set, kind, x, z, side, m, p); break;
                         case SceneryStyle.Mire: Mire(set, kind, x, z, side, index, m, p); break;
+                        case SceneryStyle.Foundry: Foundry(set, kind, x, z, side, m, p); break;
                         default: throw new ArgumentOutOfRangeException(nameof(style), style, "no scenery for this style");
                     }
                 }
@@ -73,6 +74,7 @@ namespace Claybreak.Editor
             {
                 case SceneryStyle.Marches: Ridge(set, trackEnd, m); break;
                 case SceneryStyle.Mire: Grove(set, trackEnd, m, p); break;
+                case SceneryStyle.Foundry: Skyline(set, trackEnd, m); break;
             }
 
             foreach (Transform prop in set.GetComponentsInChildren<Transform>(true))
@@ -160,6 +162,46 @@ namespace Claybreak.Editor
                 Prim.Cyl(set, "FarTrunk", new Vector3(x, h * 0.5f, trackEnd + 22f + (i % 2) * 6f), new Vector3(1.6f, h * 0.5f, 1.6f), m.PropDark,
                     new Vector3(0f, 0f, (i % 2 == 0 ? 5f : -7f)));
                 Prim.Ball(set, "FarCrown", new Vector3(x, h + 2f, trackEnd + 22f + (i % 2) * 6f), new Vector3(9f, 5f, 6f), m.PropDark);
+            }
+        }
+
+        // ---------- world 3: the foundry (barrels, chimneys, pipe arches, crucibles; a far lit skyline) ----------
+
+        private static void Foundry(Transform set, int kind, float x, float z, int side, WorldMaterials m, ArtPalette p)
+        {
+            switch (kind)
+            {
+                case 0:
+                    Prim.Cyl(set, "Barrel", new Vector3(x, 0.55f, z), new Vector3(0.8f, 0.55f, 0.8f), m.Prop);
+                    Prim.Cyl(set, "Barrel", new Vector3(x + side * 0.9f, 0.55f, z + 0.5f), new Vector3(0.8f, 0.55f, 0.8f), m.PropDark);
+                    Prim.Box(set, "Crate", new Vector3(x + side * 0.4f, 0.5f, z - 0.9f), new Vector3(1f, 1f, 1f), m.Prop, new Vector3(0f, 25f, 0f));
+                    break;
+                case 1:
+                    Prim.Cyl(set, "Chimney", new Vector3(x + side * 1f, 2.5f, z), new Vector3(0.9f, 2.5f, 0.9f), m.PropDark);
+                    Prim.Cyl(set, "ChimneyRim", new Vector3(x + side * 1f, 5.02f, z), new Vector3(0.75f, 0.04f, 0.75f), m.Accent);
+                    break;
+                case 2:
+                    Prim.Cyl(set, "PipeLeg", new Vector3(x, 1.2f, z - 1f), new Vector3(0.35f, 1.2f, 0.35f), m.Prop);
+                    Prim.Cyl(set, "PipeLeg", new Vector3(x, 1.2f, z + 1f), new Vector3(0.35f, 1.2f, 0.35f), m.Prop);
+                    Prim.Cyl(set, "PipeTop", new Vector3(x, 2.4f, z), new Vector3(0.35f, 1.15f, 0.35f), m.Prop, new Vector3(90f, 0f, 0f));
+                    break;
+                default:
+                    Prim.Cyl(set, "Crucible", new Vector3(x, 0.45f, z), new Vector3(1.4f, 0.45f, 1.4f), p.Iron);
+                    Prim.Cyl(set, "Melt", new Vector3(x, 0.92f, z), new Vector3(1.15f, 0.03f, 1.15f), m.Accent);
+                    break;
+            }
+        }
+
+        private static void Skyline(Transform set, float trackEnd, WorldMaterials m)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                float x = -49f + i * 14f;
+                float h = 8f + (i % 3) * 4f;
+                float z = trackEnd + 24f + (i % 2) * 5f;
+                Prim.Box(set, "FarHall", new Vector3(x, h * 0.5f, z), new Vector3(12f, h, 8f), m.PropDark);
+                Prim.Cyl(set, "FarStack", new Vector3(x + 3f, h + 5f, z), new Vector3(1.4f, 5f, 1.4f), m.PropDark);
+                Prim.Box(set, "FarWindows", new Vector3(x, h * 0.55f, z - 4.05f), new Vector3(8f, 0.6f, 0.1f), m.Accent);
             }
         }
 

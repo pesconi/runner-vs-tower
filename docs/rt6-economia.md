@@ -5,15 +5,16 @@ regras reais (`Progression`). Premissas **[I]** (sem analytics ainda, D4):
 
 - vitória em 55 s (corrida + assalto + resultado); derrota em 35 s;
 - 80% de vitórias; 60 unidades na linha de tiro, 40% sobrevivem (2 estrelas);
-- compra o mais barato que puder, upgrades antes de elites e skins; joga os 2 mundos em ordem (20 fases)
+- compra o mais barato que puder, upgrades antes de elites e skins; joga os 3 mundos em ordem (30 fases)
   e, depois do último, fica nas voltas dele (cada volta 25% mais forte e 25% mais rica).
 
-Média: **277 moedas por minuto** de jogo.
+Média: **303 moedas por minuto** de jogo.
 
 | Mundo | Primeira passada termina em | Fases jogadas | Moedas ganhas até ali |
 |---|---|---|---|
 | world1 | 10,9 min | 13 | 1693 |
 | world2 | 21,3 min | 25 | 4333 |
+| world3 | 32,2 min | 38 | 8110 |
 
 | # | Compra | Preço | Fases jogadas | Minutos de jogo | Volta do mundo |
 |---|---|---|---|---|---|
@@ -33,30 +34,31 @@ Média: **277 moedas por minuto** de jogo.
 | 14 | LAUNCH SPEED 4 | 350 | 19 | 16,1 | 0 |
 | 15 | DAMAGE 4 | 400 | 20 | 17,0 | 0 |
 | 16 | GATE BOOST 4 | 450 | 23 | 19,4 | 0 |
-| 17 | ARMY 5 | 480 | 25 | 21,3 | 1 |
-| 18 | LAUNCH SPEED 5 | 520 | 27 | 22,8 | 1 |
-| 19 | DAMAGE 5 | 600 | 29 | 24,6 | 1 |
-| 20 | GATE BOOST 5 | 650 | 32 | 27,0 | 1 |
-| 21 | ARMY 6 | 700 | 35 | 29,8 | 1 |
-| 22 | LAUNCH SPEED 6 | 750 | 38 | 32,2 | 2 |
-| 23 | DAMAGE 6 | 900 | 40 | 34,0 | 2 |
-| 24 | GATE BOOST 6 | 950 | 44 | 37,3 | 2 |
-| 25 | SPRINTER | 600 | 47 | 39,8 | 2 |
-| 26 | WARDEN | 900 | 49 | 41,6 | 2 |
-| 27 | skin EMBER | 150 | 49 | 41,6 | 2 |
-| 28 | skin MOSS | 300 | 50 | 42,5 | 3 |
-| 29 | skin SLATE | 500 | 50 | 42,5 | 3 |
-| 30 | skin BONE | 800 | 54 | 45,8 | 3 |
-| 31 | skin INK | 1200 | 58 | 49,2 | 3 |
+| 17 | ARMY 5 | 480 | 25 | 21,3 | 0 |
+| 18 | LAUNCH SPEED 5 | 520 | 27 | 22,8 | 0 |
+| 19 | DAMAGE 5 | 600 | 29 | 24,6 | 0 |
+| 20 | GATE BOOST 5 | 650 | 32 | 27,0 | 0 |
+| 21 | ARMY 6 | 700 | 34 | 28,8 | 0 |
+| 22 | LAUNCH SPEED 6 | 750 | 37 | 31,3 | 0 |
+| 23 | DAMAGE 6 | 900 | 38 | 32,2 | 1 |
+| 24 | GATE BOOST 6 | 950 | 42 | 35,5 | 1 |
+| 25 | SPRINTER | 600 | 43 | 36,4 | 1 |
+| 26 | WARDEN | 900 | 46 | 38,8 | 1 |
+| 27 | skin EMBER | 150 | 47 | 39,8 | 1 |
+| 28 | skin MOSS | 300 | 48 | 40,7 | 1 |
+| 29 | skin SLATE | 500 | 49 | 41,6 | 1 |
+| 30 | skin BONE | 800 | 50 | 42,5 | 2 |
+| 31 | skin INK | 1200 | 53 | 44,9 | 2 |
 
-Total: **13380 moedas**, tudo comprado em **49 minutos** (58 fases).
+Total: **13380 moedas**, tudo comprado em **45 minutos** (53 fases).
 
 ## Sensibilidade
 
 - Primeira passada do world1 (10 fases, sem comprar): **1663 moedas** = 12% da loja (13380).
 - Primeira passada do world2 (10 fases, sem comprar): **2607 moedas** = 19% da loja (13380).
-- Preços x0,75: tudo comprado em **41 minutos** (48 fases, volta 2).
-- Preços x1,5: tudo comprado em **64 minutos** (75 fases, volta 5).
+- Primeira passada do world3 (10 fases, sem comprar): **3703 moedas** = 28% da loja (13380).
+- Preços x0,75: tudo comprado em **38 minutos** (45 fases, volta 1).
+- Preços x1,5: tudo comprado em **58 minutos** (68 fases, volta 3).
 
 Vieses conhecidos: a taxa de vitória e os sobreviventes não mudam com os upgrades nem com as voltas mais
 fortes, e a renda futura de anúncio recompensado e recompensa diária (RT-7) não entra.
@@ -95,3 +97,18 @@ C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).
 | LEVEL 8 | Forge | 3 | 680 | 19 | 855 | M120 C1.65s/6 V2.9s E100/55% | 155 |
 | LEVEL 9 | World2Tower | 3 | 720 | 19 | 888 | M130 C1.6s/7 V2.9s E100/60% | 165 |
 | BOSS | World2Boss (ShieldReturns) | 4 | 800 | 20 | 900 | M140 C1.5s/7 V2.8s E110/60% | 350 |
+
+### WORLD 3 (world3) — cenário Foundry, dano esperado x1.6, abre com 25 estrelas
+
+| Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
+|---|---|---|---|---|---|---|---|
+| LEVEL 1 | World3Tower | 1 | 200 | 18 | 228 | M40 C1.9s/5 V3.1s | 170 |
+| LEVEL 2 | World3Tower | 1 | 270 | 19 | 304 | C1.85s/5 | 180 |
+| LEVEL 3 | World3Tower | 1 | 360 | 19 | 393 | M60 C1.75s/6 V3.0s | 185 |
+| LEVEL 4 | World2Tower | 2 | 430 | 20 | 465 | C1.7s/6 E60/50% | 195 |
+| LEVEL 5 | World3Tower | 2 | 520 | 21 | 546 | M90 C1.65s/6 | 200 |
+| LEVEL 6 | World3Tower | 2 | 800 | 21 | 825 | M140 C1.55s/7 V2.8s E110/55% | 210 |
+| LEVEL 7 | World3Tower | 3 | 890 | 22 | 900 | M160 C1.5s/7 | 215 |
+| LEVEL 8 | World2Tower | 3 | 910 | 23 | 900 | M160 C1.45s/7 | 225 |
+| LEVEL 9 | World3Tower | 3 | 930 | 23 | 900 | M170 C1.35s/8 V2.6s E130/60% | 230 |
+| BOSS | World3Boss (Overheat) | 4 | 1010 | 24 | 900 | M180 C1.3s/8 V2.5s E140/60% | 500 |
