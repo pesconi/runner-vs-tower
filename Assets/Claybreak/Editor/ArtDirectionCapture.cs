@@ -289,7 +289,7 @@ namespace Claybreak.Editor
                 ?.Invoke(behaviour, null);
         }
 
-        private static Texture2D Render(Camera camera, int width, int height)
+        internal static Texture2D Render(Camera camera, int width, int height)
         {
             var target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
             camera.targetTexture = target;
@@ -307,7 +307,7 @@ namespace Claybreak.Editor
         }
 
         // A blocky letter A, B or C (5x7 grid, 14 px cells) on a dark tile: which option is which.
-        private static void DrawLetter(Texture2D texture, int x, int y, int index)
+        internal static void DrawLetter(Texture2D texture, int x, int y, int index)
         {
             string[][] glyphs =
             {

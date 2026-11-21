@@ -30,6 +30,7 @@ lançamento jun/2027.
 | ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
+| RT-6v Refazer o visual (direção v2; proposta, **espera a D24**) | 2,5 | 3 | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -268,6 +269,33 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   2026-11-21): medição só com consentimento explícito em todos os países; fora da Europa/Reino Unido nada é medido até
   a ficha **D23**; política reescrita para o RGPD (pt-PT, CNPD, direitos). **Aceite no aparelho (2026-11-21, OPPO):** `rt8b-firebase-check.sh` — manifesto com coleta, AD_ID, SSAID e sinais desligados (PASS); sem o "sim" do UMP o Firebase fica desligado e **nenhum evento sai** (esperado: a mensagem RGPD do AdMob só é publicada na RT-9, então os nomes dos eventos no DebugView ficam para lá). Gate 3× no chefe do mundo 4 com Firebase: quadro p95 16 ms (max 33), 0,0% > 50 ms, main p95 ≤ 6,2 ms, gpu p95 ≤ 4,4 ms, 0 coletas, PSS 256 MB — **passou** (`gate-rt8b-w4-oppo-60.txt`); APK normal instalado.
 
+## RT-6v — Refazer o visual (direção v2) — proposta, espera a D24
+
+- **Origem:** revisão visual de 2026-11-21 (`direcao-visual-v2.md`): o dono acha o visual atual ultrapassado
+  (caixas, luz chapada, paleta escura). Protótipo no Unity e capturas antes/depois em `docs/art/direcao-v2/`.
+  A direção é escolhida na **D24** (`decisoes.md`); recomendação: **A, Brinquedo Brilhante**.
+- **Escopo (direção escolhida, os 4 mundos):**
+  1. *studiokit (entrega do kit antes, com o aceite do Wild Pack):* `RunnerClay` com brilho especular, ambiente
+     de duas cores e cor de borda como propriedades opcionais (padrão = o desenho de hoje); shaders genéricos de céu
+     em degradê e de sombra de contato suave; ferramenta de editor de malhas arredondadas (a partir de
+     `Assets/Claybreak/Editor/Prototypes/SoftMeshBuilder.cs`).
+  2. *RT-6v.1, base e mundo 1:* soldado novo do jogo (meta ≤ 600 vértices; poses pelo caminho do kit; skins e elites
+     nas 4 regiões de cor; sem rosto), pista em platô com meio-fio, portões de vidro com número maior, torre e chefe do mundo
+     1, céu, neblina e cenário em três planos numa malha por mundo. **Termina com o dono vendo no celular** (HUD e
+     multidão cheia) e com a regra da Play sobre "público misto" conferida; só então segue a RT-6v.2.
+  3. *RT-6v.2, mundos 2–4:* paleta, cenário, torre e chefe de cada mundo na mesma linguagem (temas mantidos).
+  4. *RT-6v.3, UI e fechamento:* cores do tema na UI (pílulas do kit), título com contorno, ícone de trabalho,
+     regravar `docs/art/telas/` e `rt6/`, GDD seção 9 atualizado e gate 3×.
+- **Fora do escopo:** regras de jogo, economia, fases, áudio, monetização (nada muda).
+- **Depende de:** D24 respondida (A, B ou C; com D a entrega é cancelada); RT-8b.
+- **Aceite:** validador, testes EditMode/PlayMode e isolamento sem falha; `ArtDirectionCapture` regrava as telas
+  na direção escolhida; nada de `Instantiate`/`Destroy` em runtime (regra 2.2.1); **gate 3× uma vez, no fim, no
+  chefe do mundo 4** (`Tools/rt2-gate.sh`): quadro p95 ≤ 33,3 ms e < 5% > 50 ms, CPU p95 ≤ 11 ms, **GPU p95 ≤ 11 ms**
+  (a métrica que a direção mais mexe; estimativa A: 5–6,5 ms), PSS ≤ 450 MB, alocação 0. Reserva prevista:
+  soldado com menos vértices acima de ~150 em voo, se a GPU passar de ~8 ms.
+- **Exige o usuário:** responder a D24; aprovar as capturas dos 4 mundos no fim (sem ficha nova se seguir a direção).
+- **Status:** proposta em 2026-11-21; não iniciada.
+
 ## RT-9 — Preparação do soft launch
 
 - **Notas da RT-8b (2026-11-21):** a empresa é portuguesa — checagem de marca de "Clay Siege" em **EUIPO** e **INPI
@@ -281,7 +309,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   do estúdio, teste interno e fechado exigidos pela Play (regra vigente para o
   tipo de conta; **não pesquisada ainda**, ver riscos), definição dos países de
   soft launch e do protocolo de medição.
-- **Depende de:** RT-8, conta Play (da publicação do Wild Pack), decisões de
+- **Depende de:** RT-8, RT-6v (se a D24 não for "manter"), conta Play (da publicação do Wild Pack), decisões de
   países e orçamento.
 - **Aceite:** AAB assinado enviado a teste interno; ficha sem avisos de
   política; documento de declarações como o do Wild Pack

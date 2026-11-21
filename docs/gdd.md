@@ -284,6 +284,10 @@ o usuário reabrir esse escopo**.
 
 ## 9. Direção de arte e áudio
 
+> **Em revisão (2026-11-21, D24):** o dono pediu um visual novo (formas macias, brilho de brinquedo, luz
+> suave, paleta viva). Proposta e protótipo em `direcao-visual-v2.md`; a regra "direção adulta, paleta noturna"
+> abaixo deixa de valer se a D24 aprovar A ou C.
+
 - **Arte [F]:** pipeline clay/low-poly existente: massinha lisa e arredondada,
   cenário limpo low-poly (kits CC0 tipo Kenney), três planos (pista,
   props fora da largura jogável, skybox/neblina), sem sombras reais nem

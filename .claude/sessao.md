@@ -68,3 +68,7 @@
   antes do commit. O Firebase entra pelo SDK Android nativo (`Assets/Plugins/Android/FirebaseAnalytics.androidlib`); o
   `google-services.json` fica em `..\_privado\runner-vs-tower\` e vira recurso no build. Prova no aparelho:
   `Tools/rt8b-firebase-check.sh`.
+- 2026-11-21 (revisão visual v2): capturas com `TextMesh` em várias cenas seguidas embaralham os números (a fonte
+  Roboto é dinâmica): chamar `RequestCharactersInTexture` antes de criar os rótulos. Cor de vértice não é convertida
+  de sRGB como a cor de material: converter com `.linear` (projeto em espaço linear). Protótipo e capturas da
+  direção v2: `DirectionV2Prototype.CaptureAndQuit` (sem `-nographics`).

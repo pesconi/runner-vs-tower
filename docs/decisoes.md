@@ -1092,3 +1092,102 @@ Responda: E, A, B, C ou D, ou "E, e se não der A", ou "explica melhor".
 testes serão na Europa; o jogo segue medindo só com o "sim" da janela do Google (EEE, Reino Unido, Suíça) e não
 mede fora dela. Isto também orienta a D9 (países do soft launch: Europa). Rever esta ficha (E ou A), junto com
 os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
+
+## 2026-11-21 — T-V2-1 — Protótipo da direção visual v2 — técnica (sessão de revisão visual)
+
+- Protótipo isolado do jogo: `Assets/Claybreak/Editor/Prototypes/` (`DirectionV2Prototype`, `SoftMeshBuilder`,
+  `ToyDirection`) e shaders em `Assets/Claybreak/Prototypes/DirectionV2/` (`SoftToy`, `SoftToyGlass`, `SoftSky`,
+  `SoftToyLighting.hlsl`). Cenas descartáveis, nada salvo como asset, nada referenciado pela cena do jogo nem pelo
+  build; o kit não foi tocado.
+- O "antes" usa os construtores do próprio jogo. Para isso, `ClaybreakSceneBuilder.CreateLabel`/`LoadFirstMesh`/`BodyPath`/
+  `ClayMaterialPath` e `ArtDirectionCapture.Render`/`DrawLetter` passaram de `private` a `internal`, sem mudança de
+  comportamento.
+- No repositório ficam só as folhas lado a lado (`docs/art/direcao-v2/`); os quadros soltos ficam na pasta de captura.
+- Validação: validador do jogo, isolamento do kit, EditMode 138/138 e PlayMode 13/13 passaram.
+
+## Ficha D24 (revisão visual, 2026-11-21 — pendente)
+
+### DECISÃO D24 — Nova cara do jogo: qual direção visual?
+
+O que você está aprovando: "O Clay Siege troca o visual atual (caixas, luz chapada, paleta escura) pela direção
+**Brinquedo Brilhante**: formas arredondadas, plástico brilhante, luz suave, céu em degradê e paleta viva, com
+exército azul e dourado contra fortes coral e creme de telhado azul-noite. É feito **em etapas**, numa entrega nova
+chamada RT-6v ("refazer o visual"), antes da RT-9 (preparar a publicação). Primeiro vêm o soldado e o mundo 1, e
+você os vê no celular. Só com o seu ok seguem os mundos 2 a 4, as torres, os chefes e a UI. A regra antiga do GDD
+'direção adulta, paleta noturna, não castelo de brinquedo' deixa de valer. Continua valendo: 'sem rosto nem olhos'
+e o público 13+, não direcionado a crianças."
+
+Por que agora: a RT-9 (ficha da loja, capturas, vídeo e ícone) está parada à espera disto. Publicar com o visual de
+hoje e trocar depois obriga a refazer capturas, vídeo e ícone, e os primeiros jogadores do teste veriam o visual
+antigo.
+
+Contexto que você precisa saber:
+- Fato (capturas feitas no Unity, mesma câmera do jogo; mandadas junto com esta ficha): mostram a pista com 44
+  soldados, um portão e a torre, hoje (esquerda) e na direção A (direita), mais uma folha com as três direções
+  lado a lado.
+- Fato (código): hoje tudo é cubo e cilindro com uma cor só por material, sem brilho e com luz ambiente de uma cor;
+  o céu é cor sólida e nada tem sombra no chão. É isso que lembra jogo de 1996.
+- Fato (teste de desempenho da RT-8, no OPPO, chefe do mundo 4): a placa de vídeo do celular usa 4,3 milésimos de
+  segundo por quadro, de 11 permitidos. O "gate 3×" (o teste que aprova cada entrega) exige ficar abaixo de 11.
+- Inferência nossa: A custa +1 a 2 milésimos (soldado mais detalhado e com brilho). B custa um pouco mais e C quase
+  nada. O teste no fim da RT-6v decide. Se apertar, o soldado fica mais simples quando a multidão é grande.
+- Fato: o soldado das capturas tem 907 vértices (pontos da malha); o final terá ≤ 600, ou seja, um pouco menos
+  detalhe que o das imagens. Visto da câmera do jogo, ele é uma bola azul de capacete; escudo e pluma só se
+  veem de perto.
+- Fato (regras): do Astro Bot usamos só qualidades gerais (formas macias, brilho, luz, cores vivas). Soldado sem
+  rosto, forte de 4 andares com canhão e pista em platô são desenho nosso; a imagem dele não está no repositório.
+  Segunda opinião: a semelhança a vigiar não é o Astro Bot, mas o "castelo de bolo" de outros jogos. Por isso os
+  telhados ficaram azul-noite e o forte ganhou canhão.
+- Fato (decisões anteriores): o GDD (seção 2) diz "13+, não direcionado a crianças, sem política de Famílias", e o
+  risco R8 já previa que massinha fofa pode ser lida como infantil. D17 e D20 escolheram a arte atual na linha
+  "adulta" (a D20 já dizia "provisória até o soft launch").
+- Inferência nossa, não verificada: arte de brinquedo aumenta a chance de o Google Play considerar que o jogo também
+  atrai crianças ("público misto"). Nesse caso ele pode exigir anúncios certificados para família e outro cuidado
+  com consentimento, o que mexe no AdMob e no que a RT-8b montou. Por isso a etapa 1 termina com essa regra
+  conferida, antes de gastar nos mundos 2 a 4.
+- Inferência nossa: o nome "Clay" (massinha) combina mais com B; em A ele vira "soldadinhos de brinquedo".
+- Fato: o "kit" (o motor compartilhado com o Wild Pack) recebe só partes genéricas, com o padrão igual ao visual de
+  hoje, para o Wild Pack não mudar. Soldado novo, cores, torres e UI ficam só no Clay Siege.
+- Prazo (inferência, régua do plano): ~3 semanas; a RT-9 e o teste na loja andam o mesmo. As últimas entregas
+  levaram horas a dias, então deve ser menos.
+
+Opções:
+A) Brinquedo Brilhante, em etapas (recomendada) — plástico brilhante, cores vivas, céu claro; mundo 1 primeiro.
+   + A mais bonita e atual nas capturas; lê bem sob luz do dia; multidão azul destaca da pista creme; número do
+     portão 2,3× maior, com sombra. Se a etapa 1 não agradar, para-se com ~1 semana gasta.
+   - Riscos: cara infantil e regra de "público misto" na Play (chance média-alta; impacto médio: anúncios e
+     consentimento), conferida no fim da etapa 1. Placa de vídeo +1 a 2 ms (chance baixa de estourar; impacto
+     médio: soldado mais simples). Parecer com outros jogos "fofos" do gênero (chance média; impacto baixo).
+     Perder o tom "de ataque" (chance média; impacto baixo): canhões e chefes com atitude.
+   Custo: grátis; ~3 semanas pela régua (~1 até a etapa 1). Dá para voltar atrás? Sim, com custo (o visual atual
+   fica guardado no histórico).
+B) Massinha Macia — mesmas formas, acabamento fosco de massinha e cores terrosas.
+   + A mais fiel ao nome "Clay" e a mais "adulta"; é a que menos briga com o GDD e com o risco de público.
+   - Riscos: no celular parece lavada e menos moderna (chance alta; impacto médio). O relevo some à distância e pode
+     tremular (chance média; impacto baixo). É a que mais pesa na placa de vídeo (chance baixa de estourar).
+   Custo: grátis; ~3,5 semanas. Volta atrás? Sim, com custo.
+C) Pastel Chapado — cores claras, luz em dois tons, sem brilho.
+   + A mais leve no celular e a mais calma.
+   - Riscos: pouco contraste; vidro do portão e multidão se confundem com o fundo claro (chance alta; impacto alto
+     num jogo de conta rápida). Cara de jogo genérico (chance alta; impacto médio).
+   Custo: grátis; ~2,5 semanas. Volta atrás? Sim, com custo.
+D) Manter o visual atual e seguir para a RT-9.
+   + Nada a fazer; publica antes.
+   - Riscos: você mesmo acha o visual ultrapassado; capturas e vídeo da loja vendem pior (chance alta; impacto alto
+     no teste na loja). Refazer depois custa a mesma arte, mais capturas, vídeo e ícone.
+   Custo: zero agora. Volta atrás? Sim.
+
+Recomendação: **A, em etapas** — é a que resolve o "1996" de forma mais visível e lê melhor no celular, com folga de
+desempenho. Começar só pelo soldado e o mundo 1 limita o gasto até você ver no celular e até a regra de público
+estar conferida. Se a cara infantil incomodar na etapa 1, dá para escurecer a paleta sem refazer as formas.
+Segunda opinião (fable): concorda com as formas e a luz de A, mas não com o pacote inteiro sem duas condições: fazer
+em etapas, com o mundo 1 testado no celular antes do resto, e tirar o tema doce. Apontou ainda a regra "sem rosto nem
+olhos" da D17 (o primeiro soldado tinha olhos), o risco de público mais alto do que parecia, o atraso da RT-9, o
+número do portão com pouco contraste e a semelhança da torre com um castelo de bolo. Tudo incorporado: o soldado
+ficou sem rosto, as árvores sem rosa, os telhados azul-noite, o forte com 4 andares e canhão, o número com sombra,
+a etapa 1 com conferência e o prazo nesta ficha.
+Se você não responder: nada é refeito; a RT-9 continua parada e o jogo segue com o visual atual.
+
+Responda: A, B, C ou D, ou "A + ajuste" (ex.: "A com paleta mais escura"), ou "explica melhor".
+
+**Resposta do usuário:** pendente.

@@ -41,9 +41,9 @@ namespace Claybreak.Editor
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
         private const string KitShared = "Packages/com.jungledegree.studiokit/Shared";
-        private const string BodyPath = KitShared + "/ClayRunner/ClayRunner.fbx";
+        internal const string BodyPath = KitShared + "/ClayRunner/ClayRunner.fbx";
         private const string BodyFramesPath = KitShared + "/ClayRunner/ClayRunnerFrames.asset";
-        private const string ClayMaterialPath = KitShared + "/RunnerClay.mat";
+        internal const string ClayMaterialPath = KitShared + "/RunnerClay.mat";
         private const string SplatMaterialPath = KitShared + "/RunnerSplat.mat";
         public const float TrackWidth = 8f;
         private const float TrackStartZ = -12f;
@@ -1038,7 +1038,7 @@ namespace Claybreak.Editor
 
         // ---------- world labels and generated sprites ----------
 
-        private static TextMesh CreateLabel(string name, Transform parent, Vector3 position, float size)
+        internal static TextMesh CreateLabel(string name, Transform parent, Vector3 position, float size)
         {
             Font font = GameFont();
             var go = new GameObject(name, typeof(MeshRenderer), typeof(TextMesh));
@@ -1193,7 +1193,7 @@ namespace Claybreak.Editor
                 ?? throw new InvalidOperationException($"{so.targetObject.GetType().Name}.{property} not found");
         }
 
-        private static Mesh LoadFirstMesh(string path)
+        internal static Mesh LoadFirstMesh(string path)
         {
             foreach (UnityEngine.Object asset in AssetDatabase.LoadAllAssetsAtPath(path))
             {
