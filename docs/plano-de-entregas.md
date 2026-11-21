@@ -29,6 +29,7 @@ lançamento jun/2027.
 | ~~RT-6 Produção — conteúdo (mundos, torres, chefes)~~ — concluída em 2026-11-20 (`rt6-conteudo.md`) | 2,5 | 3 | ~~mar–abr~~ |
 | ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
+| ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -252,6 +253,18 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   GPU p95 ≤ 4,3 ms, 0 coletas, PSS 228 MB — passou**; APK normal instalado no OPPO. Som aprovado pelo usuário (**D22 = A**, 2026-11-21).
   **Pendente do usuário** para a RT-9: criar a chave de upload real fora do repositório (passo em
   `rt8-producao.md`).
+
+## RT-8b — Firebase Analytics na configuração mínima (D21 = A)
+
+- **Escopo:** SDK do Firebase Analytics (nativo, versão fixa), adaptador atrás da interface da RT-7, coleta só depois
+  do consentimento (Europa/Reino Unido: "sim" do UMP), sem ID de publicidade nem sinais de anúncio, `game_session`;
+  política e Data safety; tamanho do APK/AAB; gate 3× no chefe do mundo 4.
+- **Exige o usuário:** criar o projeto Firebase e salvar o `google-services.json` fora do repositório (feito em
+  2026-11-21); OPPO conectado.
+- **Status: feita em 2026-11-21** (`Stage RT.8b`; `rt8b-firebase.md`; kit K.9, pacote 0.4.0). Validador e
+  isolamento PASS, EditMode 139/139, PlayMode 13/13, Wild Pack igual à linha de base (90/0 com o mesmo aviso,
+  117/0, isolamento, áudio 16, save 87/87, anúncios offline 24/24). Manifesto do APK: as 9 flags mínimas `false`.
+  **APK de release 35,9 MB (+1,1 MB), AAB 35,6 MB (+1,0 MB)**, chave de debug. aceite no aparelho **pendente** (OPPO desconectado na sessão): `Tools/rt8b-firebase-check.sh` (nada antes da liberação e nomes dos eventos no log do Firebase) e o gate 3× no chefe do mundo 4 com o APK de medição.
 
 ## RT-9 — Preparação do soft launch
 

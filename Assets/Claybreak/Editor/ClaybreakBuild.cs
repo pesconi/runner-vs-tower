@@ -86,6 +86,21 @@ namespace Claybreak.Editor
             }
         }
 
+        /// <summary>True when a folder above the file holds .git (this project, the kit next to it, any repository).</summary>
+        public static bool InsideARepository(string file)
+        {
+            for (DirectoryInfo folder = new FileInfo(file).Directory; folder != null; folder = folder.Parent)
+            {
+                string git = Path.Combine(folder.FullName, ".git");
+                if (Directory.Exists(git) || File.Exists(git))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         // Applies the upload key from the environment for one build and restores the previous settings.
         private sealed class UploadKeyScope : IDisposable
         {
@@ -129,21 +144,6 @@ namespace Claybreak.Editor
                 PlayerSettings.Android.keyaliasName = alias;
                 PlayerSettings.Android.keyaliasPass = keyPass;
                 UsesUploadKey = true;
-            }
-
-            // True when a folder above the key holds .git (this project, the kit next to it, any repository).
-            private static bool InsideARepository(string file)
-            {
-                for (DirectoryInfo folder = new FileInfo(file).Directory; folder != null; folder = folder.Parent)
-                {
-                    string git = Path.Combine(folder.FullName, ".git");
-                    if (Directory.Exists(git) || File.Exists(git))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
             }
 
             public void Dispose()

@@ -10,10 +10,12 @@ namespace Claybreak.Editor
 {
     /// <summary>
     /// The monetization validator (RT-7 acceptance): the monetization asset and its decisions (D5 daily reward,
-    /// D6 rewarded + interstitial OFF + no in-app purchase, D4 no analytics SDK before the tool is chosen), the ad
+    /// D6 rewarded + interstitial OFF + no in-app purchase, D4 + D21 minimum measurement through Firebase Analytics in
+    /// its minimal setup), the ad
     /// units (only Google's test units until RT-9; a production unit must be well formed and come with a real app
     /// ID), the scene wiring (both ad services on the game's units, no forced test ads, the gateway complete), the
-    /// manifest (no billing, no analytics SDK) and the privacy documents the policy needs.
+    /// packages (no billing, no other analytics SDK), the Firebase module (one pinned dependency, collection off and
+    /// no advertising ID in its manifest, the configuration file outside the repository) and the privacy documents.
     /// Batchmode: -executeMethod Claybreak.Editor.MonetizationValidation.RunAndQuit (also part of ClaybreakValidation).
     /// </summary>
     public static class MonetizationValidation
@@ -28,8 +30,21 @@ namespace Claybreak.Editor
         public const string DataSafetyPath = "docs/data-safety.md";
         private const string ManifestPath = "Packages/manifest.json";
         private const string AdsSettingsPath = "Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset";
+        private const string MainGradleTemplatePath = "Assets/Plugins/Android/mainTemplate.gradle";
+        private const string ConfigFileName = "google-services.json";
 
-        // Packages that would add billing or an analytics SDK (D6: no IAP; D4: nothing installed before the ficha).
+        /// <summary>Manifest flags of the minimal Firebase setup (D21 = A); each must be present and "false".</summary>
+        public static readonly string[] FirebaseFlagsOff =
+        {
+            "firebase_analytics_collection_enabled", "google_analytics_adid_collection_enabled",
+            "google_analytics_ssaid_collection_enabled", "google_analytics_default_allow_ad_personalization_signals",
+            "google_analytics_default_allow_analytics_storage", "google_analytics_default_allow_ad_storage",
+            "google_analytics_default_allow_ad_user_data", "google_analytics_default_allow_ad_personalization",
+            "google_analytics_automatic_screen_reporting_enabled"
+        };
+
+        // Packages that would add billing or another analytics SDK (D6: no IAP; D21: Firebase Analytics only, through
+        // the native module below, never the heavier Unity Firebase packages).
         private static readonly string[] ForbiddenPackages =
         {
             "com.unity.purchasing", "com.android.billingclient", "com.google.firebase", "com.gameanalytics",
@@ -64,6 +79,7 @@ namespace Claybreak.Editor
             Check(!ProductionUnitsAllowed || monetization.PrivacyPolicyUrl.Length > 0,
                 "privacy: a production build needs the public privacy policy link (MonetizationContent.PrivacyPolicyUrl)", failures);
             CheckPackages(failures);
+            CheckFirebaseModule(failures);
             CheckDocuments(failures);
             CheckScene(monetization, failures);
             return failures;
@@ -73,7 +89,8 @@ namespace Claybreak.Editor
         {
             if (failures.Count == 0)
             {
-                Debug.Log("PASS Claybreak monetization validation: decisions D4/D5/D6, test ad units, scene wiring, packages and privacy documents.");
+                Debug.Log("PASS Claybreak monetization validation: decisions D4/D5/D6/D21, test ad units, scene wiring, packages, "
+                    + "minimal Firebase module and privacy documents.");
             }
             else
             {
@@ -148,7 +165,7 @@ namespace Claybreak.Editor
             string manifest = File.Exists(ManifestPath) ? File.ReadAllText(ManifestPath) : string.Empty;
             foreach (string package in ForbiddenPackages)
             {
-                Check(!manifest.Contains("\"" + package), $"packages: '{package}' would add billing or an analytics SDK (D4/D6)", failures);
+                Check(!manifest.Contains("\"" + package), $"packages: '{package}' would add billing or another analytics SDK (D6/D21)", failures);
             }
 
             foreach (string file in Directory.GetFiles("Assets", "*.xml", SearchOption.AllDirectories))
@@ -158,6 +175,54 @@ namespace Claybreak.Editor
                     Check(!File.ReadAllText(file).Contains("BILLING"), $"android: {file} asks for the billing permission (D6)", failures);
                 }
             }
+        }
+
+        private static void CheckFirebaseModule(List<string> failures)
+        {
+            string gradlePath = ClaybreakFirebase.ModulePath + "/build.gradle";
+            string manifestPath = ClaybreakFirebase.ModulePath + "/AndroidManifest.xml";
+            if (!File.Exists(gradlePath) || !File.Exists(manifestPath))
+            {
+                failures.Add("firebase: missing " + ClaybreakFirebase.ModulePath + " (build.gradle and AndroidManifest.xml)");
+                return;
+            }
+
+            var dependencies = new List<string>();
+            foreach (string line in File.ReadAllLines(gradlePath))
+            {
+                string trimmed = line.Trim();
+                if (trimmed.StartsWith("implementation") || trimmed.StartsWith("api") || trimmed.StartsWith("runtimeOnly"))
+                {
+                    dependencies.Add(trimmed);
+                }
+            }
+
+            Check(dependencies.Count == 1
+                && dependencies[0] == "implementation 'com.google.firebase:firebase-analytics:" + ClaybreakFirebase.FirebaseAnalyticsVersion + "'",
+                "firebase: the module must depend only on firebase-analytics " + ClaybreakFirebase.FirebaseAnalyticsVersion
+                + " (pinned, no other Firebase product)", failures);
+            string template = File.Exists(MainGradleTemplatePath) ? File.ReadAllText(MainGradleTemplatePath) : string.Empty;
+            Check(!template.Contains("com.google.firebase"), "firebase: no Firebase dependency outside the module (mainTemplate.gradle)", failures);
+
+            string manifest = File.ReadAllText(manifestPath);
+            foreach (string flag in FirebaseFlagsOff)
+            {
+                Check(manifest.Contains("android:name=\"" + flag + "\" android:value=\"false\""),
+                    $"firebase: the manifest must set {flag} to false (D21 minimal setup)", failures);
+            }
+
+            Check(!manifest.Contains("collection_deactivated"), "firebase: collection must be switchable by consent, not deactivated", failures);
+
+            foreach (string folder in new[] { "Assets", "ProjectSettings", "Packages" })
+            {
+                foreach (string file in Directory.GetFiles(folder, ConfigFileName, SearchOption.AllDirectories))
+                {
+                    failures.Add($"firebase: {file} must not be in the repository (keep it in {ClaybreakFirebase.DefaultPath})");
+                }
+            }
+
+            string ignore = File.Exists(".gitignore") ? File.ReadAllText(".gitignore") : string.Empty;
+            Check(ignore.Contains(ConfigFileName), "firebase: .gitignore must refuse " + ConfigFileName, failures);
         }
 
         private static void CheckDocuments(List<string> failures)
@@ -171,7 +236,7 @@ namespace Claybreak.Editor
                     continue;
                 }
 
-                foreach (string must in new[] { "AdMob", "UMP", "analytics" })
+                foreach (string must in new[] { "AdMob", "UMP", "analytics", "Firebase" })
                 {
                     Check(text.Contains(must), $"docs: {path} does not mention {must}", failures);
                 }

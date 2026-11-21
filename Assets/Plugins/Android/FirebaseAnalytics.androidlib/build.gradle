@@ -1,0 +1,21 @@
+apply plugin: 'com.android.library'
+
+// Firebase Analytics, native Android SDK only (decision D21 = A, minimal setup). Pinned version; no BoM, no other
+// Firebase product. The app configuration (google-services.json) stays outside the repository and is turned into
+// string resources at build time by Claybreak.Editor.ClaybreakFirebase.
+dependencies {
+    implementation 'com.google.firebase:firebase-analytics:24.0.0'
+}
+
+android {
+    namespace "com.jungledegree.firebaseminimal"
+    compileSdk 36
+    defaultConfig {
+        minSdk 26
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+        }
+    }
+}

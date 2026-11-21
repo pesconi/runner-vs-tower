@@ -1,13 +1,16 @@
+using JungleDegree.StudioKit.Ads;
 using JungleDegree.StudioKit.Analytics;
 
 namespace Claybreak
 {
     /// <summary>
-    /// The game's side of the minimum measurement (D4): which sink is installed and the names of the rewarded
-    /// placements. No analytics SDK is installed until the tool is chosen (ficha D21): release builds drop every
-    /// event; development and measurement builds write them to the device log only, so the events can be checked
-    /// with logcat. When a tool is chosen, its adapter replaces <see cref="NullMetricsSink"/> here and collection
-    /// follows the player's consent.
+    /// The game's side of the minimum measurement (D4, tool D21 = A: Firebase Analytics, minimal setup). Events go
+    /// to Firebase when the build carries its configuration (otherwise nowhere); development and measurement
+    /// builds also write them to the device log (logcat). Nothing is forwarded, and Firebase's own collection
+    /// stays off (manifest flag), until the consent flow ends and <see cref="MeasurementConsent"/> allows it: in
+    /// the EEA and the UK only with the player's "yes" in the UMP form; elsewhere once UMP confirms no consent
+    /// rule applies. The answer is read again each time the flow ends (also after the privacy options form).
+    /// In the Editor events only go to the console.
     /// </summary>
     public static class ClaybreakMetrics
     {
@@ -16,13 +19,28 @@ namespace Claybreak
 
         public static void Install()
         {
-#if DEVELOPMENT_BUILD || RELEASE_MEASUREMENT || UNITY_EDITOR
+#if UNITY_EDITOR
             PlayerMetrics.Install(new LogMetricsSink());
             PlayerMetrics.SetCollectionAllowed(true);
 #else
-            PlayerMetrics.Install(new NullMetricsSink());
-            PlayerMetrics.SetCollectionAllowed(false);
+            IMetricsSink firebase = FirebaseAnalyticsSink.TryCreate();
+#if DEVELOPMENT_BUILD || RELEASE_MEASUREMENT
+            PlayerMetrics.Install(firebase == null ? new LogMetricsSink() : new TeeMetricsSink(new LogMetricsSink(), firebase));
+#else
+            PlayerMetrics.Install(firebase);
 #endif
+            PlayerMetrics.SetCollectionAllowed(false);
+            MobileAdsGate.ConsentFlowFinished -= RefreshConsent;
+            MobileAdsGate.ConsentFlowFinished += RefreshConsent;
+            RefreshConsent();
+#endif
+        }
+
+        /// <summary>Reads the player's answer again and switches collection to match.</summary>
+        public static void RefreshConsent()
+        {
+            PlayerMetrics.SetCollectionAllowed(MeasurementConsent.FromDevice(MobileAdsGate.ConsentInformationUpdated,
+                MobileAdsGate.PrivacyOptionsRequired));
         }
 
         /// <summary>The level id the events carry: world id and level number (from 1).</summary>

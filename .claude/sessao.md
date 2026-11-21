@@ -63,3 +63,8 @@
   o texto vai num arquivo de especificação (Write) e o Python lê com `python -X utf8` (sem isso o stdin vira cp1252 e
   "¢"/"·" não casam). O áudio é dado: `python Tools/audio/clay_siege_audio.py` regrava os WAV; o validador recusa clipe
   fora de `docs/audio-licenses.md`. Os testes PlayMode acham botões pelo caminho na hierarquia (`/Ui/Screens/<Tela>/Safe/...`).
+- 2026-11-21 (RT-8b): os builds em batchmode sujam `Assets/Settings/*.asset`, `ProjectSettings/ProjectSettings.asset`
+  (`AndroidKeystoreName`) e `ProjectSettings/AndroidResolverDependencies.xml` (fim de linha): reverter com `git checkout --`
+  antes do commit. O Firebase entra pelo SDK Android nativo (`Assets/Plugins/Android/FirebaseAnalytics.androidlib`); o
+  `google-services.json` fica em `..\_privado\runner-vs-tower\` e vira recurso no build. Prova no aparelho:
+  `Tools/rt8b-firebase-check.sh`.

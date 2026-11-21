@@ -975,3 +975,19 @@ Responda: A, B + o que mudar, C, D, ou "explica melhor".
 
 **Resposta do usuário (2026-11-21): A — aprovar como está.** O som próprio e a vibração da RT-8 são os
 definitivos até o soft launch; o aceite "ouvir e aprovar o som" da RT-8 está fechado.
+
+## 2026-11-21 — T-RT8b-1 — Firebase Analytics mínimo pelo SDK Android nativo — técnica (sessão RT-8b)
+
+Implantação da D21 = A. O SDK Unity do Firebase não está no OpenUPM nem no registro da Unity, traz bibliotecas C++
+por arquitetura e outro gerenciador de dependências; a medição só precisa de `logEvent`, `setConsent` e
+`setAnalyticsCollectionEnabled`. Então: módulo `Assets/Plugins/Android/FirebaseAnalytics.androidlib` com uma única
+dependência fixa (`firebase-analytics` 24.0.0) e as 9 flags mínimas `false` no manifesto (coleta, ID de publicidade,
+ID do Android, sinais e consentimentos de anúncio, telas automáticas); adaptador `FirebaseAnalyticsSink` e regra
+`MeasurementConsent` no kit (K.9, pacote 0.4.0, T22 do kit), sem nomear o jogo nem levar o SDK ao Wild Pack.
+Consentimento: na Europa/Reino Unido (`IABTCF_gdprApplies=1`) só com propósitos TCF 1 e 8 e o Google (755) aceitos;
+fora, liberado com aviso na política; sem resposta TCF, só depois de uma atualização UMP bem-sucedida sem opções de
+privacidade exigidas. A regra é lida ao fim de cada fluxo UMP (também depois do formulário PRIVACY, que pode retirar
+o consentimento). O `google-services.json` fica em `..\_privado\runner-vs-tower\` (fora de todos os repositórios;
+variável `CLAYBREAK_GOOGLE_SERVICES_JSON` para outro caminho) e vira recurso Android no build (`ClaybreakFirebase`);
+o build recusa o arquivo dentro de um repositório e o `.gitignore` o recusa. A permissão `AD_ID` continua no APK por
+causa do AdMob (RT-7); o Firebase não lê o ID de publicidade. Peso: APK +1,1 MB, AAB +1,0 MB.

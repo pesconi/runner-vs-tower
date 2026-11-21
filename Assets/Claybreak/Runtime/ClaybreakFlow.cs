@@ -198,7 +198,7 @@ namespace Claybreak
             }
         }
 
-        // First launch day (D1/D7) and the session event; nothing leaves the device without a chosen tool (D4).
+        // First launch day (D1/D7) and the session event; it waits for the consent answer before leaving the device (D4, D21).
         private void StartSession()
         {
             ClaybreakMetrics.Install();
