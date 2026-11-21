@@ -68,14 +68,3 @@
   antes do commit. O Firebase entra pelo SDK Android nativo (`Assets/Plugins/Android/FirebaseAnalytics.androidlib`); o
   `google-services.json` fica em `..\_privado\runner-vs-tower\` e vira recurso no build. Prova no aparelho:
   `Tools/rt8b-firebase-check.sh`.
-- 2026-11-21 (revisão visual v2): capturas com `TextMesh` em várias cenas seguidas embaralham os números (a fonte
-  Roboto é dinâmica): chamar `RequestCharactersInTexture` antes de criar os rótulos. Cor de vértice não é convertida
-  de sRGB como a cor de material: converter com `.linear` (projeto em espaço linear). Protótipo e capturas da
-  direção v2: `DirectionV2Prototype.CaptureAndQuit` (sem `-nographics`; removido na RT-6v.1, fica no git em `ae0fd57`).
-- 2026-11-21 (RT-6v.1): o visual novo é gerado pelo construtor da cena (`SoldierArt`, `ToyTowerArt`, `ToyScenery`,
-  `ToyArt`) como malhas em `Content/Generated/Soldier` e `Content/Generated/Toy`; mudou a arte, reconstruir a cena.
-  Prévia rápida sem tocar em `docs/`: `-executeMethod Claybreak.Editor.ArtDirectionCapture.PreviewWorldAndQuit
-  -claybreakCaptureDir <pasta> [-claybreakWorld N]` (sem `-nographics`). O isolamento do kit recusa palavras do
-  jogo até em comentários (ex.: "tower"). O aceite do Wild Pack em batchmode: `-executeMethod
-  JungleDegree.WildPack.Editor.<GameThemeCompletenessValidation|GameThemeAssetValidation|AudioValidation|SaveCompatibilityValidation>.RunAndQuit`
-  e `JungleDegree.StudioKit.Editor.EngineIsolationValidation.RunAndQuit`; os relatórios ficam em `MultiplierRunner/Logs/`.

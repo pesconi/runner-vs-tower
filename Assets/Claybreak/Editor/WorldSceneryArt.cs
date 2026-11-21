@@ -21,10 +21,7 @@ namespace Claybreak.Editor
             string folder = worldId;
             return new WorldMaterials
             {
-                // RT-6v: a toy world's track is glossy toy plastic (ToyArt), the others keep Simple Lit.
-                Ground = look.scenery == SceneryStyle.Meadow
-                    ? ToyArt.Solid("Ground_" + worldId, look.ground, 0.35f, 0.25f)
-                    : ArtPalette.SolidIn(folder, "Ground", look.ground),
+                Ground = ArtPalette.SolidIn(folder, "Ground", look.ground),
                 Field = ArtPalette.SolidIn(folder, "Field", look.field),
                 Prop = ArtPalette.SolidIn(folder, "Prop", look.prop),
                 PropDark = ArtPalette.SolidIn(folder, "PropDark", look.propDark),
@@ -45,11 +42,6 @@ namespace Claybreak.Editor
 
         public static GameObject Build(SceneryStyle style, string name, WorldMaterials m, ArtPalette p, float trackStart, float trackEnd)
         {
-            if (style == SceneryStyle.Meadow)
-            {
-                return ToyScenery.Build(name, trackStart, trackEnd);
-            }
-
             var set = new GameObject(name).transform;
             float width = ClaybreakSceneBuilder.TrackWidth;
             float middle = (trackStart + trackEnd) * 0.5f;

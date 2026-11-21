@@ -22,11 +22,9 @@ MonoBehaviour:
     legacyColorMappings: []
     runAnimation:
       strideLength: 1.8
-    builtInBody: {fileID: 11400000, guid: 879adfb6da99b71469175458cc00a3ea, type: 2}
-    colorSkins:
-    - colorId: crowd
-      skin: {fileID: 11400000, guid: bf6a6c645f2af554685815315779a5f6, type: 2}
-  crowdColor: {r: 0.18431373, g: 0.41960785, b: 1, a: 1}
+    builtInBody: {fileID: 11400000, guid: 0a489c7d6e4c1854e8648a4df9827262, type: 2}
+    colorSkins: []
+  crowdColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
   audio:
     enabled: 1
     sounds:
@@ -201,8 +199,8 @@ MonoBehaviour:
   deathEffect:
     enabled: 1
     splatMaterial: {fileID: 2100000, guid: 4d51177fd95a37044815eb12e5f7fae2, type: 2}
-    primaryColor: {r: 0.18431373, g: 0.41960785, b: 1, a: 1}
-    secondaryColor: {r: 1, g: 0.78431374, b: 0.22745098, a: 1}
+    primaryColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
+    secondaryColor: {r: 0.6, g: 0.25, b: 0.1, a: 1}
     splatSize: 1.1
     lifetime: 8
     maximumSplats: 48

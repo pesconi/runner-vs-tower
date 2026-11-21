@@ -73,19 +73,19 @@ fortes, e a renda futura de anúncio recompensado e recompensa diária (RT-7) n�
 Potencial = exército no melhor caminho dos portões (teto 300) × melhor portão da fileira. Defesas: M muralha,
 C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).
 
-### WORLD 1 (world1) — cenário Meadow, dano esperado x1, abre com 0 estrelas
+### WORLD 1 (world1) — cenário Marches, dano esperado x1, abre com 0 estrelas
 
 | Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
 |---|---|---|---|---|---|---|---|
 | LEVEL 1 | Keep | 1 | 110 | 10 | 160 | C3.0s/2 | 40 |
 | LEVEL 2 | Keep | 1 | 250 | 10 | 480 | M60 C2.2s/4 | 50 |
-| LEVEL 3 | World1Second | 2 | 300 | 12 | 582 | C2.3s/4 V3.4s | 60 |
+| LEVEL 3 | Forge | 2 | 300 | 12 | 582 | C2.3s/4 V3.4s | 60 |
 | LEVEL 4 | Keep | 2 | 320 | 12 | 522 | M70 C2.0s/4 | 70 |
-| LEVEL 5 | World1Second | 3 | 440 | 14 | 894 | C1.9s/5 V3.0s | 85 |
+| LEVEL 5 | Forge | 3 | 440 | 14 | 894 | C1.9s/5 V3.0s | 85 |
 | LEVEL 6 | Keep | 3 | 470 | 15 | 735 | M90 C1.8s/5 V3.0s | 100 |
 | LEVEL 7 | Keep | 3 | 480 | 14 | 825 | M90 C1.85s/5 V3.0s | 105 |
 | LEVEL 8 | Keep | 3 | 530 | 15 | 900 | M100 C1.8s/5 V2.9s | 115 |
-| LEVEL 9 | World1Second | 3 | 550 | 15 | 900 | M100 C1.7s/6 V2.9s | 125 |
+| LEVEL 9 | Forge | 3 | 550 | 15 | 900 | M100 C1.7s/6 V2.9s | 125 |
 | BOSS | Boss (ShiftGates) | 4 | 600 | 16 | 900 | M100 C1.6s/6 V2.8s | 200 |
 
 ### WORLD 2 (world2) — cenário Mire, dano esperado x1.3, abre com 10 estrelas

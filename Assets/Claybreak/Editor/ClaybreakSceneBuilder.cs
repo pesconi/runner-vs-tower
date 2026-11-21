@@ -41,16 +41,12 @@ namespace Claybreak.Editor
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
         private const string KitShared = "Packages/com.jungledegree.studiokit/Shared";
-        internal const string BodyPath = KitShared + "/ClayRunner/ClayRunner.fbx";
+        private const string BodyPath = KitShared + "/ClayRunner/ClayRunner.fbx";
         private const string BodyFramesPath = KitShared + "/ClayRunner/ClayRunnerFrames.asset";
-        internal const string ClayMaterialPath = KitShared + "/RunnerClay.mat";
-        /// <summary>RT-6v: the soldier's own material (the kit's clay shader with its optional gloss, direction v2).</summary>
-        internal const string SoldierMaterialPath = ArtPalette.MaterialFolder + "/Soldier.mat";
-        private const float SkyRadius = 150f;
+        private const string ClayMaterialPath = KitShared + "/RunnerClay.mat";
         private const string SplatMaterialPath = KitShared + "/RunnerSplat.mat";
         public const float TrackWidth = 8f;
         private const float TrackStartZ = -12f;
-        // UI accent (the UI keeps its RT-8 colors until RT-6v.3).
         private static readonly Color Orange = new Color(0.95f, 0.55f, 0.18f);
         private static readonly Color Gold = new Color(1f, 0.8f, 0.25f);
         private static readonly Color CardColor = new Color(0.12f, 0.09f, 0.1f, 0.9f);
@@ -91,21 +87,15 @@ namespace Claybreak.Editor
             }
 
             var so = new SerializedObject(theme);
-            // RT-6v: the game's own soldier (SoldierArt) dressed by one color skin: the shop color is its base.
-            RunnerBodyFrames soldier = SoldierArt.Build(Load<RunnerBodyFrames>(BodyFramesPath));
-            so.FindProperty("roster.builtInBody").objectReferenceValue = soldier;
-            SerializedProperty colorSkins = so.FindProperty("roster.colorSkins");
-            colorSkins.arraySize = 1;
-            colorSkins.GetArrayElementAtIndex(0).FindPropertyRelative("colorId").stringValue = ClaybreakTheme.CrowdColorId;
-            colorSkins.GetArrayElementAtIndex(0).FindPropertyRelative("skin").objectReferenceValue = SoldierArt.BuildSkin(soldier);
-            so.FindProperty("crowdColor").colorValue = ToyPalette.Cobalt;
+            so.FindProperty("roster.builtInBody").objectReferenceValue = Load<RunnerBodyFrames>(BodyFramesPath);
+            so.FindProperty("crowdColor").colorValue = Orange;
             ClaybreakAudio.Apply(so.FindProperty("audio"));
 
             SerializedProperty death = so.FindProperty("deathEffect");
             death.FindPropertyRelative("enabled").boolValue = true;
             death.FindPropertyRelative("splatMaterial").objectReferenceValue = Load<Material>(SplatMaterialPath);
-            death.FindPropertyRelative("primaryColor").colorValue = ToyPalette.Cobalt;
-            death.FindPropertyRelative("secondaryColor").colorValue = ToyPalette.Gold;
+            death.FindPropertyRelative("primaryColor").colorValue = Orange;
+            death.FindPropertyRelative("secondaryColor").colorValue = new Color(0.6f, 0.25f, 0.1f);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(theme);
         }
@@ -127,8 +117,8 @@ namespace Claybreak.Editor
             var theme = Load<ClaybreakTheme>(ThemePath);
             var monetization = Load<ClaybreakMonetization>(MonetizationContent.MonetizationPath);
             var palette = new ArtPalette();
-            Mesh body = theme.Roster.BuiltInBody.Idle;
-            Material clay = SoldierMaterial();
+            Mesh body = LoadFirstMesh(BodyPath);
+            Material clay = Load<Material>(ClayMaterialPath);
 
             float trackEnd = 0f;
             foreach (ClaybreakLevel level in stress)
@@ -187,8 +177,7 @@ namespace Claybreak.Editor
             Set(follow, "offset", new Vector3(0f, 9f, -8f));
             Set(follow, "lookAheadDistance", 6f);
             var assaultCamera = cameraObject.AddComponent<AssaultCamera>();
-            Renderer skyDome = CreateSkyDome(cameraObject.transform);
-            WorldScenery scenery = CreateScenery(catalog, palette, trackEnd, track, sun, camera, skyDome);
+            WorldScenery scenery = CreateScenery(catalog, palette, trackEnd, track, sun, camera);
 
             RunGateCourse gates = CreateRunGates(palette);
             Transform firingLine = Prim.Box(null, "FiringLine", new Vector3(0f, 0.01f, first.FiringLineZ),
@@ -276,10 +265,6 @@ namespace Claybreak.Editor
         {
             RenderSettings.fogColor = look.sky;
             RenderSettings.ambientLight = look.ambient;
-            RenderSettings.fogStartDistance = look.FogNear;
-            RenderSettings.fogEndDistance = look.FogFar;
-            Shader.SetGlobalColor(WorldScenery.ToySkyColorId, look.ambient);
-            Shader.SetGlobalColor(WorldScenery.ToyGroundColorId, look.GroundAmbient);
             sun.color = look.sun;
             sun.intensity = look.sunIntensity;
             if (camera != null)
@@ -290,18 +275,16 @@ namespace Claybreak.Editor
 
         // One preallocated set per world (only the first shown), its track material, and the switch.
         private static WorldScenery CreateScenery(ClaybreakCatalog catalog, ArtPalette palette, float trackEnd, Renderer track,
-            Light sun, Camera camera, Renderer skyDome)
+            Light sun, Camera camera)
         {
             var root = new GameObject("Scenery");
             WorldScenery scenery = root.AddComponent<WorldScenery>();
             int count = catalog.Worlds.Count;
             var sets = new UnityEngine.Object[count];
             var grounds = new UnityEngine.Object[count];
-            var skies = new UnityEngine.Object[count];
             for (int w = 0; w < count; w++)
             {
                 ClaybreakWorld world = catalog.Worlds[w].world;
-                skies[w] = world.Look.HasSkyDome ? ToyArt.Sky("Sky_" + world.WorldId, world.Look.sky, world.Look.zenith) : null;
                 WorldMaterials materials = WorldMaterials.For(world.WorldId, world.Look);
                 GameObject set = WorldSceneryArt.Build(world.Look.scenery, "Scenery_" + world.WorldId, materials, palette,
                     TrackStartZ, trackEnd);
@@ -312,11 +295,7 @@ namespace Claybreak.Editor
             }
 
             track.sharedMaterial = (Material)grounds[0];
-            skyDome.enabled = skies[0] != null;
-            skyDome.sharedMaterial = (Material)skies[0];
             ApplyLook(catalog.Worlds[0].world.Look, sun, camera);
-            SetArray(scenery, "skyMaterials", skies);
-            SetRef(scenery, "skyDome", skyDome);
             SetArray(scenery, "sets", sets);
             SetArray(scenery, "trackMaterials", grounds);
             SetRef(scenery, "track", track);
@@ -382,51 +361,42 @@ namespace Claybreak.Editor
             var roots = new UnityEngine.Object[pairs];
             var leftLabels = new UnityEngine.Object[pairs];
             var rightLabels = new UnityEngine.Object[pairs];
-            var leftShadows = new UnityEngine.Object[pairs];
-            var rightShadows = new UnityEngine.Object[pairs];
             var leftPanels = new UnityEngine.Object[pairs];
             var rightPanels = new UnityEngine.Object[pairs];
             float half = TrackWidth * 0.25f;
-            // RT-6v (direction v2): a white glossy frame with gold knobs and two panels of tinted toy glass; the number
-            // is 2.3x bigger than before, white over a navy drop shadow (white alone vanished on the light glass).
-            Mesh frame = ToyArt.SaveMesh(GateFrameMesh(), "GateFrame");
-            Mesh panel = ToyArt.SaveMesh(new JungleDegree.StudioKit.Editor.SoftMeshBuilder()
-                .RoundedBox(Vector3.zero, new Vector3(TrackWidth * 0.46f, 2.1f, 0.16f), 0.07f, Color.white, 3).Build("GatePanel"), "GatePanel");
-            Material frameMaterial = ToyArt.Painted("GateFrame");
-            const float labelSize = 0.32f * 2.3f;
             for (int i = 0; i < pairs; i++)
             {
                 var pair = new GameObject("Pair" + (i + 1));
                 pair.transform.SetParent(root.transform, false);
                 pair.transform.localPosition = new Vector3(0f, 0f, 20f * (i + 1));
-                ToyArt.Place(pair.transform, "Frame", frame, frameMaterial);
-                leftPanels[i] = ToyArt.Place(pair.transform, "Left", panel, palette.GateGood, new Vector3(-half, 1.15f, 0f));
-                rightPanels[i] = ToyArt.Place(pair.transform, "Right", panel, palette.GateBad, new Vector3(half, 1.15f, 0f));
-                leftLabels[i] = CreateLabel("LeftLabel", pair.transform, new Vector3(-half, 1.2f, -0.16f), labelSize);
-                rightLabels[i] = CreateLabel("RightLabel", pair.transform, new Vector3(half, 1.2f, -0.16f), labelSize);
-                leftShadows[i] = CreateLabelShadow((TextMesh)leftLabels[i]);
-                rightShadows[i] = CreateLabelShadow((TextMesh)rightLabels[i]);
+                leftPanels[i] = Prim.Box(pair.transform, "Left", new Vector3(-half, 1.1f, 0f),
+                    new Vector3(TrackWidth * 0.48f, 2.2f, 0.12f), palette.GateGood);
+                rightPanels[i] = Prim.Box(pair.transform, "Right", new Vector3(half, 1.1f, 0f),
+                    new Vector3(TrackWidth * 0.48f, 2.2f, 0.12f), palette.GateBad);
+                leftLabels[i] = CreateLabel("LeftLabel", pair.transform, new Vector3(-half, 1.2f, -0.1f), 0.32f);
+                rightLabels[i] = CreateLabel("RightLabel", pair.transform, new Vector3(half, 1.2f, -0.1f), 0.32f);
+                Prim.Box(pair.transform, "Post", new Vector3(0f, 1.2f, 0f), new Vector3(0.18f, 2.4f, 0.18f), palette.Line);
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    Prim.Box(pair.transform, "SidePost", new Vector3(side * (TrackWidth * 0.5f + 0.1f), 1.25f, 0f),
+                        new Vector3(0.3f, 2.5f, 0.3f), palette.StoneDark);
+                }
+
+                Prim.Box(pair.transform, "Lintel", new Vector3(0f, 2.45f, 0f), new Vector3(TrackWidth + 0.5f, 0.2f, 0.25f), palette.StoneDark);
                 roots[i] = pair.transform;
             }
 
             int crates = ClaybreakLevel.MaximumCrates;
             var crateRoots = new UnityEngine.Object[crates];
             var crateLabels = new UnityEngine.Object[crates];
-            // RT-6v (direction v2): a glossy cream supply crate with coral straps and gold corners (was a dark box).
-            var crateBuilder = new JungleDegree.StudioKit.Editor.SoftMeshBuilder();
-            crateBuilder.RoundedBox(Vector3.zero, Vector3.one * 1.1f, 0.16f, ToyArt.Paint(ToyPalette.FortTrim), 3);
-            crateBuilder.RoundedBox(Vector3.zero, new Vector3(1.16f, 0.22f, 1.16f), 0.08f, ToyArt.Paint(ToyPalette.Curb), 3);
-            crateBuilder.RoundedBox(Vector3.zero, new Vector3(0.22f, 1.16f, 1.16f), 0.08f, ToyArt.Paint(ToyPalette.Curb), 3);
-            crateBuilder.Ellipsoid(new Vector3(0f, 0.6f, 0f), Vector3.one * 0.17f, ToyArt.Paint(ToyPalette.Gold), 10, 6);
-            Mesh crateMesh = ToyArt.SaveMesh(crateBuilder.Build("Crate"), "Crate");
-            Material crateMaterial = ToyArt.Painted("Crate");
             for (int i = 0; i < crates; i++)
             {
                 var crate = new GameObject("Crate" + (i + 1));
                 crate.transform.SetParent(root.transform, false);
                 crate.transform.localPosition = new Vector3(0f, 0f, 30f + 20f * i);
-                MeshRenderer box = ToyArt.Place(crate.transform, "Box", crateMesh, crateMaterial, new Vector3(0f, 0.55f, 0f));
-                box.transform.localRotation = Quaternion.Euler(0f, 20f, 0f);
+                Prim.Box(crate.transform, "Box", new Vector3(0f, 0.55f, 0f), new Vector3(1.1f, 1.1f, 1.1f), palette.Crate, new Vector3(0f, 20f, 0f));
+                Prim.Box(crate.transform, "Band", new Vector3(0f, 0.55f, 0f), new Vector3(1.16f, 0.2f, 1.16f), palette.Iron, new Vector3(0f, 20f, 0f));
+                Prim.Box(crate.transform, "Band2", new Vector3(0f, 0.55f, 0f), new Vector3(0.2f, 1.16f, 1.16f), palette.Iron, new Vector3(0f, 20f, 0f));
                 crateLabels[i] = CreateLabel("Label", crate.transform, new Vector3(0f, 1.7f, 0f), 0.3f);
                 crate.SetActive(false);
                 crateRoots[i] = crate.transform;
@@ -435,8 +405,6 @@ namespace Claybreak.Editor
             SetArray(course, "pairRoots", roots);
             SetArray(course, "leftLabels", leftLabels);
             SetArray(course, "rightLabels", rightLabels);
-            SetArray(course, "leftShadows", leftShadows);
-            SetArray(course, "rightShadows", rightShadows);
             SetArray(course, "leftPanels", leftPanels);
             SetArray(course, "rightPanels", rightPanels);
             SetArray(course, "crateRoots", crateRoots);
@@ -559,20 +527,13 @@ namespace Claybreak.Editor
             var root = new GameObject("Wall");
             float laneWidth = TrackWidth / ClaybreakLevel.LaneCount;
             root.transform.position = new Vector3(-TrackWidth * 0.5f + laneWidth * (level.WallLane + 0.5f), 0f, level.WallZ);
-            // RT-6v (direction v2): a glossy coral block with a cream band and round merlons, authored in a unit box
-            // (AssaultWall scales the body down as it takes damage).
-            var wallMesh = new JungleDegree.StudioKit.Editor.SoftMeshBuilder();
-            wallMesh.RoundedBox(new Vector3(0f, -0.06f, 0f), new Vector3(1f, 0.88f, 1f), 0.08f, ToyArt.Paint(ToyPalette.FortMain), 3);
-            wallMesh.RoundedBox(new Vector3(0f, 0.36f, 0f), new Vector3(1.04f, 0.08f, 1.06f), 0.03f, ToyArt.Paint(ToyPalette.FortTrim), 3);
+            Transform body = Prim.Box(root.transform, "Body", new Vector3(0f, 1.3f, 0f),
+                new Vector3(laneWidth * 0.95f, 2.6f, 0.9f), palette.Wall).transform;
             for (int i = 0; i < 3; i++)
             {
-                wallMesh.Ellipsoid(new Vector3(-0.33f + i * 0.33f, 0.46f, 0f), new Vector3(0.12f, 0.07f, 0.34f), ToyArt.Paint(ToyPalette.FortTrim), 10, 6);
+                Prim.Box(body, "Merlon", new Vector3(-0.33f + i * 0.33f, 0.58f, 0f), new Vector3(0.2f, 0.16f, 1.1f), palette.ClayDark);
+                Prim.Box(body, "Course", new Vector3(0f, -0.25f + i * 0.25f, -0.52f), new Vector3(1.02f, 0.03f, 0.05f), palette.ClayDark);
             }
-
-            wallMesh.RoundedBox(new Vector3(0f, -0.2f, -0.5f), new Vector3(0.3f, 0.42f, 0.06f), 0.03f, ToyArt.Paint(ToyPalette.FortWindow, 0.9f), 2);
-            Transform body = ToyArt.Place(root.transform, "Body", ToyArt.SaveMesh(wallMesh.Build("Wall"), "Wall"), ToyArt.Painted("ToyForts"),
-                new Vector3(0f, 1.3f, 0f)).transform;
-            body.localScale = new Vector3(laneWidth * 0.95f, 2.6f, 0.9f);
 
             TextMesh label = CreateLabel("HealthLabel", root.transform, new Vector3(0f, 3.4f, 0f), 0.3f);
             AssaultWall wall = root.AddComponent<AssaultWall>();
@@ -1077,62 +1038,7 @@ namespace Claybreak.Editor
 
         // ---------- world labels and generated sprites ----------
 
-        // RT-6v: the gate number's drop shadow, a navy copy just behind it and a little down and right.
-        private static TextMesh CreateLabelShadow(TextMesh label)
-        {
-            float size = label.characterSize / 0.16f;
-            Vector3 offset = new Vector3(0.07f, -0.09f, 0.03f) * (size / 0.74f);
-            TextMesh shadow = CreateLabel(label.name + "Shadow", label.transform.parent, label.transform.localPosition + offset, size);
-            shadow.color = ToyPalette.LabelShadow;
-            return shadow;
-        }
-
-        // RT-6v: the gate frame, two side posts and a middle post under a lintel, with gold knobs on top.
-        private static Mesh GateFrameMesh()
-        {
-            var b = new JungleDegree.StudioKit.Editor.SoftMeshBuilder();
-            Color white = ToyArt.Paint(ToyPalette.GateFrame, 1f);
-            Color gold = ToyArt.Paint(ToyPalette.Gold, 1f);
-            float side = TrackWidth * 0.5f + 0.12f;
-            foreach (float x in new[] { -side, 0f, side })
-            {
-                float width = x == 0f ? 0.22f : 0.34f;
-                b.RoundedBox(new Vector3(x, 1.2f, 0f), new Vector3(width, 2.4f, width), width * 0.45f, white, 3);
-                b.Ellipsoid(new Vector3(x, 2.62f, 0f), Vector3.one * (x == 0f ? 0.2f : 0.26f), gold, 12, 8);
-            }
-
-            b.RoundedBox(new Vector3(0f, 2.3f, 0f), new Vector3(TrackWidth + 0.4f, 0.2f, 0.24f), 0.09f, white, 3);
-            return b.Build("GateFrame");
-        }
-
-        // RT-6v: the sky dome, a sphere on the camera inside its far plane; WorldScenery shows it in worlds with a sky.
-        private static Renderer CreateSkyDome(Transform cameraTransform)
-        {
-            Mesh mesh = ToyArt.SaveMesh(new JungleDegree.StudioKit.Editor.SoftMeshBuilder()
-                .Ellipsoid(Vector3.zero, Vector3.one * SkyRadius, Color.white, 24, 12).Build("SkyDome"), "SkyDome");
-            MeshRenderer dome = ToyArt.Place(cameraTransform, "SkyDome", mesh, null);
-            dome.transform.localPosition = Vector3.zero;
-            return dome;
-        }
-
-        // RT-6v: the soldier's material, the kit's clay shader with its optional gloss on (direction v2).
-        private static Material SoldierMaterial()
-        {
-            Material material = ArtPalette.LoadOrCreate("Soldier", "StudioKit/RunnerClay");
-            material.enableInstancing = true;
-            material.SetFloat("_Wrap", 0.55f);
-            material.SetFloat("_RimStrength", 0.35f);
-            material.SetColor("_RimColor", ToyPalette.AmbientSky);
-            material.SetFloat("_SpecStrength", 0.9f);
-            material.SetFloat("_SpecSize", 64f);
-            material.SetColor("_AmbientSky", ToyPalette.AmbientSky);
-            material.SetColor("_AmbientGround", ToyPalette.AmbientGround);
-            material.SetFloat("_AmbientBlend", 1f);
-            EditorUtility.SetDirty(material);
-            return material;
-        }
-
-        internal static TextMesh CreateLabel(string name, Transform parent, Vector3 position, float size)
+        private static TextMesh CreateLabel(string name, Transform parent, Vector3 position, float size)
         {
             Font font = GameFont();
             var go = new GameObject(name, typeof(MeshRenderer), typeof(TextMesh));
@@ -1287,7 +1193,7 @@ namespace Claybreak.Editor
                 ?? throw new InvalidOperationException($"{so.targetObject.GetType().Name}.{property} not found");
         }
 
-        internal static Mesh LoadFirstMesh(string path)
+        private static Mesh LoadFirstMesh(string path)
         {
             foreach (UnityEngine.Object asset in AssetDatabase.LoadAllAssetsAtPath(path))
             {

@@ -6,9 +6,6 @@ namespace Claybreak
     /// Dresses the one scene for a world (RT-6): shows that world's preallocated scenery set (props, fields,
     /// far silhouettes; the others are hidden), puts the world's ground material on the track and applies
     /// its sky, ambient and sun. Called at menu/level time only, never per frame; nothing is created.
-    /// RT-6v (direction v2): a world can also have a gradient sky dome (one renderer on the camera, its material
-    /// per world; none = flat background), its own fog distances and the two ambient colors the toy materials
-    /// read (global shader colors: from above and from below).
     /// </summary>
     public sealed class WorldScenery : MonoBehaviour
     {
@@ -19,13 +16,6 @@ namespace Claybreak
         [SerializeField] private Renderer track;
         [SerializeField] private Light sun;
         [SerializeField] private Camera sceneCamera;
-        [Tooltip("RT-6v: the sky dome on the camera, shown for worlds with a sky material.")]
-        [SerializeField] private Renderer skyDome;
-        [Tooltip("RT-6v: the sky dome material per catalog world; empty slot = no dome (flat background).")]
-        [SerializeField] private Material[] skyMaterials = new Material[0];
-
-        public static readonly int ToySkyColorId = Shader.PropertyToID("_ToySkyColor");
-        public static readonly int ToyGroundColorId = Shader.PropertyToID("_ToyGroundColor");
 
         private int shown = -1;
 
@@ -35,10 +25,9 @@ namespace Claybreak
         public bool TryValidate(int worlds, out string error)
         {
             if (sets == null || trackMaterials == null || sets.Length != worlds || trackMaterials.Length != worlds
-                || track == null || sun == null || sceneCamera == null || skyDome == null || skyMaterials == null
-                || skyMaterials.Length != worlds)
+                || track == null || sun == null || sceneCamera == null)
             {
-                error = $"WorldScenery needs one set, one track material and one sky slot per world ({worlds}), the track, the sun, the camera and the sky dome.";
+                error = $"WorldScenery needs one set and one track material per world ({worlds}), the track, the sun and the camera.";
                 return false;
             }
 
@@ -71,20 +60,8 @@ namespace Claybreak
                 }
 
                 track.sharedMaterial = trackMaterials[world];
-                Material sky = skyMaterials[world];
-                skyDome.enabled = sky != null;
-                if (sky != null)
-                {
-                    skyDome.sharedMaterial = sky;
-                }
-
                 shown = world;
             }
-
-            RenderSettings.fogStartDistance = look.FogNear;
-            RenderSettings.fogEndDistance = look.FogFar;
-            Shader.SetGlobalColor(ToySkyColorId, look.ambient);
-            Shader.SetGlobalColor(ToyGroundColorId, look.GroundAmbient);
 
             RenderSettings.fogColor = look.sky;
             RenderSettings.ambientLight = look.ambient;
