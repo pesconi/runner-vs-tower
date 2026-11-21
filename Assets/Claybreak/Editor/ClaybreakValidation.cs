@@ -108,6 +108,16 @@ namespace Claybreak.Editor
                 CheckStress(world, stress, failures);
             }
 
+            if (!ClaybreakSfx.Covers(theme.Audio, out string missingCue))
+            {
+                failures.Add($"theme: the game's sound cue '{missingCue}' has no extra sound in the theme audio");
+            }
+
+            if (!ClaybreakAudio.TryValidateLicensed(out string audioError))
+            {
+                failures.Add("audio: " + audioError);
+            }
+
             if (!theme.TryValidate(out error))
             {
                 failures.Add("theme: " + error);
@@ -408,12 +418,6 @@ namespace Claybreak.Editor
                 || screens.ShopRowCapacity != Mathf.Max(catalog.Upgrades.Count, Mathf.Max(catalog.Units.Count, catalog.Skins.Count))))
             {
                 failures.Add("the shop and world lists need one row per catalog entry (rebuild the scene after a catalog change)");
-            }
-
-            var sfx = Object.FindFirstObjectByType<ClaybreakSfx>(FindObjectsInactive.Include);
-            if (sfx == null || !sfx.HasEveryCue)
-            {
-                failures.Add("the game's sound cues need a clip each and preallocated voices");
             }
 
             if (scene.isDirty)

@@ -14,6 +14,8 @@ namespace Claybreak
         [SerializeField] private Transform[] projectiles = new Transform[0];
         [SerializeField] private Transform[] shadows = new Transform[0];
         [SerializeField, Min(0f)] private float arcHeight = 7f;
+        [Tooltip("RT-8: seconds before a stone lands when its falling whistle starts (the length of the warning cue).")]
+        [SerializeField, Min(0f)] private float warningSeconds = 0.6f;
 
         private Transform muzzle;
         private AssaultField field;
@@ -108,6 +110,7 @@ namespace Claybreak
                 }
             }
 
+            float warnAt = Mathf.Max(0f, 1f - warningSeconds / level.ProjectileFlightTime);
             for (int i = 0; i < projectiles.Length; i++)
             {
                 if (!flying[i])
@@ -115,7 +118,13 @@ namespace Claybreak
                     continue;
                 }
 
+                float before = progress[i];
                 progress[i] += deltaTime / level.ProjectileFlightTime;
+                if (before <= warnAt && progress[i] > warnAt)
+                {
+                    ClaybreakSfx.Play(ClaybreakSfx.Cue.ProjectileWarning);
+                }
+
                 float t = Mathf.Min(progress[i], 1f);
                 Vector3 position = Vector3.LerpUnclamped(starts[i], targets[i], t);
                 position.y += arcHeight * 4f * t * (1f - t);
@@ -162,6 +171,7 @@ namespace Claybreak
             ActiveCount--;
             projectiles[index].gameObject.SetActive(false);
             shadows[index].gameObject.SetActive(false);
+            ClaybreakSfx.Play(ClaybreakSfx.Cue.StoneImpact);
             int killed = field.KillInRadius(targets[index], level.BlastRadius);
             if (killed > 0)
             {

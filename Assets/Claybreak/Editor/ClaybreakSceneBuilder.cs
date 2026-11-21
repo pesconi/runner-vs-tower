@@ -32,12 +32,11 @@ namespace Claybreak.Editor
         public const string ThemePath = Root + "/Data/ClaybreakTheme.asset";
         public const int PoolSize = 300;
         public const int ProjectilePoolSize = 32;
-        public const int SfxVoices = 4;
         public const int LevelDots = ClaybreakWorld.MaximumLevels;
         public const float RowStep = 230f;
 
-        private const string AudioFolder = Root + "/Audio";
         private const string GeneratedFolder = Root + "/Generated";
+        public const string FontPath = Root + "/Fonts/Roboto-Black.ttf";
         private const string UnitPrefabPath = GeneratedFolder + "/RunnerUnit.prefab";
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
@@ -57,14 +56,12 @@ namespace Claybreak.Editor
         {
             EnsureFolder(Root + "/Data");
             EnsureFolder(ArtPalette.MaterialFolder);
-            EnsureFolder(AudioFolder);
             EnsureFolder(GeneratedFolder);
             ProjectConfiguration.Apply();
             WorldContent.Write();
             MonetizationContent.Write();
             BuildTheme();
             new ArtPalette();
-            PlaceholderAudio.WriteCues(AudioFolder);
             CreatePillSprite();
             CreateStarSprite();
             AssetDatabase.SaveAssets();
@@ -92,32 +89,7 @@ namespace Claybreak.Editor
             var so = new SerializedObject(theme);
             so.FindProperty("roster.builtInBody").objectReferenceValue = Load<RunnerBodyFrames>(BodyFramesPath);
             so.FindProperty("crowdColor").colorValue = Orange;
-            SerializedProperty audio = so.FindProperty("audio");
-            audio.FindPropertyRelative("enabled").boolValue = true;
-            Array roles = Enum.GetValues(typeof(GameSound));
-            SerializedProperty sounds = audio.FindPropertyRelative("sounds");
-            sounds.arraySize = roles.Length;
-            for (int i = 0; i < roles.Length; i++)
-            {
-                var role = (GameSound)roles.GetValue(i);
-                SerializedProperty entry = sounds.GetArrayElementAtIndex(i);
-                entry.FindPropertyRelative("sound").enumValueIndex = (int)role;
-                entry.FindPropertyRelative("clip").objectReferenceValue = PlaceholderAudio.Get(AudioFolder, role);
-                entry.FindPropertyRelative("volume").floatValue = role == GameSound.Coin ? 0.4f : 0.8f;
-                entry.FindPropertyRelative("pitchVariation").floatValue = 0.08f;
-                entry.FindPropertyRelative("minimumInterval").floatValue =
-                    role == GameSound.Coin || role == GameSound.UnitLoss ? 0.07f : 0.05f;
-            }
-
-            audio.FindPropertyRelative("menuMusic").objectReferenceValue = PlaceholderAudio.GetMusic(AudioFolder, false);
-            audio.FindPropertyRelative("runMusic").objectReferenceValue = PlaceholderAudio.GetMusic(AudioFolder, true);
-            audio.FindPropertyRelative("musicVolume").floatValue = 0.3f;
-            SerializedProperty haptics = audio.FindPropertyRelative("haptics");
-            haptics.arraySize = 4;
-            SetHaptic(haptics.GetArrayElementAtIndex(0), GameSound.UnitLoss, 25, 120, 0.15f);
-            SetHaptic(haptics.GetArrayElementAtIndex(1), GameSound.Victory, 90, 220, 0.5f);
-            SetHaptic(haptics.GetArrayElementAtIndex(2), GameSound.GateBad, 30, 140, 0.3f);
-            SetHaptic(haptics.GetArrayElementAtIndex(3), GameSound.Defeat, 60, 180, 0.5f);
+            ClaybreakAudio.Apply(so.FindProperty("audio"));
 
             SerializedProperty death = so.FindProperty("deathEffect");
             death.FindPropertyRelative("enabled").boolValue = true;
@@ -126,14 +98,6 @@ namespace Claybreak.Editor
             death.FindPropertyRelative("secondaryColor").colorValue = new Color(0.6f, 0.25f, 0.1f);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(theme);
-        }
-
-        private static void SetHaptic(SerializedProperty entry, GameSound sound, int milliseconds, int amplitude, float interval)
-        {
-            entry.FindPropertyRelative("sound").enumValueIndex = (int)sound;
-            entry.FindPropertyRelative("milliseconds").intValue = milliseconds;
-            entry.FindPropertyRelative("amplitude").intValue = amplitude;
-            entry.FindPropertyRelative("minimumInterval").floatValue = interval;
         }
 
         // ---------- scene ----------
@@ -177,7 +141,6 @@ namespace Claybreak.Editor
             ClaybreakFlow flow = flowObject.AddComponent<ClaybreakFlow>();
             GameAudio gameAudio = flowObject.AddComponent<GameAudio>();
             FrameRateGovernor governor = flowObject.AddComponent<FrameRateGovernor>();
-            ClaybreakSfx sfx = CreateSfx(flowObject.transform);
             ClaybreakAds ads = CreateAds(flowObject.transform, monetization);
 
             RunnerPool pool = CreatePool(body, clay);
@@ -250,7 +213,6 @@ namespace Claybreak.Editor
             SetRef(flow, "cannon", cannon);
             SetRef(flow, "hud", hud);
             SetRef(flow, "screens", screens);
-            SetRef(flow, "sfx", sfx);
             SetRef(flow, "firingLine", firingLine);
             SetRef(flow, "laneMarker", laneMarker);
             SetRef(flow, "gameAudio", gameAudio);
@@ -340,48 +302,6 @@ namespace Claybreak.Editor
             SetRef(scenery, "sun", sun);
             SetRef(scenery, "sceneCamera", camera);
             return scenery;
-        }
-
-        private static ClaybreakSfx CreateSfx(Transform parent)
-        {
-            var sfxObject = new GameObject("Sfx");
-            sfxObject.transform.SetParent(parent, false);
-            ClaybreakSfx sfx = sfxObject.AddComponent<ClaybreakSfx>();
-            var voices = new UnityEngine.Object[SfxVoices];
-            for (int i = 0; i < SfxVoices; i++)
-            {
-                var voice = new GameObject("Voice" + (i + 1), typeof(AudioSource));
-                voice.transform.SetParent(sfxObject.transform, false);
-                AudioSource source = voice.GetComponent<AudioSource>();
-                source.playOnAwake = false;
-                source.spatialBlend = 0f;
-                source.bypassEffects = true;
-                source.bypassReverbZones = true;
-                voices[i] = source;
-            }
-
-            SetArray(sfx, "voices", voices);
-            var so = new SerializedObject(sfx);
-            Array cues = Enum.GetValues(typeof(ClaybreakSfx.Cue));
-            SerializedProperty entries = so.FindProperty("entries");
-            entries.arraySize = cues.Length;
-            for (int i = 0; i < cues.Length; i++)
-            {
-                var cue = (ClaybreakSfx.Cue)cues.GetValue(i);
-                SerializedProperty entry = entries.GetArrayElementAtIndex(i);
-                entry.FindPropertyRelative("cue").enumValueIndex = (int)cue;
-                entry.FindPropertyRelative("clip").objectReferenceValue = PlaceholderAudio.GetCue(AudioFolder, cue);
-                entry.FindPropertyRelative("volume").floatValue = cue == ClaybreakSfx.Cue.Sweep ? 0.5f : 0.85f;
-                entry.FindPropertyRelative("minimumInterval").floatValue = cue == ClaybreakSfx.Cue.Sweep ? 0.15f : 0.08f;
-                bool vibrate = cue == ClaybreakSfx.Cue.TowerFall || cue == ClaybreakSfx.Cue.FloorBreak
-                    || cue == ClaybreakSfx.Cue.WallBreak || cue == ClaybreakSfx.Cue.Boss;
-                entry.FindPropertyRelative("vibrate").boolValue = vibrate;
-                entry.FindPropertyRelative("hapticRole").enumValueIndex =
-                    (int)(cue == ClaybreakSfx.Cue.TowerFall ? GameSound.Victory : GameSound.UnitLoss);
-            }
-
-            so.ApplyModifiedPropertiesWithoutUndo();
-            return sfx;
         }
 
         // RT-7: the kit's rewarded and interstitial services (consent first, in the kit's MobileAdsGate) behind the
@@ -693,7 +613,9 @@ namespace Claybreak.Editor
 
         private static ClaybreakHud CreateHud(Transform canvas, Sprite pill)
         {
+            // RT-8: the HUD lives inside the phone's safe area (camera cut-out, rounded corners, gesture bar).
             RectTransform root = Stretch("Hud", canvas);
+            root.gameObject.AddComponent<SafeAreaFitter>();
             Text level = Label("Level", root, new Vector2(0.5f, 1f), new Vector2(0f, -150f), 54, TextAnchor.MiddleCenter);
             Text army = Label("Army", root, new Vector2(0f, 1f), new Vector2(60f, -235f), 62, TextAnchor.UpperLeft);
             Text specials = Label("Specials", root, new Vector2(0f, 1f), new Vector2(60f, -315f), 46, TextAnchor.UpperLeft);
@@ -746,8 +668,9 @@ namespace Claybreak.Editor
             ClaybreakScreens screens = screensObject.AddComponent<ClaybreakScreens>();
             Color grey = new Color(0.3f, 0.26f, 0.26f);
 
-            // Home: the level waits behind a dark veil; buttons stack from the bottom (thumb reach).
-            RectTransform home = MenuPage("Home", screensRect, 0.55f);
+            // Home: the level waits behind a dark veil; buttons stack from the bottom (thumb reach). Every page's
+            // veil covers the whole screen; its content sits in the safe area (RT-8).
+            RectTransform home = MenuPage("Home", screensRect, 0.55f, out RectTransform homePage);
             Text homeCoins = Coins(home, pill);
             // Working name (D18), with the call to action under it.
             Text title = Label("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -270f), 120, TextAnchor.MiddleCenter);
@@ -774,25 +697,39 @@ namespace Claybreak.Editor
             Image badge = Img("Badge", shop.transform, pill, new Vector2(1f, 1f), new Vector2(-30f, -22f), new Vector2(46f, 46f), Gold);
             (Button worldsButton, Text _) = PillButton("WorldsButton", home, pill, new Vector2(0.5f, 0f), new Vector2(235f, 235f),
                 new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "WORLDS", 56);
-            (Button sound, Text soundLabel) = PillButton("Sound", home, pill, new Vector2(0.5f, 0f), new Vector2(-340f, 80f),
-                new Vector2(320f, 100f), grey, "SOUND ON", 36);
-            (Button music, Text musicLabel) = PillButton("Music", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 80f),
-                new Vector2(320f, 100f), grey, "MUSIC ON", 36);
-            (Button vibration, Text vibrationLabel) = PillButton("Vibration", home, pill, new Vector2(0.5f, 0f), new Vector2(340f, 80f),
-                new Vector2(320f, 100f), grey, "VIBRATION ON", 36);
-            // RT-7: the daily gift over PLAY (shown only when due) and the privacy options top left (only where
-            // UMP requires them).
+            // RT-7: the daily gift over PLAY (shown only when due). RT-8: SETTINGS top left opens the settings page.
             (Button daily, Text dailyLabel) = PillButton("DailyGift", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 600f),
                 new Vector2(560f, 110f), new Color(0.3f, 0.55f, 0.3f), "DAILY GIFT", 44);
-            (Button privacy, Text _) = PillButton("Privacy", home, pill, new Vector2(0f, 1f), new Vector2(170f, -150f),
-                new Vector2(260f, 90f), grey, "PRIVACY", 34);
-            // Scene defaults show the usual case (the flow sets both when the home screen opens): a gift due on a
-            // first launch, and no privacy entry point outside the regions where UMP requires one.
+            (Button settingsButton, Text _) = PillButton("SettingsButton", home, pill, new Vector2(0f, 1f), new Vector2(190f, -150f),
+                new Vector2(300f, 96f), grey, "SETTINGS", 38);
+            // Scene default shows the usual case (the flow sets it when the home screen opens): a gift due on a first launch.
             dailyLabel.text = $"DAILY GIFT  +{MonetizationContent.DailyRewards[0]} ¢";
+
+            // Settings (RT-8): the kit's sound, music and vibration switches, the privacy policy link, the privacy
+            // options (only where UMP requires them) and the credits of the game's own audio and font.
+            RectTransform settingsRoot = MenuPage("Settings", screensRect, 0.82f, out RectTransform settingsPage);
+            Heading(settingsRoot, "SETTINGS");
+            (Button sound, Text soundLabel) = PillButton("Sound", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -420f),
+                new Vector2(640f, 120f), grey, "SOUND ON", 52);
+            (Button music, Text musicLabel) = PillButton("Music", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -570f),
+                new Vector2(640f, 120f), grey, "MUSIC ON", 52);
+            (Button vibration, Text vibrationLabel) = PillButton("Vibration", settingsRoot, pill, new Vector2(0.5f, 1f),
+                new Vector2(0f, -720f), new Vector2(640f, 120f), grey, "VIBRATION ON", 52);
+            (Button policy, Text _) = PillButton("PrivacyPolicy", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -900f),
+                new Vector2(640f, 110f), new Color(0.55f, 0.32f, 0.16f), "PRIVACY POLICY", 44);
+            (Button privacy, Text _) = PillButton("PrivacyOptions", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -1040f),
+                new Vector2(640f, 110f), new Color(0.55f, 0.32f, 0.16f), "PRIVACY OPTIONS", 44);
             privacy.gameObject.SetActive(false);
+            Text settingsNote = Label("Note", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 400f), 36, TextAnchor.MiddleCenter);
+            settingsNote.color = new Color(1f, 0.86f, 0.72f);
+            Text credits = Label("Credits", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 270f), 30, TextAnchor.MiddleCenter);
+            credits.text = "CLAY SIEGE  ·  JUNGLE DEGREE\nMUSIC AND SOUND: JUNGLE DEGREE  ·  FONT: ROBOTO (APACHE 2.0)";
+            credits.color = new Color(1f, 1f, 1f, 0.6f);
+            (Button settingsBack, Text _) = PillButton("Back", settingsRoot, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
+                new Vector2(420f, 120f), grey, "BACK", 48);
 
             // Shop: three tabs over one list (rows = the longest catalog list), coins only (D6: no real money).
-            RectTransform shopRoot = MenuPage("Shop", screensRect, 0.82f);
+            RectTransform shopRoot = MenuPage("Shop", screensRect, 0.82f, out RectTransform shopPage);
             Text shopCoins = Coins(shopRoot, pill);
             Heading(shopRoot, "SHOP");
             string[] tabNames = { "UPGRADES", "ELITES", "SKINS" };
@@ -810,7 +747,7 @@ namespace Claybreak.Editor
                 new Vector2(420f, 120f), grey, "BACK", 48);
 
             // Worlds: one row per catalog world, any number (RT-6 adds them as data).
-            RectTransform worldsRoot = MenuPage("Worlds", screensRect, 0.82f);
+            RectTransform worldsRoot = MenuPage("Worlds", screensRect, 0.82f, out RectTransform worldsPage);
             Heading(worldsRoot, "WORLDS");
             Text worldsStars = Label("Stars", worldsRoot, new Vector2(0.5f, 1f), new Vector2(0f, -300f), 52, TextAnchor.MiddleCenter);
             worldsStars.color = Gold;
@@ -822,7 +759,7 @@ namespace Claybreak.Editor
                 new Vector2(420f, 120f), grey, "BACK", 48);
 
             // Result: veil, one card, one big button (NEXT / AGAIN) and a small HOME.
-            RectTransform result = MenuPage("Result", screensRect, 0.6f);
+            RectTransform result = MenuPage("Result", screensRect, 0.6f, out RectTransform resultPage);
             Image card = Img("Card", result, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 1060f), CardColor);
             ClayUi.MakePill(card, pill, 140f);
             RectTransform cardRect = card.rectTransform;
@@ -850,7 +787,7 @@ namespace Claybreak.Editor
                 new Vector2(760f, 130f), new Color(0.3f, 0.55f, 0.3f), "WATCH AD", 44);
 
             // Continue offer: one card, what the ad gives, and NO THANKS as clear as the offer (GDD 7.1).
-            RectTransform continueRoot = MenuPage("Continue", screensRect, 0.6f);
+            RectTransform continueRoot = MenuPage("Continue", screensRect, 0.6f, out RectTransform continuePage);
             Image continueCard = Img("Card", continueRoot, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 760f), CardColor);
             ClayUi.MakePill(continueCard, pill, 140f);
             RectTransform continueRect = continueCard.rectTransform;
@@ -863,12 +800,17 @@ namespace Claybreak.Editor
             (Button continueDecline, Text _) = PillButton("NoThanks", continueRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 80f),
                 new Vector2(480f, 110f), grey, "NO THANKS", 48);
 
-            foreach (RectTransform screen in new[] { home, shopRoot, worldsRoot, result, continueRoot })
+            foreach (RectTransform screen in new[] { homePage, settingsPage, shopPage, worldsPage, resultPage, continuePage })
             {
                 screen.gameObject.SetActive(false);
             }
 
-            SetRef(screens, "home", home.gameObject);
+            SetRef(screens, "home", homePage.gameObject);
+            SetRef(screens, "settingsButton", settingsButton);
+            SetRef(screens, "settings", settingsPage.gameObject);
+            SetRef(screens, "policyButton", policy);
+            SetRef(screens, "settingsNote", settingsNote);
+            SetRef(screens, "settingsBack", settingsBack);
             SetRef(screens, "homeCoins", homeCoins);
             SetRef(screens, "worldText", world);
             SetRef(screens, "starsText", worldStars);
@@ -888,19 +830,19 @@ namespace Claybreak.Editor
             SetRef(screens, "dailyButton", daily);
             SetRef(screens, "dailyLabel", dailyLabel);
             SetRef(screens, "privacyButton", privacy);
-            SetRef(screens, "shop", shopRoot.gameObject);
+            SetRef(screens, "shop", shopPage.gameObject);
             SetRef(screens, "shopCoins", shopCoins);
             SetArray(screens, "shopTabs", tabs);
             SetRef(screens, "shopContent", shopContent);
             SetArray(screens, "shopRows", shopRows);
             SetRef(screens, "shopBack", shopBack);
-            SetRef(screens, "worlds", worldsRoot.gameObject);
+            SetRef(screens, "worlds", worldsPage.gameObject);
             SetRef(screens, "worldsStars", worldsStars);
             SetRef(screens, "worldsContent", worldsContent);
             SetArray(screens, "worldRows", worldRows);
             SetRef(screens, "worldsFooter", footer);
             SetRef(screens, "worldsBack", worldsBack);
-            SetRef(screens, "result", result.gameObject);
+            SetRef(screens, "result", resultPage.gameObject);
             SetRef(screens, "resultTitle", resultTitle);
             SetArray(screens, "stars", stars);
             SetRef(screens, "resultDetail", resultDetail);
@@ -911,7 +853,7 @@ namespace Claybreak.Editor
             SetRef(screens, "homeButton", homeButton);
             SetRef(screens, "resultAdButton", resultAd);
             SetRef(screens, "resultAdLabel", resultAdLabel);
-            SetRef(screens, "continueOffer", continueRoot.gameObject);
+            SetRef(screens, "continueOffer", continuePage.gameObject);
             SetRef(screens, "continueText", continueText);
             SetRef(screens, "continueAdButton", continueAd);
             SetRef(screens, "continueAdLabel", continueAdLabel);
@@ -920,13 +862,16 @@ namespace Claybreak.Editor
             return screens;
         }
 
-        // A full-screen menu page over a dark veil.
-        private static RectTransform MenuPage(string name, RectTransform parent, float veilAlpha)
+        // A full-screen menu page over a dark veil (the page, shown and hidden as a whole); returns its content
+        // area, fitted to the phone's safe area (RT-8).
+        private static RectTransform MenuPage(string name, RectTransform parent, float veilAlpha, out RectTransform page)
         {
-            RectTransform screen = Stretch(name, parent);
-            Image veil = screen.gameObject.AddComponent<Image>();
+            page = Stretch(name, parent);
+            Image veil = page.gameObject.AddComponent<Image>();
             veil.color = new Color(0.06f, 0.04f, 0.05f, veilAlpha);
-            return screen;
+            RectTransform content = Stretch("Safe", page);
+            content.gameObject.AddComponent<SafeAreaFitter>();
+            return content;
         }
 
         private static Text Coins(RectTransform screen, Sprite pill)
@@ -1056,9 +1001,21 @@ namespace Claybreak.Editor
             return image;
         }
 
+        // RT-8: the game's own font (Roboto Black, Apache 2.0, Content/Fonts with its license), heavy by itself.
+        public static Font GameFont()
+        {
+            var font = AssetDatabase.LoadAssetAtPath<Font>(FontPath);
+            if (font == null)
+            {
+                throw new InvalidOperationException(FontPath + " is missing.");
+            }
+
+            return font;
+        }
+
         private static Text Label(string name, Transform parent, Vector2 anchor, Vector2 position, int size, TextAnchor alignment)
         {
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Font font = GameFont();
             var go = new GameObject(name, typeof(RectTransform), typeof(Text), typeof(Outline));
             var rect = go.GetComponent<RectTransform>();
             rect.SetParent(parent, false);
@@ -1069,7 +1026,7 @@ namespace Claybreak.Editor
             var text = go.GetComponent<Text>();
             text.font = font;
             text.fontSize = size;
-            text.fontStyle = FontStyle.Bold;
+            text.fontStyle = FontStyle.Normal;
             text.alignment = alignment;
             text.color = Color.white;
             text.raycastTarget = false;
@@ -1083,7 +1040,7 @@ namespace Claybreak.Editor
 
         private static TextMesh CreateLabel(string name, Transform parent, Vector3 position, float size)
         {
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Font font = GameFont();
             var go = new GameObject(name, typeof(MeshRenderer), typeof(TextMesh));
             go.transform.SetParent(parent, false);
             go.transform.localPosition = position;
@@ -1093,7 +1050,7 @@ namespace Claybreak.Editor
             text.characterSize = size * 0.16f;
             text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
-            text.fontStyle = FontStyle.Bold;
+            text.fontStyle = FontStyle.Normal;
             text.color = Color.white;
             text.text = "0";
             go.GetComponent<MeshRenderer>().sharedMaterial = font.material;

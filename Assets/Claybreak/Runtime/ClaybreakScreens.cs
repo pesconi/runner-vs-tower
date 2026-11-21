@@ -14,8 +14,8 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// The menu screens (RT-5): home (world progress, stars, PLAY, SHOP, WORLDS and the sound / music /
-    /// vibration switches, the kit's own preferences), the shop (upgrades, special units and their loadout,
+    /// The menu screens (RT-5): home (world progress, stars, PLAY, SHOP, WORLDS, SETTINGS), the settings page
+    /// (RT-8: the kit's sound / music / vibration switches, privacy policy, privacy options), the shop (upgrades, special units and their loadout,
     /// crowd skins; coins only, no real money, D6), the world list and the result (stars, coins, what was
     /// unlocked, one tap to go on: GDD 3, never more than 2 taps to retry). Built by the scene builder with
     /// one list row per catalog entry; this class only fills it. Every text here is set on a tap, never per frame.
@@ -43,6 +43,12 @@ namespace Claybreak
         [SerializeField] private Button dailyButton;
         [SerializeField] private Text dailyLabel;
         [SerializeField] private Button privacyButton;
+        [Header("Settings (RT-8)")]
+        [SerializeField] private Button settingsButton;
+        [SerializeField] private GameObject settings;
+        [SerializeField] private Button policyButton;
+        [SerializeField] private Text settingsNote;
+        [SerializeField] private Button settingsBack;
 
         [Header("Shop")]
         [SerializeField] private GameObject shop;
@@ -98,6 +104,7 @@ namespace Claybreak
 
         private ShopTab tab;
         private Progression shownProgression;
+        private string privacyPolicyUrl;
 
         public event Action PlayPressed;
         public event Action ShopPressed;
@@ -118,6 +125,7 @@ namespace Claybreak
         public int WorldRowCapacity => worldRows == null ? 0 : worldRows.Length;
         public int DotCapacity => levelDots == null ? 0 : levelDots.Length;
         public bool ShopShown => shop != null && shop.activeSelf;
+        public bool SettingsShown => settings != null && settings.activeSelf;
         public bool WorldsShown => worlds != null && worlds.activeSelf;
         public bool ResultShown => result != null && result.activeSelf;
         public bool ContinueShown => continueOffer != null && continueOffer.activeSelf;
@@ -135,6 +143,7 @@ namespace Claybreak
             && result != null && resultTitle != null && stars != null && stars.Length == 3 && resultDetail != null
             && resultReward != null && resultUnlock != null && primaryButton != null && primaryLabel != null
             && homeButton != null && dailyButton != null && dailyLabel != null && privacyButton != null
+            && settingsButton != null && settings != null && policyButton != null && settingsNote != null && settingsBack != null
             && resultAdButton != null && resultAdLabel != null && continueOffer != null && continueText != null
             && continueAdButton != null && continueAdLabel != null && continueDecline != null;
 
@@ -150,12 +159,19 @@ namespace Claybreak
             playButton.onClick.AddListener(() => Raise(PlayPressed));
             shopButton.onClick.AddListener(() => Raise(ShopPressed));
             worldsButton.onClick.AddListener(() => Raise(WorldsPressed));
-            shopBack.onClick.AddListener(() => Raise(BackPressed));
-            worldsBack.onClick.AddListener(() => Raise(BackPressed));
+            shopBack.onClick.AddListener(Back);
+            worldsBack.onClick.AddListener(Back);
             primaryButton.onClick.AddListener(() => Raise(PrimaryPressed));
             homeButton.onClick.AddListener(() => Raise(HomePressed));
             dailyButton.onClick.AddListener(() => Raise(DailyPressed));
             privacyButton.onClick.AddListener(() => Raise(PrivacyPressed));
+            settingsButton.onClick.AddListener(() =>
+            {
+                GameAudio.Play(GameSound.ButtonClick);
+                ShowSettings();
+            });
+            settingsBack.onClick.AddListener(Back);
+            policyButton.onClick.AddListener(OpenPrivacyPolicy);
             resultAdButton.onClick.AddListener(() => Raise(ResultAdPressed));
             continueAdButton.onClick.AddListener(() => Raise(ContinueAdPressed));
             continueDecline.onClick.AddListener(() => Raise(ContinueDeclined));
@@ -205,6 +221,12 @@ namespace Claybreak
             });
         }
 
+        private void Back()
+        {
+            GameAudio.Play(GameSound.ButtonBack);
+            BackPressed?.Invoke();
+        }
+
         private static void Raise(Action action)
         {
             GameAudio.Play(GameSound.ButtonClick);
@@ -226,6 +248,7 @@ namespace Claybreak
         public void HideAll()
         {
             home.SetActive(false);
+            settings.SetActive(false);
             shop.SetActive(false);
             worlds.SetActive(false);
             result.SetActive(false);
@@ -277,7 +300,36 @@ namespace Claybreak
             dailyLabel.text = coins > 0 ? $"DAILY GIFT  +{NumberLabels.Plain(coins)} ¢" : string.Empty;
         }
 
-        /// <summary>The privacy options entry point, shown only where UMP requires it.</summary>
+        // ---------- settings (RT-8) ----------
+
+        /// <summary>The settings page: sound, music and vibration switches, privacy policy and privacy options.</summary>
+        public void ShowSettings()
+        {
+            HideAll();
+            settings.SetActive(true);
+            settingsNote.text = string.Empty;
+            RefreshSwitches();
+        }
+
+        /// <summary>The public privacy policy page (https); empty until the store release publishes it.</summary>
+        public void SetPrivacyPolicyUrl(string url)
+        {
+            privacyPolicyUrl = url;
+        }
+
+        private void OpenPrivacyPolicy()
+        {
+            GameAudio.Play(GameSound.ButtonClick);
+            if (!ClaybreakMonetization.IsHttpsPage(privacyPolicyUrl))
+            {
+                settingsNote.text = "THE PRIVACY POLICY LINK COMES WITH THE STORE RELEASE";
+                return;
+            }
+
+            Application.OpenURL(privacyPolicyUrl);
+        }
+
+        /// <summary>The privacy options entry point (settings page), shown only where UMP requires it.</summary>
         public void SetPrivacyVisible(bool visible)
         {
             privacyButton.gameObject.SetActive(visible);

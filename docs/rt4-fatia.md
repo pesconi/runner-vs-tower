@@ -112,11 +112,14 @@ O gate 3× **não** rodou: o OPPO apareceu no início da sessão com a tela bloq
    já serve), novos tipos de torre e o 4º tipo de defesa (escudo) — RT-6.
 4. **Meta**: mais upgrades (dano, valor do portão, velocidade de lançamento), coleção de unidades com
    escolha de 1–2 no loadout, recompensa diária local (D5) — RT-5.
-5. **Áudio definitivo** (CC0 ou próprio) no lugar dos sintetizados — RT-8.
+5. **Áudio definitivo** (CC0 ou próprio) no lugar dos sintetizados — RT-8. **Feito na RT-8** (próprio, por síntese;
+   `audio-licenses.md`; aprovação do usuário na ficha D22).
 6. **Fonte própria** (hoje é a fonte padrão do Unity) e tela de ajustes com link de privacidade — RT-7/RT-8.
+   **Feito na RT-8** (Roboto Black, Apache 2.0; tela SETTINGS; o endereço da política entra na RT-9).
 7. **Anúncios** (recompensado + intersticial pronto e desligado, D6), consentimento (UMP) e analytics
    mínimo (D4) — RT-7.
 8. **Kit** (pauta 5.1): tabela de "sons extras" no `ThemeAudio`; telas de menu/resultado; teste de alocação
-   do `RunnerPool` instável no conjunto completo (passa sozinho) — entrega do `studiokit`.
+   do `RunnerPool` instável no conjunto completo (passa sozinho) — entrega do `studiokit`. **Sons extras e teste do
+   pool feitos na RT-8 (K.8)**; telas de menu/resultado continuam no jogo.
 9. Área segura do celular (recorte da câmera): o HUD usa margens fixas que cabem no OPPO; generalizar com
-   a área segura do kit antes de testar em outros aparelhos.
+   a área segura do kit antes de testar em outros aparelhos. **Feito na RT-8** (`SafeAreaFitter` do kit no HUD e nos menus).

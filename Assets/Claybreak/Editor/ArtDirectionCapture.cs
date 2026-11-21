@@ -195,7 +195,7 @@ namespace Claybreak.Editor
             return Render(camera, Width, Height);
         }
 
-        // The game scene as the player sees it: home, shop, world list and the assault of the boss.
+        // The game scene as the player sees it: home, settings (RT-8), shop, world list and the assault of the boss.
         private static void GameShots(string folder)
         {
             EditorSceneManager.OpenScene(ClaybreakSceneBuilder.ScenePath, OpenSceneMode.Single);
@@ -220,6 +220,8 @@ namespace Claybreak.Editor
             screens.ShowHome(progression);
             hud.gameObject.SetActive(false);
             Shot(folder, "jogo-menu", camera);
+            screens.ShowSettings();
+            Shot(folder, "jogo-ajustes", camera);
             screens.ShowShop(progression);
             Shot(folder, "jogo-loja-upgrades", camera);
             PickTab(screens, ShopTab.Units, progression);

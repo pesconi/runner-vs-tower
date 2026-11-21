@@ -860,3 +860,115 @@ publicidade, sem sinais do Google, coleta desligada até o jogo liberar; fora da
 na política e dados mínimos). Próximo passo: uma sessão instala o SDK, liga o adaptador, atualiza política e
 Data safety e mede o peso no gate; o usuário cria o projeto gratuito no Firebase quando a sessão pedir. Deve
 sair antes da RT-9.
+
+## 2026-11-20 — T-RT8-1 — Sons extras e área segura no kit, vibração sem alocação — técnica (sessão RT-8)
+
+Pauta 5.1 da RT-4: o kit ganhou a tabela de **sons extras** no `ThemeAudio` (`ThemeExtraSound`: id, clipe,
+volume, variação de tom, intervalo mínimo e vibração própria opcional), tocada por `GameAudio.PlayExtra(índice)`
+com as mesmas vozes pré-alocadas, o mesmo botão de som e as mesmas pausas dos papéis fixos. O jogo procura cada
+id uma vez (`ClaybreakSfx` virou só o mapa "som do jogo → índice") e o componente próprio de vozes saiu.
+`GameHaptics` passou a vibrar por JNI cru com referências e argumentos em cache (zero alocação por vibração; antes
+cada vibração alocava objetos de ponte Java, o que alimentava o coletor de lixo durante a corrida) e ganhou
+`Pulse`. Novo `SafeAreaFitter` (UI do kit) encaixa HUD e conteúdo dos menus na área segura do celular, com o véu
+escuro ainda cobrindo a tela toda. O teste de "pool sem alocação" do kit ficou estável: o Editor às vezes aloca
+nos próprios avisos de hierarquia quando um objeto liga/desliga; o caminho do pool é determinístico, então o teste
+aceita a primeira de até 5 tentativas limpas. Pacote 0.3.0 (entrega K.8 do `studiokit`).
+
+## 2026-11-20 — T-RT8-2 — Áudio próprio por síntese, fonte Roboto e build de release — técnica (sessão RT-8)
+
+Sem áudio CC0 na máquina e sem autorização para baixar arquivos, o áudio definitivo é **obra própria**: um
+sintetizador em Python versionado (`Tools/audio/clay_siege_audio.py`, sementes fixas) grava os 20 efeitos e as 2
+músicas; licenças em `docs/audio-licenses.md` e o validador recusa clipe fora da lista. Os baques têm um "corpo
+médio" (300–800 Hz) porque o alto-falante do celular quase não toca abaixo de ~250 Hz. Vibração revisada: só nos
+momentos grandes (portões, caixote, muro/escudo, andar, queda da torre, chefe, derrota, recompensa) e nunca na
+perda de unidade (vem em rajadas de até 300) nem na pedra do canhão (cai a cada 1,6–3 s). Fonte: Roboto Black (Apache 2.0, cópia sem modificação que já vem
+num pacote da Unity; licença ao lado do arquivo). Release: `ClaybreakBuild` gera AAB (`-claybreakAab`) e APK como
+player de release; sem chave, assina com a chave de debug do Unity; a chave de upload real só entra por variáveis
+de ambiente apontando para fora do repositório, e as configurações do projeto voltam ao que eram depois do build.
+Link da política de privacidade como dado (`MonetizationContent.PrivacyPolicyUrl`, vazio até a RT-9 publicar a
+página; o validador recusa build de produção sem ele).
+
+## Ficha D22 (RT-8, aguardando resposta — aceite "ouvir e aprovar o som")
+
+### DECISÃO D22 — Aprovar o som e a vibração do jogo
+
+O que você está aprovando: o som definitivo do Clay Siege é o que está no celular agora — 20 efeitos e 2 músicas
+**feitos por nós** (criados por um programa do próprio projeto, sem nenhum som de terceiros, então sem licença a
+pagar ou creditar) — e a vibração só nos momentos grandes; isso vale até o soft launch (lançamento de teste),
+e qualquer som pode ser trocado depois com o mesmo programa.
+
+Por que agora: é o aceite da RT-8 ("ouvir e aprovar o som"). Não trava código: o jogo já usa a recomendação.
+Trava só o fechamento da RT-8; precisa sair antes da RT-9 (preparação da loja), porque o vídeo e as imagens da
+loja usam o jogo como ele está.
+
+Contexto que você precisa saber:
+- O que trocou (fato, esta sessão): saíram os bipes provisórios da RT-2/RT-4. Entraram sons com cara de argila
+  e de cerco: baque surdo quando um soldado bate na torre, estrondo do canhão, **assobio de queda 0,6 s antes da
+  pedra cair** (o aviso de projétil que o plano pedia), impacto da pedra, estalo quando uma unidade se desfaz,
+  desmoronamento de cada andar, **queda da torre** com escombros, muro quebrando, zunido do varredor, trompas
+  graves do **chefe**, arpejo nos portões bons e "bwomp" nos ruins, fanfarra de vitória e trombone de derrota.
+  Músicas: menu calmo (marimba, 96 batidas por minuto, 20 s em laço) e corrida em marcha (tambores, 128 bpm,
+  15 s em laço, também no assalto).
+- Por que "feitos por nós" e não CC0 (CC0 = domínio público, uso livre): a regra da RT-8 é só CC0 ou próprio,
+  nada pago. Não havia som CC0 no computador e baixar arquivos da internet exige o seu ok; o som próprio cumpre a
+  regra sem depender disso (fato). Qualidade: é síntese (sons gerados por conta, não gravados); soa mais
+  "desenho animado" que um banco de sons gravados (inferência nossa; só ouvindo para julgar).
+- Vibração (fato, esta sessão): antes vibrava a cada unidade perdida (até 300 por ataque). Agora vibra leve no
+  portão bom, mais forte no ruim, toque no caixote, no muro ou escudo quebrando, em cada andar, longa na queda
+  da torre, no chefe, na derrota e na recompensa. A pedra do canhão não vibra (cairia a cada 1,6–3 s e o ataque
+  vibraria sem parar; ajuste da segunda opinião). Ligar a vibração nos ajustes dá um toque de teste.
+- Os botões SOUND, MUSIC e VIBRATION saíram da tela inicial e foram para a nova tela **SETTINGS** (botão no
+  canto superior esquerdo), junto com o link da política de privacidade (fato).
+- Desempenho (gate 3× = teste no OPPO que exige folga de 3 vezes no tempo de cada quadro): **aprovado** em 2026-11-21 no build de release, com som,
+  música e vibração ligados, no caso mais pesado (chefe do mundo 4, 299 soldados em voo, 12 pedras no ar):
+  quadro p95 16 ms, nenhum quadro acima de 50 ms, CPU 4,8 ms e GPU 4,3 ms no pior trecho (limite 11 ms),
+  zero coletas de lixo, memória 228 MB (limite 450 MB).
+- Termos: "linha de tiro" = onde a corrida acaba e o exército começa a ser lançado contra a torre;
+  "varredor" = a barra que varre a pista no assalto; "regra de chefe" = o efeito especial que o chefe liga a
+  cada andar perdido (ex.: canhão mais rápido).
+
+O que ouvir em cada tela (volume de mídia ligado, uns 5 minutos):
+1. Tela inicial: música do menu; toque nos botões; SETTINGS → ligar/desligar som, música e vibração; BACK.
+2. Corrida (fase 1): música de marcha; portão bom (arpejo + vibração leve), portão ruim ("bwomp" + vibração),
+   caixote (sino + toque).
+3. Linha de tiro: trompa com tambor.
+4. Assalto: baques na torre, canhão, assobio antes da pedra cair e o impacto, estalos das unidades, muro e
+   varredor (nas fases que têm essas defesas), andar caindo.
+5. Fim: queda da torre (estrondo + vibração longa) junto com a fanfarra — os dois começam no mesmo instante; a
+   música para e a tela de resultado fica em silêncio depois. Ou derrota (trombone + vibração).
+6. Chefe (fase 10 de um mundo): trompas graves + tambores na entrada e a cada andar com regra de chefe.
+7. Loja: som de moeda ao comprar; presente diário/anúncio premiado: brilho de recompensa.
+
+Opções:
+A) Aprovar como está.
+   + Fecha a RT-8; sem custo; sem licença de terceiros; tudo reproduzível e ajustável.
+   - Riscos: som sintetizado soar simples demais para alguns jogadores (chance média; impacto baixo — o soft
+     launch mede retenção, não som); músicas curtas (15–20 s) cansarem em sessões longas (chance média; impacto
+     baixo); sons grandes que se sobrepõem (queda + fanfarra; no chefe, trompa da linha de tiro + trompas do
+     chefe) (certo; impacto baixo); ajustado para o alto-falante do celular, não testado em fone (chance baixa;
+     impacto baixo). Tudo se ajusta depois sem mexer no código do jogo.
+   Custo: zero. Dá para voltar atrás? sim, fácil.
+B) Aprovar com ajustes: dizer quais sons ou vibrações mudar (ex.: "assobio mais baixo", "sem vibração no
+   portão bom", "música mais longa", "fanfarra só depois da queda").
+   + Mesmo caminho, só afinando.
+   - Riscos: mais uma rodada curta de sessão (chance alta; impacto baixo).
+   Custo: ~meia sessão. Volta atrás? sim.
+C) Trocar por sons CC0 gravados (ex.: pacotes de áudio da Kenney, domínio público), mantendo a música própria
+   ou trocando também.
+   + Sons gravados, mais "reais".
+   - Riscos: você precisa autorizar o download de cada pacote (nome, origem e tamanho na hora); casar 20 papéis
+     com pacotes genéricos pode deixar lacunas, como o assobio e a queda da torre (chance média; impacto baixo);
+     APK alguns MB maior (inferência nossa).
+   Custo: grátis; ~1 sessão. Volta atrás? sim.
+D) Adiar a escuta até o soft launch.
+   + Nada a fazer agora.
+   - Custo de adiar: vídeo e imagens da loja (RT-9) saem com um som que você não ouviu.
+
+Recomendação: A — o som cobre todos os momentos que o plano pediu, cumpre a regra de licença sem depender de
+download e é fácil de ajustar; se algo incomodar ao ouvir, B resolve em meia sessão.
+Segunda opinião (fable): concorda com A. Pediu (incorporado): tirar a vibração de cada pedra, avisar da
+sobreposição queda + fanfarra e do silêncio no resultado, dar o resultado do gate e explicar os termos.
+Se você não responder: o jogo segue com este som (já instalado no OPPO); a RT-8 fica concluída com o aceite
+"ouvir e aprovar o som" pendente, e a RT-9 espera a sua resposta antes de gravar vídeo e imagens da loja.
+
+Responda: A, B + o que mudar, C, D, ou "explica melhor".

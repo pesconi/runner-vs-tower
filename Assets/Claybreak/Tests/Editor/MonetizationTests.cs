@@ -147,5 +147,19 @@ namespace Claybreak.Tests
             Assert.AreEqual(string.Empty, shipped.AdUnits.AndroidRewardedUnitId);
             Assert.AreEqual(string.Empty, shipped.AdUnits.AndroidInterstitialUnitId);
         }
+
+        // RT-8: the settings link opens only a real https page.
+        [Test]
+        public void PrivacyPolicyLinkMustBeAnHttpsPage()
+        {
+            Assert.IsTrue(ClaybreakMonetization.IsHttpsPage("https://example.com/privacy"));
+            Assert.IsFalse(ClaybreakMonetization.IsHttpsPage(null));
+            Assert.IsFalse(ClaybreakMonetization.IsHttpsPage(""));
+            Assert.IsFalse(ClaybreakMonetization.IsHttpsPage("https://"));
+            Assert.IsFalse(ClaybreakMonetization.IsHttpsPage("http://example.com/privacy"));
+            Assert.IsFalse(ClaybreakMonetization.IsHttpsPage("https://example.com/a b"));
+            Assert.IsFalse(ClaybreakMonetization.IsHttpsPage("https://example.com/\tx"));
+            Assert.IsFalse(ClaybreakMonetization.IsHttpsPage("javascript:alert(1)"));
+        }
     }
 }

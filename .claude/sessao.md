@@ -58,3 +58,8 @@
   `origin/HEAD` e com mudanças não commitadas): usar um revisor independente só leitura. O teste offline de anúncios do
   Wild Pack (`MultiplierRunner/Tests/RewardedAds`) compila por caminho os arquivos de `Runtime/Ads` do kit que o
   premiado usa: arquivo novo ali precisa entrar no `.csproj` dele (24/24 é a linha de base).
+- 2026-11-21 (RT-8): dois Unity em batchmode ao mesmo tempo (este projeto e o Wild Pack) podem derrubar um deles na
+  partida ("Failed to initialise UDS client", saída 21): rodar o aceite do Wild Pack depois, sozinho. Edições por script:
+  o texto vai num arquivo de especificação (Write) e o Python lê com `python -X utf8` (sem isso o stdin vira cp1252 e
+  "¢"/"·" não casam). O áudio é dado: `python Tools/audio/clay_siege_audio.py` regrava os WAV; o validador recusa clipe
+  fora de `docs/audio-licenses.md`. Os testes PlayMode acham botões pelo caminho na hierarquia (`/Ui/Screens/<Tela>/Safe/...`).

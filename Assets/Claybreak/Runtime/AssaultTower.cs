@@ -144,7 +144,7 @@ namespace Claybreak
 
             health = Mathf.Max(0, health - damage);
             shake = 1f;
-            GameAudio.Play(GameSound.Coin);
+            ClaybreakSfx.Play(ClaybreakSfx.Cue.TowerHit);
             Refresh();
             if (health == 0)
             {

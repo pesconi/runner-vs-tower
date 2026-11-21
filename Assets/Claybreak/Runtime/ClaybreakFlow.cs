@@ -64,7 +64,6 @@ namespace Claybreak
         [SerializeField] private CannonDefense cannon;
         [SerializeField] private ClaybreakHud hud;
         [SerializeField] private ClaybreakScreens screens;
-        [SerializeField] private ClaybreakSfx sfx;
         [SerializeField] private Transform firingLine;
         [SerializeField] private Transform laneMarker;
         [SerializeField] private GameAudio gameAudio;
@@ -184,6 +183,12 @@ namespace Claybreak
                 + (deviceGate ? $", DEVICE GATE world {deviceGateWorld + 1} (maximum loadout)" : string.Empty) + ".", this);
             if (deviceGate)
             {
+#if DEVELOPMENT_BUILD || RELEASE_MEASUREMENT
+                // RT-8: the gate is measured with sound, music and vibration on, whatever the phone had saved.
+                GameAudio.SetSoundMuted(false);
+                GameAudio.SetMusicMuted(false);
+                GameHaptics.SetEnabled(true);
+#endif
                 StartLevel(StressLevel);
             }
             else
@@ -207,7 +212,7 @@ namespace Claybreak
         {
             if (catalog == null || stressLevels == null || scenery == null || theme == null || track == null || player == null || crowd == null
                 || pool == null || runCamera == null || assaultCamera == null || gates == null || field == null
-                || tower == null || cannon == null || hud == null || screens == null || sfx == null
+                || tower == null || cannon == null || hud == null || screens == null
                 || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null
                 || monetization == null || ads == null)
             {
@@ -248,7 +253,7 @@ namespace Claybreak
 
             RunnerDeathEffects.Configure(theme.DeathEffect, track);
             gameAudio.Configure(this, theme.Audio);
-            sfx.Configure(theme.Audio);
+            ClaybreakSfx.Configure(theme.Audio);
             frameRateGovernor.Configure(this);
 
             gates.GateCrossed += OnGateCrossed;
@@ -268,6 +273,7 @@ namespace Claybreak
             screens.HomePressed += ShowMenu;
             screens.DailyPressed += OnDaily;
             screens.PrivacyPressed += () => adGateway.ShowPrivacyOptions();
+            screens.SetPrivacyPolicyUrl(monetization.PrivacyPolicyUrl);
             screens.ResultAdPressed += OnResultAd;
             screens.ContinueAdPressed += OnContinueAd;
             screens.ContinueDeclined += OnContinueDeclined;
@@ -552,7 +558,7 @@ namespace Claybreak
                 return;
             }
 
-            GameAudio.Play(bought ? GameSound.AdReward : GameSound.ButtonClick);
+            GameAudio.Play(bought ? GameSound.Coin : GameSound.ButtonClick);
             WriteSave();
             Debug.Log($"[Claybreak] Shop: {tab} #{index} {(bought ? "bought" : "toggled")}; coins {progression.Save.coins}, "
                 + $"loadout [{string.Join(", ", progression.Save.loadout)}], skin {progression.Save.skin}.", this);

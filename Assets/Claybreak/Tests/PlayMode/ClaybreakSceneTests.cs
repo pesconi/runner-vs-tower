@@ -1,4 +1,5 @@
 using System.Collections;
+using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Crowd;
 using NUnit.Framework;
 using UnityEngine;
@@ -122,31 +123,68 @@ namespace Claybreak.Tests
             var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
             Assert.AreEqual(FlowState.Menu, flow.State);
             flow.Progress.Save.coins = 5000;
-            Press("/Ui/Screens/Home/ShopButton");
+            Press("/Ui/Screens/Home/Safe/ShopButton");
             Assert.IsTrue(flow.Screens.ShopShown, "the shop did not open");
 
-            Press("/Ui/Screens/Shop/ShopList/Content/Row1/Action");
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row1/Action");
             Assert.AreEqual(1, flow.Progress.UpgradeLevel(0), "the army upgrade was not bought");
-            Press("/Ui/Screens/Shop/TabELITES");
+            Press("/Ui/Screens/Shop/Safe/TabELITES");
             Assert.AreEqual(ShopTab.Units, flow.Screens.Tab);
-            Press("/Ui/Screens/Shop/ShopList/Content/Row2/Action");
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row2/Action");
             Assert.IsTrue(flow.Progress.IsUnitEquipped(1), "the Sprinter was not bought into the loadout");
-            Press("/Ui/Screens/Shop/TabSKINS");
-            Press("/Ui/Screens/Shop/ShopList/Content/Row2/Action");
+            Press("/Ui/Screens/Shop/Safe/TabSKINS");
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row2/Action");
             Assert.AreEqual("ember", flow.Progress.Skin.id, "the skin was not bought and worn");
             Assert.Less(flow.Progress.Save.coins, 5000);
 
-            Press("/Ui/Screens/Shop/Back");
+            Press("/Ui/Screens/Shop/Safe/Back");
             Assert.IsTrue(GameObject.Find("Home") != null, "BACK did not return home");
             Assert.AreEqual(flow.ActiveLevel.StartCount + flow.ActiveLoadout.StartingArmy + 1, crowd.CurrentCount);
             Assert.AreEqual(5, flow.ActiveLoadout.StartingArmy);
             Assert.AreEqual(1, flow.LoadoutCount);
 
-            Press("/Ui/Screens/Home/WorldsButton");
+            Press("/Ui/Screens/Home/Safe/WorldsButton");
             Assert.IsTrue(flow.Screens.WorldsShown, "the world list did not open");
-            Press("/Ui/Screens/Worlds/Back");
-            Press("/Ui/Screens/Home/Play");
+            Press("/Ui/Screens/Worlds/Safe/Back");
+            Press("/Ui/Screens/Home/Safe/Play");
             Assert.AreEqual(FlowState.Run, flow.State);
+            yield return null;
+        }
+
+        // RT-8: SETTINGS opens the settings page; its switches drive the kit's preferences and come back as they
+        // were; the policy link says when it is not published yet; BACK returns home.
+        [UnityTest]
+        public IEnumerator SettingsPageDrivesTheKitSwitches()
+        {
+            yield return LoadScene(false);
+            var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
+            bool sound = GameAudio.SoundMuted;
+            bool music = GameAudio.MusicMuted;
+            bool vibration = GameHaptics.Enabled;
+            try
+            {
+                Press("/Ui/Screens/Home/Safe/SettingsButton");
+                Assert.IsTrue(flow.Screens.SettingsShown, "the settings page did not open");
+                Press("/Ui/Screens/Settings/Safe/Sound");
+                Assert.AreEqual(!sound, GameAudio.SoundMuted, "SOUND did not switch");
+                Press("/Ui/Screens/Settings/Safe/Music");
+                Assert.AreEqual(!music, GameAudio.MusicMuted, "MUSIC did not switch");
+                Press("/Ui/Screens/Settings/Safe/Vibration");
+                Assert.AreEqual(!vibration, GameHaptics.Enabled, "VIBRATION did not switch");
+                Press("/Ui/Screens/Settings/Safe/PrivacyPolicy");
+                var note = GameObject.Find("/Ui/Screens/Settings/Safe/Note").GetComponent<UnityEngine.UI.Text>();
+                Assert.IsNotEmpty(note.text, "the policy link said nothing while its page is not published");
+                Press("/Ui/Screens/Settings/Safe/Back");
+                Assert.IsFalse(flow.Screens.SettingsShown);
+                Assert.IsTrue(GameObject.Find("Home") != null, "BACK did not return home");
+            }
+            finally
+            {
+                GameAudio.SetSoundMuted(sound);
+                GameAudio.SetMusicMuted(music);
+                GameHaptics.SetEnabled(vibration);
+            }
+
             yield return null;
         }
 

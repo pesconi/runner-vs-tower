@@ -28,6 +28,13 @@ namespace Claybreak.Editor
         // per minute of play on average (docs/rt6-economia.md), so the gift helps without replacing play.
         public static readonly int[] DailyRewards = { 50, 75, 100, 125, 150, 200, 300 };
 
+        /// <summary>
+        /// RT-8: public page of the privacy policy, opened from the settings page. Empty until RT-9 publishes
+        /// docs/politica-de-privacidade.md at a public https address (the settings link then says it comes with
+        /// the store release); the monetization validator refuses a production build without it.
+        /// </summary>
+        public const string PrivacyPolicyUrl = "";
+
         public static void Write()
         {
             var units = AssetDatabase.LoadAssetAtPath<AdUnitSettings>(AdUnitsPath);
@@ -45,6 +52,7 @@ namespace Claybreak.Editor
             }
 
             monetization.Configure(units, true, true, 0.5f, 10, InterstitialOn, Pacing, (int[])DailyRewards.Clone());
+            monetization.SetPrivacyPolicyUrl(PrivacyPolicyUrl);
             EditorUtility.SetDirty(monetization);
             AssetDatabase.SaveAssets();
         }

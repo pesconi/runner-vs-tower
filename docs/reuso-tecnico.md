@@ -124,11 +124,11 @@ Fonte [F]: `studiokit` na tag `v0.1.0` (`com.jungledegree.studiokit/README.md`,
 
 | Assembly / pasta | Conteúdo |
 |---|---|
-| `JungleDegree.StudioKit.Core` (`Runtime/Core`) | fase da partida `RunPhase` + classe base `RunPhaseSource` (o jogo herda e traduz o próprio estado; ordem `Menu, Playing, Lost, Won` é contrato com teste); `GameAudio`/`ThemeAudio` (motor de som, sem os clipes); `GameHaptics` + `Vibration.androidlib` (permissão `VIBRATE` vem do pacote); `FrameRateGovernor`; blocos de tema `ThemeWorldProfile`, `ThemeInterfaceStyle`, `ThemeColorRules`; `GeneratedEnvironmentAssets`; `RunnerTrackContactExtension` |
+| `JungleDegree.StudioKit.Core` (`Runtime/Core`) | fase da partida `RunPhase` + classe base `RunPhaseSource` (o jogo herda e traduz o próprio estado; ordem `Menu, Playing, Lost, Won` é contrato com teste); `GameAudio`/`ThemeAudio` (motor de som, sem os clipes; desde a K.8/RT-8 com a tabela de sons extras nomeados pelo jogo); `GameHaptics` + `Vibration.androidlib` (permissão `VIBRATE` vem do pacote; vibração sem alocação desde a K.8); `FrameRateGovernor`; blocos de tema `ThemeWorldProfile`, `ThemeInterfaceStyle`, `ThemeColorRules`; `GeneratedEnvironmentAssets`; `RunnerTrackContactExtension` |
 | `JungleDegree.StudioKit.Characters` | visual de massinha (`RunnerSkin`, `RunnerBodyFrames`, malha/animação/pose/inclinação/sombra), `RunnerReactions`, `RunnerDeathEffects`, `ThemeCharacterRoster`, `IRunnerLook` |
 | `JungleDegree.StudioKit.Crowd` | `RunnerPool`, `RunnerUnit`, `RunnerCrowd`, `PlayerController`, `CameraFollow`, `DevFrameTimingProbe` |
 | `JungleDegree.StudioKit.World` | `RunnerEnvironmentView` (cenário, céu, neblina e pista por dados) |
-| `JungleDegree.StudioKit.UI` | `ClayUi`, `ClayPress`, `HudPulse`, `MobileHudLayout` |
+| `JungleDegree.StudioKit.UI` | `ClayUi`, `ClayPress`, `HudPulse`, `MobileHudLayout`, `SafeAreaFitter` (K.8) |
 | `JungleDegree.StudioKit.Ads` | `RewardedAdService` (SDK `com.google.ads.mobile` 11.6.0, do OpenUPM) |
 | `JungleDegree.StudioKit.Editor` | `EngineIsolationValidation` (lê a lista de termos do jogo), `StageOProfileReport` |
 | `Shared/` | shaders `StudioKit/RunnerClay` e `StudioKit/RunnerGroundShadow`, materiais `RunnerClay`, `RunnerGroundShadow`, `RunnerSplat`, corpo `ClayRunner.fbx` + `ClayRunnerFrames.asset`, `ClayAccessories.fbx` |

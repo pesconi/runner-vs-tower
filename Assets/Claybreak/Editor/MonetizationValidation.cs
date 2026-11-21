@@ -61,6 +61,8 @@ namespace Claybreak.Editor
 
             CheckDecisions(monetization, failures);
             CheckUnits(monetization.AdUnits, failures);
+            Check(!ProductionUnitsAllowed || monetization.PrivacyPolicyUrl.Length > 0,
+                "privacy: a production build needs the public privacy policy link (MonetizationContent.PrivacyPolicyUrl)", failures);
             CheckPackages(failures);
             CheckDocuments(failures);
             CheckScene(monetization, failures);

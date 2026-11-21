@@ -30,6 +30,8 @@ namespace Claybreak
         [Header("Daily reward (D5)")]
         [Tooltip("Coins per claim, in order; after the last the cycle starts again. Missing a day never resets it.")]
         [SerializeField] private int[] dailyRewards = { 50, 75, 100, 125, 150, 200, 300 };
+        [Tooltip("RT-8: public https page of the privacy policy, opened from the settings page (empty until RT-9).")]
+        [SerializeField] private string privacyPolicyUrl = string.Empty;
 
         public AdUnitSettings AdUnits => adUnits;
         public bool DoubleCoins => doubleCoins;
@@ -39,6 +41,8 @@ namespace Claybreak
         public bool InterstitialOn => interstitialOn;
         public InterstitialPacing InterstitialPacing => interstitialPacing;
         public int[] DailyRewards => dailyRewards;
+        /// <summary>RT-8: public https page of the privacy policy (settings link); empty until RT-9 publishes it.</summary>
+        public string PrivacyPolicyUrl => privacyPolicyUrl ?? string.Empty;
 
         /// <summary>Units a continue brings back for <paramref name="armyAtLine"/> units at the firing line.</summary>
         public int ContinueArmy(int armyAtLine)
@@ -58,6 +62,32 @@ namespace Claybreak
             interstitialOn = interstitial;
             interstitialPacing = pacing;
             dailyRewards = daily;
+        }
+
+        /// <summary>An absolute https address with a host and no whitespace or control characters.</summary>
+        public static bool IsHttpsPage(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+
+            foreach (char c in url)
+            {
+                if (char.IsWhiteSpace(c) || char.IsControl(c))
+                {
+                    return false;
+                }
+            }
+
+            return System.Uri.TryCreate(url, System.UriKind.Absolute, out System.Uri uri)
+                && uri.Scheme == System.Uri.UriSchemeHttps && !string.IsNullOrEmpty(uri.Host);
+        }
+
+        /// <summary>RT-8: the privacy policy page (editor content builder and tests).</summary>
+        public void SetPrivacyPolicyUrl(string url)
+        {
+            privacyPolicyUrl = url ?? string.Empty;
         }
 
         /// <summary>The rules the game relies on; the validator adds the release rules (test units only until RT-9).</summary>
@@ -84,6 +114,12 @@ namespace Claybreak
             if (dailyRewards == null || dailyRewards.Length == 0)
             {
                 error = "the daily reward cycle is empty.";
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(privacyPolicyUrl) && !IsHttpsPage(privacyPolicyUrl))
+            {
+                error = "the privacy policy link must be an https address.";
                 return false;
             }
 

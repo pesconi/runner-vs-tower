@@ -87,7 +87,7 @@ namespace Claybreak.Tests
             yield return null;
             Assert.AreEqual(FlowState.ContinueOffer, flow.State, "no continue was offered");
             Assert.IsTrue(flow.Screens.ContinueShown);
-            Press("/Ui/Screens/Continue/Card/WatchAd");
+            Press("/Ui/Screens/Continue/Safe/Card/WatchAd");
             Assert.AreEqual(1, ads.RewardedShown);
             Assert.AreEqual(FlowState.Assault, flow.State, "the earned continue did not resume the assault");
             Assert.Greater(crowd.CurrentCount, 1, "the continue brought no units back");
@@ -106,7 +106,7 @@ namespace Claybreak.Tests
             Object.FindFirstObjectByType<RunnerCrowd>().SetCount(1);
             yield return null;
             Assert.AreEqual(FlowState.ContinueOffer, flow.State);
-            Press("/Ui/Screens/Continue/Card/NoThanks");
+            Press("/Ui/Screens/Continue/Safe/Card/NoThanks");
             Assert.AreEqual(FlowState.Lost, flow.State);
             Assert.AreEqual(0, ads.RewardedShown);
             Assert.AreEqual(1, flow.Progress.Save.levelsLost);
@@ -136,10 +136,10 @@ namespace Claybreak.Tests
             int coins = flow.Progress.Save.coins;
             yield return WaitForResult(flow);
             Assert.IsTrue(flow.Screens.ResultAdShown, "the result did not offer to double the coins");
-            Press("/Ui/Screens/Result/RewardedOffer");
+            Press("/Ui/Screens/Result/Safe/RewardedOffer");
             Assert.AreEqual(coins + flow.LastOutcome.Coins, flow.Progress.Save.coins, "the coins were not doubled");
             Assert.IsFalse(flow.Screens.ResultAdShown, "the offer stayed after it was used");
-            Press("/Ui/Screens/Result/Card/Primary");
+            Press("/Ui/Screens/Result/Safe/Card/Primary");
             Assert.AreEqual(FlowState.Run, flow.State);
             Assert.AreEqual(0, ads.InterstitialAsked, "an interstitial right after a chosen rewarded ad");
         }
@@ -152,7 +152,7 @@ namespace Claybreak.Tests
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
             flow.Tower.Hit(flow.Tower.Health);
             yield return WaitForResult(flow);
-            Press("/Ui/Screens/Result/Card/Primary");
+            Press("/Ui/Screens/Result/Safe/Card/Primary");
             Assert.AreEqual(1, ads.InterstitialAsked);
             Assert.AreEqual(FlowState.Run, flow.State, "the next level did not start after the interstitial call");
         }
@@ -165,7 +165,7 @@ namespace Claybreak.Tests
             Assert.AreEqual(FlowState.Menu, flow.State);
             Assert.IsTrue(flow.Screens.DailyShown, "a fresh player has no daily gift");
             int coins = flow.Progress.Save.coins;
-            Press("/Ui/Screens/Home/DailyGift");
+            Press("/Ui/Screens/Home/Safe/DailyGift");
             Assert.Greater(flow.Progress.Save.coins, coins);
             Assert.IsFalse(flow.Screens.DailyShown, "the gift stayed after the claim");
             Assert.AreEqual(1, flow.Progress.Save.dailyClaims);

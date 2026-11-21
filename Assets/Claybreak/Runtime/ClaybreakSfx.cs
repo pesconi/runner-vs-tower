@@ -1,16 +1,15 @@
 using System;
 using JungleDegree.StudioKit.Core;
-using UnityEngine;
 
 namespace Claybreak
 {
     /// <summary>
     /// This game's own sound cues, on top of the kit's fixed <see cref="GameSound"/> roles (the kit has no
-    /// "tower falls" or "cannon fires"). Voices are preallocated AudioSources made by the scene builder;
-    /// the kit's mute switch and its vibration switch are respected. Kit candidate (pauta 5.1): a generic
-    /// "extra cue" table in ThemeAudio would remove this class.
+    /// "tower falls" or "cannon fires"). RT-8: each cue is an entry of the kit's extra-sound table in the
+    /// theme (<see cref="ThemeAudio.ExtraSounds"/>, id = the cue name), so the kit's voices, mute switch,
+    /// pauses and vibration switch apply; this class only maps the cue to its index, once.
     /// </summary>
-    public sealed class ClaybreakSfx : MonoBehaviour
+    public static class ClaybreakSfx
     {
         public enum Cue
         {
@@ -20,126 +19,58 @@ namespace Claybreak
             WallBreak,
             Sweep,
             Crate,
-            Boss
+            Boss,
+            ProjectileWarning,
+            StoneImpact,
+            TowerHit
         }
 
-        [Serializable]
-        public struct Entry
+        private static readonly int[] Indices = CreateIndices();
+
+        /// <summary>Theme id of a cue (the clip of cue X is "CueX" and its extra-sound id is "X").</summary>
+        public static string IdOf(Cue cue)
         {
-            public Cue cue;
-            public AudioClip clip;
-            [Range(0f, 1f)] public float volume;
-            [Min(0f)] public float minimumInterval;
-            [Tooltip("Vibrate with the cue, through the kit's haptics entry of this role (and its switch).")]
-            public bool vibrate;
-            public GameSound hapticRole;
+            return cue.ToString();
         }
 
-        private static ClaybreakSfx instance;
-
-        [SerializeField] private AudioSource[] voices = new AudioSource[0];
-        [SerializeField] private Entry[] entries = new Entry[0];
-
-        private ThemeAudio themeAudio;
-        private float[] lastPlay;
-        private int nextVoice;
-
-        public bool HasEveryCue
+        /// <summary>True when the theme has an extra sound for every cue.</summary>
+        public static bool Covers(ThemeAudio audio, out string missing)
         {
-            get
+            foreach (Cue cue in Enum.GetValues(typeof(Cue)))
             {
-                foreach (Cue cue in Enum.GetValues(typeof(Cue)))
+                if (audio == null || audio.FindExtraSound(IdOf(cue)) < 0)
                 {
-                    if (Find(cue) < 0)
-                    {
-                        return false;
-                    }
+                    missing = IdOf(cue);
+                    return false;
                 }
-
-                return voices != null && voices.Length > 0;
             }
+
+            missing = null;
+            return true;
         }
 
-        private void Awake()
+        public static void Configure(ThemeAudio audio)
         {
-            instance = this;
-            lastPlay = new float[Enum.GetValues(typeof(Cue)).Length];
-            for (int i = 0; i < lastPlay.Length; i++)
+            foreach (Cue cue in Enum.GetValues(typeof(Cue)))
             {
-                lastPlay[i] = -10f;
+                Indices[(int)cue] = audio != null ? audio.FindExtraSound(IdOf(cue)) : -1;
             }
-        }
-
-        private void OnDestroy()
-        {
-            if (instance == this)
-            {
-                instance = null;
-            }
-        }
-
-        /// <summary>The theme's audio block: its haptic entries drive the cues that vibrate.</summary>
-        public void Configure(ThemeAudio audio)
-        {
-            themeAudio = audio;
         }
 
         public static void Play(Cue cue)
         {
-            if (instance != null)
-            {
-                instance.PlayInternal(cue);
-            }
+            GameAudio.PlayExtra(Indices[(int)cue]);
         }
 
-        private void PlayInternal(Cue cue)
+        private static int[] CreateIndices()
         {
-            int index = Find(cue);
-            if (index < 0 || voices.Length == 0)
+            var indices = new int[Enum.GetValues(typeof(Cue)).Length];
+            for (int i = 0; i < indices.Length; i++)
             {
-                return;
+                indices[i] = -1;
             }
 
-            Entry entry = entries[index];
-            float now = Time.unscaledTime;
-            if (now - lastPlay[(int)cue] < entry.minimumInterval)
-            {
-                return;
-            }
-
-            lastPlay[(int)cue] = now;
-            if (entry.vibrate && themeAudio != null)
-            {
-                GameHaptics.Trigger(themeAudio, entry.hapticRole);
-            }
-
-            if (GameAudio.SoundMuted || entry.clip == null)
-            {
-                return;
-            }
-
-            AudioSource voice = voices[nextVoice];
-            nextVoice = (nextVoice + 1) % voices.Length;
-            voice.pitch = 1f;
-            voice.PlayOneShot(entry.clip, entry.volume);
-        }
-
-        private int Find(Cue cue)
-        {
-            if (entries == null)
-            {
-                return -1;
-            }
-
-            for (int i = 0; i < entries.Length; i++)
-            {
-                if (entries[i].cue == cue)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
+            return indices;
         }
     }
 }
