@@ -73,3 +73,6 @@
   mexeu no jogo, junto com os `Assets/Settings`/`ProjectSettings` já listados. PlayMode roda com `-nographics` (dispositivo
   `Null`, nada se desenha): para provar desenho, rodar o teste sem `-nographics` (`-runTests -testFilter <Classe>`).
   Gate da multidão toon: `Tools/rt6t-toonlab-gate.sh [apk]` (matriz MSAA/HDR + 2000 de registro, captura em `docs/art/rt6t/`).
+- 2026-11-21 (RT-6t.1): shader que não compila vira magenta sem erro em tempo de jogo e os números do gate saem
+  "bons" medindo o shader de erro. Antes de aceitar um gate de visual novo, olhar a captura do aparelho e o log do build
+  (`grep "Shader error" <out>/logs/apk-measure.log`).

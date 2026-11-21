@@ -30,6 +30,7 @@ Shader "StudioKit/ToonLit"
             #pragma multi_compile_local _ STUDIOKIT_TOON_INSTANCES
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RealtimeLights.hlsl"
             #include "ToonInstanceData.hlsl"
 

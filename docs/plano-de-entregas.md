@@ -301,12 +301,11 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   `direcao-visual-crowd.md`); se ainda falhar, ficha ao usuário com o maior número que passou. A série só continua
   se passar.
 - **Exige o usuário:** OPPO conectado e desbloqueado.
-- **Status: código feito e validado em 2026-11-21; gate no OPPO pendente (aceite pendente).** Motor Toon/Swarm na
-  incubadora, Bolinha provisória de 474 triângulos, cena `ToonLab`, modo `--ez toonlab true --ei units N` no APK de
-  medição e `toonlab:N:msaa:hdr` em `Tools/rt2-gate.sh` (matriz: `Tools/rt6t-toonlab-gate.sh`); `rt4-check` todo
-  PASS (EditMode 150/150, PlayMode 14/14) e a `ToonLab` roda no Editor com GPU. O OPPO ficou bloqueado a sessão toda:
-  falta o gate 3× (passo exato em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md)). **A série só continua (6t.2) depois
-  que o gate passar.**
+- **Status: concluída em 2026-11-21 — gate 3× no OPPO aprovado.** 1000 unidades a 60 fps em todas as
+  combinações (MSAA 1×/4×, HDR desligado/ligado): pior caso CPU p95 1,9 ms, GPU p95 5,5 ms, quadro p95 16 ms, 0%
+  > 50 ms, PSS 204 MB; 2000 (registro) também dentro do gate (GPU 8,2 ms com MSAA 4×). Vulkan, Mali-G1-Ultra MC12.
+  Chamadas 1 + 1. Sem plano B. Detalhes e captura: [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md). A série segue na
+  6t.2 (D25 sem resposta: faz as duas variantes e para antes de escolher).
 - **Prompt da sessão:** "Entrega RT-6t.1 do Runner vs Tower (portão técnico da direção crowd toon). Leia
   `docs/direcao-visual-crowd.md` (seções 1, 1.2, 4.1 e 6) e abra `docs/reference/crowd-proto.html`. Escreva o
   motor em `Assets/StudioKitIncubator/` com namespaces e asmdefs do kit (`JungleDegree.StudioKit.Toon` e

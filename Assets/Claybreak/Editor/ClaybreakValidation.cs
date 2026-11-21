@@ -362,6 +362,21 @@ namespace Claybreak.Editor
                 }
             }
 
+            // A shader that fails to compile renders magenta without any run-time error (RT-6t.1 lost a device run to
+            // this): every toon lab material must use a shader that compiles.
+            foreach (string path in new[] { ToonLabBuilder.SwarmMaterialPath, ToonLabBuilder.StaticMaterialPath, ToonLabBuilder.ShadowMaterialPath })
+            {
+                var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (material == null || material.shader == null)
+                {
+                    failures.Add("missing " + path + " or its shader (run Claybreak > Build Scene)");
+                }
+                else if (ShaderUtil.ShaderHasError(material.shader))
+                {
+                    failures.Add($"{material.shader.name} ({path}) has compile errors (see the Editor log)");
+                }
+            }
+
             if (!File.Exists(Claybreak.Lab.ToonLab.ScenePath))
             {
                 failures.Add("missing " + Claybreak.Lab.ToonLab.ScenePath + " (run Claybreak > Build Scene)");

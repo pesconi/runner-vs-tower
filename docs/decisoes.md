@@ -1134,7 +1134,7 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   fichas — D25: a RT-6t.2 faz as duas variantes e para antes de escolher; D27: teto de 300 em tudo (o motor é feito
   para 1000 e a troca é dado); D26: trava a RT-6t.6. D28 (sem resposta: A) e D29 (trava a RT-9) seguem como estão.
 
-## 2026-11-21 — T-RT6t1-1..8 — Portão técnico da multidão toon — técnica (sessão RT-6t.1)
+## 2026-11-21 — T-RT6t1-1..9 — Portão técnico da multidão toon — técnica (sessão RT-6t.1)
 
 - **T-RT6t1-1 — Desenho por `Graphics.RenderMeshPrimitives`, não `RenderMeshIndirect`.** A contagem viva já está na
   CPU (a simulação é Burst na CPU, T-RT6t-2), então um buffer de argumentos não ganha nada; continua **1 chamada**
@@ -1167,3 +1167,9 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   com `-nographics` (dispositivo `Null`); ali o `SwarmRenderer` registra uma linha e só simula, em vez de acusar
   erro. Num aparelho real sem buffer estruturado no vertex shader continua sendo erro (a reserva é a 6t.11). O
   desenho é provado pelo mesmo teste rodado com GPU (`-runTests -testFilter ToonLabSceneTests` sem `-nographics`).
+- **T-RT6t1-9 — Resultado do gate e padrão de antisserrilhado.** O gate passou com folga em todas as combinações
+  (pior caso 1000 com MSAA 4× e HDR: GPU p95 5,5 ms de 11; `rt6t-crowd-toon.md`), então o visual novo pode usar
+  **MSAA 4×** (item 22 do plano: "se couber no gate"); a 6t.4 liga no URP asset junto com a troca da multidão e
+  regenera o gate na corrida. HDR não muda o custo no OPPO e fica como está. O validador do jogo passa a recusar
+  shader com erro de compilação nos materiais da `ToonLab` (a primeira rodada no aparelho mediu o shader de erro
+  magenta sem nenhum aviso em tempo de jogo).
