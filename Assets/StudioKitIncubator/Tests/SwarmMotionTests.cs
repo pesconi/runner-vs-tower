@@ -22,32 +22,22 @@ namespace JungleDegree.StudioKit.Tests
         }
 
         [Test]
-        public void SunflowerOffsetsMatchTheReference()
-        {
-            for (int i = 0; i < 50; i++)
-            {
-                float radius = math.sqrt(i + 0.5f) * 0.25f;
-                float2 expected = new float2(math.cos(i * 2.39996f) * radius, math.sin(i * 2.39996f) * radius * 1.35f);
-                float2 actual = SwarmMotion.SunflowerOffset(i, 0.25f, 1.35f);
-                Assert.AreEqual(expected.x, actual.x, 1e-5f);
-                Assert.AreEqual(expected.y, actual.y, 1e-5f);
-            }
-        }
-
-        [Test]
         public void SimulationWritesOneInstancePerUnitWithTheHop()
         {
-            using var simulation = new SwarmSimulation(128, 0.25f, 1.35f, 7);
-            simulation.SetCount(1000, new float2(1f, 2f));
+            using var simulation = new SwarmSimulation(128, SwarmFormationSettings.Default, 7);
+            simulation.PlaceCenter(1f);
+            simulation.CenterZ = 2f;
+            simulation.SetCount(1000);
             Assert.AreEqual(128, simulation.Count, "the count is clamped to the capacity");
-            simulation.SetCount(100, new float2(1f, 2f));
+            simulation.SetCount(100);
             SwarmMotionSettings motion = SwarmMotionSettings.Default;
-            simulation.Schedule(0.37f, motion, new float3(1f, 0.5f, 0.25f));
+            // Zero step: the units stay in their slots (no lane), only the hop is written.
+            simulation.Schedule(0f, 0.37f, motion, new float3(1f, 0.5f, 0.25f));
             simulation.Complete();
             for (int i = 0; i < simulation.Count; i++)
             {
                 ToonInstance instance = simulation.Instances[i];
-                float2 ground = new float2(1f, 2f) + SwarmMotion.SunflowerOffset(i, 0.25f, 1.35f);
+                float2 ground = new float2(1f, 2f) + SunflowerFormation.Offset(i, 0.25f, 1.35f);
                 Assert.AreEqual(ground.x, instance.Row0.w, 1e-5f);
                 Assert.AreEqual(ground.y, instance.Row2.w, 1e-5f);
                 float bounce = instance.Tint.w;
@@ -56,19 +46,6 @@ namespace JungleDegree.StudioKit.Tests
                 Assert.AreEqual(1f, instance.Tint.x, 1e-6f);
                 float sy = math.length(new float3(instance.Row0.y, instance.Row1.y, instance.Row2.y));
                 Assert.AreEqual(SwarmMotion.SquashY(bounce, motion), sy, 1e-3f);
-            }
-        }
-
-        [Test]
-        public void BoundsHoldEveryUnit()
-        {
-            using var simulation = new SwarmSimulation(1000, 0.25f, 1.35f, 1);
-            simulation.SetCount(1000, float2.zero);
-            UnityEngine.Bounds bounds = simulation.GroundBounds(1f);
-            for (int i = 0; i < 1000; i++)
-            {
-                float2 p = SwarmMotion.SunflowerOffset(i, 0.25f, 1.35f);
-                Assert.IsTrue(bounds.Contains(new UnityEngine.Vector3(p.x, 0.5f, p.y)), $"unit {i} is outside the bounds");
             }
         }
     }

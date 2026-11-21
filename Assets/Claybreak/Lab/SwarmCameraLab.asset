@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eba68de104dd7640ad4c8505d398dc5, type: 3}
+  m_Name: SwarmCameraLab
+  m_EditorClassIdentifier: JungleDegree.StudioKit.Swarm::JungleDegree.StudioKit.Swarm.SwarmCameraProfile
+  Growth: 22
+  DistanceSharpness: 2
+  BaseHeight: 3.2
+  HeightPerDistance: 4.2
+  BaseBack: 5.5
+  BackPerDistance: 5.5
+  LookAhead: 5
+  FollowAcross: 0.35
+  VerticalFov: 50
+  MaxVerticalFov: 65
+  FrameMargin: 0.7
+  FitAhead: 0
+  ShakeDuration: 0.35
+  ShakeAmplitude: 0.6

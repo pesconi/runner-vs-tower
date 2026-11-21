@@ -33,12 +33,9 @@ namespace JungleDegree.StudioKit.Swarm
         };
     }
 
-    /// <summary>The hop and formation formulas, pure and Burst-compatible (tested in EditMode).</summary>
+    /// <summary>The hop formulas, pure and Burst-compatible (tested in EditMode).</summary>
     public static class SwarmMotion
     {
-        /// <summary>Golden angle (radians) of the sunflower formation.</summary>
-        public const float GoldenAngle = 2.39996f;
-
         /// <summary>Bounce 0..1: 0 on the ground, 1 at the top of the hop.</summary>
         public static float Bounce(float time, float phase, float frequency)
         {
@@ -55,23 +52,6 @@ namespace JungleDegree.StudioKit.Swarm
         public static float SquashXZ(float squashY)
         {
             return math.rsqrt(squashY);
-        }
-
-        /// <summary>
-        /// Offset of unit <paramref name="index"/> in a sunflower (golden angle) disc: radius √(i + 0.5)·spacing,
-        /// depth stretched by <paramref name="depthStretch"/>. x is across, y is along +Z.
-        /// </summary>
-        public static float2 SunflowerOffset(int index, float spacing, float depthStretch)
-        {
-            float radius = math.sqrt(index + 0.5f) * spacing;
-            float angle = index * GoldenAngle;
-            return new float2(math.cos(angle) * radius, math.sin(angle) * radius * depthStretch);
-        }
-
-        /// <summary>Radius of the sunflower disc that holds <paramref name="count"/> units (across, before the stretch).</summary>
-        public static float SunflowerRadius(int count, float spacing)
-        {
-            return count <= 0 ? 0f : math.sqrt(count - 0.5f) * spacing;
         }
     }
 }

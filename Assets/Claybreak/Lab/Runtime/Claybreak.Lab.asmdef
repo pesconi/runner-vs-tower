@@ -5,6 +5,7 @@
         "JungleDegree.StudioKit.Toon",
         "JungleDegree.StudioKit.Swarm",
         "JungleDegree.StudioKit.Crowd",
+        "Unity.InputSystem",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime"
     ],

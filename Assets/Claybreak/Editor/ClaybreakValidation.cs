@@ -377,6 +377,17 @@ namespace Claybreak.Editor
                 }
             }
 
+            // RT-6t.3: the lab camera is framed by data (portrait fit), so the profile must be there and coherent.
+            var cameraProfile = AssetDatabase.LoadAssetAtPath<JungleDegree.StudioKit.Swarm.SwarmCameraProfile>(ToonLabBuilder.CameraProfilePath);
+            if (cameraProfile == null)
+            {
+                failures.Add("missing " + ToonLabBuilder.CameraProfilePath + " (run Claybreak > Build Scene)");
+            }
+            else if (cameraProfile.MaxVerticalFov < cameraProfile.VerticalFov || cameraProfile.Growth <= 0f)
+            {
+                failures.Add(ToonLabBuilder.CameraProfilePath + ": the widest field of view must be at least the base one, and growth positive");
+            }
+
             if (!File.Exists(Claybreak.Lab.ToonLab.ScenePath))
             {
                 failures.Add("missing " + Claybreak.Lab.ToonLab.ScenePath + " (run Claybreak > Build Scene)");

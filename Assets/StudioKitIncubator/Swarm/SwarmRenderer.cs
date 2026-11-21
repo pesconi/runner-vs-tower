@@ -21,8 +21,11 @@ namespace JungleDegree.StudioKit.Swarm
         [SerializeField] private Material shadowMaterial;
         [Min(1)] [SerializeField] private int capacity = 2048;
         [Min(0)] [SerializeField] private int initialCount = 100;
-        [Min(0.01f)] [SerializeField] private float spacing = 0.25f;
-        [Min(0.01f)] [SerializeField] private float depthStretch = 1.35f;
+        [SerializeField] private SwarmFormationSettings formation = SwarmFormationSettings.Default;
+        [Tooltip("Half width of the lane the formation is kept in, centered on this object across (0 = no lane).")]
+        [Min(0f)] [SerializeField] private float laneHalfWidth;
+        [Tooltip("Longest frame step of the simulation (s); longer frames (hitches, loading) are slowed down.")]
+        [Min(0.001f)] [SerializeField] private float maxDeltaTime = 0.05f;
         [SerializeField] private Color tint = Color.white;
         [SerializeField] private SwarmMotionSettings motion = SwarmMotionSettings.Default;
         [SerializeField] private uint seed = 1;
@@ -35,26 +38,51 @@ namespace JungleDegree.StudioKit.Swarm
         private bool headless;
 
         public int Capacity => capacity;
-        public float Spacing => spacing;
+        public SwarmFormationSettings Formation => formation;
+        public float LaneHalfWidth => laneHalfWidth;
         public int Count => simulation == null ? 0 : simulation.Count;
+
+        /// <summary>Across position of the formation center now (it follows <see cref="TargetX"/> smoothly).</summary>
+        public float CenterX => simulation == null ? transform.position.x : simulation.CenterX;
+
+        /// <summary>Where the formation is being steered to, across.</summary>
+        public float TargetX => simulation == null ? transform.position.x : simulation.TargetX;
         public int UnitTriangles => unitMesh == null ? 0 : (int)(unitMesh.GetIndexCount(0) / 3);
         public bool DrawsShadows => shadowMaterial != null && shadowMesh != null;
 
         /// <summary>True without a graphics device (batchmode -nographics): the swarm simulates but draws nothing.</summary>
         public bool Headless => headless;
 
-        /// <summary>Sets the live count around the swarm's position (clamped to the capacity).</summary>
+        /// <summary>Sets the live count (clamped to the capacity); new units appear in their slot of the formation.</summary>
         public void SetCount(int count)
         {
             if (simulation != null)
             {
-                Vector3 p = transform.position;
-                simulation.SetCount(count, new float2(p.x, p.z));
+                simulation.SetCount(count);
             }
             else
             {
                 initialCount = Mathf.Max(0, count);
             }
+        }
+
+        /// <summary>Steers the formation center toward <paramref name="x"/> (world, across); it follows smoothly.</summary>
+        public void SteerTo(float x)
+        {
+            simulation?.SteerTo(x);
+        }
+
+        /// <summary>Puts the formation center at <paramref name="x"/> at once (setup; the units walk to their slots).</summary>
+        public void PlaceCenter(float x)
+        {
+            simulation?.PlaceCenter(x);
+        }
+
+        /// <summary>Where unit <paramref name="index"/> (below <see cref="Count"/>) stands now, on the ground.</summary>
+        public Vector3 UnitGroundPosition(int index)
+        {
+            float2 p = simulation.GroundPosition(index);
+            return new Vector3(p.x, 0f, p.y);
         }
 
         private void OnEnable()
@@ -67,7 +95,11 @@ namespace JungleDegree.StudioKit.Swarm
                 return;
             }
 
-            simulation = new SwarmSimulation(capacity, spacing, depthStretch, seed);
+            Vector3 origin = transform.position;
+            simulation = new SwarmSimulation(capacity, formation, seed);
+            simulation.SetLane(origin.x, laneHalfWidth > 0f ? laneHalfWidth : SwarmSimulation.NoLane);
+            simulation.PlaceCenter(origin.x);
+            simulation.CenterZ = origin.z;
             headless = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
             if (headless)
             {
@@ -110,13 +142,10 @@ namespace JungleDegree.StudioKit.Swarm
 
         private void Update()
         {
-            if (simulation.Count == 0)
-            {
-                return;
-            }
-
+            simulation.CenterZ = transform.position.z;
+            float deltaTime = Mathf.Min(Time.deltaTime, maxDeltaTime);
             Color linear = tint.linear;
-            simulation.Schedule(Time.time, motion, new float3(linear.r, linear.g, linear.b));
+            simulation.Schedule(deltaTime, Time.time, motion, new float3(linear.r, linear.g, linear.b));
         }
 
         private void LateUpdate()

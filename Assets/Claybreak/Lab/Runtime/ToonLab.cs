@@ -1,15 +1,18 @@
 using JungleDegree.StudioKit.Swarm;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 namespace Claybreak.Lab
 {
     /// <summary>
-    /// Test scene of the crowd toon look (RT-6t.1, performance gate): N units of the provisional shape hopping in a fixed
-    /// sunflower formation, the Pastel look, a fixed camera that frames the whole crowd in portrait. In measurement
-    /// players the launch extras set the count, MSAA, HDR and frame rate (<see cref="ToonLabSettings"/>) and the kit's
-    /// frame timing probe logs CPU/GPU per window; in the Editor the serialized values are used.
+    /// Test scene of the crowd toon look. RT-6t.1: N units of the provisional shape hopping in a sunflower formation,
+    /// the Pastel look, the performance gate. RT-6t.3: a finger drag (arrow keys in the Editor) steers the crowd across
+    /// the track, the camera rig backs away as it grows and keeps the track on the portrait screen, and a test panel
+    /// adds units (+100), jumps to 1000, restarts at 10 and shakes the camera. In measurement players the launch extras
+    /// set the count, MSAA, HDR and frame rate (<see cref="ToonLabSettings"/>), the panel is hidden and the kit's frame
+    /// timing probe logs CPU/GPU per window; in the Editor the serialized values are used.
     /// </summary>
     public sealed class ToonLab : MonoBehaviour
     {
@@ -17,50 +20,171 @@ namespace Claybreak.Lab
         public const string ScenePath = "Assets/Claybreak/Lab/ToonLab.unity";
 
         [SerializeField] private SwarmRenderer swarm;
-        [SerializeField] private Camera viewCamera;
+        [SerializeField] private SwarmCameraRig cameraRig;
+        [Tooltip("Test panel (its screen rectangle does not start drags); hidden in measurement launches.")]
+        [SerializeField] private RectTransform panel;
         [Min(0)] [SerializeField] private int editorUnits = 1000;
-        [Tooltip("Reference camera of the crowd look: distance grows with √units (prototype formula).")]
-        [SerializeField] private float cameraGrowth = 22f;
-        [SerializeField] private float minimumVerticalFov = 50f;
-        [SerializeField] private float maximumVerticalFov = 100f;
+        [SerializeField] private SwarmDragSettings drag = SwarmDragSettings.Default;
+        [Tooltip("Push the fog away as far as the portrait fit pushes the camera (the reference fog is tuned for the "
+            + "reference framing; without this the crowd sits inside the fog on portrait screens).")]
+        [SerializeField] private bool scaleFogWithFraming = true;
+
+        private bool dragging;
+        private float pressX;
+        private float targetAtPress;
+        private int logFrame;
+        private float fogStart;
+        private float fogEnd;
+        private float fogScale;
+        private ToonLabSettings settings;
+
+        public SwarmRenderer Swarm => swarm;
+        public SwarmCameraRig CameraRig => cameraRig;
+
+        /// <summary>Panel: adds <paramref name="units"/> to the crowd (clamped to the capacity).</summary>
+        public void AddUnits(int units)
+        {
+            swarm.SetCount(swarm.Count + units);
+        }
+
+        /// <summary>Panel: sets the crowd to <paramref name="units"/> (1000!, restart at 10).</summary>
+        public void SetUnits(int units)
+        {
+            swarm.SetCount(units);
+        }
+
+        /// <summary>Panel: shakes the camera as a bad gate will.</summary>
+        public void ShakeCamera()
+        {
+            cameraRig.Shake();
+        }
+
+        /// <summary>Steers the crowd toward <paramref name="x"/> (kept inside the track), as a drag would.</summary>
+        public void SteerTo(float x)
+        {
+            swarm.SteerTo(SwarmSteering.Clamp(x, drag, swarm.transform.position.x, swarm.LaneHalfWidth));
+        }
 
         private void Awake()
         {
-            if (swarm == null || viewCamera == null)
+            if (swarm == null || cameraRig == null)
             {
-                Debug.LogError("[ToonLab] swarm and camera are required", this);
+                Debug.LogError("[ToonLab] swarm and camera rig are required", this);
                 enabled = false;
                 return;
             }
 
-            ToonLabSettings settings = ToonLabSettings.Defaults(editorUnits);
+            settings = ToonLabSettings.Defaults(editorUnits);
             bool fromLaunch = ToonLabSettings.TryReadLaunchExtras(editorUnits, out ToonLabSettings launch);
             if (fromLaunch)
             {
                 settings = launch;
             }
 
-            int units = Mathf.Clamp(settings.Units, 0, swarm.Capacity);
-            swarm.SetCount(units);
-            FrameCrowd(units);
+            if (panel != null && settings.Requested)
+            {
+                panel.gameObject.SetActive(false);
+            }
+
+            swarm.SetCount(Mathf.Clamp(settings.Units, 0, swarm.Capacity));
             ApplyRendering(settings);
             AttachTimingProbe(settings);
-            Log(settings, units);
+            fogStart = RenderSettings.fogStartDistance;
+            fogEnd = RenderSettings.fogEndDistance;
+            logFrame = Time.frameCount + 2;
         }
 
-        // Prototype camera (behind the crowd, looking 5 m ahead of it), mirrored to the +Z front of Unity; the vertical
-        // field of view opens until the whole formation fits the portrait screen across.
-        private void FrameCrowd(int units)
+        private void OnDestroy()
         {
-            float distance = 1f + Mathf.Sqrt(units) / cameraGrowth;
-            Vector3 position = new Vector3(0f, 3.2f + 4.2f * distance, -(5.5f + 5.5f * distance));
-            Vector3 target = new Vector3(0f, 0f, 5f);
-            viewCamera.transform.SetPositionAndRotation(position, Quaternion.LookRotation(target - position));
-            float halfWidth = SwarmMotion.SunflowerRadius(units, swarm.Spacing) + 0.6f;
-            float aspect = Mathf.Max(0.1f, viewCamera.aspect);
-            float tanHorizontal = halfWidth / position.magnitude;
-            float vertical = 2f * Mathf.Atan(tanHorizontal / aspect) * Mathf.Rad2Deg * 1.1f;
-            viewCamera.fieldOfView = Mathf.Clamp(vertical, minimumVerticalFov, maximumVerticalFov);
+            // RenderSettings belong to the scene; restored so an Editor session leaves the scene file as built.
+            if (fogScale > 0f)
+            {
+                RenderSettings.fogStartDistance = fogStart;
+                RenderSettings.fogEndDistance = fogEnd;
+            }
+        }
+
+        private void Update()
+        {
+            ReadDrag();
+            ReadKeys();
+        }
+
+        // Logged once the rig has framed the crowd (its field of view is set in LateUpdate).
+        private void LateUpdate()
+        {
+            ScaleFog();
+            if (logFrame > 0 && Time.frameCount >= logFrame)
+            {
+                logFrame = 0;
+                Log(settings, swarm.Count);
+            }
+        }
+
+        private void ScaleFog()
+        {
+            float scale = scaleFogWithFraming ? cameraRig.FramingScale : 1f;
+            if (Mathf.Abs(scale - fogScale) < 0.005f)
+            {
+                return;
+            }
+
+            fogScale = scale;
+            RenderSettings.fogStartDistance = fogStart * scale;
+            RenderSettings.fogEndDistance = fogEnd * scale;
+        }
+
+        private void ReadDrag()
+        {
+            bool pressed;
+            Vector2 position;
+            Touchscreen touch = Touchscreen.current;
+            Mouse mouse = Mouse.current;
+            if (touch != null && touch.primaryTouch.press.isPressed)
+            {
+                pressed = touch.primaryTouch.press.wasPressedThisFrame;
+                position = touch.primaryTouch.position.ReadValue();
+            }
+            else if (mouse != null && mouse.leftButton.isPressed)
+            {
+                pressed = mouse.leftButton.wasPressedThisFrame;
+                position = mouse.position.ReadValue();
+            }
+            else
+            {
+                dragging = false;
+                return;
+            }
+
+            float x = position.x;
+            if (pressed)
+            {
+                dragging = panel == null || !panel.gameObject.activeInHierarchy
+                    || !RectTransformUtility.RectangleContainsScreenPoint(panel, position, null);
+                pressX = x;
+                targetAtPress = swarm.TargetX;
+            }
+
+            if (dragging)
+            {
+                swarm.SteerTo(SwarmSteering.DragTarget(targetAtPress, pressX, x, Screen.width, drag,
+                    swarm.transform.position.x, swarm.LaneHalfWidth));
+            }
+        }
+
+        private void ReadKeys()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                return;
+            }
+
+            int direction = (keyboard.rightArrowKey.wasPressedThisFrame ? 1 : 0) - (keyboard.leftArrowKey.wasPressedThisFrame ? 1 : 0);
+            if (direction != 0)
+            {
+                swarm.SteerTo(SwarmSteering.KeyTarget(swarm.TargetX, direction, drag, swarm.transform.position.x, swarm.LaneHalfWidth));
+            }
         }
 
         // MSAA and HDR live on the pipeline asset; they are changed only in players (in the Editor the change would be
@@ -102,11 +226,13 @@ namespace Claybreak.Lab
         {
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             string pipeline = urp == null ? "none" : $"msaa={urp.msaaSampleCount} hdr={(urp.supportsHDR ? "on" : "off")} renderScale={urp.renderScale:0.##}";
+            Camera view = cameraRig.GetComponent<Camera>();
             Debug.Log($"[ToonLab] units={units} {pipeline} fps={Application.targetFrameRate} "
                 + $"tris/unit={swarm.UnitTriangles} draws=1+{(swarm.DrawsShadows ? 1 : 0)} "
                 + $"api={SystemInfo.graphicsDeviceType} gpu={SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsDeviceVersion}) "
                 + $"cpu={SystemInfo.processorType} x{SystemInfo.processorCount} screen={Screen.width}x{Screen.height} "
-                + $"fov={viewCamera.fieldOfView:0.#}", this);
+                + $"fov={view.fieldOfView:0.#} camera={view.transform.position} framing={cameraRig.FramingScale:0.##} "
+                + $"fog={RenderSettings.fogStartDistance:0.#}-{RenderSettings.fogEndDistance:0.#}", this);
         }
     }
 }

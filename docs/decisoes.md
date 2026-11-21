@@ -1173,3 +1173,55 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   regenera o gate na corrida. HDR não muda o custo no OPPO e fica como está. O validador do jogo passa a recusar
   shader com erro de compilação nos materiais da `ToonLab` (a primeira rodada no aparelho mediu o shader de erro
   magenta sem nenhum aviso em tempo de jogo).
+
+## 2026-11-21 — T-RT6t3-1..8 (e 6b) — Formação, arraste e câmera da multidão toon — técnica (sessão RT-6t.3)
+
+- **T-RT6t3-1 — Formação como tabela + job de seguimento antes do job de animação.** `SunflowerFormation` (kit,
+  `Swarm`) guarda as fórmulas puras (offset, raio, fator de seguimento `1 − e^(−k·dt)`, ritmo por unidade, vaga com
+  clamp na pista); a `SwarmSimulation` calcula a tabela de offsets da capacidade inteira **na carga** e, por quadro,
+  move o centro (`cx += (alvo − cx)·(1 − e^(−8dt))`, na thread principal, como o protótipo) e encadeia dois jobs
+  Burst paralelos: `SwarmFollowJob` (cada unidade segue `clamp(cx + offset)` no X com seu ritmo e o offset no Z) →
+  `SwarmAnimateJob` (quique/squash). Zero trigonometria por quadro na formação, nada alocado em jogo.
+- **T-RT6t3-2 — Posição da unidade = (x do mundo, z relativo ao centro).** O protótipo deixa a multidão parada no Z e
+  move o mundo; aqui o centro tem `CenterZ` (vem do `transform` do `SwarmRenderer`), então a 6t.4 pode andar a
+  multidão para a frente sem tocar nos arrays. A pista é `laneHalfWidth` centrada no X do `SwarmRenderer`
+  (0 = sem pista); na 6t.4 o valor vem do nível.
+- **T-RT6t3-3 — Ritmo por unidade escrito como no protótipo, com o espalhamento como dado.** `(1 − s/2) + s·((7i mod
+  10)/10)` com `s = 0,4` dá exatamente `0,8 + 0,4·((7i mod 10)/10)` do protótipo. Correção de registro: a faixa real é
+  0,8–1,16 (o plano dizia 0,8–1,2).
+- **T-RT6t3-4 — Arraste no kit como fórmula pura, leitura do dedo no jogo.** `SwarmSteering` (kit) tem o alvo do
+  arraste (`alvo no toque + Δx/largura da tela·16`, preso em `±(meia pista − 0,5)`) e o passo das setas (±1,5), com
+  os números em `SwarmDragSettings`; quem lê o Input System é a `ToonLab` (na 6t.4, a corrida). O assembly `Swarm`
+  não passa a depender do Input System. Toque que começa dentro do painel de teste não arrasta.
+- **T-RT6t3-5 — Câmera: `SwarmCameraRig` + perfil `SwarmCameraProfile` (ScriptableObject) + fórmulas puras em
+  `SwarmCameraMath`.** Distância `d → 1 + √n/22` suavizada `1 − e^(−2dt)`, posição `(lane + (cx − lane)·0,35,
+  3,2 + 4,2d, z − (5,5 + 5,5d))`, alvo `(…, 0, z + 5)` — o protótipo espelhado para a frente +Z —, tremor de 0,35 s com
+  `±(resto·0,6)/2` em X e Y (sorteio por `Unity.Mathematics.Random`, sem alocação) e o mesmo limite de passo de
+  0,05 s do protótipo. Todos os números no perfil; o jogo terá um perfil por momento (corrida, assalto). O perfil da
+  `ToonLab` é `Assets/Claybreak/Lab/SwarmCameraLab.asset` (criado uma vez pelo construtor e depois deixado como dado).
+- **T-RT6t3-6 — Enquadramento de retrato: a pista inteira cabe, a câmera continua se afastando com a contagem e não
+  "respira" no arraste.** Em tela larga nada muda (FOV 50, pose do protótipo). Em retrato (`SwarmCameraMath.FitLane`,
+  aspecto real da tela): a pista + 0,7 m de margem por lado (trilhos, postes) precisa caber na largura na linha da
+  multidão. O ajuste é resolvido **uma vez, para a multidão mínima (d = 1) com o centro na borda da pista** (pior
+  caso): primeiro abre o FOV vertical até `MaxVerticalFov` = 65°; se não bastar, recua ao longo da linha de visão
+  (mesmo ângulo, sem grande-angular). Esse recuo vira uma **distância extra fixa** somada à pose do protótipo, e o
+  afastamento `1 + √n/22` continua por cima. Três tentativas descartadas, medidas na captura: (a) ajustar com o centro
+  real da multidão — a câmera recuava até 5,6 m a cada arraste para a borda no OPPO; (b) ajustar a cada contagem — o
+  ajuste engolia o afastamento (a câmera ficava a ~29 m com 10 e com 1000 unidades, contra o aceite "câmera se
+  afastando"); (c) só abrir o FOV — ~81° em 9:16 (olho-de-peixe). 65° e a margem são dados do perfil (50 = só recuo;
+  100 = só FOV).
+- **T-RT6t3-6b — A neblina da `ToonLab` se afasta junto com o enquadramento.** Caber a pista em retrato põe a câmera
+  1,4–1,9× mais longe que o protótipo (que foi feito deitado); com a neblina do protótipo (22–75 m) a multidão ficava
+  dentro dela e desbotava. O rig expõe `FramingScale` (distância atual ÷ distância do protótipo na mesma contagem; 1 em
+  tela larga) e a `ToonLab` multiplica início e fim da neblina por ele (opção `scaleFogWithFraming`); o plano de
+  corte da câmera passa a 250 m e a pista do laboratório começa 60 m atrás. **Para a 6t.6:** o aplicador de paleta
+  deve fazer o mesmo (neblina da paleta × `FramingScale` da câmera ativa), em vez de a `ToonLab` mexer no
+  `RenderSettings`.
+- **T-RT6t3-7 — Diminuir a contagem tira o anel de fora na hora.** Nascimento elástico e morte balística são da 6t.5;
+  aqui a unidade nova aparece direto na sua vaga e a removida some (como o `SetCount` do protótipo sem o `dying`).
+- **T-RT6t3-8 — Sem gate novo no OPPO; captura no Editor com GPU.** O aceite da 6t.3 pede testes e captura 9:16, não
+  gate. O custo novo por quadro é um job Burst de ~1000 `float2` (bem abaixo da folga medida na 6t.1: CPU p95 1,9 ms de
+  11). O painel de teste fica escondido nas execuções de medição (`--ez toonlab true`), então a medição da `ToonLab`
+  continua sem a interface de teste; só o enquadramento mudou (câmera mais longe em retrato, multidão menor na tela, o
+  que não aumenta o custo de GPU medido na 6t.1). A captura é um teste PlayMode que só roda com GPU e com `-toonLabCaptureDir` (renderiza a
+  câmera do laboratório numa textura do tamanho do retrato); a próxima medição no aparelho é a da 6t.4, na corrida.

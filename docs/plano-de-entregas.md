@@ -338,7 +338,12 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.1.
 - **Aceite:** testes EditMode das fórmulas (iguais ao protótipo); captura 9:16 com 10 → 1000.
 - **Exige o usuário:** nada.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-21.** Formação girassol, seguimento com clamp na pista, arraste e câmera iguais ao
+  protótipo (testes EditMode comparam quadro a quadro com o laço `frame()`); `ToonLab` com painel (+100, 1000!,
+  Recomeçar, Tremer). Retrato: a pista inteira cabe em 9:16 e no OPPO (FOV 65° + recuo fixo resolvido no pior caso),
+  a câmera continua se afastando de 10 → 1000 e o arraste não dá zoom; neblina do laboratório acompanha o recuo.
+  Capturas 9:16 e OPPO de 10 → 1000 e validação completa em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões
+  T-RT6t3-1..8 em `decisoes.md`. Sem gate (o aceite não pede). Próxima: 6t.2 (formas) e depois 6t.4.
 - **Prompt da sessão:** "Entrega RT-6t.3 do Runner vs Tower: formação girassol, arraste e câmera. Leia
   `docs/direcao-visual-crowd.md` (itens 11–13, RT-6t.3) e o laço `frame()` do protótipo. Escreva na incubadora
   (`Swarm`) e na `ToonLab`; fórmulas idênticas ao protótipo, com testes; enquadramento de retrato por dado."

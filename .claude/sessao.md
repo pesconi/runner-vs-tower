@@ -76,3 +76,7 @@
 - 2026-11-21 (RT-6t.1): shader que não compila vira magenta sem erro em tempo de jogo e os números do gate saem
   "bons" medindo o shader de erro. Antes de aceitar um gate de visual novo, olhar a captura do aparelho e o log do build
   (`grep "Shader error" <out>/logs/apk-measure.log`).
+- 2026-11-21 (RT-6t.3): em teste PlayMode no batchmode, `WaitForEndOfFrame` nunca dispara (o teste fica preso para
+  sempre): para capturar, pôr `camera.targetTexture` e ler a textura no quadro seguinte (`yield return null`). Captura
+  da `ToonLab` em retrato: `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.ToonLab -toonLabCaptureDir
+  <pasta>` sem `-nographics`. Não rodar um passo do `rt4-check` enquanto outro Unity ainda está aberto no projeto.

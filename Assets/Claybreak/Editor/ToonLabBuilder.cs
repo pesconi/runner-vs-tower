@@ -3,8 +3,11 @@ using Claybreak.Lab;
 using JungleDegree.StudioKit.Swarm;
 using JungleDegree.StudioKit.Toon;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,8 +16,9 @@ namespace Claybreak.Editor
 {
     /// <summary>
     /// Builds the toon lab of the crowd toon direction (RT-6t.1) from code: the provisional Bolinha and the shadow disc
-    /// (<see cref="UnitShapeRecipes"/>), the ground and track meshes, the toon materials, the Pastel look and the
-    /// <c>ToonLab</c> scene (fixed camera, light without shadows, linear fog, the swarm, the debug FPS overlay).
+    /// (<see cref="UnitShapeRecipes"/>), the ground and track meshes, the toon materials, the Pastel look, the lab camera
+    /// profile and the <c>ToonLab</c> scene (camera rig, light without shadows, linear fog, the swarm kept on the track,
+    /// the test panel of RT-6t.3, the debug FPS overlay).
     /// The scene goes only into measurement players (<see cref="ClaybreakBuild"/>), never into the game build list.
     /// Idempotent: assets keep their GUIDs. Runs inside <see cref="ClaybreakSceneBuilder.Build"/>.
     /// </summary>
@@ -29,6 +33,7 @@ namespace Claybreak.Editor
         public const string StaticMaterialPath = GeneratedFolder + "/ToonLitStatic.mat";
         public const string ShadowMaterialPath = GeneratedFolder + "/BlobShadow.mat";
         public const string LookPath = Root + "/ToonLookPastel.asset";
+        public const string CameraProfilePath = Root + "/SwarmCameraLab.asset";
         public const int SwarmCapacity = 2048;
         public const int DefaultUnits = 1000;
 
@@ -39,7 +44,9 @@ namespace Claybreak.Editor
         private static readonly Color32 Stripe = Hex(0xffe3d1);
         private static readonly Color32 Crowd = Hex(0xff8fab);
         private static readonly Color32 Ink = Hex(0x3b2f4a);
-        private const float TrackHalfWidth = 6f;
+        private static readonly Color32 Accent = Hex(0xff6f91);
+        /// <summary>Half width of the lab track (the reference prototype track); the swarm is kept inside it.</summary>
+        public const float TrackHalfWidth = 6f;
 
         [MenuItem("Claybreak/Build Toon Lab")]
         public static void Build()
@@ -70,6 +77,12 @@ namespace Claybreak.Editor
                 AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<ToonLook>(), LookPath);
             }
 
+            // Data assets are created once and then left alone (they are tuned by hand).
+            if (AssetDatabase.LoadAssetAtPath<SwarmCameraProfile>(CameraProfilePath) == null)
+            {
+                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<SwarmCameraProfile>(), CameraProfilePath);
+            }
+
             AssetDatabase.SaveAssets();
             CreateScene();
         }
@@ -91,6 +104,7 @@ namespace Claybreak.Editor
             Material staticMaterial = Load<Material>(StaticMaterialPath);
             Material shadowMaterial = Load<Material>(ShadowMaterialPath);
             ToonLook look = Load<ToonLook>(LookPath);
+            SwarmCameraProfile cameraProfile = Load<SwarmCameraProfile>(CameraProfilePath);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = Fog;
@@ -116,7 +130,7 @@ namespace Claybreak.Editor
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = Fog;
             camera.nearClipPlane = 0.3f;
-            camera.farClipPlane = 120f;
+            camera.farClipPlane = 250f; // the portrait fit pushes the camera and the fog back (RT-6t.3)
             camera.fieldOfView = 50f;
 
             var groundObject = new GameObject("Ground");
@@ -136,7 +150,14 @@ namespace Claybreak.Editor
             so.FindProperty("capacity").intValue = SwarmCapacity;
             so.FindProperty("initialCount").intValue = DefaultUnits;
             so.FindProperty("tint").colorValue = Crowd;
+            so.FindProperty("laneHalfWidth").floatValue = TrackHalfWidth;
             so.ApplyModifiedPropertiesWithoutUndo();
+
+            var rig = cameraObject.AddComponent<SwarmCameraRig>();
+            var rigSo = new SerializedObject(rig);
+            rigSo.FindProperty("profile").objectReferenceValue = cameraProfile;
+            rigSo.FindProperty("swarm").objectReferenceValue = swarm;
+            rigSo.ApplyModifiedPropertiesWithoutUndo();
 
             var canvasObject = new GameObject("DebugCanvas");
             var canvas = canvasObject.AddComponent<Canvas>();
@@ -156,13 +177,72 @@ namespace Claybreak.Editor
 
             var labObject = new GameObject("ToonLab");
             var lab = labObject.AddComponent<ToonLab>();
+            RectTransform panel = TestPanel(canvasObject.transform, lab);
             var labSo = new SerializedObject(lab);
             labSo.FindProperty("swarm").objectReferenceValue = swarm;
-            labSo.FindProperty("viewCamera").objectReferenceValue = camera;
+            labSo.FindProperty("cameraRig").objectReferenceValue = rig;
+            labSo.FindProperty("panel").objectReferenceValue = panel;
             labSo.FindProperty("editorUnits").intValue = DefaultUnits;
             labSo.ApplyModifiedPropertiesWithoutUndo();
 
+            var eventSystem = new GameObject("EventSystem");
+            eventSystem.AddComponent<EventSystem>();
+            eventSystem.AddComponent<InputSystemUIInputModule>();
+
             EditorSceneManager.SaveScene(scene, ToonLab.ScenePath);
+        }
+
+        // RT-6t.3 test panel at the bottom of the screen (the prototype drawer): +100, 1000!, restart at 10, shake.
+        private static RectTransform TestPanel(Transform canvas, ToonLab lab)
+        {
+            var panelObject = new GameObject("TestPanel", typeof(RectTransform));
+            panelObject.transform.SetParent(canvas, false);
+            var rect = (RectTransform)panelObject.transform;
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, 36f);
+            rect.sizeDelta = new Vector2(1000f, 150f);
+            var background = panelObject.AddComponent<Image>();
+            background.color = new Color(1f, 1f, 1f, 0.82f);
+            var layout = panelObject.AddComponent<HorizontalLayoutGroup>();
+            layout.padding = new RectOffset(18, 18, 18, 18);
+            layout.spacing = 14f;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = true;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+
+            UnityEventTools.AddIntPersistentListener(PanelButton(rect, "Add100", "+100", false).onClick, lab.AddUnits, 100);
+            UnityEventTools.AddIntPersistentListener(PanelButton(rect, "Set1000", "1000!", true).onClick, lab.SetUnits, 1000);
+            UnityEventTools.AddIntPersistentListener(PanelButton(rect, "Restart", "Recomeçar", false).onClick, lab.SetUnits, 10);
+            UnityEventTools.AddVoidPersistentListener(PanelButton(rect, "Shake", "Tremer", false).onClick, lab.ShakeCamera);
+            return rect;
+        }
+
+        private static Button PanelButton(Transform parent, string name, string caption, bool accent)
+        {
+            var buttonObject = new GameObject(name, typeof(RectTransform));
+            buttonObject.transform.SetParent(parent, false);
+            var image = buttonObject.AddComponent<Image>();
+            image.color = accent ? (Color)Accent : Color.white;
+            var button = buttonObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            var textObject = new GameObject("Text", typeof(RectTransform));
+            textObject.transform.SetParent(buttonObject.transform, false);
+            var textRect = (RectTransform)textObject.transform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = textRect.offsetMax = Vector2.zero;
+            var text = textObject.AddComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 40;
+            text.fontStyle = FontStyle.Bold;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = accent ? Color.white : (Color)Ink;
+            text.text = caption;
+            text.raycastTarget = false;
+            return button;
         }
 
         private static Text Label(Transform parent, string name, Vector2 position)
@@ -182,14 +262,15 @@ namespace Claybreak.Editor
             return text;
         }
 
-        // Ground, track (two stripe colors) and side rails as one static mesh; colors are fixed (alpha 0, no tint).
+        // Ground, track (two stripe colors, from 60 m behind the crowd: the portrait camera stands far back) and side rails
+        // as one static mesh; colors are fixed (alpha 0, no tint).
         private static Mesh GroundMesh()
         {
             var builder = new LowPolyMeshBuilder();
             builder.AddBox(LowPolyMeshBuilder.Place(new Vector3(0f, -0.06f, 30f), new Vector3(240f, 0.1f, 240f)), Fixed(Ground));
-            for (int i = 0; i < 40; i++)
+            for (int i = 0; i < 50; i++)
             {
-                float z = -20f + i * 4f;
+                float z = -60f + i * 4f;
                 builder.AddBox(LowPolyMeshBuilder.Place(new Vector3(0f, -0.005f, z + 1f), new Vector3(2f * TrackHalfWidth + 0.6f, 0.01f, 2f)),
                     Fixed(i % 2 == 0 ? Track : Stripe));
                 builder.AddBox(LowPolyMeshBuilder.Place(new Vector3(0f, -0.005f, z + 3f), new Vector3(2f * TrackHalfWidth + 0.6f, 0.01f, 2f)),
@@ -198,7 +279,7 @@ namespace Claybreak.Editor
 
             for (int side = -1; side <= 1; side += 2)
             {
-                builder.AddBox(LowPolyMeshBuilder.Place(new Vector3(side * (TrackHalfWidth + 0.45f), 0.15f, 60f), new Vector3(0.3f, 0.3f, 160f)), Fixed(Stripe));
+                builder.AddBox(LowPolyMeshBuilder.Place(new Vector3(side * (TrackHalfWidth + 0.45f), 0.15f, 40f), new Vector3(0.3f, 0.3f, 200f)), Fixed(Stripe));
             }
 
             return builder.ToMesh("LabGround");

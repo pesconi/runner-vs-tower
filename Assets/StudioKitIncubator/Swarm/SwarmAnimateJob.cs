@@ -7,7 +7,8 @@ using Unity.Mathematics;
 namespace JungleDegree.StudioKit.Swarm
 {
     /// <summary>
-    /// Writes the drawn transform of every live unit for this frame: ground position, hop lift, squash with the
+    /// Writes the drawn transform of every live unit for this frame: ground position (world x, z relative to
+    /// <see cref="CenterZ"/>), hop lift, squash with the
     /// volume kept and the forward lean (rotation about X, top toward +Z). Tint alpha carries the bounce (0..1)
     /// for the blob shadows.
     /// </summary>
@@ -20,6 +21,7 @@ namespace JungleDegree.StudioKit.Swarm
         public SwarmMotionSettings Motion;
         public float3 Tint;
         public float Time;
+        public float CenterZ;
 
         public void Execute(int index)
         {
@@ -33,7 +35,7 @@ namespace JungleDegree.StudioKit.Swarm
             {
                 Row0 = new float4(sxz, 0f, 0f, ground.x),
                 Row1 = new float4(0f, cos * sy, -sin * sxz, bounce * Motion.HopHeight),
-                Row2 = new float4(0f, sin * sy, cos * sxz, ground.y),
+                Row2 = new float4(0f, sin * sy, cos * sxz, CenterZ + ground.y),
                 Tint = new float4(Tint, bounce),
             };
         }
