@@ -13,7 +13,7 @@ evidência; o que depende do texto atual do formulário ou da documentação do 
 | Premiado opcional (dobrar moedas, continuar uma vez); intersticial pronto e **desligado** | `ClaybreakFlow`, `MonetizationContent.InterstitialOn = false` |
 | Unidades de anúncio: só as de **teste** do Google até a RT-9 | `Assets/Claybreak/Content/Data/AdUnits.asset` vazio; `MonetizationValidation.ProductionUnitsAllowed = false` |
 | Analytics mínimo: 4 eventos sem ID (`game_session`, `level_start`, `level_end`, `rewarded_ad`) + eventos automáticos do Firebase (`first_open`, `session_start`, `user_engagement`, `app_update`, `os_update`, `app_clear_data`, `app_remove`) com o ID da instância do app e a origem da instalação; o SDK do AdMob pode registrar eventos de anúncio **[conferir no DebugView]** | kit `PlayerMetrics`, `FirebaseAnalyticsSink`; `ClaybreakMetrics` |
-| Coleta do Firebase desligada até o primeiro consentimento (a escolha fica guardada); na Europa/Reino Unido só com o "sim" do UMP; retirar apaga os dados de análise da instalação | manifesto do módulo (`firebase_analytics_collection_enabled=false`); kit `MeasurementConsent` (TCF propósito 1, 8 ou 9, Google); `resetAnalyticsData` |
+| Analytics só com consentimento explícito, em todos os países (empresa portuguesa: RGPD para todos): na Europa/Reino Unido pelo "sim" do UMP; fora delas o jogo ainda não pergunta (ficha D23), então **não mede**; coleta desligada até o primeiro consentimento (a escolha fica guardada); retirar apaga os dados de análise da instalação | manifesto do módulo (`firebase_analytics_collection_enabled=false`); kit `MeasurementConsent` (TCF propósito 1, 8 ou 9, Google; senão só o consentimento próprio do jogo, hoje inexistente); `resetAnalyticsData` |
 | Firebase sem ID de publicidade, sem ID do Android, sem sinais de anúncio | manifesto do módulo (`google_analytics_adid_collection_enabled=false`, `..._ssaid_...=false`, sinais de anúncio negados) |
 | Save só local (PlayerPrefs): progresso, moedas, compras com moedas, skins, primeiro dia, presente diário | `SaveData.cs`; nunca enviado |
 | Sem login, conta, servidor, compras com dinheiro | sem código de rede próprio; sem `com.unity.purchasing`/`BILLING` |
@@ -33,7 +33,7 @@ Firebase declara algumas delas também, mas não lê o ID de publicidade), `BIND
 |---|---|---|
 | O app coleta ou compartilha algum tipo de dado exigido? | **Sim** | SDK do AdMob e Firebase Analytics |
 | Os dados são criptografados em trânsito? | **Sim** **[conferir]** | o SDK do Google usa HTTPS |
-| Há forma de pedir exclusão dos dados? | **Sim** (contato da política; na Europa/Reino Unido o botão PRIVACY apaga os dados de análise da instalação; desinstalar troca o identificador; o save é local) **[conferir o texto]** | política; `resetAnalyticsData` |
+| Há forma de pedir exclusão dos dados? | **Sim** (contato da política, direitos do RGPD; o botão PRIVACY apaga os dados de análise da instalação; desinstalar troca o identificador; o save é local) **[conferir o texto]** | política; `resetAnalyticsData` |
 | Informações pessoais (nome, e-mail, IDs de usuário) | **Não coletado** | o jogo não pede nada disso |
 | Localização aproximada | **Coletada e compartilhada** (AdMob: publicidade, prevenção de fraude) **[conferir]**; Firebase: **coletada** para análise (país/região deduzidos do IP) **[conferir na página de divulgação do Firebase]** | IP do pedido de anúncio; IP da conexão do Firebase |
 | Localização precisa | Não | sem permissão de localização |
@@ -44,7 +44,7 @@ Firebase declara algumas delas também, mas não lê o ID de publicidade), `BIND
 | Dispositivo ou outros IDs: ID da instância do app (Firebase) | **Coletado** (Firebase), finalidade **análise**; não compartilhado **[conferir]** | Firebase Analytics |
 | Compras / informações financeiras | Não | D6: sem compra no app |
 | Mensagens, fotos, áudio, arquivos, contatos, agenda, saúde | Não | sem permissões |
-| Coleta obrigatória ou opcional? | Os dados de anúncio vão quando um anúncio é pedido; o consentimento UMP governa a personalização. Analytics: **obrigatória** no formulário (fora da Europa/Reino Unido não há escolha no app; na Europa/Reino Unido depende do "sim") **[conferir o texto da pergunta]** | `MobileAdsGate`, `MeasurementConsent` |
+| Coleta obrigatória ou opcional? | Os dados de anúncio vão quando um anúncio é pedido; o consentimento UMP governa a personalização. Analytics: **opcional** (o usuário pode escolher: só com o "sim"; fora da Europa/Reino Unido hoje não há coleta) | `MobileAdsGate`, `MeasurementConsent` |
 | Política de privacidade | URL pública a criar na RT-9 com o texto de `politica-de-privacidade.md` | |
 
 **ID de publicidade** (Conteúdo do app > ID de publicidade): **Sim**, usado para publicidade/marketing e
@@ -61,3 +61,9 @@ prevenção de fraude; manter a permissão `AD_ID`.
 - **A D21 escolheu o Firebase Analytics (RT-8b, feito):** "Atividade no app" e "ID da instância do app" passaram
   a "Coletado" para análise; o ID de publicidade continua só do AdMob. Se um dia o Firebase for ligado a anúncios
   (vincular ao AdMob, sinais do Google, ID de publicidade), este documento e a política mudam antes.
+
+## 3. Empresa e lei (2026-11-21)
+
+A Jungle Degree é **portuguesa**: o RGPD vale para todo o tratamento, em qualquer país (art. 3.º, n.º 1), e a
+autoridade é a **CNPD**. No Play Console, o endereço e os dados do programador devem ser os da empresa portuguesa;
+a política cita o responsável, a base legal (consentimento), os direitos do titular e a CNPD.

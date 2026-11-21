@@ -33,5 +33,5 @@ Ver a linha **Status** da RT-7 em [`plano-de-entregas.md`](plano-de-entregas.md)
 3. Vencer uma fase: no resultado, o botão verde **WATCH AD: x2 COINS** abre um anúncio de teste do Google
    (com a etiqueta "Test Ad"); ao fechar depois do prêmio, as moedas dobram.
 4. Perder no assalto com exército grande: aparece **ARMY LOST** com **WATCH AD +N** e **NO THANKS**.
-5. No Brasil o formulário de consentimento não aparece (a regra é da Europa/Reino Unido); o botão PRIVACY
-   também não.
+5. Em Portugal (onde o usuário mora) o formulário de consentimento aparece quando a mensagem GDPR estiver publicada
+   no AdMob; fora da Europa/Reino Unido não aparece, nem o botão PRIVACY.

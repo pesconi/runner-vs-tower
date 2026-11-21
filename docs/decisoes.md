@@ -991,3 +991,99 @@ o consentimento). O `google-services.json` fica em `..\_privado\runner-vs-tower\
 variável `CLAYBREAK_GOOGLE_SERVICES_JSON` para outro caminho) e vira recurso Android no build (`ClaybreakFirebase`);
 o build recusa o arquivo dentro de um repositório e o `.gitignore` o recusa. A permissão `AD_ID` continua no APK por
 causa do AdMob (RT-7); o Firebase não lê o ID de publicidade. Peso: APK +1,1 MB, AAB +1,0 MB.
+
+## 2026-11-21 — FATO — A Jungle Degree é uma empresa portuguesa (informado pelo usuário)
+
+O usuário mora em Portugal e a empresa é **portuguesa**, não brasileira. Consequências para todas as entregas:
+- o **RGPD** vale para todo o tratamento de dados da empresa, em qualquer país (art. 3.º, n.º 1), mais a regra
+  ePrivacy (Lei n.º 41/2004) para gravar/ler no aparelho; a autoridade é a **CNPD**;
+- textos legais (política de privacidade, Data safety, termos) citam a empresa portuguesa, o RGPD, a CNPD e os
+  direitos do titular; o português dos textos para o público é o de Portugal;
+- a checagem de marca da RT-9 passa a incluir **EUIPO** e **INPI Portugal** (INPI.pt), além do TMview (e o INPI do
+  Brasil só se o Brasil for mercado);
+- o soft launch, a conta do Play Console e o AdMob ficam com os dados da empresa portuguesa;
+- a conta do Google Analytics do projeto Firebase "Clay Siege" foi criada com local Portugal.
+
+## 2026-11-21 — T-RT8b-2 — Medição só com consentimento explícito em todos os países — técnica (sessão RT-8b)
+
+Com o fato acima, a regra da D21 "fora da Europa/Reino Unido, medir com aviso e interesse legítimo (LGPD)" deixou de
+ser a mais segura. Regra nova, a mais segura: medir só com consentimento explícito, em qualquer país. Na Europa e no
+Reino Unido, o "sim" no UMP (propósito TCF 1, 8 ou 9, Google 755); nos demais países, só com um consentimento
+próprio do jogo, que ainda não existe (`ClaybreakMetrics.GameConsentGiven = false`), então lá nada é medido. Isso
+mede **menos** do que a D21 aprovou: a forma de medir fora da Europa vai ao usuário na ficha **D23**. Política
+reescrita (pt-PT, responsável português, consentimento como base, direitos, CNPD, transferências) e Data safety
+ajustada ("opcional"). `MobileAdsGate.ConsentInformationUpdated` saiu do kit (ficou sem uso).
+
+## Ficha D23 (RT-8b, aguardando resposta)
+
+### DECISÃO D23 — Medir jogadores fora da Europa: com que pedido de consentimento?
+
+O que você está aprovando: a forma de pedir o "sim" dos jogadores **fora da Europa** para a medição mínima (Firebase,
+sem nome nem ID de publicidade): **primeiro você confere no AdMob se a janela de consentimento do Google pode
+aparecer em todos os países (opção E); se puder, ela vale para todos; se não puder, o jogo mostra uma pergunta
+própria curta na primeira abertura fora da Europa (opção A)**. Só quem disser "sim" é medido.
+
+Por que agora: a Jungle Degree é portuguesa, então o RGPD (a lei europeia de proteção de dados) vale para todos os
+jogadores, em qualquer país, e a regra aprovada na D21 ("fora da Europa, medir com aviso na política") deixou de ser
+a mais segura. Para não arriscar, a RT-8b já deixou o jogo **sem medir nada fora da Europa** até esta resposta. Não
+trava a RT-9; trava os números do soft launch (lançamento de teste) se ele for feito fora da Europa.
+
+Contexto que você precisa saber:
+- Fato (você, 2026-11-21): empresa portuguesa; pelo art. 3.º, n.º 1, do RGPD, o regulamento vale para todo o
+  tratamento dela, onde quer que o jogador esteja. A autoridade é a CNPD.
+- Fato (documentação do Google): a janela de consentimento do Google (UMP) aparece por padrão só no Espaço
+  Econômico Europeu, Reino Unido e Suíça (e há outra mensagem, de "não vender dados", para alguns estados dos EUA).
+  No Brasil e na maior parte do mundo ninguém vê pergunta nenhuma.
+- Memória não verificada (segunda opinião): no AdMob, em Privacidade e mensagens, a mensagem europeia teria uma opção
+  de alcance "todos os países". Se existir, a mesma janela aparece para todo mundo e o jogo mede com o "sim" sem
+  código novo. Você confere em 5 minutos: apps.admob.com > Privacidade e mensagens > Regulamentos europeus > a
+  mensagem do app > países/alcance.
+- Fato (código, RT-8b): hoje o jogo mede só quem disse "sim" na janela do Google; fora dela não mede. Os eventos são
+  os 4 da D4 (sessão, início e fim de fase, premiado), sem nome nem ID de publicidade.
+- Inferência nossa: o RGPD aceita "interesse legítimo" para estatísticas, mas a medição grava e lê um identificador
+  no aparelho, o que na Europa exige consentimento (regra ePrivacy); se isso vale para aparelhos fora da Europa é
+  discutível. Pedir o "sim" é a leitura mais segura. Não é parecer jurídico.
+- Inferência nossa: uma pergunta de consentimento tem boa parte de "sim", mas não 100%; o D1/D7 (% de jogadores que
+  voltam 1 / 7 dias depois de instalar) passa a ser medido só em quem aceitou, o que pode enviesar um pouco.
+- Ligado a isto (segunda opinião): os **anúncios** fora da Europa também seguem o RGPD pela mesma razão. Pedir "sim"
+  para estatística anônima e mostrar anúncios com ID de publicidade sem perguntar é difícil de defender. A opção E
+  resolveria as duas coisas de uma vez; a A resolve só a medição (os anúncios ficam para a RT-9).
+- Os países do soft launch ainda não foram escolhidos (RT-9/RT-10).
+
+Opções:
+E) Janela do Google para todos os países (se o AdMob permitir).
+   + Uma janela só, para medição e anúncios, em todo o mundo; nenhum código novo; mesma regra para todos.
+   - Riscos: a janela do Google é mais pesada que um sim/não (chance alta; impacto médio: mais gente recusa a medição
+     e os anúncios personalizados, menos receita por anúncio no mundo todo); a opção pode não existir (não verificado).
+   Custo: 5 minutos seus no AdMob + um teste no celular. Volta atrás? sim, fácil.
+A) Pergunta própria no jogo fora da Europa ("Podemos medir como você joga, sem nome nem ID de publicidade, para
+   melhorar o jogo? Sim / Não", "Não" tão fácil quanto "Sim", nada pré-marcado; interruptor em SETTINGS; o jogo guarda
+   a data e a versão do texto aceito, como o RGPD pede para provar o consentimento).
+   + Mede fora da Europa com consentimento claro; não mexe nos anúncios.
+   - Riscos: mais uma tela na primeira abertura (chance alta; impacto baixo); parte diz "não" e o D1/D7 fica com menos
+     gente (chance alta; impacto médio); se a RT-9 concluir que os anúncios também precisam de "sim" no mundo todo,
+     esta tela vira retrabalho ou segunda pergunta (chance média; impacto baixo); nos estados dos EUA com mensagem
+     própria do Google, a pergunta aparece junto dela (chance alta; impacto baixo).
+   Custo: grátis; ~meia sessão (tela, save, testes) + o texto passa pela sua revisão. Volta atrás? sim, fácil.
+B) Medir só na Europa (como está agora).
+   + Nada a fazer.
+   - Riscos: se o soft launch for fora da Europa, D1/D7 e funil ficam sem número (chance média; impacto alto na RT-10).
+   Custo: zero. Volta atrás? sim.
+C) Voltar ao que a D21 aprovou: fora da Europa medir sem perguntar, com aviso na política (interesse legítimo).
+   + Mais dados, nenhuma tela a mais.
+   - Riscos: empresa europeia medindo sem consentimento um identificador no aparelho pode ser questionada pela CNPD ou
+     por um jogador (chance baixa; impacto alto: multa e apagar dados).
+   Custo: zero (trocar uma linha). Volta atrás? sim.
+D) Adiar até escolher os países do soft launch (RT-9).
+   + Decide sabendo onde será o teste; se for na Europa, B basta.
+   - Custo de adiar: se o teste for fora da Europa, E ou A vira trabalho em cima da hora.
+
+Recomendação: **E, e A se E não existir ou a janela pesar demais** — conferir o AdMob custa 5 minutos e, se der,
+resolve medição e anúncios com uma janela só; a pergunta própria (A) é o plano de reserva seguro. C não é recomendada
+para uma empresa sujeita ao RGPD.
+Segunda opinião (fable): achou a A segura, mas apontou a opção que faltava (janela do Google em "todos os países", de
+memória, a confirmar no console) e a ligação com os anúncios; recomendou conferir isso antes e decidir medição e
+anúncios juntos, com A como reserva. Incorporado (opção E, Suíça, prova do consentimento na A).
+Se você não responder: o jogo continua medindo só onde a janela do Google aparece (opção B); nada mais espera por isto.
+
+Responda: E, A, B, C ou D, ou "E, e se não der A", ou "explica melhor".

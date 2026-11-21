@@ -264,9 +264,16 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Status: feita em 2026-11-21** (`Stage RT.8b`; `rt8b-firebase.md`; kit K.9, pacote 0.4.0). Validador e
   isolamento PASS, EditMode 139/139, PlayMode 13/13, Wild Pack igual à linha de base (90/0 com o mesmo aviso,
   117/0, isolamento, áudio 16, save 87/87, anúncios offline 24/24). Manifesto do APK: as 9 flags mínimas `false`.
-  **APK de release 35,9 MB (+1,1 MB), AAB 35,6 MB (+1,0 MB)**, chave de debug. aceite no aparelho **pendente** (OPPO desconectado na sessão): `Tools/rt8b-firebase-check.sh` (nada antes da liberação e nomes dos eventos no log do Firebase) e o gate 3× no chefe do mundo 4 com o APK de medição.
+  **APK de release 35,9 MB (+1,1 MB), AAB 35,6 MB (+1,0 MB)**, chave de debug. Empresa portuguesa (fato de
+  2026-11-21): medição só com consentimento explícito em todos os países; fora da Europa/Reino Unido nada é medido até
+  a ficha **D23**; política reescrita para o RGPD (pt-PT, CNPD, direitos). aceite no aparelho **pendente** (OPPO desconectado na sessão): `Tools/rt8b-firebase-check.sh` (nada antes da liberação e nomes dos eventos no log do Firebase) e o gate 3× no chefe do mundo 4 com o APK de medição.
 
 ## RT-9 — Preparação do soft launch
+
+- **Notas da RT-8b (2026-11-21):** a empresa é portuguesa — checagem de marca de "Clay Siege" em **EUIPO** e **INPI
+  Portugal**, além do TMview; publicar a mensagem GDPR no AdMob (Privacidade e mensagens); restringir a chave de API
+  do Firebase ao pacote e à SHA-1; preencher na política os dados da empresa (denominação, NIPC, morada, e-mail);
+  rever o consentimento dos **anúncios** fora da Europa sob o RGPD; resposta da D23.
 
 - **Escopo:** ficha da loja (título, textos, capturas 9:16, ícone 512, gráfico
   1024×500, direção adulta), classificação etária (IARC) com evidência do
