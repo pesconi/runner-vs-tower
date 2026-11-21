@@ -266,7 +266,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   117/0, isolamento, áudio 16, save 87/87, anúncios offline 24/24). Manifesto do APK: as 9 flags mínimas `false`.
   **APK de release 35,9 MB (+1,1 MB), AAB 35,6 MB (+1,0 MB)**, chave de debug. Empresa portuguesa (fato de
   2026-11-21): medição só com consentimento explícito em todos os países; fora da Europa/Reino Unido nada é medido até
-  a ficha **D23**; política reescrita para o RGPD (pt-PT, CNPD, direitos). aceite no aparelho **pendente** (OPPO desconectado na sessão): `Tools/rt8b-firebase-check.sh` (nada antes da liberação e nomes dos eventos no log do Firebase) e o gate 3× no chefe do mundo 4 com o APK de medição.
+  a ficha **D23**; política reescrita para o RGPD (pt-PT, CNPD, direitos). **Aceite no aparelho (2026-11-21, OPPO):** `rt8b-firebase-check.sh` — manifesto com coleta, AD_ID, SSAID e sinais desligados (PASS); sem o "sim" do UMP o Firebase fica desligado e **nenhum evento sai** (esperado: a mensagem RGPD do AdMob só é publicada na RT-9, então os nomes dos eventos no DebugView ficam para lá). Gate 3× no chefe do mundo 4 com Firebase: quadro p95 16 ms (max 33), 0,0% > 50 ms, main p95 ≤ 6,2 ms, gpu p95 ≤ 4,4 ms, 0 coletas, PSS 256 MB — **passou** (`gate-rt8b-w4-oppo-60.txt`); APK normal instalado.
 
 ## RT-9 — Preparação do soft launch
 
