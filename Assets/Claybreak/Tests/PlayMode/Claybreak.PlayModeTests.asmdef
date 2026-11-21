@@ -3,6 +3,8 @@
     "rootNamespace": "Claybreak.Tests",
     "references": [
         "Claybreak.Runtime",
+        "Claybreak.Lab",
+        "JungleDegree.StudioKit.Swarm",
         "JungleDegree.StudioKit.Core",
         "JungleDegree.StudioKit.Crowd",
         "JungleDegree.StudioKit.Ads",

@@ -2,7 +2,7 @@
 # EngineIsolationValidation (Tools > Validation > Engine Isolation). The kit must never name this game
 # or its content. Directives:
 #   term <regex>           forbidden term, case-insensitive
-#   folder <path>          extra project folder that follows the same rule (none)
+#   folder <path>          extra project folder that follows the same rule
 #   allow <file> <text>    text removed from that file's lines before the search (none)
 # Keep the studiokit TestProject list in step when a term is added here.
 
@@ -18,3 +18,7 @@ term cannon
 term assault
 term battlement
 term projectile
+
+# RT-6t: kit code incubated in this repository until RT-6t.12 moves it to the studiokit package
+# (its asmdefs are JungleDegree.StudioKit.* and are found anyway; listed so the rule is explicit).
+folder Assets/StudioKitIncubator

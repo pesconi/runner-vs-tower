@@ -30,7 +30,7 @@ lançamento jun/2027.
 | ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
-| RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — **proposta, aguardando aprovação do usuário** (`direcao-visual-crowd.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
+| RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — **aprovada em 2026-11-21**, em execução (`direcao-visual-crowd.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -271,8 +271,8 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 
 ## RT-6t — Direção visual "crowd toon" (série RT-6t.1 a RT-6t.12)
 
-- **Status: proposta, aguardando aprovação do usuário** (2026-11-21). Nenhuma sessão de entrega começa antes do
-  "sim" dele ao plano. Mapeamento técnico, o que muda no que existe, riscos, fichas D25–D29 e decisões técnicas
+- **Status: aprovada em 2026-11-21** (plano proposto e aprovado pelo usuário no mesmo dia; D25, D27 e D26 sem
+  resposta: valem os padrões "se não responder" das fichas). Mapeamento técnico, o que muda no que existe, riscos, fichas D25–D29 e decisões técnicas
   T-RT6t-1..9: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) — escopo, arquivos e aceite completos de
   cada entrega estão na seção 4.1 de lá; aqui ficam o cabeçalho e o prompt. Referência visual obrigatória:
   [`reference/crowd-proto.html`](reference/crowd-proto.html). Substitui a direção v2 (D24, RT-6v.1), revertida
@@ -301,7 +301,12 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   `direcao-visual-crowd.md`); se ainda falhar, ficha ao usuário com o maior número que passou. A série só continua
   se passar.
 - **Exige o usuário:** OPPO conectado e desbloqueado.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: código feito e validado em 2026-11-21; gate no OPPO pendente (aceite pendente).** Motor Toon/Swarm na
+  incubadora, Bolinha provisória de 474 triângulos, cena `ToonLab`, modo `--ez toonlab true --ei units N` no APK de
+  medição e `toonlab:N:msaa:hdr` em `Tools/rt2-gate.sh` (matriz: `Tools/rt6t-toonlab-gate.sh`); `rt4-check` todo
+  PASS (EditMode 150/150, PlayMode 14/14) e a `ToonLab` roda no Editor com GPU. O OPPO ficou bloqueado a sessão toda:
+  falta o gate 3× (passo exato em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md)). **A série só continua (6t.2) depois
+  que o gate passar.**
 - **Prompt da sessão:** "Entrega RT-6t.1 do Runner vs Tower (portão técnico da direção crowd toon). Leia
   `docs/direcao-visual-crowd.md` (seções 1, 1.2, 4.1 e 6) e abra `docs/reference/crowd-proto.html`. Escreva o
   motor em `Assets/StudioKitIncubator/` com namespaces e asmdefs do kit (`JungleDegree.StudioKit.Toon` e
@@ -320,7 +325,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.1; **D25** (sem resposta: faz as duas variantes e para antes de escolher).
 - **Aceite:** validação padrão; orçamento de triângulos; capturas conferidas por revisor independente.
 - **Exige o usuário:** D25.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.2 do Runner vs Tower: as duas formas da multidão. Leia
   `docs/direcao-visual-crowd.md` (itens 5 e 6 da seção 1, RT-6t.2 na 4.1, ficha D25 e a resposta dela em
   `docs/decisoes.md`) e a função `unitGeo` do protótipo. Use o `LowPolyMeshBuilder` da incubadora. Gere Bolinha e
@@ -334,7 +339,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.1.
 - **Aceite:** testes EditMode das fórmulas (iguais ao protótipo); captura 9:16 com 10 → 1000.
 - **Exige o usuário:** nada.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.3 do Runner vs Tower: formação girassol, arraste e câmera. Leia
   `docs/direcao-visual-crowd.md` (itens 11–13, RT-6t.3) e o laço `frame()` do protótipo. Escreva na incubadora
   (`Swarm`) e na `ToonLab`; fórmulas idênticas ao protótipo, com testes; enquadramento de retrato por dado."
@@ -348,7 +353,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.2, RT-6t.3.
 - **Aceite:** validação padrão completa; PlayMode da corrida verde; gate 3× na corrida.
 - **Exige o usuário:** OPPO conectado; D27 só se o teto subir.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.4 do Runner vs Tower: a multidão instanciada entra na corrida. Leia
   `docs/direcao-visual-crowd.md` (seção 2 inteira, RT-6t.4) e a resposta da D27 em `docs/decisoes.md`. Troque
   `RunnerCrowd`/`PlayerController`/`RunnerPool` da corrida pelo `Swarm` sem mudar regras nem save e sem
@@ -362,7 +367,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** testes das fórmulas contra o protótipo; capturas/vídeo; **gate 3× com 1000 vivos + 512 morrendo**;
   captura do chão sob a multidão (sombras somadas).
 - **Exige o usuário:** OPPO conectado.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.5 do Runner vs Tower: animações procedurais. Leia
   `docs/direcao-visual-crowd.md` (itens 7 e 8, RT-6t.5) e o protótipo. Burst na incubadora, com testes; ligue a
   morte no portão ruim da corrida; gate 3× no OPPO com 1000 vivos + 512 morrendo."
@@ -375,7 +380,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.5; **D26**.
 - **Aceite:** validação padrão; teste de migração v3 → v4; capturas; revisão de segurança (save).
 - **Exige o usuário:** D26.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.6 do Runner vs Tower: paletas, céu, neblina, formas e skins. Leia
   `docs/direcao-visual-crowd.md` (itens 2–4 e 17, seções 1.1 e 5.1, RT-6t.6, ficha D26) e a resposta da D26 em
   `docs/decisoes.md`. Paletas do usuário com os valores exatos; save v4 com migração e fixture; revisão de
@@ -389,7 +394,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.6.
 - **Aceite:** validação padrão; PlayMode verde; gate 3× no chefe do mundo 4 com o assalto mais pesado.
 - **Exige o usuário:** OPPO conectado.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.7 do Runner vs Tower: a multidão instanciada no assalto. Leia
   `docs/direcao-visual-crowd.md` (seção 2, RT-6t.7) e a resposta da D27. Adapte `AssaultField` e as defesas para os
   arrays do `Swarm` sem mudar regras; se o teto mudar, regenere fases e economia pelas ferramentas existentes;
@@ -402,7 +407,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.6.
 - **Aceite:** validação padrão; ≤ 3 chamadas para o cenário lateral; capturas dos 4 mundos.
 - **Exige o usuário:** nada.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.8 do Runner vs Tower: cenário instanciado e pista listrada. Leia
   `docs/direcao-visual-crowd.md` (itens 14 e 15, RT-6t.8). Não toque multidão, portões nem HUD."
 
@@ -414,7 +419,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.7.
 - **Aceite:** validação padrão; glifos `+ − × ÷` e acentos; capturas; licença registrada.
 - **Exige o usuário:** nada.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.9 do Runner vs Tower: portões, texto Baloo 2 e feedback. Leia
   `docs/direcao-visual-crowd.md` (itens 18–21, RT-6t.9) e o protótipo (portões, `floatText`, `.count.pop`). Baixe a
   Baloo 2 só de github.com/google/fonts (ofl/baloo2), guarde `OFL.txt` e o hash. Não toque cenário nem pista."
@@ -426,7 +431,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.8.
 - **Aceite:** validação padrão; capturas dos 4 chefes; aprovação visual do usuário como aceite pendente.
 - **Exige o usuário:** D28; olhar as capturas.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.10 do Runner vs Tower: arte do assalto no estilo toon. Leia
   `docs/direcao-visual-crowd.md` (RT-6t.10, ficha D28) e a resposta da D28. Aplique a opção escolhida; capturas
   dos 4 mundos."
@@ -438,7 +443,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.7.
 - **Aceite:** validação padrão; as duas rotas desenham igual (captura); gate 3× em GLES no OPPO.
 - **Exige o usuário:** OPPO conectado.
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.11 do Runner vs Tower: caminho de desenho de reserva para OpenGL ES. Leia
   `docs/direcao-visual-crowd.md` (item 9, R-T2, RT-6t.11). Implemente na incubadora, escolha por `SystemInfo`, e
   meça o gate 3× no OPPO com GLES forçado."
@@ -452,7 +457,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** validação padrão completa; isolamento do kit PASS; Wild Pack igual à linha de base (validadores
   1–3, save 87/87, isolamento, anúncios offline 24/24, build Android); gate 3× aprovado; nenhum asset órfão.
 - **Exige o usuário:** OPPO conectado; jogar os 4 mundos (aceite pendente).
-- **Status: proposta, aguardando aprovação do usuário.**
+- **Status: aprovada em 2026-11-21.**
 - **Prompt da sessão:** "Entrega RT-6t.12 do Runner vs Tower: levar o motor ao studiokit e fechar a série. Leia
   `docs/direcao-visual-crowd.md` (seções 2, 4.1 e 6), `docs/rt6t-crowd-toon.md` e
   `../studiokit/docs/consumo-runner-vs-tower.md`. Mova `Assets/StudioKitIncubator/**` para o pacote preservando os

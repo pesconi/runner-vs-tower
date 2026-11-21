@@ -68,3 +68,8 @@
   antes do commit. O Firebase entra pelo SDK Android nativo (`Assets/Plugins/Android/FirebaseAnalytics.androidlib`); o
   `google-services.json` fica em `..\_privado\runner-vs-tower\` e vira recurso no build. Prova no aparelho:
   `Tools/rt8b-firebase-check.sh`.
+- 2026-11-21 (RT-6t.1): o passo `scene` do `rt4-check` regrava `Claybreak.unity` (fileIDs novos) e os `world3/*.mat`
+  (`_Color` legado) mesmo sem mudança no jogo: reverter com `git checkout -- Assets/Claybreak/Content` se a entrega não
+  mexeu no jogo, junto com os `Assets/Settings`/`ProjectSettings` já listados. PlayMode roda com `-nographics` (dispositivo
+  `Null`, nada se desenha): para provar desenho, rodar o teste sem `-nographics` (`-runTests -testFilter <Classe>`).
+  Gate da multidão toon: `Tools/rt6t-toonlab-gate.sh [apk]` (matriz MSAA/HDR + 2000 de registro, captura em `docs/art/rt6t/`).

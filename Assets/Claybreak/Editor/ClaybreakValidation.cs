@@ -22,6 +22,18 @@ namespace Claybreak.Editor
     public static class ClaybreakValidation
     {
         private const string RuntimeFolder = "Assets/Claybreak/Runtime";
+
+        // Run-time code under rule 2.2.1: the game, its toon lab and the incubated kit code (RT-6t). A line marked
+        // "// load-time:" is allowed: it runs once when its owner loads or unloads, never while playing.
+        private static readonly string[] RuntimeCodeFolders =
+        {
+            RuntimeFolder,
+            "Assets/Claybreak/Lab/Runtime",
+            "Assets/StudioKitIncubator/Toon",
+            "Assets/StudioKitIncubator/Swarm",
+        };
+
+        private const string LoadTimeMarker = "// load-time:";
         public const string SaveFixtureFolder = "Assets/Claybreak/Editor/SaveFixtures";
         private static readonly Regex ForbiddenRuntimeCalls = new Regex(
             @"\b(Instantiate|Destroy|DestroyImmediate)\s*\(|new\s+GameObject\s*\(|\.AddComponent\s*<|\bPhysics\.",
@@ -47,6 +59,7 @@ namespace Claybreak.Editor
             CheckSaves(failures);
             CheckRuntimeCode(failures);
             CheckScene(failures);
+            CheckToonLab(failures);
             failures.AddRange(MonetizationValidation.Run());
             return failures;
         }
@@ -55,7 +68,7 @@ namespace Claybreak.Editor
         {
             if (failures.Count == 0)
             {
-                Debug.Log("PASS Claybreak validation: catalog, worlds, levels, device-gate level, theme, saves, scene, pools, runtime code rules and monetization.");
+                Debug.Log("PASS Claybreak validation: catalog, worlds, levels, device-gate level, theme, saves, scene, pools, runtime code rules, toon lab and monetization.");
             }
             else
             {
@@ -293,7 +306,15 @@ namespace Claybreak.Editor
 
         private static void CheckRuntimeCode(List<string> failures)
         {
-            foreach (string file in Directory.GetFiles(RuntimeFolder, "*.cs", SearchOption.AllDirectories))
+            foreach (string folder in RuntimeCodeFolders)
+            {
+                CheckRuntimeCode(folder, failures);
+            }
+        }
+
+        private static void CheckRuntimeCode(string folder, List<string> failures)
+        {
+            foreach (string file in Directory.GetFiles(folder, "*.cs", SearchOption.AllDirectories))
             {
                 string[] lines = File.ReadAllLines(file);
                 for (int i = 0; i < lines.Length; i++)
@@ -304,12 +325,67 @@ namespace Claybreak.Editor
                         continue;
                     }
 
-                    if (ForbiddenRuntimeCalls.IsMatch(code))
+                    if (ForbiddenRuntimeCalls.IsMatch(code) && !code.Contains(LoadTimeMarker))
                     {
                         failures.Add($"{file.Replace('\\', '/')}:{i + 1}: runtime code creates/destroys objects or queries physics: {code}");
                     }
                 }
             }
+        }
+
+        // RT-6t.1: the provisional crowd shape stays within the triangle budget (one mesh, 16-bit, front +Z) and the toon
+        // lab scene exists for the measurement player.
+        private static void CheckToonLab(List<string> failures)
+        {
+            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(ToonLabBuilder.BolinhaPath);
+            if (mesh == null)
+            {
+                failures.Add("missing " + ToonLabBuilder.BolinhaPath + " (run Claybreak > Build Scene)");
+            }
+            else
+            {
+                int triangles = (int)(mesh.GetIndexCount(0) / 3);
+                if (mesh.subMeshCount != 1 || triangles < UnitShapeRecipes.MinimumTriangles || triangles > UnitShapeRecipes.MaximumTriangles)
+                {
+                    failures.Add($"{mesh.name}: {triangles} triangles in {mesh.subMeshCount} submesh(es); the budget is one mesh of "
+                        + $"{UnitShapeRecipes.MinimumTriangles}-{UnitShapeRecipes.MaximumTriangles}");
+                }
+
+                if (mesh.indexFormat != UnityEngine.Rendering.IndexFormat.UInt16)
+                {
+                    failures.Add(mesh.name + " must use 16-bit indices");
+                }
+
+                if (!EyesFaceFront(mesh))
+                {
+                    failures.Add(mesh.name + ": the eyes (fixed dark color) must be on the +Z front");
+                }
+            }
+
+            if (!File.Exists(Claybreak.Lab.ToonLab.ScenePath))
+            {
+                failures.Add("missing " + Claybreak.Lab.ToonLab.ScenePath + " (run Claybreak > Build Scene)");
+            }
+        }
+
+        private static bool EyesFaceFront(Mesh mesh)
+        {
+            Vector3[] vertices = mesh.vertices;
+            Color32[] colors = mesh.colors32;
+            float eyesZ = 0f;
+            int eyes = 0;
+            for (int i = 0; i < vertices.Length && i < colors.Length; i++)
+            {
+                Color32 c = colors[i];
+                Color32 e = UnitShapeRecipes.Eyes;
+                if (c.r == e.r && c.g == e.g && c.b == e.b && c.a == e.a)
+                {
+                    eyesZ += vertices[i].z;
+                    eyes++;
+                }
+            }
+
+            return eyes > 0 && eyesZ / eyes > 0.1f;
         }
 
         private static void CheckScene(List<string> failures)

@@ -1,6 +1,7 @@
-# Direção visual "crowd toon" — mapeamento técnico e plano (proposta)
+# Direção visual "crowd toon" — mapeamento técnico e plano
 
-Data: 2026-11-21. **Status: proposta, aguardando aprovação do usuário.** Nada aqui foi implementado.
+Data: 2026-11-21. **Status: aprovada pelo usuário em 2026-11-21** (D25, D27 e D26 sem resposta: valem os padrões das fichas).
+Implementação em curso a partir da RT-6t.1 (resultado em `rt6t-crowd-toon.md`).
 Substitui a direção v2 ("Brinquedo Brilhante", D24, RT-6v.1, kit K.10), descartada pelo usuário e revertida
 em `fc1620e` (jogo) e `6db35b7` (kit).
 

@@ -1,0 +1,20 @@
+{
+    "name": "Claybreak.Lab",
+    "rootNamespace": "Claybreak.Lab",
+    "references": [
+        "JungleDegree.StudioKit.Toon",
+        "JungleDegree.StudioKit.Swarm",
+        "JungleDegree.StudioKit.Crowd",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

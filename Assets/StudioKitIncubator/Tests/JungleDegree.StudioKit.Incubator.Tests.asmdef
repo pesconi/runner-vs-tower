@@ -1,0 +1,27 @@
+{
+    "name": "JungleDegree.StudioKit.Incubator.Tests",
+    "rootNamespace": "JungleDegree.StudioKit.Tests",
+    "references": [
+        "JungleDegree.StudioKit.Toon",
+        "JungleDegree.StudioKit.Swarm",
+        "Unity.Burst",
+        "Unity.Collections",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

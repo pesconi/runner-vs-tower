@@ -11,7 +11,8 @@ namespace Claybreak.Editor
     /// Batchmode: -buildTarget Android -executeMethod Claybreak.Editor.ClaybreakBuild.BuildAndroidAndQuit
     ///   [-claybreakApk C:\temp\rt2\Claybreak.apk] [-claybreakMeasure] [-claybreakAab C:\temp\rt8\Claybreak.aab]
     /// -claybreakMeasure adds RELEASE_MEASUREMENT: a release player that also reads the device-gate
-    /// extras (`--ez stress true`, the kit's `--ei fps N`) and logs the kit's frame timing probe.
+    /// extras (`--ez stress true`, the kit's `--ei fps N`) and logs the kit's frame timing probe; it also carries
+    /// the toon lab scene (RT-6t.1: `--ez toonlab true --ei units N [--ei msaa 1|4] [--ez hdr true|false]`).
     /// -claybreakAab writes the Play bundle (AAB) instead of an APK.
     /// Signing (RT-8): every build is a release player. Without a key it is signed with Unity's debug key
     /// (fine for the phone, refused by the Play Store). The upload key never lives in the repository: set
@@ -62,7 +63,10 @@ namespace Claybreak.Editor
                     EditorUserBuildSettings.buildAppBundle = bundle;
                     BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                     {
-                        scenes = new[] { ClaybreakSceneBuilder.ScenePath },
+                        // RT-6t.1: the toon lab goes only into measurement players (`--ez toonlab true`).
+                        scenes = measure
+                            ? new[] { ClaybreakSceneBuilder.ScenePath, Claybreak.Lab.ToonLab.ScenePath }
+                            : new[] { ClaybreakSceneBuilder.ScenePath },
                         locationPathName = output,
                         target = BuildTarget.Android,
                         options = BuildOptions.None,

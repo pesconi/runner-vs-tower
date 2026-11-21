@@ -1123,3 +1123,47 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   autorização do usuário.
 - Também decidido pelo planejamento, provisório e trocável: 4ª paleta "Aurora" para o mundo 4 (o pedido tem 3
   paletas, o jogo tem 4 mundos; D12 = A).
+
+## 2026-11-21 — Plano da direção visual "crowd toon" (RT-6t.1 a RT-6t.12) — **aprovado** — usuário
+
+- O usuário aprovou em 2026-11-21 o plano `docs/direcao-visual-crowd.md` inteiro: entregas RT-6t.1 a RT-6t.12
+  (seção 4), mapeamento técnico (seção 1), orçamento e plano B (seção 1.2) e as decisões técnicas T-RT6t-1..9
+  (seção 6). As seções RT-6t.* de `plano-de-entregas.md` passam a "aprovada em 2026-11-21"; a série começa pela
+  RT-6t.1 (portão de desempenho no OPPO).
+- **D25, D27 e D26 continuam pendentes** (sem resposta do usuário): valem os padrões "se você não responder" das
+  fichas — D25: a RT-6t.2 faz as duas variantes e para antes de escolher; D27: teto de 300 em tudo (o motor é feito
+  para 1000 e a troca é dado); D26: trava a RT-6t.6. D28 (sem resposta: A) e D29 (trava a RT-9) seguem como estão.
+
+## 2026-11-21 — T-RT6t1-1..8 — Portão técnico da multidão toon — técnica (sessão RT-6t.1)
+
+- **T-RT6t1-1 — Desenho por `Graphics.RenderMeshPrimitives`, não `RenderMeshIndirect`.** A contagem viva já está na
+  CPU (a simulação é Burst na CPU, T-RT6t-2), então um buffer de argumentos não ganha nada; continua **1 chamada**
+  para os corpos e **1** para as sombras-bolha, as duas lendo o mesmo `GraphicsBuffer` estruturado. O formato da
+  instância (`ToonInstance`, 64 bytes: transformação 3×4 + tinta, `w` livre para o dono) mora no assembly
+  `Toon` (com o espelho `ToonInstanceData.hlsl`), para o cenário instanciado (6t.8) usar o mesmo caminho.
+- **T-RT6t1-2 — Rampa gerada na carga a partir do `ToonLook`** (textura R8 linear, filtro point, clamp, uma
+  texel por faixa) em vez de um asset de textura: um dado só (os níveis no `ToonLook`), nada para dessincronizar.
+  `ToonLookApplier` escreve rampa, céu/chão do ambiente e intensidades como valores globais de shader.
+- **T-RT6t1-3 — O URP asset do jogo não muda de sombras nesta entrega.** O jogo atual ainda usa a luz com sombra
+  (`MainLightShadowsSupported = 1`); desligar no asset mudaria o visual do jogo antes da 6t.4. A `ToonLab` usa uma
+  luz direcional sem sombra, e o URP pula o passo de sombras. MSAA e HDR são medidos por extras de lançamento
+  (`--ei msaa`, `--ez hdr`) que mudam o asset em memória só no player; o padrão do jogo (MSAA e HDR) é decidido
+  pelo resultado do gate e aplicado na 6t.4, quando a corrida usar o visual novo.
+- **T-RT6t1-4 — Regra 2.2.1 também na incubadora e no laboratório.** O validador do jogo passa a varrer
+  `Assets/Claybreak/Lab/Runtime` e `Assets/StudioKitIncubator/{Toon,Swarm}`; uma linha marcada `// load-time:`
+  (criação/liberação na carga ou descarga do dono, nunca em jogo) é aceita, e fica visível na revisão. O validador
+  de isolamento do kit cobre a incubadora (`folder Assets/StudioKitIncubator` na lista de termos do jogo).
+- **T-RT6t1-5 — Cena `ToonLab` só no APK de medição.** `--ez toonlab true` desativa a cena do jogo antes do `Start`
+  e carrega a `ToonLab` (gerada por `ToonLabBuilder`, chamado pelo construtor de cena). A lista de cenas do jogo
+  continua só com `Claybreak.unity`.
+- **T-RT6t1-6 — Pacotes.** `com.unity.burst` 2.0.0 e `com.unity.collections` 6.6.0 (as versões embutidas que o
+  `packages-lock` já resolvia) passam a ser dependências diretas; `Unity.Mathematics` é módulo do motor no Unity
+  6.6 (sem pacote). Shaders com `#pragma target 4.5` (buffer estruturado no vertex shader: Vulkan e GLES 3.1+); a
+  reserva sem buffer é a 6t.11.
+- **T-RT6t1-7 — Câmera da `ToonLab` em retrato.** A fórmula do protótipo (distância `1 + √n/22`, atrás da multidão,
+  olhando 5 m à frente; espelhada para a frente +Z do Unity) com o campo de visão vertical aberto até a formação
+  inteira caber na largura do retrato (50°–100°). O ajuste definitivo da câmera a 9:16 é da 6t.3.
+- **T-RT6t1-8 — Sem dispositivo gráfico, a multidão simula sem desenhar.** Os testes PlayMode do `rt4-check` rodam
+  com `-nographics` (dispositivo `Null`); ali o `SwarmRenderer` registra uma linha e só simula, em vez de acusar
+  erro. Num aparelho real sem buffer estruturado no vertex shader continua sendo erro (a reserva é a 6t.11). O
+  desenho é provado pelo mesmo teste rodado com GPU (`-runTests -testFilter ToonLabSceneTests` sem `-nographics`).

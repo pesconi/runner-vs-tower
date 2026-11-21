@@ -65,6 +65,7 @@ namespace Claybreak.Editor
             CreatePillSprite();
             CreateStarSprite();
             AssetDatabase.SaveAssets();
+            ToonLabBuilder.Build();
             CreateScene();
             AssetDatabase.SaveAssets();
         }
