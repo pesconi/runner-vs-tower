@@ -1105,7 +1105,7 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
 - No repositório ficam só as folhas lado a lado (`docs/art/direcao-v2/`); os quadros soltos ficam na pasta de captura.
 - Validação: validador do jogo, isolamento do kit, EditMode 138/138 e PlayMode 13/13 passaram.
 
-## Ficha D24 (revisão visual, 2026-11-21 — pendente)
+## Ficha D24 (revisão visual, respondida em 2026-11-21: A)
 
 ### DECISÃO D24 — Nova cara do jogo: qual direção visual?
 
@@ -1190,4 +1190,4 @@ Se você não responder: nada é refeito; a RT-9 continua parada e o jogo segue 
 
 Responda: A, B, C ou D, ou "A + ajuste" (ex.: "A com paleta mais escura"), ou "explica melhor".
 
-**Resposta do usuário:** pendente.
+**Resposta do usuário (2026-11-21): A, em etapas** — Brinquedo Brilhante. A RT-6v começa pelo soldado e o mundo 1, vistos no celular e com a regra de "público misto" da Play conferida; os mundos 2 a 4, torres, chefes e UI só seguem com o ok do usuário. A regra do GDD "direção adulta, paleta noturna, não castelo de brinquedo" deixa de valer; "sem rosto nem olhos" e 13+ continuam.
