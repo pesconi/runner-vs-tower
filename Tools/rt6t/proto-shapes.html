@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<title>proto-shapes</title>
+<style>html,body{margin:0;background:#f3e3ea;overflow:hidden}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+// RT-6t.2 reference renders of the crowd shapes. The shape code (part, merge, unitGeo), the toon ramp and the lights
+// are those of docs/reference/crowd-proto.html (three.js 0.160), with one switch added: eyes=0 drops the eyes (the
+// D25 variant). Parameters (query string):
+//   shape=blob|chick  eyes=1|0  w,h = canvas size
+//   cam=x,y,z  look=x,y,z  fov=deg   (three.js coordinates: the front of a unit is -Z)
+//   n=0 one unit at the origin; n=N a crowd of N at rest in the sunflower formation on the Pastel ground and track
+//   fog=start,end
+// Used by Tools/rt6t/shape-captures.sh (headless Chrome screenshots).
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const q=new URLSearchParams(location.search);
+const num=(k,d)=>q.has(k)?q.get(k).split(',').map(Number):d;
+const W=+(q.get('w')||540),H=+(q.get('h')||540);
+const shape=q.get('shape')||'blob',withEyes=q.get('eyes')!=='0',N=+(q.get('n')||0);
+const pal={sky:['#ffd9cf','#cfe8ff'],fog:'#f3e3ea',ground:'#bfe6cf',track:'#fff4ea',stripe:'#ffe3d1',crowd:'#ff8fab'};
+
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(1);renderer.setSize(W,H,false);
+const scene=new THREE.Scene();scene.background=new THREE.Color(pal.fog);
+const [fs,fe]=num('fog',[22,75]);scene.fog=new THREE.Fog(pal.fog,fs,fe);
+const camera=new THREE.PerspectiveCamera(+(q.get('fov')||30),W/H,0.05,400);
+const [cx,cy,cz]=num('cam',[0.55,0.5,-1.15]);camera.position.set(cx,cy,cz);
+const [lx,ly,lz]=num('look',[0,0.22,0]);camera.lookAt(lx,ly,lz);
+scene.add(new THREE.HemisphereLight(0xffffff,0xbbaacc,1.4));
+const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(6,12,4);scene.add(sun);
+
+const grad=new THREE.DataTexture(new Uint8Array([110,110,110,255,185,185,185,255,255,255,255,255]),3,1,THREE.RGBAFormat);
+grad.minFilter=grad.magFilter=THREE.NearestFilter;grad.needsUpdate=true;
+const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:grad});
+
+function part(geo,color,x=0,y=0,z=0,sx=1,sy=1,sz=1,rx=0){geo=geo.index?geo.toNonIndexed():geo;if(rx)geo.rotateX(rx);geo.scale(sx,sy,sz);geo.translate(x,y,z);const n=geo.attributes.position.count,c=new Float32Array(n*3),col=new THREE.Color(color);for(let i=0;i<n;i++){c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b}geo.setAttribute('color',new THREE.BufferAttribute(c,3));return geo}
+function merge(parts){const out=new THREE.BufferGeometry();for(const k of['position','normal','color']){const arrs=parts.map(p=>p.attributes[k].array);const len=arrs.reduce((s,a)=>s+a.length,0);const m=new Float32Array(len);let o=0;for(const a of arrs){m.set(a,o);o+=a.length}out.setAttribute(k,new THREE.BufferAttribute(m,3))}return out}
+const R=0.22;
+function unitGeo(){const body=pal.crowd,dark='#2b2233',leaf='#5cc98a',orange='#ff9f43';
+ const eyes=h=>withEyes?[part(new THREE.SphereGeometry(.035,8,6),dark,-.08,h,-R*.86),part(new THREE.SphereGeometry(.035,8,6),dark,.08,h,-R*.86)]:[];
+ if(shape==='chick')return merge([part(new THREE.SphereGeometry(R,16,12),body,0,R,0),...eyes(R*1.15),
+   part(new THREE.ConeGeometry(.05,.11,8),orange,0,R*.95,-R*1.05,1,1,1,-Math.PI/2),
+   part(new THREE.SphereGeometry(.045,8,6),orange,0,R*2.02,0),part(new THREE.SphereGeometry(.04,8,6),orange,0,R*1.95,.06),
+   part(new THREE.ConeGeometry(.06,.12,6),body,0,R*1.2,R*.95,1,1,1,1.1)]);
+ return merge([part(new THREE.SphereGeometry(R,18,14),body,0,R*.9,0,1,.9,1),...eyes(R*1.05),
+   part(new THREE.CylinderGeometry(.012,.012,.08,5),leaf,0,R*1.8+.04,0),
+   part(new THREE.SphereGeometry(.05,8,6),leaf,-.045,R*1.8+.085,0,1,.3,.6),part(new THREE.SphereGeometry(.05,8,6),leaf,.045,R*1.8+.085,0,1,.3,.6)]);}
+
+if(N===0){scene.add(new THREE.Mesh(unitGeo(),toon));}
+else{
+ // Pastel ground and striped track of the prototype (4 m stripe period), units at rest on their sunflower slots.
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(300,300).rotateX(-Math.PI/2),new THREE.MeshToonMaterial({gradientMap:grad,color:pal.ground}));ground.position.y=-.02;scene.add(ground);
+ const c=document.createElement('canvas');c.width=64;c.height=64;const g=c.getContext('2d');g.fillStyle=pal.track;g.fillRect(0,0,64,64);g.fillStyle=pal.stripe;g.fillRect(0,0,64,32);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,40);
+ const track=new THREE.Mesh(new THREE.PlaneGeometry(6*2+.6,160).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:t}));track.position.z=-60;scene.add(track);
+ const crowd=new THREE.InstancedMesh(unitGeo(),toon,N);const d=new THREE.Object3D();
+ for(let i=0;i<N;i++){const r=Math.sqrt(i+.5)*.25;d.position.set(Math.cos(i*2.39996)*r,0,Math.sin(i*2.39996)*r*1.35);d.updateMatrix();crowd.setMatrixAt(i,d.matrix)}
+ scene.add(crowd);
+ const sh=new THREE.InstancedMesh(new THREE.CircleGeometry(R*.95,12).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x2b2233,transparent:true,opacity:.18,depthWrite:false}),N);
+ for(let i=0;i<N;i++){const r=Math.sqrt(i+.5)*.25;d.position.set(Math.cos(i*2.39996)*r,.01,Math.sin(i*2.39996)*r*1.35);d.updateMatrix();sh.setMatrixAt(i,d.matrix)}
+ scene.add(sh);
+}
+renderer.render(scene,camera);
+document.title='ready';
+</script>
+</body>
+</html>

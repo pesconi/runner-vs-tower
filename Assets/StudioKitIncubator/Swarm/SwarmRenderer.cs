@@ -47,6 +47,10 @@ namespace JungleDegree.StudioKit.Swarm
 
         /// <summary>Where the formation is being steered to, across.</summary>
         public float TargetX => simulation == null ? transform.position.x : simulation.TargetX;
+        public Mesh UnitMesh => unitMesh;
+
+        /// <summary>Body tint of every unit (where the mesh's vertex alpha is 255).</summary>
+        public Color Tint => tint;
         public int UnitTriangles => unitMesh == null ? 0 : (int)(unitMesh.GetIndexCount(0) / 3);
         public bool DrawsShadows => shadowMaterial != null && shadowMesh != null;
 
@@ -64,6 +68,21 @@ namespace JungleDegree.StudioKit.Swarm
             {
                 initialCount = Mathf.Max(0, count);
             }
+        }
+
+        /// <summary>
+        /// Swaps the unit shape (a mesh with one submesh, like the one set in the Inspector); the next frame draws it.
+        /// Nothing is reallocated: the instance buffer does not depend on the mesh.
+        /// </summary>
+        public void SetUnitMesh(Mesh mesh)
+        {
+            if (mesh == null || mesh.subMeshCount < 1)
+            {
+                Debug.LogError("[Swarm] the unit mesh must exist and have a submesh", this);
+                return;
+            }
+
+            unitMesh = mesh;
         }
 
         /// <summary>Steers the formation center toward <paramref name="x"/> (world, across); it follows smoothly.</summary>

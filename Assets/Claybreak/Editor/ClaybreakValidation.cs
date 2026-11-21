@@ -333,32 +333,22 @@ namespace Claybreak.Editor
             }
         }
 
-        // RT-6t.1: the provisional crowd shape stays within the triangle budget (one mesh, 16-bit, front +Z) and the toon
-        // lab scene exists for the measurement player.
+        // RT-6t.1/6t.2: every crowd shape stays within the budget (one mesh, 200-500 triangles, 16-bit, tint mask, on the
+        // ground, front +Z, eyes only where wanted) and the toon lab scene exists for the measurement player.
         private static void CheckToonLab(List<string> failures)
         {
-            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(ToonLabBuilder.BolinhaPath);
-            if (mesh == null)
+            foreach (UnitShapeAssets.Entry entry in UnitShapeAssets.All)
             {
-                failures.Add("missing " + ToonLabBuilder.BolinhaPath + " (run Claybreak > Build Scene)");
-            }
-            else
-            {
-                int triangles = (int)(mesh.GetIndexCount(0) / 3);
-                if (mesh.subMeshCount != 1 || triangles < UnitShapeRecipes.MinimumTriangles || triangles > UnitShapeRecipes.MaximumTriangles)
+                var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(entry.Path);
+                if (mesh == null)
                 {
-                    failures.Add($"{mesh.name}: {triangles} triangles in {mesh.subMeshCount} submesh(es); the budget is one mesh of "
-                        + $"{UnitShapeRecipes.MinimumTriangles}-{UnitShapeRecipes.MaximumTriangles}");
+                    failures.Add("missing " + entry.Path + " (run Claybreak > Build Scene)");
+                    continue;
                 }
 
-                if (mesh.indexFormat != UnityEngine.Rendering.IndexFormat.UInt16)
+                foreach (string problem in UnitShapeRules.Check(mesh, entry.HasEyes, entry.FrontMarker))
                 {
-                    failures.Add(mesh.name + " must use 16-bit indices");
-                }
-
-                if (!EyesFaceFront(mesh))
-                {
-                    failures.Add(mesh.name + ": the eyes (fixed dark color) must be on the +Z front");
+                    failures.Add(entry.Path + ": " + problem);
                 }
             }
 
@@ -392,26 +382,6 @@ namespace Claybreak.Editor
             {
                 failures.Add("missing " + Claybreak.Lab.ToonLab.ScenePath + " (run Claybreak > Build Scene)");
             }
-        }
-
-        private static bool EyesFaceFront(Mesh mesh)
-        {
-            Vector3[] vertices = mesh.vertices;
-            Color32[] colors = mesh.colors32;
-            float eyesZ = 0f;
-            int eyes = 0;
-            for (int i = 0; i < vertices.Length && i < colors.Length; i++)
-            {
-                Color32 c = colors[i];
-                Color32 e = UnitShapeRecipes.Eyes;
-                if (c.r == e.r && c.g == e.g && c.b == e.b && c.a == e.a)
-                {
-                    eyesZ += vertices[i].z;
-                    eyes++;
-                }
-            }
-
-            return eyes > 0 && eyesZ / eyes > 0.1f;
         }
 
         private static void CheckScene(List<string> failures)

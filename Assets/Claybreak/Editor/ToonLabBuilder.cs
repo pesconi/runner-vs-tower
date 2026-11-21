@@ -15,10 +15,10 @@ using UnityEngine.UI;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// Builds the toon lab of the crowd toon direction (RT-6t.1) from code: the provisional Bolinha and the shadow disc
-    /// (<see cref="UnitShapeRecipes"/>), the ground and track meshes, the toon materials, the Pastel look, the lab camera
+    /// Builds the toon lab of the crowd toon direction (RT-6t.1) from code: the crowd shapes (<see cref="UnitShapeAssets"/>,
+    /// RT-6t.2) and the shadow disc (<see cref="UnitShapeRecipes"/>), the ground and track meshes, the toon materials, the Pastel look, the lab camera
     /// profile and the <c>ToonLab</c> scene (camera rig, light without shadows, linear fog, the swarm kept on the track,
-    /// the test panel of RT-6t.3, the debug FPS overlay).
+    /// the test panel of RT-6t.3 with the shape picker of RT-6t.2, the debug FPS overlay).
     /// The scene goes only into measurement players (<see cref="ClaybreakBuild"/>), never into the game build list.
     /// Idempotent: assets keep their GUIDs. Runs inside <see cref="ClaybreakSceneBuilder.Build"/>.
     /// </summary>
@@ -26,7 +26,6 @@ namespace Claybreak.Editor
     {
         public const string Root = "Assets/Claybreak/Lab";
         public const string GeneratedFolder = Root + "/Generated";
-        public const string BolinhaPath = GeneratedFolder + "/BolinhaProvisional.asset";
         public const string ShadowDiscPath = GeneratedFolder + "/BlobShadowDisc.asset";
         public const string GroundPath = GeneratedFolder + "/LabGround.asset";
         public const string SwarmMaterialPath = GeneratedFolder + "/ToonLitSwarm.mat";
@@ -45,6 +44,7 @@ namespace Claybreak.Editor
         private static readonly Color32 Crowd = Hex(0xff8fab);
         private static readonly Color32 Ink = Hex(0x3b2f4a);
         private static readonly Color32 Accent = Hex(0xff6f91);
+        private static readonly string[] ShapeLabels = { "Bolinha", "Pintinho" };
         /// <summary>Half width of the lab track (the reference prototype track); the swarm is kept inside it.</summary>
         public const float TrackHalfWidth = 6f;
 
@@ -53,7 +53,7 @@ namespace Claybreak.Editor
         {
             EnsureFolder(Root);
             EnsureFolder(GeneratedFolder);
-            SaveMesh(UnitShapeRecipes.ProvisionalBolinha(), BolinhaPath);
+            UnitShapeAssets.Build();
             SaveMesh(UnitShapeRecipes.ShadowDisc(), ShadowDiscPath);
             SaveMesh(GroundMesh(), GroundPath);
             Shader toon = Find(ToonShaderIds.ToonLitShader);
@@ -97,7 +97,12 @@ namespace Claybreak.Editor
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             // Loaded by path after the new scene: references taken before it can go stale (assets unloaded with the
             // previous scene).
-            Mesh bolinha = Load<Mesh>(BolinhaPath);
+            var shapes = new Mesh[UnitShapeAssets.All.Length];
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                shapes[i] = Load<Mesh>(UnitShapeAssets.All[i].Path);
+            }
+
             Mesh disc = Load<Mesh>(ShadowDiscPath);
             Mesh ground = Load<Mesh>(GroundPath);
             Material swarmMaterial = Load<Material>(SwarmMaterialPath);
@@ -143,7 +148,7 @@ namespace Claybreak.Editor
             var swarmObject = new GameObject("Swarm");
             var swarm = swarmObject.AddComponent<SwarmRenderer>();
             var so = new SerializedObject(swarm);
-            so.FindProperty("unitMesh").objectReferenceValue = bolinha;
+            so.FindProperty("unitMesh").objectReferenceValue = shapes[0];
             so.FindProperty("unitMaterial").objectReferenceValue = swarmMaterial;
             so.FindProperty("shadowMesh").objectReferenceValue = disc;
             so.FindProperty("shadowMaterial").objectReferenceValue = shadowMaterial;
@@ -183,6 +188,20 @@ namespace Claybreak.Editor
             labSo.FindProperty("cameraRig").objectReferenceValue = rig;
             labSo.FindProperty("panel").objectReferenceValue = panel;
             labSo.FindProperty("editorUnits").intValue = DefaultUnits;
+            // Bolinha and Pintinho, each with and without eyes (UnitShapeAssets order); the eyed Bolinha is the
+            // provisional default while D25 is open.
+            SerializedProperty choices = labSo.FindProperty("shapes");
+            choices.arraySize = ShapeLabels.Length;
+            for (int i = 0; i < ShapeLabels.Length; i++)
+            {
+                SerializedProperty choice = choices.GetArrayElementAtIndex(i);
+                choice.FindPropertyRelative("label").stringValue = ShapeLabels[i];
+                choice.FindPropertyRelative("withEyes").objectReferenceValue = shapes[2 * i];
+                choice.FindPropertyRelative("withoutEyes").objectReferenceValue = shapes[2 * i + 1];
+            }
+
+            labSo.FindProperty("shapeIndex").intValue = 0;
+            labSo.FindProperty("eyes").boolValue = true;
             labSo.ApplyModifiedPropertiesWithoutUndo();
 
             var eventSystem = new GameObject("EventSystem");
@@ -192,7 +211,8 @@ namespace Claybreak.Editor
             EditorSceneManager.SaveScene(scene, ToonLab.ScenePath);
         }
 
-        // RT-6t.3 test panel at the bottom of the screen (the prototype drawer): +100, 1000!, restart at 10, shake.
+        // Test panel at the bottom of the screen (the prototype drawer), two rows: +100, 1000!, restart at 10, shake (RT-6t.3);
+        // Bolinha, Pintinho, with eyes, without eyes (RT-6t.2).
         private static RectTransform TestPanel(Transform canvas, ToonLab lab)
         {
             var panelObject = new GameObject("TestPanel", typeof(RectTransform));
@@ -202,21 +222,24 @@ namespace Claybreak.Editor
             rect.anchorMax = new Vector2(0.5f, 0f);
             rect.pivot = new Vector2(0.5f, 0f);
             rect.anchoredPosition = new Vector2(0f, 36f);
-            rect.sizeDelta = new Vector2(1000f, 150f);
+            rect.sizeDelta = new Vector2(1000f, 264f);
             var background = panelObject.AddComponent<Image>();
             background.color = new Color(1f, 1f, 1f, 0.82f);
-            var layout = panelObject.AddComponent<HorizontalLayoutGroup>();
+            var layout = panelObject.AddComponent<GridLayoutGroup>();
             layout.padding = new RectOffset(18, 18, 18, 18);
-            layout.spacing = 14f;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = true;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
+            layout.spacing = new Vector2(14f, 14f);
+            layout.cellSize = new Vector2(230f, 107f);
+            layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            layout.constraintCount = 4;
 
             UnityEventTools.AddIntPersistentListener(PanelButton(rect, "Add100", "+100", false).onClick, lab.AddUnits, 100);
             UnityEventTools.AddIntPersistentListener(PanelButton(rect, "Set1000", "1000!", true).onClick, lab.SetUnits, 1000);
             UnityEventTools.AddIntPersistentListener(PanelButton(rect, "Restart", "Recomeçar", false).onClick, lab.SetUnits, 10);
             UnityEventTools.AddVoidPersistentListener(PanelButton(rect, "Shake", "Tremer", false).onClick, lab.ShakeCamera);
+            UnityEventTools.AddIntPersistentListener(PanelButton(rect, "ShapeBolinha", ShapeLabels[0], false).onClick, lab.SelectShape, 0);
+            UnityEventTools.AddIntPersistentListener(PanelButton(rect, "ShapePintinho", ShapeLabels[1], false).onClick, lab.SelectShape, 1);
+            UnityEventTools.AddBoolPersistentListener(PanelButton(rect, "EyesOn", "Com olhos", false).onClick, lab.SetEyes, true);
+            UnityEventTools.AddBoolPersistentListener(PanelButton(rect, "EyesOff", "Sem olhos", false).onClick, lab.SetEyes, false);
             return rect;
         }
 

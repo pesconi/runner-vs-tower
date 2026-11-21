@@ -324,7 +324,13 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.1; **D25** (sem resposta: faz as duas variantes e para antes de escolher).
 - **Aceite:** validação padrão; orçamento de triângulos; capturas conferidas por revisor independente.
 - **Exige o usuário:** D25.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-21.** Bolinha (484 tri) e Pintinho (492) pelo `unitGeo()` do protótipo, cada um com e
+  sem olhos (412/420), máscara de tinta, assets em `Content/Generated/Units/`; regra do validador para as quatro;
+  seletor na `ToonLab` (Bolinha/Pintinho, com/sem olhos; padrão provisório: com olhos). Capturas lado a lado com o
+  protótipo aprovadas com observações pelo revisor independente (só a calibração de luz do `ToonLit` difere);
+  validação completa verde. Detalhes em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t2-1..7 em
+  `decisoes.md`. **D25 segue sem resposta e agora trava só a 6t.4 em diante** (qual variante vai para o jogo).
+  Próxima: 6t.4.
 - **Prompt da sessão:** "Entrega RT-6t.2 do Runner vs Tower: as duas formas da multidão. Leia
   `docs/direcao-visual-crowd.md` (itens 5 e 6 da seção 1, RT-6t.2 na 4.1, ficha D25 e a resposta dela em
   `docs/decisoes.md`) e a função `unitGeo` do protótipo. Use o `LowPolyMeshBuilder` da incubadora. Gere Bolinha e

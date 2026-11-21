@@ -5,23 +5,28 @@ namespace Claybreak.Lab
 {
     /// <summary>
     /// What the toon lab measures. In measurement players (RELEASE_MEASUREMENT or development, Android) it comes from
-    /// the launch extras: <c>adb shell am start ... --ez toonlab true --ei units N [--ei msaa 1|2|4] [--ez hdr true|false]
-    /// [--ei fps 60]</c>. Values left out keep the project settings.
+    /// the launch extras: <c>adb shell am start ... --ez toonlab true --ei units N [--ei shape 0|1] [--ez eyes true|false]
+    /// [--ei msaa 1|2|4] [--ez hdr true|false] [--ei fps 60]</c>. Values left out keep the scene or project settings
+    /// (shape 0 = Bolinha, 1 = Pintinho).
     /// </summary>
     public struct ToonLabSettings
     {
         public const int KeepMsaa = 0;
         public const int KeepHdr = -1;
+        public const int KeepShape = -1;
+        public const int KeepEyes = -1;
 
         public bool Requested;
         public int Units;
         public int Msaa;
         public int Hdr;
+        public int Shape;
+        public int Eyes;
         public int FrameRate;
 
         public static ToonLabSettings Defaults(int units)
         {
-            return new ToonLabSettings { Units = units, Msaa = KeepMsaa, Hdr = KeepHdr, FrameRate = 0 };
+            return new ToonLabSettings { Units = units, Msaa = KeepMsaa, Hdr = KeepHdr, Shape = KeepShape, Eyes = KeepEyes, FrameRate = 0 };
         }
 
         /// <summary>Reads the launch extras; false outside measurement players on Android or when they cannot be read.</summary>
@@ -38,6 +43,8 @@ namespace Claybreak.Lab
                 settings.Units = intent.Call<int>("getIntExtra", "units", defaultUnits);
                 settings.Msaa = intent.Call<int>("getIntExtra", "msaa", KeepMsaa);
                 settings.Hdr = intent.Call<bool>("hasExtra", "hdr") ? (intent.Call<bool>("getBooleanExtra", "hdr", false) ? 1 : 0) : KeepHdr;
+                settings.Shape = intent.Call<int>("getIntExtra", "shape", KeepShape);
+                settings.Eyes = intent.Call<bool>("hasExtra", "eyes") ? (intent.Call<bool>("getBooleanExtra", "eyes", true) ? 1 : 0) : KeepEyes;
                 settings.FrameRate = intent.Call<int>("getIntExtra", "fps", 0);
                 return true;
             }

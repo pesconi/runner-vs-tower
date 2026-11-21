@@ -1225,3 +1225,42 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   continua sem a interface de teste; só o enquadramento mudou (câmera mais longe em retrato, multidão menor na tela, o
   que não aumenta o custo de GPU medido na 6t.1). A captura é um teste PlayMode que só roda com GPU e com `-toonLabCaptureDir` (renderiza a
   câmera do laboratório numa textura do tamanho do retrato); a próxima medição no aparelho é a da 6t.4, na corrida.
+
+## 2026-11-21 — T-RT6t2-1..7 — As duas formas da multidão toon — técnica (sessão RT-6t.2)
+
+- **T-RT6t2-1 — Receitas = `unitGeo()` do protótipo espelhado, com menos segmentos.** `UnitShapeRecipes` (Editor do
+  jogo) monta as formas com o `LowPolyMeshBuilder` da incubadora seguindo posição, raio e escala de cada peça do
+  protótipo; o ponto (x, y, z) do three.js vira (x, y, −z) e a rotação em X troca de sinal (frente +Z do Unity). O cone
+  do three.js é centrado na altura e o do construtor tem a base em y = 0: a receita desloca meia altura ao longo do eixo
+  girado (bico e rabinho). Orçamento (200–500): corpo 16×11 (o protótipo usa 18×14 na Bolinha e 16×12 no Pintinho,
+  ambos acima de 500 com o resto), esferinhas 6×4 (o protótipo usa 8×6). **Bolinha 484 tri (412 sem olhos), Pintinho
+  492 (420 sem olhos).** O "Feijão" do protótipo não entra (a direção pede só Bolinha e Pintinho).
+- **T-RT6t2-2 — Variante sem olhos = a mesma receita sem as duas esferas dos olhos.** Nada mais muda (D25 opção C fala
+  em "sem olhos ou olhos bem pequenos"; tirar é o caso que a ficha pediu pronto). As quatro malhas ficam em
+  `Assets/Claybreak/Content/Generated/Units/` (`Bolinha`, `BolinhaNoEyes`, `Pintinho`, `PintinhoNoEyes`), geradas por
+  `UnitShapeAssets` dentro do construtor da `ToonLab` (e portanto do construtor de cena), com GUID estável. A Bolinha
+  provisória da 6t.1 (`Lab/Generated/BolinhaProvisional.asset`) foi apagada: a final a substitui (mesmo corpo, haste
+  agora com tampas como no protótipo, 474 → 484).
+- **T-RT6t2-3 — Máscara de tinta:** corpo e rabinho do Pintinho com alfa 255 (recebem a cor da paleta/skin); olhos
+  #2b2233, folhas #5cc98a, bico e topete #ff9f43 com alfa 0 (cor fixa), como as cores fixas do protótipo.
+- **T-RT6t2-4 — Regra do validador por forma (`UnitShapeRules`, compartilhada com os testes).** Para cada uma das
+  quatro malhas: 1 submalha, 200–500 triângulos, índices 16 bits; todo vértice com alfa 255 ou 0 e as duas classes
+  presentes; ponto mais baixo em y = 0; olhos só nas variantes com olhos e na frente (+Z); o detalhe da frente (olhos na
+  Bolinha, bico no Pintinho) avançando para +Z além de 0,9 R — uma receita que esquecer o espelho three.js → Unity falha.
+  Os testes EditMode provam que a regra pega olhos faltando/sobrando, a forma virada e o orçamento estourado, e conferem
+  as posições do bico, topete, rabinho, olhos e folhas contra os números do protótipo.
+- **T-RT6t2-5 — Seletor na `ToonLab` sem realocar nada.** `SwarmRenderer.SetUnitMesh` (incubadora, genérico) só troca a
+  malha desenhada (o buffer de instâncias não depende dela). A `ToonLab` guarda as formas como dado (rótulo + malha com e
+  sem olhos) e o painel ganhou uma segunda linha: **Bolinha, Pintinho, Com olhos, Sem olhos** (grade 4×2; os botões
+  continuam filhos diretos do `TestPanel`). Padrão provisório: **Bolinha com olhos** (D25 aberta). No APK de medição:
+  `--ei shape 0|1 --ez eyes true|false`; a linha `[ToonLab]` do log registra a forma.
+- **T-RT6t2-6 — Capturas lado a lado reproduzíveis.** `Tools/rt6t/shape-captures.sh`: (1) teste PlayMode
+  `UnitShapeCaptureTests` (só com GPU e `-shapeCaptureDir`) renderiza cada forma de perto (frente 3/4, lado, costas
+  3/4, FOV 30, uma unidade parada sobre a cor da neblina) e como multidão de 100 em 9:16 com a câmera do laboratório,
+  gravando a pose da câmera; (2) Chrome sem tela renderiza `Tools/rt6t/proto-shapes.html` — o código de forma, a rampa
+  e as luzes do protótipo (three.js 0.160 da CDN), com um parâmetro a mais para tirar os olhos — das mesmas poses
+  espelhadas; (3) `compose_shapes.py` monta `docs/art/rt6t/formas-closeup.png` e `formas-multidao.png`. Na multidão do
+  protótipo as unidades ficam paradas na vaga (a página não anima); no Unity estão pulando.
+- **T-RT6t2-7 — Sem gate no OPPO.** O aceite diz "sem gate (dentro do teto da 6t.1)": a 6t.1 passou com 474 tri por
+  unidade; as formas finais têm no máximo 492 (+4%), com a mesma única chamada por multidão, e a GPU do caso mais pesado
+  usou 5,5 ms de 11.

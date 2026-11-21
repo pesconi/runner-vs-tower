@@ -30,10 +30,36 @@ namespace Claybreak.Tests
             Assert.IsNotNull(swarm, "the lab has no swarm");
             Assert.IsTrue(swarm.enabled, "the swarm disabled itself (see the log)");
             Assert.AreEqual(1000, swarm.Count);
-            Assert.AreEqual(474, swarm.UnitTriangles);
+            Assert.AreEqual("Bolinha", swarm.UnitMesh.name, "the eyed Bolinha is the provisional default (D25 open)");
+            Assert.AreEqual(484, swarm.UnitTriangles);
             Assert.IsTrue(swarm.DrawsShadows);
             Assert.IsTrue(Object.FindAnyObjectByType<ToonLab>().enabled, "the lab disabled itself (see the log)");
             Assert.IsTrue(Object.FindAnyObjectByType<SwarmCameraRig>().enabled, "the camera rig disabled itself (see the log)");
+        }
+
+        [UnityTest]
+        public IEnumerator PanelPicksTheShapeAndTheEyes()
+        {
+            yield return LoadLab();
+            var lab = Object.FindAnyObjectByType<ToonLab>();
+            SwarmRenderer swarm = lab.Swarm;
+            Assert.AreEqual(2, lab.ShapeCount);
+            int count = swarm.Count;
+            string[] steps = { "ShapePintinho", "EyesOff", "ShapeBolinha", "EyesOn" };
+            string[] meshes = { "Pintinho", "PintinhoNoEyes", "BolinhaNoEyes", "Bolinha" };
+            int[] triangles = { 492, 420, 412, 484 };
+            for (int i = 0; i < steps.Length; i++)
+            {
+                Press(steps[i]);
+                yield return null;
+                Assert.AreEqual(meshes[i], swarm.UnitMesh.name, steps[i]);
+                Assert.AreEqual(triangles[i], swarm.UnitTriangles, steps[i]);
+                Assert.AreEqual(count, swarm.Count, "picking a shape keeps the crowd");
+            }
+
+            Assert.AreEqual("Bolinha", lab.ShapeLabel);
+            lab.SetEyes(false);
+            Assert.AreEqual("Bolinha sem olhos", lab.ShapeLabel);
         }
 
         [UnityTest]

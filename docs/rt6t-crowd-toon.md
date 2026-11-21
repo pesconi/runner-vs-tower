@@ -2,7 +2,7 @@
 
 Plano e decisões: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) (aprovado em 2026-11-21). Referência visual:
 [`reference/crowd-proto.html`](reference/crowd-proto.html). Decisões técnicas: `decisoes.md` (T-RT6t-1..9,
-T-RT6t1-1..9 e T-RT6t3-1..8).
+T-RT6t1-1..9, T-RT6t2-1..7 e T-RT6t3-1..8).
 
 ## RT-6t.1 — Portão técnico (2026-11-21)
 
@@ -142,3 +142,72 @@ A câmera se afasta de 10 → 1000 (z −22,2 → −28,9 em 9:16) e o arraste s
 
 Sem gate no OPPO nesta entrega (o aceite não pede; custo novo = um job Burst de ~1000 `float2`; decisão T-RT6t3-8).
 Fora do escopo (6t.5): inclinação lateral pela velocidade, nascimento elástico e morte balística.
+
+## RT-6t.2 — As duas formas: Bolinha e Pintinho (2026-11-21)
+
+### O que foi feito
+
+**Jogo (Editor):** receitas finais em `UnitShapeRecipes` (o `unitGeo()` do protótipo espelhado para a frente +Z, com
+menos segmentos), cada uma **com e sem olhos** (D25 sem resposta: as duas prontas), geradas por `UnitShapeAssets` em
+`Assets/Claybreak/Content/Generated/Units/`:
+
+| Forma | Peças (do protótipo) | Triângulos | Sem olhos |
+|---|---|---|---|
+| **Bolinha** | bola achatada 0,9 em Y (16×11), 2 olhos (6×4), haste (5 lados) e 2 folhas (6×4) | 484 | 412 |
+| **Pintinho** | bola (16×11), 2 olhos, bico em cone laranja (8 lados) na frente, topete de 2 bolinhas laranja, rabinho em cone da cor do corpo (6 lados) para trás e para cima | 492 | 420 |
+
+R = 0,22; malha única, índices 16 bits; máscara de tinta no alfa da cor (corpo e rabinho recebem a cor da paleta;
+olhos #2b2233, folhas #5cc98a, bico e topete #ff9f43 ficam fixos). A Bolinha provisória da 6t.1 foi substituída pela
+final (mesmo corpo; a haste ganhou as tampas do protótipo: 474 → 484).
+
+**Validador** (`UnitShapeRules`, mesma regra nos testes), para cada uma das 4 malhas: 1 submalha de 200–500
+triângulos, 16 bits, máscara só com alfa 255/0 e as duas classes presentes, apoiada no chão, olhos só nas variantes com
+olhos e na frente, detalhe da frente (olhos, bico) apontando para +Z.
+
+**`ToonLab`:** segunda linha no painel — **Bolinha, Pintinho, Com olhos, Sem olhos** — trocando a malha da multidão na
+hora (`SwarmRenderer.SetUnitMesh`, sem realocar nada). Padrão provisório: **Bolinha com olhos**. No APK de medição:
+`--ei shape 0|1 --ez eyes true|false`. O jogo ainda não usa as formas (é a 6t.4).
+
+### Capturas lado a lado com o protótipo
+
+Comando: `Tools/rt6t/shape-captures.sh` (Unity com GPU + Chrome sem tela renderizando `Tools/rt6t/proto-shapes.html`,
+que é o código de forma, a rampa de 3 faixas e as luzes do protótipo, com um parâmetro para tirar os olhos; mesmas
+poses de câmera, espelhadas).
+
+- De perto, 4 formas × 3 vistas (frente 3/4, lado, costas 3/4), protótipo | Unity:
+  [`art/rt6t/formas-closeup.png`](art/rt6t/formas-closeup.png)
+- Multidão de 100 em 9:16 com a câmera do laboratório (protótipo parado na vaga, Unity pulando):
+  [`art/rt6t/formas-multidao.png`](art/rt6t/formas-multidao.png)
+
+**Revisor independente (subagente, modelo fable, só leitura; comparou as folhas e o `unitGeo()` linha a linha com a
+receita): APROVADO COM OBSERVAÇÕES.** As quatro formas batem com o protótipo em proporção, posição das peças,
+orientação (olhos e bico na frente, rabinho para trás e para cima, folhas e topete em cima) e cores; nada espelhado,
+faltando ou sobrando. Diferenças vistas, nenhuma de forma: (1) o Unity está mais claro — a faixa iluminada é maior e a
+faixa escura de baixo é mais fraca que o rosa profundo do protótipo, e o verde das folhas sai mais claro; é calibração
+da rampa/luz do `ToonLit` (`ToonLook`), não da malha; (2) olhos um pouco mais facetados e silhueta um pouco mais
+angulosa, efeito esperado dos segmentos reduzidos (orçamento). Na folha da multidão, pista, faixas, chão e neblina
+diferem (cenário e paleta do laboratório, assunto da 6t.6), e a 100 unidades os olhos quase não aparecem em nenhum dos
+dois lados.
+
+**Para entregas seguintes (não trava a 6t.2):** calibrar a rampa e a luz do `ToonLit` para a faixa de sombra chegar
+à profundidade do protótipo (a multidão perde volume sem isso) — fica para a 6t.6 (paletas/aplicador) ou antes, se a
+6t.4 pedir; e, para decidir a D25, olhar as capturas de perto (`formas-closeup.png`), não a de 100 unidades.
+
+### Testes e validação
+
+- EditMode (`UnitShapeRecipeTests`): triângulos de cada variante (484/412/492/420); as quatro passam na regra do
+  validador; a regra pega olhos faltando ou sobrando, forma virada para −Z e orçamento estourado; bico, topete,
+  rabinho, olhos e folhas nas posições do protótipo (espelhadas); máscara de tinta.
+- PlayMode (`ToonLabSceneTests`): a `ToonLab` abre com a Bolinha com olhos (484 tri) e o painel troca Pintinho → sem
+  olhos → Bolinha → com olhos mantendo a multidão.
+- `Tools/rt4-check.sh` completo (2026-11-21): `scene`, `validate`, `isolation`, `editmode` (171/171), `playmode`
+  (16/16; as 2 capturas só rodam com GPU), `economy`, `capture`, `apk-game`, `apk-measure` (sem erro de shader no
+  log), `aab`: **todos PASS**. Capturas: `Tools/rt6t/shape-captures.sh` (Unity com GPU, Direct3D 12).
+- Sem gate no OPPO (o aceite diz "dentro do teto da 6t.1": 492 tri no máximo contra os 474 medidos, mesma chamada
+  única; decisão T-RT6t2-7).
+
+### D25 (olhos / público) — continua sem resposta
+
+As duas variantes estão prontas e selecionáveis; a `ToonLab` abre com a versão com olhos (padrão provisório). **A escolha
+final da D25 trava só a 6t.4 em diante** (qual malha a corrida usa e a ficha da loja na RT-9); trocar depois é mudar
+uma referência de malha, sem código novo.

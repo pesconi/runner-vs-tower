@@ -1,3 +1,4 @@
+using System;
 using JungleDegree.StudioKit.Swarm;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,9 +11,11 @@ namespace Claybreak.Lab
     /// Test scene of the crowd toon look. RT-6t.1: N units of the provisional shape hopping in a sunflower formation,
     /// the Pastel look, the performance gate. RT-6t.3: a finger drag (arrow keys in the Editor) steers the crowd across
     /// the track, the camera rig backs away as it grows and keeps the track on the portrait screen, and a test panel
-    /// adds units (+100), jumps to 1000, restarts at 10 and shakes the camera. In measurement players the launch extras
-    /// set the count, MSAA, HDR and frame rate (<see cref="ToonLabSettings"/>), the panel is hidden and the kit's frame
-    /// timing probe logs CPU/GPU per window; in the Editor the serialized values are used.
+    /// adds units (+100), jumps to 1000, restarts at 10 and shakes the camera. RT-6t.2: the panel also picks the crowd
+    /// shape (Bolinha, Pintinho) and the eyes (with, without: decision D25 is open, the eyed shapes are the provisional
+    /// default). In measurement players the launch extras set the count, shape, eyes, MSAA, HDR and frame rate
+    /// (<see cref="ToonLabSettings"/>), the panel is hidden and the kit's frame timing probe logs CPU/GPU per window; in
+    /// the Editor the serialized values are used.
     /// </summary>
     public sealed class ToonLab : MonoBehaviour
     {
@@ -28,6 +31,10 @@ namespace Claybreak.Lab
         [Tooltip("Push the fog away as far as the portrait fit pushes the camera (the reference fog is tuned for the "
             + "reference framing; without this the crowd sits inside the fog on portrait screens).")]
         [SerializeField] private bool scaleFogWithFraming = true;
+        [Tooltip("Crowd shapes the panel picks from, each with and without eyes (RT-6t.2).")]
+        [SerializeField] private ShapeChoice[] shapes = Array.Empty<ShapeChoice>();
+        [Min(0)] [SerializeField] private int shapeIndex;
+        [SerializeField] private bool eyes = true;
 
         private bool dragging;
         private float pressX;
@@ -40,6 +47,47 @@ namespace Claybreak.Lab
 
         public SwarmRenderer Swarm => swarm;
         public SwarmCameraRig CameraRig => cameraRig;
+        public int ShapeCount => shapes.Length;
+        public int ShapeIndex => shapeIndex;
+        public bool Eyes => eyes;
+
+        /// <summary>Label of the shape on screen now ("Bolinha", "Pintinho sem olhos").</summary>
+        public string ShapeLabel => shapes.Length == 0 ? "none" : shapes[shapeIndex].label + (eyes ? "" : " sem olhos");
+
+        /// <summary>One crowd shape of the lab, with and without eyes.</summary>
+        [Serializable]
+        public struct ShapeChoice
+        {
+            public string label;
+            public Mesh withEyes;
+            public Mesh withoutEyes;
+        }
+
+        /// <summary>Mesh of shape <paramref name="index"/> with or without eyes (captures and tests).</summary>
+        public Mesh ShapeMesh(int index, bool withEyes)
+        {
+            return withEyes ? shapes[index].withEyes : shapes[index].withoutEyes;
+        }
+
+        /// <summary>Panel: shows shape <paramref name="index"/> (Bolinha 0, Pintinho 1), keeping the eyes choice.</summary>
+        public void SelectShape(int index)
+        {
+            if (index < 0 || index >= shapes.Length)
+            {
+                Debug.LogWarning($"[ToonLab] no shape {index} (there are {shapes.Length})", this);
+                return;
+            }
+
+            shapeIndex = index;
+            ApplyShape();
+        }
+
+        /// <summary>Panel: shows the current shape with or without eyes.</summary>
+        public void SetEyes(bool withEyes)
+        {
+            eyes = withEyes;
+            ApplyShape();
+        }
 
         /// <summary>Panel: adds <paramref name="units"/> to the crowd (clamped to the capacity).</summary>
         public void AddUnits(int units)
@@ -85,6 +133,19 @@ namespace Claybreak.Lab
             {
                 panel.gameObject.SetActive(false);
             }
+
+            if (settings.Shape >= 0 && settings.Shape < shapes.Length)
+            {
+                shapeIndex = settings.Shape;
+            }
+
+            if (settings.Eyes != ToonLabSettings.KeepEyes)
+            {
+                eyes = settings.Eyes == 1;
+            }
+
+            shapeIndex = Mathf.Clamp(shapeIndex, 0, Mathf.Max(0, shapes.Length - 1));
+            ApplyShape();
 
             swarm.SetCount(Mathf.Clamp(settings.Units, 0, swarm.Capacity));
             ApplyRendering(settings);
@@ -132,6 +193,17 @@ namespace Claybreak.Lab
             fogScale = scale;
             RenderSettings.fogStartDistance = fogStart * scale;
             RenderSettings.fogEndDistance = fogEnd * scale;
+        }
+
+        private void ApplyShape()
+        {
+            if (shapes.Length == 0)
+            {
+                return; // the swarm keeps the mesh set on it
+            }
+
+            ShapeChoice choice = shapes[shapeIndex];
+            swarm.SetUnitMesh(eyes ? choice.withEyes : choice.withoutEyes);
         }
 
         private void ReadDrag()
@@ -227,7 +299,7 @@ namespace Claybreak.Lab
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             string pipeline = urp == null ? "none" : $"msaa={urp.msaaSampleCount} hdr={(urp.supportsHDR ? "on" : "off")} renderScale={urp.renderScale:0.##}";
             Camera view = cameraRig.GetComponent<Camera>();
-            Debug.Log($"[ToonLab] units={units} {pipeline} fps={Application.targetFrameRate} "
+            Debug.Log($"[ToonLab] units={units} shape=\"{ShapeLabel}\" {pipeline} fps={Application.targetFrameRate} "
                 + $"tris/unit={swarm.UnitTriangles} draws=1+{(swarm.DrawsShadows ? 1 : 0)} "
                 + $"api={SystemInfo.graphicsDeviceType} gpu={SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsDeviceVersion}) "
                 + $"cpu={SystemInfo.processorType} x{SystemInfo.processorCount} screen={Screen.width}x{Screen.height} "

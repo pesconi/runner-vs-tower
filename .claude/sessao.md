@@ -80,3 +80,6 @@
   sempre): para capturar, pôr `camera.targetTexture` e ler a textura no quadro seguinte (`yield return null`). Captura
   da `ToonLab` em retrato: `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.ToonLab -toonLabCaptureDir
   <pasta>` sem `-nographics`. Não rodar um passo do `rt4-check` enquanto outro Unity ainda está aberto no projeto.
+- 2026-11-21 (RT-6t.2): capturas lado a lado com o protótipo: `Tools/rt6t/shape-captures.sh` (Unity com GPU + Chrome
+  sem tela com SwiftShader renderizando `Tools/rt6t/proto-shapes.html`, que baixa o three.js 0.160 da CDN: precisa de
+  rede). O PlayMode das formas usa `-shapeCaptureDir`; a ToonLab do jogo troca forma por `--ei shape 0|1 --ez eyes`.
