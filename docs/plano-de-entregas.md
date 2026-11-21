@@ -28,7 +28,7 @@ lançamento jun/2027.
 | ~~RT-5 Produção — núcleo de meta~~ — concluída em 2026-11-20 (gate 3× aprovado; fichas D12/D19 pendentes; `rt5-meta.md`) | 2 | 2,4 | ~~mar~~ |
 | ~~RT-6 Produção — conteúdo (mundos, torres, chefes)~~ — concluída em 2026-11-20 (`rt6-conteudo.md`) | 2,5 | 3 | ~~mar–abr~~ |
 | ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
-| ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; ficha D22 do som pendente; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
+| ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -249,8 +249,8 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   EditMode 124/124, PlayMode 13/13, Wild Pack igual à linha de base (90/0, 117/0, isolamento, áudio 16, save 87/87),
   revisão de segurança (5 achados corrigidos). **AAB de release 34,6 MB** (APK 34,8 MB), chave de debug. **Gate 3×
   no release (2026-11-21, chefe do mundo 4, som e vibração ligados): quadro p95 16 ms, 0,0% > 50 ms, CPU p95 ≤ 4,8 ms,
-  GPU p95 ≤ 4,3 ms, 0 coletas, PSS 228 MB — passou**; APK normal instalado no OPPO. **Pendente do usuário:** ouvir o
-  som e responder a ficha **D22**; para a RT-9, criar a chave de upload real fora do repositório (passo em
+  GPU p95 ≤ 4,3 ms, 0 coletas, PSS 228 MB — passou**; APK normal instalado no OPPO. Som aprovado pelo usuário (**D22 = A**, 2026-11-21).
+  **Pendente do usuário** para a RT-9: criar a chave de upload real fora do repositório (passo em
   `rt8-producao.md`).
 
 ## RT-9 — Preparação do soft launch

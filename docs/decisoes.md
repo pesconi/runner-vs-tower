@@ -888,7 +888,7 @@ de ambiente apontando para fora do repositório, e as configurações do projeto
 Link da política de privacidade como dado (`MonetizationContent.PrivacyPolicyUrl`, vazio até a RT-9 publicar a
 página; o validador recusa build de produção sem ele).
 
-## Ficha D22 (RT-8, aguardando resposta — aceite "ouvir e aprovar o som")
+## Ficha D22 (RT-8, respondida em 2026-11-21: A)
 
 ### DECISÃO D22 — Aprovar o som e a vibração do jogo
 
@@ -972,3 +972,6 @@ Se você não responder: o jogo segue com este som (já instalado no OPPO); a RT
 "ouvir e aprovar o som" pendente, e a RT-9 espera a sua resposta antes de gravar vídeo e imagens da loja.
 
 Responda: A, B + o que mudar, C, D, ou "explica melhor".
+
+**Resposta do usuário (2026-11-21): A — aprovar como está.** O som próprio e a vibração da RT-8 são os
+definitivos até o soft launch; o aceite "ouvir e aprovar o som" da RT-8 está fechado.
