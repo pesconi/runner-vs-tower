@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Crowd runner toon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: brincalhão, macio, de brinquedo
+   IDEA: um protótipo de jogo mobile com cara de app pronto
+   PICTURE: a própria pista, com a multidão de bolinhas toon
+   COLOUR and TYPE: paletas pastel trocáveis; Baloo 2 arredondada
+   LAYOUT: jogo em tela cheia, HUD por cima, controles numa gaveta embaixo */
+:root{color-scheme:light;--ink:#3b2f4a;--card:rgba(255,255,255,.82);--accent:#ff6f91}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;overflow:hidden;background:#f6dfe0;font-family:"Baloo 2",system-ui,sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none;touch-action:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:center;padding:14px;pointer-events:none}
+.count{background:var(--card);backdrop-filter:blur(6px);border-radius:999px;padding:4px 22px;font-weight:800;font-size:34px;line-height:1.2;box-shadow:0 6px 0 rgba(59,47,74,.12);transition:transform .15s}
+.count small{font-size:15px;font-weight:600;opacity:.6;margin-left:6px}
+.count.pop{transform:scale(1.18)}
+.fps{position:fixed;top:14px;right:14px;font-size:13px;font-weight:600;background:var(--card);border-radius:10px;padding:2px 10px;pointer-events:none}
+.hint{position:fixed;left:50%;top:76px;transform:translateX(-50%);font-size:15px;font-weight:600;background:var(--card);border-radius:999px;padding:2px 14px;pointer-events:none;transition:opacity .6s}
+.float{position:fixed;font-weight:800;font-size:40px;pointer-events:none;-webkit-text-stroke:2px #fff;paint-order:stroke;animation:up 1s ease-out forwards}
+@keyframes up{0%{transform:translate(-50%,0) scale(.4);opacity:0}20%{transform:translate(-50%,-20px) scale(1.25);opacity:1}100%{transform:translate(-50%,-110px) scale(1);opacity:0}}
+.panel{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));background:var(--card);backdrop-filter:blur(8px);border-radius:22px;padding:10px 12px;display:grid;gap:8px;box-shadow:0 8px 0 rgba(59,47,74,.12)}
+.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.row span{font-size:13px;font-weight:600;opacity:.65;width:64px}
+button{font:inherit;font-weight:600;font-size:15px;color:var(--ink);background:#fff;border:0;border-radius:12px;padding:6px 12px;min-height:40px;cursor:pointer;box-shadow:0 3px 0 rgba(59,47,74,.15);flex:1}
+button.on{background:var(--accent);color:#fff}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(59,47,74,.15)}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.toggle{position:fixed;right:14px;bottom:14px;flex:none;width:44px;display:none}
+.panel.hide{display:none}.panel.hide~.toggle{display:block}
+@media(max-width:600px){.row span{width:100%}.count{font-size:28px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud"><div class="count" id="count">10<small>na multidão</small></div></div>
+<div class="fps" id="fps">-- fps</div>
+<div class="hint" id="hint">Arraste pro lado pra escolher o portão</div>
+<div class="panel" id="panel">
+  <div class="row"><span>Forma</span>
+    <button data-shape="blob" class="on">Bolinha</button><button data-shape="bean">Feijão</button><button data-shape="chick">Pintinho</button></div>
+  <div class="row"><span>Paleta</span>
+    <button data-pal="0" class="on">Pastel</button><button data-pal="1">Pôr do sol</button><button data-pal="2">Doce</button></div>
+  <div class="row"><span>Multidão</span>
+    <button data-add="100">+100</button><button data-set="1000">1000!</button><button data-set="10">Recomeçar</button><button id="hideBtn" aria-label="Esconder painel">▾</button></div>
+</div>
+<button class="toggle" id="showBtn" aria-label="Mostrar painel">▴</button>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+{
+const PALS=[
+ {sky:['#ffd9cf','#cfe8ff'],fog:'#f3e3ea',ground:'#bfe6cf',track:'#fff4ea',stripe:'#ffe3d1',crowd:'#ff8fab',tree:'#7cc6a4',tree2:'#a8dcbf',trunk:'#c99076',rock:'#e7d3f0',accent:'#ff6f91',ink:'#3b2f4a'},
+ {sky:['#3a3270','#f7a26b'],fog:'#e9967a',ground:'#7a5482',track:'#f6caa6',stripe:'#eeb790',crowd:'#fff1d6',tree:'#463a78',tree2:'#5b4a8c',trunk:'#2f2650',rock:'#a36b8f',accent:'#f26a5a',ink:'#2d2448'},
+ {sky:['#8fd3ff','#eef9ff'],fog:'#dff2ff',ground:'#93d99a',track:'#fffae6',stripe:'#ffedb0',crowd:'#ffcf3a',tree:'#45b07c',tree2:'#6fcf8f',trunk:'#b07a55',rock:'#f4b4c8',accent:'#2fa7e6',ink:'#24435a'}];
+let pal=PALS[0], shape='blob';
+
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(50,1,0.1,200);
+scene.add(new THREE.HemisphereLight(0xffffff,0xbbaacc,1.4));
+const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(6,12,4);scene.add(sun);
+
+// gradiente do toon: 3 faixas de luz duras
+const grad=new THREE.DataTexture(new Uint8Array([110,110,110,255,185,185,185,255,255,255,255,255]),3,1,THREE.RGBAFormat);
+grad.minFilter=grad.magFilter=THREE.NearestFilter;grad.needsUpdate=true;
+const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:grad});
+
+function skyTex(a,b){const c=document.createElement('canvas');c.width=2;c.height=256;const g=c.getContext('2d');const l=g.createLinearGradient(0,0,0,256);l.addColorStop(0,a);l.addColorStop(1,b);g.fillStyle=l;g.fillRect(0,0,2,256);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}
+
+// junta várias peças numa geometria só (1 draw call), cor por vértice
+function part(geo,color,x=0,y=0,z=0,sx=1,sy=1,sz=1,rx=0){geo=geo.index?geo.toNonIndexed():geo;if(rx)geo.rotateX(rx);geo.scale(sx,sy,sz);geo.translate(x,y,z);const n=geo.attributes.position.count,c=new Float32Array(n*3),col=new THREE.Color(color);for(let i=0;i<n;i++){c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b}geo.setAttribute('color',new THREE.BufferAttribute(c,3));return geo}
+function merge(parts){const out=new THREE.BufferGeometry();for(const k of['position','normal','color']){const arrs=parts.map(p=>p.attributes[k].array);const len=arrs.reduce((s,a)=>s+a.length,0);const m=new Float32Array(len);let o=0;for(const a of arrs){m.set(a,o);o+=a.length}out.setAttribute(k,new THREE.BufferAttribute(m,3))}return out}
+
+const R=0.22;
+function unitGeo(){const body=pal.crowd,dark='#2b2233',leaf='#5cc98a',orange='#ff9f43';
+ const eyes=h=>[part(new THREE.SphereGeometry(.035,8,6),dark,-.08,h,-R*.86),part(new THREE.SphereGeometry(.035,8,6),dark,.08,h,-R*.86)];
+ if(shape==='bean')return merge([part(new THREE.CapsuleGeometry(R*.72,R*1.1,4,14),body,0,R*.72+R*.55,0),...eyes(R*1.45).map(e=>{e.translate(0,0,R*.1);return e}),
+   part(new THREE.SphereGeometry(.05,8,6),body,0,R*2.15,R*.15,1,.6,1)]);
+ if(shape==='chick')return merge([part(new THREE.SphereGeometry(R,16,12),body,0,R,0),...eyes(R*1.15),
+   part(new THREE.ConeGeometry(.05,.11,8),orange,0,R*.95,-R*1.05,1,1,1,-Math.PI/2),
+   part(new THREE.SphereGeometry(.045,8,6),orange,0,R*2.02,0),part(new THREE.SphereGeometry(.04,8,6),orange,0,R*1.95,.06),
+   part(new THREE.ConeGeometry(.06,.12,6),body,0,R*1.2,R*.95,1,1,1,1.1)]);
+ return merge([part(new THREE.SphereGeometry(R,18,14),body,0,R*.9,0,1,.9,1),...eyes(R*1.05),
+   part(new THREE.CylinderGeometry(.012,.012,.08,5),leaf,0,R*1.8+.04,0),
+   part(new THREE.SphereGeometry(.05,8,6),leaf,-.045,R*1.8+.085,0,1,.3,.6),part(new THREE.SphereGeometry(.05,8,6),leaf,.045,R*1.8+.085,0,1,.3,.6)]);}
+
+// --- multidão instanciada ---
+const MAX=2000,CAP=2600;
+const crowd=new THREE.InstancedMesh(unitGeo(),toon,CAP);crowd.instanceMatrix.setUsage(THREE.DynamicDrawUsage);crowd.frustumCulled=false;scene.add(crowd);
+const shadowMat=new THREE.MeshBasicMaterial({color:0x2b2233,transparent:true,opacity:.18,depthWrite:false});
+const shadows=new THREE.InstancedMesh(new THREE.CircleGeometry(R*.95,12).rotateX(-Math.PI/2),shadowMat,MAX);shadows.frustumCulled=false;scene.add(shadows);
+
+const ux=new Float32Array(MAX),uz=new Float32Array(MAX),uv=new Float32Array(MAX),ph=new Float32Array(MAX),born=new Float32Array(MAX),ox=new Float32Array(MAX),oz=new Float32Array(MAX);
+const GA=2.39996,SP=.25;
+for(let i=0;i<MAX;i++){const r=Math.sqrt(i+.5)*SP;ox[i]=Math.cos(i*GA)*r;oz[i]=Math.sin(i*GA)*r*1.35;ph[i]=Math.random()*6.28}
+let n=0,dying=[],cx=0,targetX=0,T=0;
+const TRACK=6;
+
+function setCount(m,fx){m=Math.max(0,Math.min(MAX,Math.round(m)));
+ if(m>n){for(let i=n;i<m;i++){ux[i]=Math.max(-TRACK+.2,Math.min(TRACK-.2,cx+ox[i]));uz[i]=oz[i];uv[i]=0;born[i]=T+Math.random()*.25}}
+ else for(let i=m;i<n;i++){const a=Math.atan2(oz[i],ox[i]);dying.push({x:ux[i],y:0,z:uz[i],vx:Math.cos(a)*3+(Math.random()-.5)*3,vy:4+Math.random()*4,vz:Math.sin(a)*2+(Math.random()-.5)*2,t0:T,r:Math.random()*6})}
+ if(dying.length>CAP-MAX)dying.splice(0,dying.length-(CAP-MAX));
+ n=m;const el=document.getElementById('count');el.firstChild.nodeValue=n;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),150);
+ if(n===0)setTimeout(()=>{if(n===0)setCount(10)},900)}
+
+// --- cenário ---
+let ground,track,stripeTex;
+function stripes(){const c=document.createElement('canvas');c.width=64;c.height=64;const g=c.getContext('2d');g.fillStyle=pal.track;g.fillRect(0,0,64,64);g.fillStyle=pal.stripe;g.fillRect(0,0,64,32);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,40);return t}
+ground=new THREE.Mesh(new THREE.PlaneGeometry(300,300).rotateX(-Math.PI/2),new THREE.MeshToonMaterial({gradientMap:grad}));ground.position.y=-.02;scene.add(ground);
+track=new THREE.Mesh(new THREE.PlaneGeometry(TRACK*2+.6,160).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial());track.position.z=-60;scene.add(track);
+const railGeo=new THREE.BoxGeometry(.3,.3,160);const rails=[-1,1].map(s=>{const m=new THREE.Mesh(railGeo,new THREE.MeshToonMaterial({gradientMap:grad}));m.position.set(s*(TRACK+.45),.15,-60);scene.add(m);return m});
+
+function treeGeo(){return merge([part(new THREE.CylinderGeometry(.15,.2,.7,6),pal.trunk,0,.35,0),part(new THREE.ConeGeometry(1,1.8,7),pal.tree,0,1.4,0),part(new THREE.ConeGeometry(.75,1.4,7),pal.tree2,0,2.2,0)])}
+function rockGeo(){return merge([part(new THREE.IcosahedronGeometry(.6,1),pal.rock,0,.3,0,1,.6,1),part(new THREE.IcosahedronGeometry(.4,1),pal.tree2,.6,.2,.3,1,.6,1)])}
+const NT=90,NR=40,deco=[];
+const trees=new THREE.InstancedMesh(treeGeo(),toon,NT),rocks=new THREE.InstancedMesh(rockGeo(),toon,NR);scene.add(trees,rocks);
+for(let i=0;i<NT+NR;i++){const s=Math.random()<.5?-1:1;deco.push({x:s*(8.5+Math.random()*22),z:-110+Math.random()*125,s:.7+Math.random()*.8,r:Math.random()*6})}
+
+// --- portões ---
+const gates=[];
+function label(txt,good){const c=document.createElement('canvas');c.width=256;c.height=128;const g=c.getContext('2d');g.clearRect(0,0,256,128);g.font='800 84px "Baloo 2", sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=12;g.strokeStyle=good?'#1f7a55':'#a52a3a';g.strokeText(txt,128,70);g.fillStyle='#fff';g.fillText(txt,128,70);return c}
+function roll(){const good=[()=>({op:'+',v:10+5*Math.floor(Math.random()*9)}),()=>({op:'x',v:2}),()=>({op:'x',v:3})],bad=[()=>({op:'-',v:5+5*Math.floor(Math.random()*6)}),()=>({op:'÷',v:2})];const pick=a=>a[Math.floor(Math.random()*a.length)]();return Math.random()<.75?[pick(good),pick(bad)]:[pick(good),pick(good)]}
+function apply(o){return o.op==='+'?n+o.v:o.op==='x'?n*o.v:o.op==='-'?n-o.v:Math.ceil(n/o.v)}
+function setGate(G){let ops=roll();if(Math.random()<.5)ops.reverse();G.ops=ops;
+ G.sides.forEach((S,k)=>{const o=ops[k],good=o.op==='+'||o.op==='x';S.panel.material.color.set(good?'#5ad1a0':'#ff6b81');const c=label(o.op+o.v,good);S.tex.image=c;S.tex.needsUpdate=true})}
+for(let i=0;i<3;i++){const G={grp:new THREE.Group(),sides:[],z:-40-i*32};
+ [-1,1].forEach(s=>{const panel=new THREE.Mesh(new THREE.BoxGeometry(TRACK-.25,2.3,.12),new THREE.MeshBasicMaterial({transparent:true,opacity:.45,depthWrite:false}));panel.position.set(s*TRACK/2,1.15,0);
+  const tex=new THREE.CanvasTexture(document.createElement('canvas'));tex.colorSpace=THREE.SRGBColorSpace;
+  const lab=new THREE.Mesh(new THREE.PlaneGeometry(2.6,1.3),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));lab.position.set(s*TRACK/2,1.3,.08);
+  G.grp.add(panel,lab);G.sides.push({panel,tex})});
+ [-TRACK,0,TRACK].forEach(x=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,2.6,8),new THREE.MeshToonMaterial({color:'#ffffff',gradientMap:grad}));p.position.set(x,1.3,0);G.grp.add(p)});
+ setGate(G);scene.add(G.grp);gates.push(G)}
+
+function applyPalette(){scene.background=skyTex(pal.sky[0],pal.sky[1]);scene.fog=new THREE.Fog(pal.fog,22,75);
+ ground.material.color.set(pal.ground);if(stripeTex)stripeTex.dispose();stripeTex=stripes();track.material.map=stripeTex;track.material.needsUpdate=true;
+ rails.forEach(r=>r.material.color.set(pal.stripe));
+ crowd.geometry.dispose();crowd.geometry=unitGeo();trees.geometry.dispose();trees.geometry=treeGeo();rocks.geometry.dispose();rocks.geometry=rockGeo();
+ document.documentElement.style.setProperty('--accent',pal.accent);document.documentElement.style.setProperty('--ink',pal.ink);document.body.style.background=pal.fog}
+applyPalette();
+document.fonts&&document.fonts.ready.then(()=>gates.forEach(setGate));
+
+// --- controles ---
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,t:targetX};document.getElementById('hint').style.opacity=0});
+addEventListener('pointermove',e=>{if(!drag)return;targetX=drag.t+(e.clientX-drag.x)/innerWidth*16;targetX=Math.max(-TRACK+.5,Math.min(TRACK-.5,targetX))});
+addEventListener('pointerup',()=>drag=null);
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft')targetX=Math.max(-TRACK+.5,targetX-1.5);if(e.key==='ArrowRight')targetX=Math.min(TRACK-.5,targetX+1.5)});
+function group(sel,attr,fn){document.querySelectorAll(sel).forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll(sel).forEach(x=>x.classList.remove('on'));b.classList.add('on');fn(b.dataset[attr])}))}
+group('[data-shape]','shape',v=>{shape=v;crowd.geometry.dispose();crowd.geometry=unitGeo()});
+group('[data-pal]','pal',v=>{pal=PALS[+v];applyPalette()});
+document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>setCount(n+ +b.dataset.add)));
+document.querySelectorAll('[data-set]').forEach(b=>b.addEventListener('click',()=>{if(+b.dataset.set<n)dying.length=0;setCount(+b.dataset.set)}));
+document.getElementById('hideBtn').onclick=()=>document.getElementById('panel').classList.add('hide');
+document.getElementById('showBtn').onclick=()=>document.getElementById('panel').classList.remove('hide');
+
+function floatText(txt,good){const d=document.createElement('div');d.className='float';d.textContent=txt;d.style.color=good?'#2fbf86':'#ff4d6d';d.style.left='50%';d.style.top='38%';document.body.appendChild(d);setTimeout(()=>d.remove(),1000)}
+
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+
+const dummy=new THREE.Object3D(),SPEED=11;let last=performance.now(),camD=1,shake=0,fpsT=0,fpsN=0;
+setCount(10);
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
+ fpsN++;fpsT+=dt;if(fpsT>.5){document.getElementById('fps').textContent=Math.round(fpsN/fpsT)+' fps · '+(n+dying.length)+' bonecos';fpsN=0;fpsT=0}
+ const pcx=cx;cx+=(targetX-cx)*(1-Math.exp(-dt*8));
+ // pista
+ stripeTex.offset.y+=SPEED*dt/4;
+ // decoração
+ for(let i=0;i<NT+NR;i++){const d=deco[i];d.z+=SPEED*dt;if(d.z>14){d.z-=125;d.x=(Math.random()<.5?-1:1)*(8.5+Math.random()*22)}
+  dummy.position.set(d.x,0,d.z);dummy.rotation.set(0,d.r,0);dummy.scale.setScalar(d.s);dummy.updateMatrix();
+  if(i<NT)trees.setMatrixAt(i,dummy.matrix);else rocks.setMatrixAt(i-NT,dummy.matrix)}
+ trees.instanceMatrix.needsUpdate=rocks.instanceMatrix.needsUpdate=true;
+ // portões
+ for(const G of gates){const pz=G.z;G.z+=SPEED*dt;
+  if(pz<0&&G.z>=0&&n>0){const k=cx<0?0:1,o=G.ops[k],good=o.op==='+'||o.op==='x';floatText(o.op+o.v,good);if(!good)shake=.35;setCount(apply(o))}
+  if(G.z>10){G.z-=96;setGate(G)}G.grp.position.z=G.z}
+ // multidão viva
+ const f=9.5,k=1-Math.exp(-dt*7);
+ for(let i=0;i<n;i++){const tx=Math.max(-TRACK+.2,Math.min(TRACK-.2,cx+ox[i]));const nx=ux[i]+(tx-ux[i])*k*(.8+.4*((i*7)%10)/10);uv[i]=(nx-ux[i])/dt;ux[i]=nx;uz[i]+=(oz[i]-uz[i])*k;
+  const h=Math.abs(Math.sin(T*f+ph[i]));const sy=.8+.32*h,sx=1/Math.sqrt(sy);
+  const a=(T-born[i])/.45;const s=a<=0?0:a>=1?1:1-Math.pow(2,-10*a)*Math.cos(a*Math.PI*3.3); // "pop" elástico ao nascer
+  dummy.position.set(ux[i],h*.2,uz[i]);dummy.rotation.set(-.12,0,Math.max(-.5,Math.min(.5,-uv[i]*.06)));dummy.scale.set(sx*s,sy*s,sx*s);dummy.updateMatrix();crowd.setMatrixAt(i,dummy.matrix);
+  const ss=(1-h*.35)*s;dummy.position.set(ux[i],.01,uz[i]);dummy.rotation.set(0,0,0);dummy.scale.set(ss,1,ss);dummy.updateMatrix();shadows.setMatrixAt(i,dummy.matrix)}
+ // os que perderam: voam e somem
+ dying=dying.filter(d=>T-d.t0<1.1);
+ for(let j=0;j<dying.length;j++){const d=dying[j];d.vy-=22*dt;d.x+=d.vx*dt;d.y=Math.max(0,d.y+d.vy*dt);d.z+=d.vz*dt;const s=Math.max(0,1-(T-d.t0)/1.1);
+  dummy.position.set(d.x,d.y,d.z);dummy.rotation.set(d.r*T,0,d.r*T*.7);dummy.scale.setScalar(s);dummy.updateMatrix();crowd.setMatrixAt(n+j,dummy.matrix)}
+ crowd.count=n+dying.length;shadows.count=n;crowd.instanceMatrix.needsUpdate=shadows.instanceMatrix.needsUpdate=true;
+ // câmera se afasta conforme a multidão cresce
+ camD+=((1+Math.sqrt(n)/22)-camD)*(1-Math.exp(-dt*2));shake=Math.max(0,shake-dt);
+ const sh=shake*.6;camera.position.set(cx*.35+(Math.random()-.5)*sh,3.2+4.2*camD+(Math.random()-.5)*sh,5.5+5.5*camD);camera.lookAt(cx*.35,0,-5);
+ renderer.render(scene,camera);requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>

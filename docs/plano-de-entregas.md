@@ -30,6 +30,7 @@ lançamento jun/2027.
 | ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
+| RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — **proposta, aguardando aprovação do usuário** (`direcao-visual-crowd.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -267,6 +268,196 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   **APK de release 35,9 MB (+1,1 MB), AAB 35,6 MB (+1,0 MB)**, chave de debug. Empresa portuguesa (fato de
   2026-11-21): medição só com consentimento explícito em todos os países; fora da Europa/Reino Unido nada é medido até
   a ficha **D23**; política reescrita para o RGPD (pt-PT, CNPD, direitos). **Aceite no aparelho (2026-11-21, OPPO):** `rt8b-firebase-check.sh` — manifesto com coleta, AD_ID, SSAID e sinais desligados (PASS); sem o "sim" do UMP o Firebase fica desligado e **nenhum evento sai** (esperado: a mensagem RGPD do AdMob só é publicada na RT-9, então os nomes dos eventos no DebugView ficam para lá). Gate 3× no chefe do mundo 4 com Firebase: quadro p95 16 ms (max 33), 0,0% > 50 ms, main p95 ≤ 6,2 ms, gpu p95 ≤ 4,4 ms, 0 coletas, PSS 256 MB — **passou** (`gate-rt8b-w4-oppo-60.txt`); APK normal instalado.
+
+## RT-6t — Direção visual "crowd toon" (série RT-6t.1 a RT-6t.12)
+
+- **Status: proposta, aguardando aprovação do usuário** (2026-11-21). Nenhuma sessão de entrega começa antes do
+  "sim" dele ao plano. Mapeamento técnico, o que muda no que existe, riscos, fichas D25–D29 e decisões técnicas
+  T-RT6t-1..9: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) — escopo, arquivos e aceite completos de
+  cada entrega estão na seção 4.1 de lá; aqui ficam o cabeçalho e o prompt. Referência visual obrigatória:
+  [`reference/crowd-proto.html`](reference/crowd-proto.html). Substitui a direção v2 (D24, RT-6v.1), revertida
+  em `fc1620e`.
+- **Regras da série:** o motor é escrito com namespaces/asmdefs do kit em `Assets/StudioKitIncubator/` (sem citar
+  o jogo; validador de isolamento também sobre essa pasta) e só a RT-6t.12 o leva ao `studiokit` (K.11, pacote
+  0.5.0, aceitação do Wild Pack uma vez); nada copiado do Wild Pack; regra 2.2.1 (nada de `Instantiate`/`Destroy`
+  em jogo); gate 3× uma vez por entrega, no fim, no caso mais pesado; validação padrão = `Tools/rt4-check.sh`.
+- **Ordem:** sequencial (regra global: uma sessão escrevendo por repositório): 6t.1 (portão) → 6t.2 → 6t.3 → 6t.4
+  → 6t.5 → 6t.6 → 6t.7 → 6t.8 → 6t.9 → 6t.10 → 6t.11 → 6t.12. Só com autorização do usuário para duas sessões
+  aqui: 6t.2 ∥ 6t.3, 6t.8 ∥ 6t.9, 6t.10 ∥ 6t.11 (arquivos separados; quem commita por último regenera a cena
+  depois do `git pull --ff-only`).
+- **Decisões do usuário:** D25 (público/"fofura"; trava a 6t.2), D27 (teto da multidão; sem resposta, 300), D26
+  (skins × formas; trava a 6t.6), D28 (arte do assalto; sem resposta, A na 6t.10), D29 (nome; trava a RT-9).
+
+## RT-6t.1 — Portão técnico: 1 personagem, toon, instancing, 1000 unidades no OPPO
+
+- **Escopo:** incubadora com `JungleDegree.StudioKit.Toon` (shader `StudioKit/ToonLit`, rampa 3×1 point,
+  `ToonLook`, `LowPolyMeshBuilder`) e `JungleDegree.StudioKit.Swarm` mínimo (Burst com quique + squash, desenho
+  indireto 1 + 1, sombras-bolha, `DevFpsOverlay`); Bolinha provisória no teto de 500 tri; cena `ToonLab`; modo de
+  medição no APK e no script de gate; URP móvel sem sombras.
+- **Depende de:** aprovação do plano.
+- **Aceite:** validação padrão; **no OPPO, 1000 unidades a 60 fps passando o gate 3×** (CPU principal p95 ≤ 11
+  ms, GPU p95 ≤ 11 ms, quadro p95 ≤ 16,7 ms, < 5% > 50 ms, PSS ≤ 450 MB), MSAA 1×/4× e HDR medidos, 2000 só
+  registro, chamadas 1 + 1, API e GPU registradas. **Portão:** se falhar, plano B (seção 1.2 de
+  `direcao-visual-crowd.md`); se ainda falhar, ficha ao usuário com o maior número que passou. A série só continua
+  se passar.
+- **Exige o usuário:** OPPO conectado e desbloqueado.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.1 do Runner vs Tower (portão técnico da direção crowd toon). Leia
+  `docs/direcao-visual-crowd.md` (seções 1, 1.2, 4.1 e 6) e abra `docs/reference/crowd-proto.html`. Escreva o
+  motor em `Assets/StudioKitIncubator/` com namespaces e asmdefs do kit (`JungleDegree.StudioKit.Toon` e
+  `.Swarm`), sem referenciar o jogo, e aponte o validador de isolamento também para essa pasta; não escreva no
+  repositório studiokit. No jogo: Bolinha provisória (≤ 500 tri), cena `ToonLab`, modo de medição
+  `--ez toonlab true --ei units N` no APK e no script de gate. Nada de Instantiate/Destroy em jogo. Rode a
+  validação padrão e o gate 3× no OPPO a 60 fps com 1000 (registro com 2000; MSAA 1×/4×; HDR ligado/desligado).
+  Se falhar, aplique o plano B na ordem e meça de novo; se ainda falhar, escreva a ficha com o maior número que
+  passou e pare. Registre decisões técnicas em `docs/decisoes.md`, o resultado em `docs/rt6t-crowd-toon.md` (novo)
+  e o status aqui."
+
+## RT-6t.2 — As duas formas (Bolinha e Pintinho)
+
+- **Escopo:** receitas das duas formas (R = 0,22), máscara de tinta, variante sem olhos (D25), assets gerados,
+  regra de orçamento no validador (200–500 tri), seletor na `ToonLab`, capturas lado a lado com o protótipo.
+- **Depende de:** RT-6t.1; **D25** (sem resposta: faz as duas variantes e para antes de escolher).
+- **Aceite:** validação padrão; orçamento de triângulos; capturas conferidas por revisor independente.
+- **Exige o usuário:** D25.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.2 do Runner vs Tower: as duas formas da multidão. Leia
+  `docs/direcao-visual-crowd.md` (itens 5 e 6 da seção 1, RT-6t.2 na 4.1, ficha D25 e a resposta dela em
+  `docs/decisoes.md`) e a função `unitGeo` do protótipo. Use o `LowPolyMeshBuilder` da incubadora. Gere Bolinha e
+  Pintinho (200–500 tri, máscara de tinta), a variante pedida pela D25, a regra do validador, o seletor na
+  `ToonLab` e as capturas lado a lado em `docs/art/rt6t/`."
+
+## RT-6t.3 — Formação, controle e câmera
+
+- **Escopo:** `SunflowerFormation`, seguir `centroX + offset` com variação e clamp, `SwarmCameraRig` (afastamento
+  `1+√n/22`, shake), arraste e painel de teste na `ToonLab`, enquadramento 9:16 por dado.
+- **Depende de:** RT-6t.1.
+- **Aceite:** testes EditMode das fórmulas (iguais ao protótipo); captura 9:16 com 10 → 1000.
+- **Exige o usuário:** nada.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.3 do Runner vs Tower: formação girassol, arraste e câmera. Leia
+  `docs/direcao-visual-crowd.md` (itens 11–13, RT-6t.3) e o laço `frame()` do protótipo. Escreva na incubadora
+  (`Swarm`) e na `ToonLab`; fórmulas idênticas ao protótipo, com testes; enquadramento de retrato por dado."
+
+## RT-6t.4 — Fatia fina: a multidão nova na corrida do jogo
+
+- **Escopo:** a corrida usa o `Swarm` no lugar de `RunnerCrowd`/`PlayerController`/`RunnerPool` (arraste,
+  `GateMath`, caixotes, tropeço, continuar, início), câmera pelo rig, cor da skin equipada como tinta (sem mudar o
+  save), Bolinha, validador "níveis × capacidade do `Swarm`", nível de gate com a multidão máxima na corrida
+  (teto da **D27**; sem resposta, 300).
+- **Depende de:** RT-6t.2, RT-6t.3.
+- **Aceite:** validação padrão completa; PlayMode da corrida verde; gate 3× na corrida.
+- **Exige o usuário:** OPPO conectado; D27 só se o teto subir.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.4 do Runner vs Tower: a multidão instanciada entra na corrida. Leia
+  `docs/direcao-visual-crowd.md` (seção 2 inteira, RT-6t.4) e a resposta da D27 em `docs/decisoes.md`. Troque
+  `RunnerCrowd`/`PlayerController`/`RunnerPool` da corrida pelo `Swarm` sem mudar regras nem save e sem
+  Instantiate/Destroy; mantenha o assalto como está (a 6t.7 cuida dele); gate 3× na corrida no fim."
+
+## RT-6t.5 — Animações
+
+- **Escopo:** inclinação, nascimento elástico, morte balística num anel fixo, sombra que encolhe, ordem de
+  remoção; na `ToonLab` e na corrida.
+- **Depende de:** RT-6t.4.
+- **Aceite:** testes das fórmulas contra o protótipo; capturas/vídeo; **gate 3× com 1000 vivos + 512 morrendo**;
+  captura do chão sob a multidão (sombras somadas).
+- **Exige o usuário:** OPPO conectado.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.5 do Runner vs Tower: animações procedurais. Leia
+  `docs/direcao-visual-crowd.md` (itens 7 e 8, RT-6t.5) e o protótipo. Burst na incubadora, com testes; ligue a
+  morte no portão ruim da corrida; gate 3× no OPPO com 1000 vivos + 512 morrendo."
+
+## RT-6t.6 — Paletas, céu, neblina, formas e skins
+
+- **Escopo:** `ToonPalette` (com cores de torre/defesa), aplicador, céu degradê, neblina; Pastel, Pôr do sol,
+  Doce (valores exatos) e a 4ª provisória "Aurora"; `WorldLook` → paleta; formas e skins conforme **D26** (seletor
+  no menu, save v4 com o campo "forma" e migração); validador com aviso de contraste; capturas dos 4 mundos.
+- **Depende de:** RT-6t.5; **D26**.
+- **Aceite:** validação padrão; teste de migração v3 → v4; capturas; revisão de segurança (save).
+- **Exige o usuário:** D26.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.6 do Runner vs Tower: paletas, céu, neblina, formas e skins. Leia
+  `docs/direcao-visual-crowd.md` (itens 2–4 e 17, seções 1.1 e 5.1, RT-6t.6, ficha D26) e a resposta da D26 em
+  `docs/decisoes.md`. Paletas do usuário com os valores exatos; save v4 com migração e fixture; revisão de
+  segurança antes do commit."
+
+## RT-6t.7 — Multidão nova no assalto
+
+- **Escopo:** `AssaultField` e defesas leem os índices do `Swarm` (mesmas regras), elites por instância, mortes
+  pelo anel, limite em voo e valor por boneco conforme **D27**, `AssaultCamera` como perfil do rig, tabela de
+  economia regenerada se o teto mudar.
+- **Depende de:** RT-6t.6.
+- **Aceite:** validação padrão; PlayMode verde; gate 3× no chefe do mundo 4 com o assalto mais pesado.
+- **Exige o usuário:** OPPO conectado.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.7 do Runner vs Tower: a multidão instanciada no assalto. Leia
+  `docs/direcao-visual-crowd.md` (seção 2, RT-6t.7) e a resposta da D27. Adapte `AssaultField` e as defesas para os
+  arrays do `Swarm` sem mudar regras; se o teto mudar, regenere fases e economia pelas ferramentas existentes;
+  gate 3× no chefe do mundo 4."
+
+## RT-6t.8 — Cenário
+
+- **Escopo:** `InstancedProps` com reciclagem, pista listrada no shader, trilhos, árvores (2 tons + tronco) e
+  pedras, chão, densidade por mundo; substitui o cenário Simple Lit dos 4 mundos.
+- **Depende de:** RT-6t.6.
+- **Aceite:** validação padrão; ≤ 3 chamadas para o cenário lateral; capturas dos 4 mundos.
+- **Exige o usuário:** nada.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.8 do Runner vs Tower: cenário instanciado e pista listrada. Leia
+  `docs/direcao-visual-crowd.md` (itens 14 e 15, RT-6t.8). Não toque multidão, portões nem HUD."
+
+## RT-6t.9 — Portões e feedback
+
+- **Escopo:** painéis semitransparentes, postes, rótulos TextMeshPro em Baloo 2 com contorno (corrida e assalto),
+  número flutuante, pop do contador, shake no portão ruim, Baloo 2 no HUD e nas telas; fonte só do repositório
+  oficial do Google Fonts, com `OFL.txt` e hash.
+- **Depende de:** RT-6t.7.
+- **Aceite:** validação padrão; glifos `+ − × ÷` e acentos; capturas; licença registrada.
+- **Exige o usuário:** nada.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.9 do Runner vs Tower: portões, texto Baloo 2 e feedback. Leia
+  `docs/direcao-visual-crowd.md` (itens 18–21, RT-6t.9) e o protótipo (portões, `floatText`, `.count.pop`). Baixe a
+  Baloo 2 só de github.com/google/fonts (ofl/baloo2), guarde `OFL.txt` e o hash. Não toque cenário nem pista."
+
+## RT-6t.10 — Arte do assalto
+
+- **Escopo:** conforme **D28** (sem resposta: A — sombreado toon e cores de torre/defesa da paleta nas torres,
+  defesas, chefes, projéteis, caixotes e efeitos, sem remodelar e sem rostos).
+- **Depende de:** RT-6t.8.
+- **Aceite:** validação padrão; capturas dos 4 chefes; aprovação visual do usuário como aceite pendente.
+- **Exige o usuário:** D28; olhar as capturas.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.10 do Runner vs Tower: arte do assalto no estilo toon. Leia
+  `docs/direcao-visual-crowd.md` (RT-6t.10, ficha D28) e a resposta da D28. Aplique a opção escolhida; capturas
+  dos 4 mundos."
+
+## RT-6t.11 — Reserva para OpenGL ES
+
+- **Escopo:** caminho `RenderMeshInstanced` em blocos (variante de shader própria, matrizes de sombra no mesmo job),
+  escolha em tempo de execução por `SystemInfo`, teste no OPPO forçando OpenGL ES 3.
+- **Depende de:** RT-6t.7.
+- **Aceite:** validação padrão; as duas rotas desenham igual (captura); gate 3× em GLES no OPPO.
+- **Exige o usuário:** OPPO conectado.
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.11 do Runner vs Tower: caminho de desenho de reserva para OpenGL ES. Leia
+  `docs/direcao-visual-crowd.md` (item 9, R-T2, RT-6t.11). Implemente na incubadora, escolha por `SystemInfo`, e
+  meça o gate 3× no OPPO com GLES forçado."
+
+## RT-6t.12 — Levar o motor ao kit e fechar a série
+
+- **Escopo:** mover a incubadora para o pacote com os `.meta` (K.11, 0.5.0, dependências no `package.json`,
+  registro no plano do studiokit); aceitação do studiokit; retirar do jogo o caminho antigo de massinha; capturas
+  novas; nível do gate completo; gate 3× final; GDD seção 9, `reuso-tecnico.md` 5.3 e `rt6t-crowd-toon.md`.
+- **Depende de:** RT-6t.9, RT-6t.10, RT-6t.11.
+- **Aceite:** validação padrão completa; isolamento do kit PASS; Wild Pack igual à linha de base (validadores
+  1–3, save 87/87, isolamento, anúncios offline 24/24, build Android); gate 3× aprovado; nenhum asset órfão.
+- **Exige o usuário:** OPPO conectado; jogar os 4 mundos (aceite pendente).
+- **Status: proposta, aguardando aprovação do usuário.**
+- **Prompt da sessão:** "Entrega RT-6t.12 do Runner vs Tower: levar o motor ao studiokit e fechar a série. Leia
+  `docs/direcao-visual-crowd.md` (seções 2, 4.1 e 6), `docs/rt6t-crowd-toon.md` e
+  `../studiokit/docs/consumo-runner-vs-tower.md`. Mova `Assets/StudioKitIncubator/**` para o pacote preservando os
+  GUIDs, registre a K.11 no plano do studiokit, rode a aceitação do studiokit depois do Unity deste projeto,
+  remova o que ficou sem uso no jogo (confira referências e GUIDs), regrave capturas e rode o gate 3× final."
 
 ## RT-9 — Preparação do soft launch
 

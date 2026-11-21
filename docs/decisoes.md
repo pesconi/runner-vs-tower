@@ -1092,3 +1092,34 @@ Responda: E, A, B, C ou D, ou "E, e se não der A", ou "explica melhor".
 testes serão na Europa; o jogo segue medindo só com o "sim" da janela do Google (EEE, Reino Unido, Suíça) e não
 mede fora dela. Isto também orienta a D9 (países do soft launch: Europa). Rever esta ficha (E ou A), junto com
 os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
+
+## 2026-11-21 — Direção visual "crowd toon" — pedido do usuário (plano proposto, aguardando aprovação)
+
+- Fato: o usuário aprovou como padrão visual dos jogos o protótipo three.js "Crowd runner toon" (agora em
+  `docs/reference/crowd-proto.html`) e deu a especificação (toon de 3 faixas, multidão instanciada de 1000+ a 60
+  fps, formas Bolinha e Pintinho, animação procedural, formação girassol, 3 paletas, cenário reciclado, portões com
+  Baloo 2). Substitui a direção v2 (D24, RT-6v.1), descartada e revertida em `fc1620e`.
+- Pediu planejamento antes de implementar: plano em `docs/direcao-visual-crowd.md`, entregas RT-6t.1–6t.12 em
+  `plano-de-entregas.md`, todas "proposta, aguardando aprovação do usuário".
+- Fichas abertas pelo planejamento (texto completo na seção 5 de `direcao-visual-crowd.md`; segunda opinião
+  fable incorporada): **D25** público/"fofura" (trava a 6t.2), **D27** teto da multidão (sem resposta: 300),
+  **D26** skins × formas × paletas (trava a 6t.6), **D28** arte do assalto (sem resposta: A), **D29** nome "Clay
+  Siege" sem massinha (trava a RT-9).
+
+## 2026-11-21 — T-RT6t-1..9 — Decisões técnicas do plano crowd toon — técnica (sessão de planejamento)
+
+- T-RT6t-1: motor escrito com namespaces/asmdefs do kit (`JungleDegree.StudioKit.Toon`, `.Swarm`), incubado em
+  `Assets/StudioKitIncubator/` até a integração no jogo provar a API, e levado ao studiokit numa entrega só
+  (RT-6t.12 = K.11, aceitação do Wild Pack uma vez); `RunnerCrowd`/`RunnerPool`/massinha do kit não mudam.
+- T-RT6t-2: simulação e animação na CPU com Jobs + Burst; desenho indireto com buffer estruturado (1 + 1 chamadas);
+  animação no vertex shader é o plano B medido.
+- T-RT6t-3: shader HLSL próprio (`StudioKit/ToonLit`), não Shader Graph.
+- T-RT6t-4: a primeira entrega é um portão de desempenho no teto do orçamento (500 tri, 1000 vivos, sombras, MSAA).
+- T-RT6t-5: a corrida do jogo recebe a multidão nova cedo (6t.4).
+- T-RT6t-6: Baloo 2 (SIL OFL 1.1) substitui a Roboto Black; TextMeshPro só onde há contorno.
+- T-RT6t-7: caminho de reserva para OpenGL ES (`RenderMeshInstanced` em blocos) antes do soft launch (6t.11).
+- T-RT6t-8: numeração RT-6t.x aqui e K.11 no studiokit (K.10 foi a direção revertida).
+- T-RT6t-9: série sequencial (regra global de uma sessão por repositório); pares sem conflito de arquivos só com
+  autorização do usuário.
+- Também decidido pelo planejamento, provisório e trocável: 4ª paleta "Aurora" para o mundo 4 (o pedido tem 3
+  paletas, o jogo tem 4 mundos; D12 = A).
