@@ -1014,7 +1014,7 @@ mede **menos** do que a D21 aprovou: a forma de medir fora da Europa vai ao usu�
 reescrita (pt-PT, responsável português, consentimento como base, direitos, CNPD, transferências) e Data safety
 ajustada ("opcional"). `MobileAdsGate.ConsentInformationUpdated` saiu do kit (ficou sem uso).
 
-## Ficha D23 (RT-8b, aguardando resposta)
+## Ficha D23 (RT-8b, respondida em 2026-11-21: B)
 
 ### DECISÃO D23 — Medir jogadores fora da Europa: com que pedido de consentimento?
 
@@ -1087,3 +1087,8 @@ anúncios juntos, com A como reserva. Incorporado (opção E, Suíça, prova do 
 Se você não responder: o jogo continua medindo só onde a janela do Google aparece (opção B); nada mais espera por isto.
 
 Responda: E, A, B, C ou D, ou "E, e se não der A", ou "explica melhor".
+
+**Resposta do usuário (2026-11-21): B** — "Testes serão feitos na Europa, não se preocupe." O soft launch e os
+testes serão na Europa; o jogo segue medindo só com o "sim" da janela do Google (EEE, Reino Unido, Suíça) e não
+mede fora dela. Isto também orienta a D9 (países do soft launch: Europa). Rever esta ficha (E ou A), junto com
+os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
