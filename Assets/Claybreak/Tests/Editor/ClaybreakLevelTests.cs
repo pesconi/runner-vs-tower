@@ -23,14 +23,23 @@ namespace Claybreak.Tests
         [Test]
         public void DefaultLevelFitsAFullPool()
         {
-            Assert.IsTrue(level.TryValidate(300, out string error), error);
+            Assert.IsTrue(level.TryValidate(300, 300, out string error), error);
         }
 
         [Test]
         public void UnitsInFlightMustFitThePool()
         {
-            Assert.IsFalse(level.TryValidate(100, out string error));
+            Assert.IsFalse(level.TryValidate(300, 100, out string error));
             StringAssert.Contains("maximumUnitsInFlight", error);
+        }
+
+        // RT-6t.4: the army that starts the run must fit the crowd cap (the instanced crowd, decision D27).
+        [Test]
+        public void StartingArmyMustFitTheCrowdCap()
+        {
+            Assert.IsTrue(level.TryValidate(level.StartCount, 300, out string error), error);
+            Assert.IsFalse(level.TryValidate(level.StartCount - 1, 300, out error));
+            StringAssert.Contains("crowd cap", error);
         }
 
         [Test]
@@ -40,7 +49,7 @@ namespace Claybreak.Tests
             SerializedProperty gate = so.FindProperty("assaultGates").GetArrayElementAtIndex(1);
             gate.FindPropertyRelative("operation").enumValueIndex = (int)GateOperation.Add;
             so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(level.TryValidate(300, out string error));
+            Assert.IsFalse(level.TryValidate(300, 300, out string error));
             StringAssert.Contains("assaultGates[1]", error);
         }
 
@@ -54,7 +63,7 @@ namespace Claybreak.Tests
             gates.GetArrayElementAtIndex(0).FindPropertyRelative("left.value").intValue = 1;
             gates.GetArrayElementAtIndex(0).FindPropertyRelative("right.value").intValue = 1;
             so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(level.TryValidate(300, out string error));
+            Assert.IsFalse(level.TryValidate(300, 300, out string error));
             StringAssert.Contains("runGates[0]", error);
         }
 
@@ -80,7 +89,7 @@ namespace Claybreak.Tests
             crates.GetArrayElementAtIndex(0).FindPropertyRelative("z").floatValue = 21f;
             crates.GetArrayElementAtIndex(0).FindPropertyRelative("units").intValue = 2;
             so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(level.TryValidate(300, out string error));
+            Assert.IsFalse(level.TryValidate(300, 300, out string error));
             StringAssert.Contains("crates[0]", error);
         }
 
@@ -91,7 +100,7 @@ namespace Claybreak.Tests
             so.FindProperty("sweeperEnabled").boolValue = true;
             so.FindProperty("sweeperDistance").floatValue = 5f;
             so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(level.TryValidate(300, out string error));
+            Assert.IsFalse(level.TryValidate(300, 300, out string error));
             StringAssert.Contains("sweeper", error);
         }
 
@@ -102,7 +111,7 @@ namespace Claybreak.Tests
             so.FindProperty("bossRule").enumValueIndex = (int)BossRule.ShiftGates;
             so.FindProperty("floors").intValue = 1;
             so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(level.TryValidate(300, out string error));
+            Assert.IsFalse(level.TryValidate(300, 300, out string error));
             StringAssert.Contains("boss rule", error);
         }
 
@@ -113,7 +122,7 @@ namespace Claybreak.Tests
             so.FindProperty("bossRule").enumValueIndex = (int)BossRule.ShieldReturns;
             so.FindProperty("floors").intValue = 4;
             so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(level.TryValidate(300, out string error));
+            Assert.IsFalse(level.TryValidate(300, 300, out string error));
             StringAssert.Contains("shield", error);
         }
 
@@ -124,7 +133,7 @@ namespace Claybreak.Tests
             so.FindProperty("shieldEnabled").boolValue = true;
             so.FindProperty("shieldDistance").floatValue = 60f;
             so.ApplyModifiedPropertiesWithoutUndo();
-            Assert.IsFalse(level.TryValidate(300, out string error));
+            Assert.IsFalse(level.TryValidate(300, 300, out string error));
             StringAssert.Contains("shield", error);
         }
 
@@ -134,7 +143,7 @@ namespace Claybreak.Tests
             var spec = new LevelSpec { tower = TowerKind.Keep, floors = 3, bossRule = BossRule.TurnGate };
             level.EditorAssign(spec);
             Assert.IsTrue(level.IsBoss);
-            Assert.IsTrue(level.TryValidate(300, out string error), error);
+            Assert.IsTrue(level.TryValidate(300, 300, out string error), error);
             spec.bossRule = BossRule.None;
             level.EditorAssign(spec);
             Assert.IsFalse(level.IsBoss);

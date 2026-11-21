@@ -25,15 +25,20 @@ namespace Claybreak
     /// hold to stream units; a special goes out every few launches), and the result, which saves the
     /// progress and offers NEXT / AGAIN in one tap. Upgrades, loadout and skin come from
     /// <see cref="Progression"/> when a level is prepared; the device gate runs the maximum loadout.
-    /// Owns the run phase the kit reads: Menu is Menu, Run and Assault are Playing. In the assault the
-    /// leader stays at the firing line (course speed 0) and its sideways drag picks the lane; the army is
-    /// the leader's followers, launched one by one from the back. The whole world lives in one scene:
-    /// changing level re-places preallocated objects, never creates them.
+    /// Owns the run phase the kit reads: Menu is Menu, Run and Assault are Playing. RT-6t.4: the army on the track is
+    /// the instanced crowd (<see cref="RunCrowd"/>, no object per unit, no leader); its formation center crosses the
+    /// gates and crates. In the assault the crowd stays at the firing line (speed 0) and its sideways drag picks the
+    /// lane; units are launched one by one from its outer ring into the assault field (still the kit's runner pool
+    /// until RT-6t.7). The whole world lives in one scene: changing level re-places preallocated objects, never
+    /// creates them.
     /// RT-7: the rewarded uses of GDD 7.2 (double the coins on the result, continue once per level after the army
     /// falls in the assault; both optional, gain written on the button, a clear NO THANKS), the interstitial
     /// between levels (off by configuration, D6), the daily reward on the home screen (D5), the privacy options
     /// entry point (UMP) and the minimum measurement events (D4, no SDK yet).
     /// </summary>
+    // After the crowd moves (RunCrowd, -50) and before the swarm schedules its frame (0): counts and restarts made here are
+    // drawn this same frame.
+    [DefaultExecutionOrder(-40)]
     public sealed class ClaybreakFlow : RunPhaseSource
     {
         private const string RunHint = "DRAG TO PICK A GATE";
@@ -44,19 +49,23 @@ namespace Claybreak
         private const float LostResultDelay = 0.8f;
         // Boss rule "overheat": each fallen floor makes the cannon and the sweeper this much quicker.
         private const float OverheatFactor = 0.75f;
+        // Size of the assault's pool units (the old crowd followers: half the leader).
+        private const float AssaultUnitScale = 0.5f;
+        // The device-gate run loops back to the start this far before the tower (the scenery and the tower stay ahead).
+        private const float RunGateTowerGap = 10f;
 
         [SerializeField] private ClaybreakCatalog catalog;
-        [Tooltip("Device-gate level per catalog world (300 units in flight, every defense at its limit, the world's heaviest tower, its scenery). Development and measurement builds pick it with `--ez stress true [--ei world N]` (N from 1).")]
+        [Tooltip("Device-gate level per catalog world (300 units in flight, every defense at its limit, the world's heaviest tower, its scenery). Development and measurement builds pick it with `--ez stress true [--ei world N]` (N from 1); `--ez run true` measures its run instead (the crowd at its cap, looping, RT-6t.4).")]
         [SerializeField] private ClaybreakLevel[] stressLevels = new ClaybreakLevel[0];
         [SerializeField] private bool useStressLevelInEditor;
         [SerializeField, Min(1)] private int stressWorldInEditor = 1;
         [SerializeField] private WorldScenery scenery;
         [SerializeField] private ClaybreakTheme theme;
         [SerializeField] private Renderer track;
-        [SerializeField] private PlayerController player;
-        [SerializeField] private RunnerCrowd crowd;
-        [SerializeField] private RunnerPool pool;
-        [SerializeField] private CameraFollow runCamera;
+        [SerializeField] private RunCrowd crowd;
+        [Tooltip("Disabled CharacterController the kit grounds the assault's pool units against (the old leader's size); "
+            + "goes away with the pool in RT-6t.7.")]
+        [SerializeField] private CharacterController unitGrounding;
         [SerializeField] private AssaultCamera assaultCamera;
         [SerializeField] private RunGateCourse gates;
         [SerializeField] private AssaultField field;
@@ -85,6 +94,7 @@ namespace Claybreak
         private ClaybreakLevel activeLevel;
         private FlowState state = FlowState.Menu;
         private bool deviceGate;
+        private bool deviceGateRun;
         private int deviceGateWorld;
         private bool resultShown;
         private float launchCredit;
@@ -95,7 +105,6 @@ namespace Claybreak
         private int loadoutCount;
         private int nextSpecialSlot;
         private RunLoadout runLoadout = RunLoadout.None;
-        private CharacterController leader;
         private int armyAtLine;
         private float holdTime;
         private float stateTime;
@@ -108,6 +117,9 @@ namespace Claybreak
 #if UNITY_EDITOR
         /// <summary>Editor only (PlayMode tests): the next flow to start runs the device-gate level.</summary>
         public static bool EditorUsesDeviceGateLevel { get; set; }
+
+        /// <summary>Editor only (PlayMode tests): the device-gate level measures its run (the crowd at its cap, looping).</summary>
+        public static bool EditorUsesDeviceGateRun { get; set; }
 
         /// <summary>Editor only (PlayMode tests): the world (from 1) whose device-gate level runs.</summary>
         public static int EditorDeviceGateWorld { get; set; } = 1;
@@ -124,6 +136,10 @@ namespace Claybreak
 
         public FlowState State => state;
         public AssaultField Field => field;
+        public RunCrowd Crowd => crowd;
+
+        /// <summary>True when the device gate measures the run (the crowd loops at its cap and never reaches the assault).</summary>
+        public bool MeasuresRun => deviceGate && deviceGateRun;
         public CannonDefense Cannon => cannon;
         public AssaultTower Tower => tower;
         public ClaybreakLevel ActiveLevel => activeLevel;
@@ -166,7 +182,7 @@ namespace Claybreak
 
         private void Start()
         {
-            deviceGate = PickDeviceGate(out deviceGateWorld);
+            deviceGate = PickDeviceGate(out deviceGateWorld, out deviceGateRun);
             if (!Configure(out string error))
             {
                 Debug.LogError("[Claybreak] The game cannot start: " + error, this);
@@ -179,8 +195,8 @@ namespace Claybreak
             Debug.Log($"[Claybreak] Ready: {catalog.Worlds.Count} world(s), {progression.World.WorldName}, next {progression.CurrentLevel.name}, "
                 + $"coins {progression.Save.coins}, stars {progression.TotalStars}, army +{ready.StartingArmy}, damage x{ready.DamageMultiplier:0.##}, "
                 + $"gates +{ready.GateBonus}, launch x{ready.LaunchRateMultiplier:0.##}, loadout [{string.Join(", ", progression.Save.loadout)}], "
-                + $"skin {progression.Skin.id}, pool {pool.Capacity}"
-                + (deviceGate ? $", DEVICE GATE world {deviceGateWorld + 1} (maximum loadout)" : string.Empty) + ".", this);
+                + $"skin {progression.Skin.id}, crowd cap {crowd.MaximumArmy} ({theme.CrowdShape.name}), assault pool {field.PoolCapacity}"
+                + (deviceGate ? $", DEVICE GATE world {deviceGateWorld + 1} {(deviceGateRun ? "RUN" : "assault")} (maximum loadout)" : string.Empty) + ".", this);
             if (deviceGate)
             {
 #if DEVELOPMENT_BUILD || RELEASE_MEASUREMENT
@@ -210,8 +226,8 @@ namespace Claybreak
 
         private bool Configure(out string error)
         {
-            if (catalog == null || stressLevels == null || scenery == null || theme == null || track == null || player == null || crowd == null
-                || pool == null || runCamera == null || assaultCamera == null || gates == null || field == null
+            if (catalog == null || stressLevels == null || scenery == null || theme == null || track == null || crowd == null
+                || unitGrounding == null || assaultCamera == null || gates == null || field == null
                 || tower == null || cannon == null || hud == null || screens == null
                 || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null
                 || monetization == null || ads == null)
@@ -220,7 +236,18 @@ namespace Claybreak
                 return false;
             }
 
-            if (!catalog.TryValidate(pool.Capacity, out error) || !theme.TryValidate(out error) || !tower.TryValidate(out error)
+            if (!crowd.TryValidate(out error) || !theme.TryValidate(out error))
+            {
+                return false;
+            }
+
+            if (!field.Initialize(track, theme, Vector3.one * AssaultUnitScale))
+            {
+                error = "the assault field did not configure (see the log above).";
+                return false;
+            }
+
+            if (!catalog.TryValidate(crowd.MaximumArmy, field.PoolCapacity, out error) || !tower.TryValidate(out error)
                 || !scenery.TryValidate(catalog.Worlds.Count, out error) || !monetization.TryValidate(out error))
             {
                 return false;
@@ -234,7 +261,7 @@ namespace Claybreak
 
             foreach (ClaybreakLevel stress in stressLevels)
             {
-                if (stress == null || !stress.TryValidate(pool.Capacity, out error))
+                if (stress == null || !stress.TryValidate(crowd.MaximumArmy, field.PoolCapacity, out error))
                 {
                     error = "device-gate level: " + (error ?? "missing");
                     return false;
@@ -244,10 +271,10 @@ namespace Claybreak
             deviceGateWorld = Mathf.Clamp(deviceGateWorld, 0, stressLevels.Length - 1);
 
             progression = new Progression(catalog, LoadSave());
-            leader = player.GetComponent<CharacterController>();
-            if (!field.Initialize(track, theme, Vector3.one * 0.5f * player.transform.lossyScale.x) || !ApplySkin())
+            crowd.UseShape(theme.CrowdShape);
+            if (!ApplySkin())
             {
-                error = "the crowd skin or the assault field did not configure (see the log above).";
+                error = "the crowd skin did not apply to the assault units (see the log above).";
                 return false;
             }
 
@@ -262,7 +289,7 @@ namespace Claybreak
             tower.HealthChanged += hud.SetTower;
             tower.FloorFallen += OnFloorFallen;
             field.Shield.Fallen += OnShieldFallen;
-            crowd.CountChanged += count => hud.SetArmy(count - 1);
+            crowd.ArmyChanged += hud.SetArmy;
             screens.PlayPressed += () => StartLevel(progression.CurrentLevel);
             screens.ShopPressed += () => screens.ShowShop(progression);
             screens.WorldsPressed += () => screens.ShowWorlds(progression);
@@ -286,31 +313,35 @@ namespace Claybreak
             return true;
         }
 
-        private bool PickDeviceGate(out int world)
+        private bool PickDeviceGate(out int world, out bool run)
         {
 #if UNITY_EDITOR
             world = (EditorUsesDeviceGateLevel ? EditorDeviceGateWorld : stressWorldInEditor) - 1;
+            run = EditorUsesDeviceGateLevel && EditorUsesDeviceGateRun;
             return EditorUsesDeviceGateLevel || useStressLevelInEditor;
 #elif (DEVELOPMENT_BUILD || RELEASE_MEASUREMENT) && UNITY_ANDROID
-            return ReadStressExtra(out world);
+            return ReadStressExtra(out world, out run);
 #else
             world = 0;
+            run = false;
             return false;
 #endif
         }
 
 #if (DEVELOPMENT_BUILD || RELEASE_MEASUREMENT) && UNITY_ANDROID && !UNITY_EDITOR
-        // Development builds only: `adb shell am start ... --ez stress true [--ei world N]` runs the device-gate
-        // level of world N (from 1; default 1).
-        private static bool ReadStressExtra(out int world)
+        // Development builds only: `adb shell am start ... --ez stress true [--ei world N] [--ez run true]` runs the
+        // device-gate level of world N (from 1; default 1), its assault or (run) its run.
+        private static bool ReadStressExtra(out int world, out bool run)
         {
             world = 0;
+            run = false;
             try
             {
                 using AndroidJavaClass player = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
                 using AndroidJavaObject activity = player.GetStatic<AndroidJavaObject>("currentActivity");
                 using AndroidJavaObject intent = activity.Call<AndroidJavaObject>("getIntent");
                 world = intent.Call<int>("getIntExtra", "world", 1) - 1;
+                run = intent.Call<bool>("getBooleanExtra", "run", false);
                 return intent.Call<bool>("getBooleanExtra", "stress", false);
             }
             catch (Exception exception)
@@ -450,7 +481,7 @@ namespace Claybreak
             }
 
             continueUsed = true;
-            continueUnits = Mathf.Min(monetization.ContinueArmy(armyAtLine), crowd.MaximumCount - 1);
+            continueUnits = Mathf.Min(monetization.ContinueArmy(armyAtLine), crowd.MaximumArmy);
             Enter(FlowState.ContinueOffer);
             return true;
         }
@@ -500,7 +531,8 @@ namespace Claybreak
         {
             screens.HideAll();
             hud.Show(true);
-            crowd.SetCount(continueUnits + 1, true);
+            crowd.SetArmy(continueUnits);
+            crowd.Steering = true;
             state = FlowState.Assault;
             stateTime = 0f;
             launchCredit = 0f;
@@ -575,13 +607,13 @@ namespace Claybreak
             }
         }
 
-        // The crowd wears the skin: the leader, its followers and every idle pool unit (menu time only).
+        // The crowd wears the skin as its tint (the save keeps the skin id, unchanged) and every idle pool unit of the
+        // assault wears it as clay (menu time only).
         private bool ApplySkin()
         {
             Color color = progression.Skin.color;
-            return player.TryApplyColorLook(theme.Roster, ClaybreakTheme.CrowdColorId, color)
-                && crowd.ApplyColorLook(theme.Roster, ClaybreakTheme.CrowdColorId, color)
-                && field.DressIdleUnits(theme.Roster, color, leader);
+            crowd.Wear(color);
+            return field.DressIdleUnits(theme.Roster, color, unitGrounding);
         }
 
         private void OnPrimary()
@@ -635,11 +667,9 @@ namespace Claybreak
             }
 
             RunnerDeathEffects.ClearAll();
-            player.ResetForNewRun();
-            player.SetCourseSpeedMultiplier(0f);
-            int army = level.StartCount + (played ? runLoadout.StartingArmy : 0);
-            crowd.SetCount(Mathf.Min(army, crowd.MaximumCount - 1) + 1);
-            crowd.SnapFollowersToFormation();
+            assaultCamera.Stop();
+            crowd.SetCameraFollowing(true);
+            crowd.ResetRun(level.StartCount + (played ? runLoadout.StartingArmy : 0));
             for (int i = 0; i < specials.Length; i++)
             {
                 specials[i] = played || i >= loadoutCount ? 0 : DeviceGateSpecials;
@@ -648,8 +678,6 @@ namespace Claybreak
             nextSpecialSlot = 0;
             launches = 0;
             holdTime = 0f;
-            assaultCamera.Stop();
-            runCamera.enabled = true;
             Vector3 line = firingLine.position;
             firingLine.position = new Vector3(line.x, line.y, level.FiringLineZ);
             Vector3 marker = laneMarker.position;
@@ -657,7 +685,7 @@ namespace Claybreak
             laneMarker.gameObject.SetActive(false);
             hud.SetLevel(level.Title);
             hud.SetCoins(progression.Save.coins);
-            hud.SetArmy(crowd.CurrentCount - 1);
+            hud.SetArmy(crowd.Army);
             hud.SetSpecials(0, false);
             hud.ShowTower(false, towerHealth);
             hud.ClearBanner();
@@ -678,8 +706,9 @@ namespace Claybreak
                     progression.WorldIndex + 1, progression.LevelIndex + 1);
             }
 
-            player.SetCourseSpeedMultiplier(level.RunSpeed);
-            Debug.Log($"[Claybreak] Level '{level.name}' starts: army {crowd.CurrentCount - 1}, {level.RunGates.Count} gate pairs, "
+            crowd.Speed = level.RunSpeed;
+            crowd.Steering = true;
+            Debug.Log($"[Claybreak] Level '{level.name}' starts: army {crowd.Army}, {level.RunGates.Count} gate pairs, "
                 + $"tower {level.Tower} {tower.MaximumHealth} in {level.Floors} floor(s), projectile limit {level.MaximumProjectiles}, "
                 + $"sweeper {(level.SweeperEnabled ? "on" : "off")}, wall {(level.WallEnabled ? "on" : "off")}.", this);
             Enter(FlowState.Run);
@@ -713,8 +742,20 @@ namespace Claybreak
                         hud.SetHint(null);
                     }
 
-                    gates.Track(player.transform.position);
-                    if (state == FlowState.Run && player.transform.position.z >= activeLevel.FiringLineZ)
+                    Vector3 center = crowd.Position;
+                    if (MeasuresRun)
+                    {
+                        // The device gate keeps the crowd at its cap on the track: back to the start before the tower.
+                        if (center.z >= activeLevel.TowerZ - RunGateTowerGap)
+                        {
+                            crowd.RestartRun();
+                        }
+
+                        break;
+                    }
+
+                    gates.Track(center);
+                    if (state == FlowState.Run && center.z >= activeLevel.FiringLineZ)
                     {
                         Enter(FlowState.Assault);
                     }
@@ -750,7 +791,7 @@ namespace Claybreak
 
         private void UpdateAssault()
         {
-            int lane = field.GetNearestLane(player.transform.position.x);
+            int lane = field.GetNearestLane(crowd.Position.x);
             Vector3 marker = laneMarker.position;
             laneMarker.position = new Vector3(field.GetLaneX(lane), marker.y, marker.z);
 
@@ -770,7 +811,7 @@ namespace Claybreak
             }
 
             launchCredit = Mathf.Min(launchCredit, 1f);
-            if (tower.IsStanding && crowd.CurrentCount <= 1 && field.InFlight == 0 && !TryOfferContinue())
+            if (tower.IsStanding && crowd.Army == 0 && field.InFlight == 0 && !TryOfferContinue())
             {
                 Enter(FlowState.Lost);
             }
@@ -778,13 +819,11 @@ namespace Claybreak
 
         private bool LaunchOne(int lane)
         {
-            if (field.InFlight >= field.Capacity || !crowd.TryGetLastFollower(out RunnerUnit follower))
+            if (field.InFlight >= field.Capacity || !crowd.TryTakeOuterUnit(out Vector3 from))
             {
                 return false;
             }
 
-            Vector3 from = follower.transform.position;
-            crowd.RemoveHitFollower(follower);
             int slot = launches % catalog.SpecialEvery == 0 ? TakeSpecial() : -1;
             launches++;
             return field.TryLaunch(lane, new Vector3(from.x, from.y, Mathf.Max(from.z, activeLevel.FiringLineZ)), slot);
@@ -810,21 +849,20 @@ namespace Claybreak
 
         private void OnGateCrossed(GateSpec gate)
         {
-            int army = GateMath.Apply(gate, crowd.CurrentCount - 1, crowd.MaximumCount - 1);
+            int before = crowd.Army;
+            int army = GateMath.Apply(gate, before, crowd.MaximumArmy);
+            crowd.SetArmy(army);
+            if (army < before)
+            {
+                // Simple removal for now (the outer ring goes); the ballistic death comes with RT-6t.5.
+                crowd.Shake();
+            }
+
             if (army == 0)
             {
-                crowd.SetCount(1);
                 TrimSpecials(0);
                 Enter(FlowState.Lost);
                 return;
-            }
-
-            int before = crowd.CurrentCount - 1;
-            crowd.SetCount(army + 1, army > before);
-            if (army < before)
-            {
-                player.Trip();
-                RunnerDeathEffects.Play(player.transform.position, Mathf.Min(before - army, 6));
             }
 
             // Specials are part of the army: a gate that shrinks it below them takes specials too.
@@ -856,15 +894,15 @@ namespace Claybreak
         // A crate holds specials of one loadout slot: crates alternate between the equipped types.
         private void OnCratePicked(int crate, int units)
         {
-            int army = crowd.CurrentCount - 1;
-            int added = Mathf.Min(units, crowd.MaximumCount - 1 - army);
+            int army = crowd.Army;
+            int added = Mathf.Min(units, crowd.MaximumArmy - army);
             if (added <= 0 || loadoutCount == 0)
             {
                 return;
             }
 
             int slot = crate % loadoutCount;
-            crowd.SetCount(army + added + 1, true);
+            crowd.SetArmy(army + added);
             specials[slot] += added;
             hud.SetSpecials(Specials, true);
             hud.Banner("+" + added + " " + loadout[slot].title);
@@ -933,6 +971,7 @@ namespace Claybreak
                     EndLevel(next == FlowState.Won);
                     break;
                 case FlowState.ContinueOffer:
+                    crowd.Steering = false;
                     cannon.Armed = false;
                     laneMarker.gameObject.SetActive(false);
                     hud.SetHint(null);
@@ -959,16 +998,17 @@ namespace Claybreak
 
         private void BeginAssault()
         {
-            armyAtLine = crowd.CurrentCount - 1;
+            armyAtLine = crowd.Army;
+            Vector3 center = crowd.Position;
             Debug.Log($"[Claybreak] Run reached the firing line in {levelTime:0.0} s: army {armyAtLine} ({Specials} specials), "
-                + $"leader at y={player.transform.position.y:0.00} (track top {track.bounds.max.y:0.00}).", this);
-            player.SetCourseSpeedMultiplier(0f);
+                + $"crowd center x={center.x:0.00} z={center.z:0.0} (track top {track.bounds.max.y:0.00}).", this);
+            crowd.Speed = 0f;
             launchCredit = 0f;
             holdTime = 0f;
             GameAudio.Play(GameSound.Finish);
-            runCamera.enabled = false;
-            Vector3 center = new Vector3(track.bounds.center.x, track.bounds.max.y, activeLevel.FiringLineZ);
-            assaultCamera.Begin(center, new Vector3(center.x, center.y, activeLevel.TowerZ), activeLevel.IsBoss);
+            crowd.SetCameraFollowing(false);
+            Vector3 line = new Vector3(track.bounds.center.x, track.bounds.max.y, activeLevel.FiringLineZ);
+            assaultCamera.Begin(line, new Vector3(line.x, line.y, activeLevel.TowerZ), activeLevel.IsBoss);
             laneMarker.gameObject.SetActive(true);
             field.Running = true;
             cannon.Armed = activeLevel.CannonEnabled;
@@ -985,11 +1025,12 @@ namespace Claybreak
         private void EndLevel(bool won)
         {
             resultShown = false;
-            player.SetCourseSpeedMultiplier(0f);
+            crowd.Speed = 0f;
+            crowd.Steering = false;
             cannon.Armed = false;
             laneMarker.gameObject.SetActive(false);
             hud.SetHint(null);
-            int armyLeft = crowd.CurrentCount - 1 + field.InFlight;
+            int armyLeft = crowd.Army + field.InFlight;
             Debug.Log($"[Claybreak] Level {activeLevel.name} {(won ? "WON" : "LOST")} in {levelTime:0.0} s; army at line {armyAtLine}, "
                 + $"left {armyLeft}, tower {tower.Health}/{tower.MaximumHealth}, hits {field.TowerHits}, peak in flight {field.PeakInFlight}, "
                 + $"peak projectiles {cannon.PeakActive}/{activeLevel.MaximumProjectiles}.", this);
@@ -1028,13 +1069,13 @@ namespace Claybreak
             nextDevLog = Time.unscaledTime + 2f;
             if (state == FlowState.Run)
             {
-                Vector3 leader = player.transform.position;
-                Debug.Log($"[ClaybreakGate] t={levelTime:0.0} run army={crowd.CurrentCount - 1} leader z={leader.z:0.0} y={leader.y:0.00}");
+                Vector3 center = crowd.Position;
+                Debug.Log($"[ClaybreakGate] t={levelTime:0.0} run army={crowd.Army} crowd z={center.z:0.0} x={center.x:0.00}");
             }
             else if (state == FlowState.Assault)
             {
                 Debug.Log($"[ClaybreakGate] t={levelTime:0.0} tower={activeLevel.Tower} inFlight={field.InFlight} specials={field.SpecialsInFlight} "
-                    + $"projectiles={cannon.ActiveCount}/{activeLevel.MaximumProjectiles} reserve={crowd.CurrentCount - 1} towerHealth={tower.Health} "
+                    + $"projectiles={cannon.ActiveCount}/{activeLevel.MaximumProjectiles} reserve={crowd.Army} towerHealth={tower.Health} "
                     + $"loadout={loadoutCount} damage=x{runLoadout.DamageMultiplier:0.##} launch=x{runLoadout.LaunchRateMultiplier:0.##}");
             }
 #endif

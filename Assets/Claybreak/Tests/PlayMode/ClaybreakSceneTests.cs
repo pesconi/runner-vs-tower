@@ -1,6 +1,5 @@
 using System.Collections;
 using JungleDegree.StudioKit.Core;
-using JungleDegree.StudioKit.Crowd;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,19 +14,23 @@ namespace Claybreak.Tests
     public sealed class ClaybreakSceneTests
     {
         private const string ScenePath = "Assets/Claybreak/Content/Claybreak.unity";
+        // ClaybreakSceneBuilder.TrackWidth (the play mode tests do not reference the Editor assembly).
+        private const float TrackWidth = 8f;
 
         [TearDown]
         public void TearDown()
         {
 #if UNITY_EDITOR
             ClaybreakFlow.EditorUsesDeviceGateLevel = false;
+            ClaybreakFlow.EditorUsesDeviceGateRun = false;
             ClaybreakFlow.EditorStartsWithoutTap = false;
             ClaybreakFlow.EditorUsesFreshSave = false;
 #endif
         }
 
-        // RT-2 device bug: the track had no collider, so the leader (a CharacterController with gravity)
-        // and the crowd fell through the floor while the run kept going.
+        // RT-2 device bug: the track had no collider and the crowd fell through the floor while the run kept going.
+        // RT-6t.4: the crowd is the instanced swarm (no physics): every unit stays on the track, on the ground, from the
+        // start to the firing line, and the army that arrives is the one the gates made.
         [UnityTest]
         public IEnumerator RunKeepsTheCrowdOnTheTrackUntilTheFiringLine()
         {
@@ -37,11 +40,16 @@ namespace Claybreak.Tests
             yield return LoadScene(false);
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
             Assert.IsTrue(flow.enabled, "the flow disabled itself (see the log)");
-            var leader = Object.FindFirstObjectByType<PlayerController>().transform;
-            var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
-            float startZ = leader.position.z;
-            float lowestY = leader.position.y;
+            RunCrowd crowd = flow.Crowd;
+            foreach (CharacterController controller in Object.FindObjectsByType<CharacterController>(FindObjectsSortMode.None))
+            {
+                Assert.IsFalse(controller.enabled, "a CharacterController moves something in the run");
+            }
+
+            float halfWidth = TrackWidth * 0.5f;
+            float startZ = crowd.Position.z;
             float runStart = -1f;
+            float widest = 0f;
             float deadline = Time.realtimeSinceStartup + 60f;
             while (Time.realtimeSinceStartup < deadline && flow.State != FlowState.Assault)
             {
@@ -50,16 +58,77 @@ namespace Claybreak.Tests
                     runStart = Time.time;
                 }
 
-                lowestY = Mathf.Min(lowestY, leader.position.y);
+                for (int i = 0; i < crowd.Army; i++)
+                {
+                    Vector3 unit = crowd.Swarm.UnitGroundPosition(i);
+                    widest = Mathf.Max(widest, Mathf.Abs(unit.x));
+                }
+
                 yield return null;
             }
 
             Assert.AreEqual(FlowState.Assault, flow.State, "the run never reached the firing line");
-            Assert.Greater(lowestY, -0.3f, "the leader fell through the track");
-            Assert.Greater(leader.position.z - startZ, flow.ActiveLevel.FiringLineZ - 1f);
-            Assert.Greater(crowd.CurrentCount, 1, "the army is empty at the firing line");
+            Assert.LessOrEqual(widest, halfWidth, "a unit left the track");
+            Assert.Greater(crowd.Position.z - startZ, flow.ActiveLevel.FiringLineZ - 1f);
+            Assert.Greater(crowd.Army, 0, "the army is empty at the firing line");
+            Assert.AreEqual(0f, crowd.Speed, "the crowd kept running in the assault");
             float runSeconds = Time.time - runStart;
             Assert.That(runSeconds, Is.InRange(10f, 40f), "run length out of the GDD block (15-30 s)");
+
+            // Level 1 untouched (no drag): the crowd runs down the middle, so it takes every right-hand gate.
+            int expected = flow.ActiveLevel.StartCount;
+            foreach (RunGatePair pair in flow.ActiveLevel.RunGates)
+            {
+                expected = GateMath.Apply(pair.right, expected, crowd.MaximumArmy);
+            }
+
+            Assert.AreEqual(expected, crowd.Army, "the gates did not make the army");
+            Assert.AreEqual(expected, flow.Crowd.Swarm.Count);
+
+            // The assault shot keeps its own field of view (the run rig widens it for the portrait fit).
+            for (float wait = 0f; wait < 1f; wait += Time.deltaTime)
+            {
+                yield return null;
+            }
+
+            var assaultCamera = Object.FindFirstObjectByType<AssaultCamera>();
+            Assert.AreEqual(assaultCamera.FieldOfView, assaultCamera.GetComponent<Camera>().fieldOfView, 0.01f,
+                "the assault camera kept the run rig's field of view");
+        }
+
+        // RT-6t.4: the run gate keeps the crowd at its cap on the track (looping before the tower), never assaulting.
+        [UnityTest]
+        public IEnumerator DeviceGateRunHoldsTheCrowdCapOnTheTrack()
+        {
+#if UNITY_EDITOR
+            ClaybreakFlow.EditorUsesDeviceGateRun = true;
+#endif
+            yield return LoadScene(true);
+            var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
+            Assert.IsTrue(flow.enabled, "the flow disabled itself (see the log)");
+            Assert.IsTrue(flow.MeasuresRun);
+            RunCrowd crowd = flow.Crowd;
+            Assert.AreEqual(300, crowd.MaximumArmy, "the crowd cap is decision D27's 300");
+            bool looped = false;
+            float lastZ = crowd.Position.z;
+            float deadline = Time.realtimeSinceStartup + 20f;
+            while (Time.realtimeSinceStartup < deadline && !looped)
+            {
+                Assert.AreEqual(FlowState.Run, flow.State, "the run gate left the run");
+                Assert.AreEqual(crowd.MaximumArmy, crowd.Army, "the crowd is not at its cap");
+                looped = crowd.Position.z < lastZ;
+                lastZ = crowd.Position.z;
+                yield return null;
+            }
+
+            Assert.IsTrue(looped, "the run gate never looped back to the start");
+            for (int i = 0; i < 30; i++)
+            {
+                yield return null;
+            }
+
+            Assert.AreEqual(FlowState.Run, flow.State);
+            Assert.AreEqual(crowd.MaximumArmy, crowd.Swarm.Count);
         }
 
         [UnityTest]
@@ -74,8 +143,8 @@ namespace Claybreak.Tests
             Assert.IsFalse(flow.ActiveLevel.IsDeviceGateLevel);
             Assert.IsTrue(GameObject.Find("Home") != null, "the home screen is not shown");
 
-            var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
-            Assert.AreEqual(flow.ActiveLevel.StartCount + 1, crowd.CurrentCount);
+            Assert.AreEqual(flow.ActiveLevel.StartCount, flow.Crowd.Army);
+            Assert.AreEqual(flow.Progress.Skin.color, flow.Crowd.Swarm.Tint, "the crowd does not wear the skin");
         }
 
         [UnityTest]
@@ -120,7 +189,7 @@ namespace Claybreak.Tests
         {
             yield return LoadScene(false);
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
-            var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
+            RunCrowd crowd = flow.Crowd;
             Assert.AreEqual(FlowState.Menu, flow.State);
             flow.Progress.Save.coins = 5000;
             Press("/Ui/Screens/Home/Safe/ShopButton");
@@ -139,7 +208,8 @@ namespace Claybreak.Tests
 
             Press("/Ui/Screens/Shop/Safe/Back");
             Assert.IsTrue(GameObject.Find("Home") != null, "BACK did not return home");
-            Assert.AreEqual(flow.ActiveLevel.StartCount + flow.ActiveLoadout.StartingArmy + 1, crowd.CurrentCount);
+            Assert.AreEqual(flow.ActiveLevel.StartCount + flow.ActiveLoadout.StartingArmy, crowd.Army);
+            Assert.AreEqual(flow.Progress.Skin.color, crowd.Swarm.Tint, "the crowd does not wear the new skin");
             Assert.AreEqual(5, flow.ActiveLoadout.StartingArmy);
             Assert.AreEqual(1, flow.LoadoutCount);
 
@@ -263,7 +333,7 @@ namespace Claybreak.Tests
             ClaybreakFlow.EditorDeviceGateWorld = 1;
         }
 
-        private static IEnumerator LoadScene(bool deviceGate, int world = 1)
+        internal static IEnumerator LoadScene(bool deviceGate, int world = 1)
         {
 #if UNITY_EDITOR
             ClaybreakFlow.EditorUsesFreshSave = true;

@@ -85,6 +85,12 @@ namespace JungleDegree.StudioKit.Swarm
             unitMesh = mesh;
         }
 
+        /// <summary>Sets the body tint of every unit (where the mesh's vertex alpha is 255); the next frame draws it.</summary>
+        public void SetTint(Color color)
+        {
+            tint = color;
+        }
+
         /// <summary>Steers the formation center toward <paramref name="x"/> (world, across); it follows smoothly.</summary>
         public void SteerTo(float x)
         {

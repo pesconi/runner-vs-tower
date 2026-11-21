@@ -486,7 +486,8 @@ namespace Claybreak.Editor
             return new LevelSpec
             {
                 title = "DEVICE GATE",
-                startCount = ClaybreakSceneBuilder.PoolSize,
+                // The crowd at its cap: the run gate measures it on the track (RT-6t.4), the assault gate launches it.
+                startCount = ClaybreakSceneBuilder.CrowdCapacity,
                 runSpeed = 12f,
                 firingLineZ = 24f,
                 runGates = new RunGatePair[0],

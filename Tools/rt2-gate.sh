@@ -11,6 +11,10 @@
 # msaa 1|2|4 and hdr 0|1 override the pipeline asset (left out = project settings). Example:
 #   Tools/rt2-gate.sh toon1000-m4-h1 60 20 /c/temp/rt4/Claybreak-measure.apk toonlab:1000:4:1
 # The toon lab gate also needs frame p95 <= 16.7 ms at 60 fps; [DevFps] lines give the presented rate.
+# RT-6t.4: world "run:N" measures the RUN of world N's device-gate level instead of its assault: the instanced crowd at
+# its cap (D27: 300) running on the track with the world's scenery, looping back before the tower. Same gate as the toon lab
+# (frame p95 <= 16.7 ms at 60 fps). Example:
+#   Tools/rt2-gate.sh run-w3 60 20 /c/temp/rt4/Claybreak-measure.apk run:3
 # Gate (SISTEMA.md 5.4 of the studio): CPU main p95 <= 11 ms, GPU p95 <= 11 ms, frame p95 <= 33.3 ms,
 # < 5% of frames over 50 ms, PSS <= 450 MB, with inFlight=300 and projectiles at the level's limit.
 set -euo pipefail
@@ -38,6 +42,10 @@ if [[ "$WORLD" == toonlab:* ]]; then
   fi
   adb shell am start -n "$ACTIVITY" "${EXTRAS[@]}" --ei fps "$FPS" >/dev/null
   # Load, then the switch to the lab scene: the crowd is complete from its first frame.
+  sleep "${RT2_SETTLE_SECONDS:-8}"
+elif [[ "$WORLD" == run:* ]]; then
+  adb shell am start -n "$ACTIVITY" --ez stress true --ez run true --ei world "${WORLD#run:}" --ei fps "$FPS" >/dev/null
+  # Load, auto start (1 s), the crowd at its cap from the first frame of the run.
   sleep "${RT2_SETTLE_SECONDS:-8}"
 else
   adb shell am start -n "$ACTIVITY" --ez stress true --ei world "$WORLD" --ei fps "$FPS" >/dev/null

@@ -37,14 +37,14 @@ namespace Claybreak.Tests
         [Test]
         public void TestCatalogIsValid()
         {
-            Assert.IsTrue(catalog.TryValidate(300, out string error), error);
+            Assert.IsTrue(catalog.TryValidate(300, 300, out string error), error);
         }
 
         [Test]
         public void CatalogRejectsAUnitNobodyCanGet()
         {
             catalog.Units[1].price = 0;
-            Assert.IsFalse(catalog.TryValidate(300, out string error));
+            Assert.IsFalse(catalog.TryValidate(300, 300, out string error));
             StringAssert.Contains("never be had", error);
         }
 
@@ -52,10 +52,10 @@ namespace Claybreak.Tests
         public void CatalogRejectsDuplicateIdsAndAPaidDefaultSkin()
         {
             catalog.Upgrades[1].id = catalog.Upgrades[0].id;
-            Assert.IsFalse(catalog.TryValidate(300, out _));
+            Assert.IsFalse(catalog.TryValidate(300, 300, out _));
             catalog.Upgrades[1].id = "damage";
             catalog.Skins[0].price = 10;
-            Assert.IsFalse(catalog.TryValidate(300, out string error));
+            Assert.IsFalse(catalog.TryValidate(300, 300, out string error));
             StringAssert.Contains("free", error);
         }
 

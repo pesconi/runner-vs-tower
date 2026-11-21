@@ -363,7 +363,12 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.2, RT-6t.3.
 - **Aceite:** validação padrão completa; PlayMode da corrida verde; gate 3× na corrida.
 - **Exige o usuário:** OPPO conectado; D27 só se o teto subir.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-21, aceite pendente: gate 3× na corrida (OPPO bloqueado).** A corrida usa o `Swarm`
+  (`RunCrowd`): sem líder nem objetos por unidade, centro da formação cruza portões e caixotes, arraste do protótipo,
+  câmera pelo rig, tinta = cor da skin (save igual), forma pelo tema (Bolinha com olhos, D25 aberta), teto 300 (D27);
+  assalto igual (pool do kit, lançado do anel de fora). Validação completa verde, PlayMode da corrida verde, captura com
+  GPU em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t4-1..10 em `decisoes.md`. Falta só o gate:
+  `Tools/rt2-gate.sh run-w4 60 20 <apk de medição> run:4` com o OPPO desbloqueado. Próxima: 6t.5.
 - **Prompt da sessão:** "Entrega RT-6t.4 do Runner vs Tower: a multidão instanciada entra na corrida. Leia
   `docs/direcao-visual-crowd.md` (seção 2 inteira, RT-6t.4) e a resposta da D27 em `docs/decisoes.md`. Troque
   `RunnerCrowd`/`PlayerController`/`RunnerPool` da corrida pelo `Swarm` sem mudar regras nem save e sem

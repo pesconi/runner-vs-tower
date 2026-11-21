@@ -84,7 +84,7 @@ namespace Claybreak
         public float ExpectedDamage => expectedDamage;
         public float LoopPowerExponent => loopPowerExponent;
 
-        public bool TryValidate(int poolCapacity, out string error)
+        public bool TryValidate(int crowdCapacity, int flightCapacity, out string error)
         {
             if (levels == null || levels.Length < MinimumLevels || levels.Length > MaximumLevels)
             {
@@ -106,7 +106,7 @@ namespace Claybreak
                     return false;
                 }
 
-                if (!levels[i].TryValidate(poolCapacity, out error))
+                if (!levels[i].TryValidate(crowdCapacity, flightCapacity, out error))
                 {
                     error = $"{levels[i].name}: {error}";
                     return false;

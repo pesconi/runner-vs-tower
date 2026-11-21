@@ -7,8 +7,8 @@ namespace Claybreak
     /// <summary>
     /// The short run's math gates and special-unit crates (from level data). The scene builder
     /// preallocates <see cref="MaximumPairs"/> pair visuals and <see cref="ClaybreakLevel.MaximumCrates"/>
-    /// crates; each level places and labels the ones it uses. A pair is crossed when the leader passes its
-    /// distance; the side is the half of the track the leader is on. A crate is taken when the leader
+    /// crates; each level places and labels the ones it uses. A pair is crossed when the crowd center passes its
+    /// distance; the side is the half of the track the center is on. A crate is taken when the center
     /// passes it on its side. No colliders: distance checks only (no physics queries per frame).
     /// </summary>
     public sealed class RunGateCourse : MonoBehaviour
@@ -33,10 +33,10 @@ namespace Claybreak
         private int next;
         private int nextCrate;
 
-        /// <summary>Raised when the leader crosses a gate: the gate taken.</summary>
+        /// <summary>Raised when the crowd crosses a gate: the gate taken.</summary>
         public event Action<GateSpec> GateCrossed;
 
-        /// <summary>Raised when the leader takes a crate: its index in the level and the special units it holds.</summary>
+        /// <summary>Raised when the crowd takes a crate: its index in the level and the special units it holds.</summary>
         public event Action<int, int> CratePicked;
 
         public int Capacity => pairRoots == null ? 0 : pairRoots.Length;
@@ -99,23 +99,23 @@ namespace Claybreak
             }
         }
 
-        /// <summary>Called by the flow during the run with the leader's position.</summary>
-        public void Track(Vector3 leader)
+        /// <summary>Called by the flow during the run with the crowd's position (its formation center).</summary>
+        public void Track(Vector3 crowd)
         {
-            while (level != null && next < level.RunGates.Count && leader.z >= level.RunGates[next].z)
+            while (level != null && next < level.RunGates.Count && crowd.z >= level.RunGates[next].z)
             {
                 RunGatePair pair = level.RunGates[next];
-                GateSpec taken = Boost(leader.x < trackCenterX ? pair.left : pair.right);
+                GateSpec taken = Boost(crowd.x < trackCenterX ? pair.left : pair.right);
                 pairRoots[next].gameObject.SetActive(false);
                 next++;
                 GameAudio.Play(taken.IsGood ? GameSound.GateGood : GameSound.GateBad);
                 GateCrossed?.Invoke(taken);
             }
 
-            while (cratesShown && level != null && nextCrate < level.Crates.Count && leader.z >= level.Crates[nextCrate].z)
+            while (cratesShown && level != null && nextCrate < level.Crates.Count && crowd.z >= level.Crates[nextCrate].z)
             {
                 CratePlacement crate = level.Crates[nextCrate];
-                bool onRight = leader.x >= trackCenterX;
+                bool onRight = crowd.x >= trackCenterX;
                 if (onRight == crate.right)
                 {
                     crateRoots[nextCrate].gameObject.SetActive(false);

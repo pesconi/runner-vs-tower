@@ -5,6 +5,8 @@ using JungleDegree.StudioKit.Ads;
 using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Crowd;
+using JungleDegree.StudioKit.Swarm;
+using JungleDegree.StudioKit.Toon;
 using JungleDegree.StudioKit.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -19,7 +21,8 @@ namespace Claybreak.Editor
     /// <summary>
     /// Builds the game module from code: Android settings, the content (<see cref="WorldContent"/>: worlds,
     /// levels and the meta catalog), generated materials, placeholder sounds, the theme and the one scene
-    /// with everything preallocated: the 300-unit runner pool, every projectile, the gate pairs and crates,
+    /// with everything preallocated: the instanced run crowd (RT-6t.4, capped at <see cref="CrowdCapacity"/>), the
+    /// 300-unit runner pool of the assault, every projectile, the gate pairs and crates,
     /// the three tower bodies (<see cref="TowerArt"/>), the wall, the sweeper, the HUD and the menu screens
     /// with one shop row and one world row per catalog entry (rule 2.2.1: nothing is created or destroyed
     /// while playing). Idempotent.
@@ -31,6 +34,14 @@ namespace Claybreak.Editor
         public const string ScenePath = Root + "/Claybreak.unity";
         public const string ThemePath = Root + "/Data/ClaybreakTheme.asset";
         public const int PoolSize = 300;
+
+        /// <summary>Crowd cap of the run (decision D27, unanswered: 300); the swarm is built for 1000+, the cap is data.</summary>
+        public const int CrowdCapacity = 300;
+        public const string CrowdCameraProfilePath = Root + "/Data/SwarmCameraRun.asset";
+        public const string CrowdLookPath = Root + "/Data/CrowdToonLook.asset";
+
+        /// <summary>The crowd shape a new theme starts with: the Bolinha with eyes (provisional while D25 is open).</summary>
+        public static readonly UnitShapeAssets.Entry ProvisionalCrowdShape = UnitShapeAssets.All[0];
         public const int ProjectilePoolSize = 32;
         public const int LevelDots = ClaybreakWorld.MaximumLevels;
         public const float RowStep = 230f;
@@ -47,6 +58,9 @@ namespace Claybreak.Editor
         private const string SplatMaterialPath = KitShared + "/RunnerSplat.mat";
         public const float TrackWidth = 8f;
         private const float TrackStartZ = -12f;
+        // The reference drag moves 16 m per screen width on a 6 m half-width track; the same feel on this track.
+        private const float ReferenceDragMeters = 16f;
+        private const float ReferenceTrackHalfWidth = 6f;
         private static readonly Color Orange = new Color(0.95f, 0.55f, 0.18f);
         private static readonly Color Gold = new Color(1f, 0.8f, 0.25f);
         private static readonly Color CardColor = new Color(0.12f, 0.09f, 0.1f, 0.9f);
@@ -60,12 +74,14 @@ namespace Claybreak.Editor
             ProjectConfiguration.Apply();
             WorldContent.Write();
             MonetizationContent.Write();
+            // The crowd shapes and the crowd materials come first: the theme points at a shape and the run draws with them.
+            ToonLabBuilder.Build();
+            BuildCrowdData();
             BuildTheme();
             new ArtPalette();
             CreatePillSprite();
             CreateStarSprite();
             AssetDatabase.SaveAssets();
-            ToonLabBuilder.Build();
             CreateScene();
             AssetDatabase.SaveAssets();
         }
@@ -90,6 +106,13 @@ namespace Claybreak.Editor
             var so = new SerializedObject(theme);
             so.FindProperty("roster.builtInBody").objectReferenceValue = Load<RunnerBodyFrames>(BodyFramesPath);
             so.FindProperty("crowdColor").colorValue = Orange;
+            // The crowd shape is data (D25): set once, then whatever the asset says stays.
+            SerializedProperty shape = so.FindProperty("crowdShape");
+            if (shape.objectReferenceValue == null)
+            {
+                shape.objectReferenceValue = Load<Mesh>(ProvisionalCrowdShape.Path);
+            }
+
             ClaybreakAudio.Apply(so.FindProperty("audio"));
 
             SerializedProperty death = so.FindProperty("deathEffect");
@@ -99,6 +122,23 @@ namespace Claybreak.Editor
             death.FindPropertyRelative("secondaryColor").colorValue = new Color(0.6f, 0.25f, 0.1f);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(theme);
+        }
+
+        // The run crowd's data assets (camera profile and toon look), created once with the reference values and then
+        // left alone (tuned by hand).
+        private static void BuildCrowdData()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SwarmCameraProfile>(CrowdCameraProfilePath) == null)
+            {
+                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<SwarmCameraProfile>(), CrowdCameraProfilePath);
+            }
+
+            if (AssetDatabase.LoadAssetAtPath<ToonLook>(CrowdLookPath) == null)
+            {
+                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<ToonLook>(), CrowdLookPath);
+            }
+
+            AssetDatabase.SaveAssets();
         }
 
         // ---------- scene ----------
@@ -136,6 +176,8 @@ namespace Claybreak.Editor
             }
 
             Renderer track = CreateEnvironment(palette, trackEnd, out Light sun);
+            sun.gameObject.AddComponent<ToonLookApplier>();
+            SetRef(sun.GetComponent<ToonLookApplier>(), "look", Load<ToonLook>(CrowdLookPath));
             ClaybreakLevel first = catalog.Worlds[0].world.Levels[0];
 
             var flowObject = new GameObject("ClaybreakFlow");
@@ -146,23 +188,7 @@ namespace Claybreak.Editor
 
             RunnerPool pool = CreatePool(body, clay);
 
-            var leader = new GameObject("Leader", typeof(MeshFilter), typeof(MeshRenderer), typeof(CharacterController));
-            leader.transform.position = new Vector3(0f, 0.5f, 0f);
-            leader.GetComponent<MeshFilter>().sharedMesh = body;
-            leader.GetComponent<MeshRenderer>().sharedMaterial = clay;
-            var controller = leader.GetComponent<CharacterController>();
-            controller.height = 1f;
-            controller.radius = 0.3f;
-            controller.center = new Vector3(0f, 0.5f, 0f);
-            var player = leader.AddComponent<PlayerController>();
-            SetRef(player, "runPhaseSource", flow);
-            SetRef(player, "trackRenderer", track);
-            // The run speed comes from the level (course speed multiplier); this is the unit speed.
-            Set(player, "forwardSpeed", 1f);
-            var crowd = leader.AddComponent<RunnerCrowd>();
-            SetRef(crowd, "runnerPool", pool);
-            SetRef(crowd, "trackRenderer", track);
-            Set(crowd, "initialCount", 1);
+            CharacterController grounding = CreateUnitGrounding();
 
             var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
             cameraObject.tag = "MainCamera";
@@ -173,10 +199,7 @@ namespace Claybreak.Editor
             camera.fieldOfView = 60f;
             cameraObject.transform.position = new Vector3(0f, 9f, -8f);
             cameraObject.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
-            var follow = cameraObject.AddComponent<CameraFollow>();
-            SetRef(follow, "target", leader.transform);
-            Set(follow, "offset", new Vector3(0f, 9f, -8f));
-            Set(follow, "lookAheadDistance", 6f);
+            RunCrowd crowd = CreateCrowd(cameraObject, theme);
             var assaultCamera = cameraObject.AddComponent<AssaultCamera>();
             WorldScenery scenery = CreateScenery(catalog, palette, trackEnd, track, sun, camera);
 
@@ -203,10 +226,8 @@ namespace Claybreak.Editor
             SetRef(flow, "scenery", scenery);
             SetRef(flow, "theme", theme);
             SetRef(flow, "track", track);
-            SetRef(flow, "player", player);
             SetRef(flow, "crowd", crowd);
-            SetRef(flow, "pool", pool);
-            SetRef(flow, "runCamera", follow);
+            SetRef(flow, "unitGrounding", grounding);
             SetRef(flow, "assaultCamera", assaultCamera);
             SetRef(flow, "gates", gates);
             SetRef(flow, "field", field);
@@ -224,11 +245,11 @@ namespace Claybreak.Editor
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             Debug.Log($"[Claybreak] Scene {ScenePath}: {catalog.Worlds.Count} world(s) with their scenery, {catalog.LevelCount} levels, {stress.Length} device-gate levels, "
-                + $"{catalog.Upgrades.Count} upgrades, {catalog.Units.Count} units, {catalog.Skins.Count} skins, pool {PoolSize}, {ProjectilePoolSize} projectiles, "
+                + $"{catalog.Upgrades.Count} upgrades, {catalog.Units.Count} units, {catalog.Skins.Count} skins, crowd cap {CrowdCapacity}, pool {PoolSize}, {ProjectilePoolSize} projectiles, "
                 + $"{RunGateCourse.MaximumPairs} gate pairs, {ClaybreakLevel.MaximumCrates} crates, track to z={trackEnd:0}.");
         }
 
-        /// <summary>Lighting, fog and the track (the one collider: the kit's leader stands on it); world sets come apart.</summary>
+        /// <summary>Lighting, fog and the track (no collider: nothing stands on it by physics); world sets come apart.</summary>
         public static Renderer CreateEnvironment(ArtPalette palette, float trackEnd, out Light light)
         {
             RenderSettings.ambientMode = AmbientMode.Flat;
@@ -247,8 +268,53 @@ namespace Claybreak.Editor
             float middle = (TrackStartZ + trackEnd) * 0.5f;
             float length = trackEnd - TrackStartZ;
             Renderer track = Prim.Box(null, "Track", new Vector3(0f, -0.1f, middle), new Vector3(TrackWidth, 0.2f, length), palette.Ground);
-            track.gameObject.AddComponent<BoxCollider>();
             return track;
+        }
+
+        // RT-6t.4: the run crowd, instanced (one draw for the bodies, one for the shadows), kept on the track, in the
+        // theme's shape and the skin's tint, with the camera rig on the main camera.
+        private static RunCrowd CreateCrowd(GameObject cameraObject, ClaybreakTheme theme)
+        {
+            var crowdObject = new GameObject("Crowd");
+            crowdObject.transform.position = Vector3.zero;
+            var swarm = crowdObject.AddComponent<SwarmRenderer>();
+            var so = new SerializedObject(swarm);
+            so.FindProperty("unitMesh").objectReferenceValue = theme.CrowdShape;
+            so.FindProperty("unitMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.SwarmMaterialPath);
+            so.FindProperty("shadowMesh").objectReferenceValue = Load<Mesh>(ToonLabBuilder.ShadowDiscPath);
+            so.FindProperty("shadowMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.ShadowMaterialPath);
+            so.FindProperty("capacity").intValue = CrowdCapacity;
+            so.FindProperty("initialCount").intValue = 0;
+            so.FindProperty("laneHalfWidth").floatValue = TrackWidth * 0.5f;
+            so.FindProperty("tint").colorValue = theme.CrowdColor;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            var rig = cameraObject.AddComponent<SwarmCameraRig>();
+            SetRef(rig, "profile", Load<SwarmCameraProfile>(CrowdCameraProfilePath));
+            SetRef(rig, "swarm", swarm);
+
+            var crowd = crowdObject.AddComponent<RunCrowd>();
+            var crowdSo = new SerializedObject(crowd);
+            crowdSo.FindProperty("swarm").objectReferenceValue = swarm;
+            crowdSo.FindProperty("cameraRig").objectReferenceValue = rig;
+            crowdSo.FindProperty("drag.MetersPerScreenWidth").floatValue = ReferenceDragMeters * TrackWidth * 0.5f / ReferenceTrackHalfWidth;
+            crowdSo.FindProperty("startZ").floatValue = 0f;
+            crowdSo.ApplyModifiedPropertiesWithoutUndo();
+            return crowd;
+        }
+
+        // The kit grounds the assault's pool units against a leader-sized CharacterController; this one is disabled and
+        // only gives that size (the old leader's), until the assault moves to the instanced crowd (RT-6t.7).
+        private static CharacterController CreateUnitGrounding()
+        {
+            var groundingObject = new GameObject("UnitGrounding", typeof(CharacterController));
+            groundingObject.transform.position = new Vector3(0f, 0.5f, 0f);
+            var controller = groundingObject.GetComponent<CharacterController>();
+            controller.height = 1f;
+            controller.radius = 0.3f;
+            controller.center = new Vector3(0f, 0.5f, 0f);
+            controller.enabled = false;
+            return controller;
         }
 
         /// <summary>One world's set dressing and look on a scene made by <see cref="CreateEnvironment"/> (captures).</summary>

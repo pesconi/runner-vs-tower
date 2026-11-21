@@ -64,6 +64,9 @@ namespace Claybreak
         public int PeakInFlight { get; private set; }
         public int TowerHits { get; private set; }
         public int Capacity => capacity;
+
+        /// <summary>Units the runner pool holds (the most that can ever fly at once).</summary>
+        public int PoolCapacity => runnerPool == null ? 0 : runnerPool.Capacity;
         public int GateShift => gateShift;
         public bool Running { get; set; }
 

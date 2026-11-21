@@ -83,3 +83,6 @@
 - 2026-11-21 (RT-6t.2): capturas lado a lado com o protótipo: `Tools/rt6t/shape-captures.sh` (Unity com GPU + Chrome
   sem tela com SwiftShader renderizando `Tools/rt6t/proto-shapes.html`, que baixa o three.js 0.160 da CDN: precisa de
   rede). O PlayMode das formas usa `-shapeCaptureDir`; a ToonLab do jogo troca forma por `--ei shape 0|1 --ez eyes`.
+- 2026-11-21 (RT-6t.4): a corrida é o `Swarm` (`RunCrowd`); as capturas do `ArtDirectionCapture` (modo de edição) não
+  desenham a multidão. Prova visual da corrida: `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.RunCaptureTests
+  -runCaptureDir <pasta>` sem `-nographics`. Gate da corrida: `Tools/rt2-gate.sh <rótulo> 60 20 <apk> run:N` (mundo 4).

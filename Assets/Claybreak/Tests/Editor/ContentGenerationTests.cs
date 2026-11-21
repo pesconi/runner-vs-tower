@@ -69,7 +69,7 @@ namespace Claybreak.Tests
             for (int i = 0; i < specs.Length; i++)
             {
                 ClaybreakLevel level = Asset(specs[i]);
-                Assert.IsTrue(level.TryValidate(300, out string error), $"seed {seed} level {i + 1}: {error}");
+                Assert.IsTrue(level.TryValidate(300, 300, out string error), $"seed {seed} level {i + 1}: {error}");
                 Assert.AreEqual(i == specs.Length - 1, level.IsBoss, "level " + (i + 1));
                 Assert.LessOrEqual(specs[i].runGates.Length, RunGateCourse.MaximumPairs);
                 Assert.GreaterOrEqual(specs[i].runGates.Length, 3);

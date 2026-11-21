@@ -2,7 +2,7 @@
 
 Plano e decisões: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) (aprovado em 2026-11-21). Referência visual:
 [`reference/crowd-proto.html`](reference/crowd-proto.html). Decisões técnicas: `decisoes.md` (T-RT6t-1..9,
-T-RT6t1-1..9, T-RT6t2-1..7 e T-RT6t3-1..8).
+T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8 e T-RT6t4-1..10).
 
 ## RT-6t.1 — Portão técnico (2026-11-21)
 
@@ -211,3 +211,55 @@ dois lados.
 As duas variantes estão prontas e selecionáveis; a `ToonLab` abre com a versão com olhos (padrão provisório). **A escolha
 final da D25 trava só a 6t.4 em diante** (qual malha a corrida usa e a ficha da loja na RT-9); trocar depois é mudar
 uma referência de malha, sem código novo.
+
+## RT-6t.4 — A multidão instanciada na corrida (2026-11-21)
+
+### O que foi feito
+
+A corrida do jogo deixou de usar o líder (`PlayerController` com `CharacterController`), os seguidores do kit
+(`RunnerCrowd`) e a câmera que segue o líder (`CameraFollow`). Agora:
+
+| Peça | O que faz |
+|---|---|
+| `RunCrowd` (jogo, `Runtime/RunCrowd.cs`) | Dirige o `SwarmRenderer` da cena: contagem = exército (sem líder), avanço pela velocidade da fase, arraste do protótipo (pista de 8 m: 10,7 m por largura de tela), centro da formação = posição que cruza portões e caixotes, tirar a unidade do anel de fora para o assalto, tinta da skin, forma do tema, tremor da câmera. Nada alocado em jogo. |
+| `Swarm` na cena do jogo | 300 de capacidade (teto da D27 sem resposta), pista centrada de meia largura 4 m, materiais da multidão (agora em `Content/Generated/Units/`, compartilhados com a `ToonLab`), 1 chamada para os corpos + 1 para as sombras. |
+| `SwarmCameraRig` na câmera principal | Câmera da corrida e do menu pelo perfil `Content/Data/SwarmCameraRun.asset` (valores do protótipo, ajuste de retrato da 6t.3); na linha de tiro passa para a `AssaultCamera` como antes. |
+| `ToonLookApplier` no sol | Rampa e ambiente do `ToonLit` pelo `Content/Data/CrowdToonLook.asset`. Cenário, torres e portões continuam no visual atual (6t.6–6t.10). |
+| `ClaybreakTheme.crowdShape` | A forma da multidão é dado: **Bolinha com olhos** (provisória, D25 aberta). Trocar para a sem olhos ou para o Pintinho é trocar essa referência. |
+| `UnitGrounding` | `CharacterController` desligado só com o tamanho do antigo líder: o kit aterra as unidades do pool do assalto contra ele. Some com o pool na 6t.7. |
+| Nível de gate da corrida | `--ez stress true --ez run true --ei world N`: o exército no teto correndo no mundo N, voltando ao começo 10 m antes da torre; `Tools/rt2-gate.sh <rótulo> 60 20 <apk> run:N`. |
+
+Regras e save sem mudança: `GateMath` com o mesmo teto (300), caixotes, perda por exército 0, continuar, estrelas e
+moedas iguais; a cor da skin vira a tinta e o save (v3) só guarda o id, como antes. O assalto não mudou: as unidades
+em voo saem do pool do kit, lançadas da posição do anel de fora da multidão parada na linha de tiro. Portão ruim:
+o anel de fora some na hora e a câmera treme (a morte balística é da 6t.5). Decisões T-RT6t4-1..10 em `decisoes.md`.
+
+### Testes e validação
+
+- EditMode 172/172 (novo: `StartingArmyMustFitTheCrowdCap`; testes de nível/catálogo com teto da multidão e capacidade
+  de voo separados). PlayMode 17/17 com `-nographics` (3 capturas só com GPU): `RunKeepsTheCrowdOnTheTrackUntilTheFiringLine`
+  adaptado (nenhum `CharacterController` ativo; toda unidade dentro da pista do começo à linha de tiro; o exército que chega
+  é exatamente o que os portões da direita fazem com `GateMath`; multidão parada no assalto; a câmera do assalto volta ao
+  seu FOV), novo `DeviceGateRunHoldsTheCrowdCapOnTheTrack` (300 = teto, volta ao começo, nunca assalta), menu e loja com a
+  tinta da skin, continuar/sem obrigado/sem anúncio com `SetArmy`.
+- `Tools/rt4-check.sh` completo (2026-11-21): `scene`, `validate`, `isolation`, `editmode`, `playmode`, `economy`,
+  `capture`, `apk-game`, `apk-measure`, `aab`: **todos PASS** (depois da revisão, `validate editmode playmode apk` de novo:
+  PASS).
+- Captura com GPU da corrida no formato do OPPO (`RunCaptureTests`, `-runCaptureDir`): começo do nível 1 (10), multidão
+  no teto (300), arrastada à borda direita, e o assalto —
+  [`art/rt6t/corrida-oppo.png`](art/rt6t/corrida-oppo.png). Bolinha com olhos (484 tri), cor da skin, sem shader de erro.
+  As capturas de `docs/art/telas/` (modo de edição) não mostram mais a multidão (o `Swarm` só desenha jogando); o
+  `ArtDirectionCapture` é adaptado na 6t.12.
+- Revisor independente (subagente fable, só leitura): regras, contagens e save equivalentes; apontou o FOV do assalto
+  herdado do rig e um quadro com instâncias velhas quando o fluxo muda a contagem depois do `Swarm` agendar — **corrigidos**
+  (`AssaultCamera` com FOV próprio 60° em transição; `ClaybreakFlow` com ordem −40, entre o `RunCrowd` e o `Swarm`) — e
+  asserts que não podiam falhar (removidos).
+- Observação para a 6t.7: parada na linha de tiro, a multidão de 300 tem ~5,8 m de profundidade e metade dela fica à
+  frente da linha (antes os seguidores ficavam atrás do líder); só visual, o lançamento já sai de `max(z, linha)`.
+
+### Gate 3× na corrida (OPPO CPH2791)
+
+**PENDENTE** — o OPPO estava conectado mas bloqueado (`isKeyguardShowing=true`) em todas as conferências desta sessão.
+Comando, com o aparelho desbloqueado, no APK de medição desta entrega:
+`Tools/rt2-gate.sh run-w4 60 20 /c/temp/rt6t4/Claybreak-measure.apk run:4` (mundo 4, o mais pesado; critério da
+T-RT6t4-8). Depois, `adb shell am force-stop com.jungledegree.runnervstower`.

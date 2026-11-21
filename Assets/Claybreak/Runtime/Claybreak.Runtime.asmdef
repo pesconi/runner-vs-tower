@@ -8,6 +8,7 @@
         "JungleDegree.StudioKit.UI",
         "JungleDegree.StudioKit.Ads",
         "JungleDegree.StudioKit.Analytics",
+        "JungleDegree.StudioKit.Swarm",
         "Unity.InputSystem",
         "UnityEngine.UI"
     ],

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Claybreak
 {
-    /// <summary>A pair of run gates at one distance: the leader passes through the side it is on.</summary>
+    /// <summary>A pair of run gates at one distance: the crowd (its formation center) passes through the side it is on.</summary>
     [Serializable]
     public struct RunGatePair
     {
@@ -13,7 +13,7 @@ namespace Claybreak
         public GateSpec right;
     }
 
-    /// <summary>A special-unit crate on the run: the leader picks it up by passing on its side.</summary>
+    /// <summary>A special-unit crate on the run: the crowd picks it up by passing on its side.</summary>
     [Serializable]
     public struct CratePlacement
     {
@@ -195,19 +195,22 @@ namespace Claybreak
         public float ShieldBlock => shieldBlock;
         public int CoinReward => coinReward;
 
-        /// <summary>Checks the level against the pool it will run on. Used by the validator and at start.</summary>
-        public bool TryValidate(int poolCapacity, out string error)
+        /// <summary>
+        /// Checks the level against what it will run on: the crowd cap of the run (<paramref name="crowdCapacity"/>, the
+        /// instanced crowd) and the units that can fly in the assault (<paramref name="flightCapacity"/>, the runner pool).
+        /// Used by the validator and at start.
+        /// </summary>
+        public bool TryValidate(int crowdCapacity, int flightCapacity, out string error)
         {
-            int crowdMaximum = poolCapacity + 1;
-            if (startCount > crowdMaximum)
+            if (startCount > crowdCapacity)
             {
-                error = $"startCount {startCount} exceeds the crowd maximum {crowdMaximum}.";
+                error = $"startCount {startCount} exceeds the crowd cap {crowdCapacity}.";
                 return false;
             }
 
-            if (maximumUnitsInFlight > poolCapacity)
+            if (maximumUnitsInFlight > flightCapacity)
             {
-                error = $"maximumUnitsInFlight {maximumUnitsInFlight} exceeds the pool capacity {poolCapacity}.";
+                error = $"maximumUnitsInFlight {maximumUnitsInFlight} exceeds the pool capacity {flightCapacity}.";
                 return false;
             }
 

@@ -26,11 +26,13 @@ namespace Claybreak.Editor
     {
         public const string Root = "Assets/Claybreak/Lab";
         public const string GeneratedFolder = Root + "/Generated";
-        public const string ShadowDiscPath = GeneratedFolder + "/BlobShadowDisc.asset";
+        // The crowd's own assets (shadow disc, swarm and shadow materials) are shared with the game run (RT-6t.4) and
+        // live next to the crowd shapes; the lab keeps only its ground and static material.
+        public const string ShadowDiscPath = UnitShapeAssets.Folder + "/BlobShadowDisc.asset";
         public const string GroundPath = GeneratedFolder + "/LabGround.asset";
-        public const string SwarmMaterialPath = GeneratedFolder + "/ToonLitSwarm.mat";
+        public const string SwarmMaterialPath = UnitShapeAssets.Folder + "/CrowdToon.mat";
         public const string StaticMaterialPath = GeneratedFolder + "/ToonLitStatic.mat";
-        public const string ShadowMaterialPath = GeneratedFolder + "/BlobShadow.mat";
+        public const string ShadowMaterialPath = UnitShapeAssets.Folder + "/CrowdShadow.mat";
         public const string LookPath = Root + "/ToonLookPastel.asset";
         public const string CameraProfilePath = Root + "/SwarmCameraLab.asset";
         public const int SwarmCapacity = 2048;

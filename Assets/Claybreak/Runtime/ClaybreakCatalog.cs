@@ -150,8 +150,8 @@ namespace Claybreak
         }
 #endif
 
-        /// <summary>Checks the whole catalog against the pool the game runs on. Used by the validator and at start.</summary>
-        public bool TryValidate(int poolCapacity, out string error)
+        /// <summary>Checks the whole catalog against the crowd cap and the assault pool the game runs on. Used by the validator and at start.</summary>
+        public bool TryValidate(int crowdCapacity, int flightCapacity, out string error)
         {
             if (worlds == null || worlds.Length == 0)
             {
@@ -170,7 +170,7 @@ namespace Claybreak
                     return false;
                 }
 
-                if (!entry.world.TryValidate(poolCapacity, out error))
+                if (!entry.world.TryValidate(crowdCapacity, flightCapacity, out error))
                 {
                     error = $"{entry.world.name}: {error}";
                     return false;

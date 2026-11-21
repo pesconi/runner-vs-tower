@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using JungleDegree.StudioKit.Crowd;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -82,17 +81,17 @@ namespace Claybreak.Tests
         {
             yield return ReachAssault();
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
-            var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
-            crowd.SetCount(1);
+            RunCrowd crowd = flow.Crowd;
+            crowd.SetArmy(0);
             yield return null;
             Assert.AreEqual(FlowState.ContinueOffer, flow.State, "no continue was offered");
             Assert.IsTrue(flow.Screens.ContinueShown);
             Press("/Ui/Screens/Continue/Safe/Card/WatchAd");
             Assert.AreEqual(1, ads.RewardedShown);
             Assert.AreEqual(FlowState.Assault, flow.State, "the earned continue did not resume the assault");
-            Assert.Greater(crowd.CurrentCount, 1, "the continue brought no units back");
+            Assert.Greater(crowd.Army, 0, "the continue brought no units back");
 
-            crowd.SetCount(1);
+            crowd.SetArmy(0);
             yield return null;
             Assert.AreEqual(FlowState.Lost, flow.State, "a second continue was offered in the same level");
             Assert.AreEqual(1, flow.Progress.Save.levelsLost);
@@ -103,7 +102,7 @@ namespace Claybreak.Tests
         {
             yield return ReachAssault();
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
-            Object.FindFirstObjectByType<RunnerCrowd>().SetCount(1);
+            flow.Crowd.SetArmy(0);
             yield return null;
             Assert.AreEqual(FlowState.ContinueOffer, flow.State);
             Press("/Ui/Screens/Continue/Safe/Card/NoThanks");
@@ -118,7 +117,7 @@ namespace Claybreak.Tests
             ads.Ready = false;
             yield return ReachAssault();
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
-            Object.FindFirstObjectByType<RunnerCrowd>().SetCount(1);
+            flow.Crowd.SetArmy(0);
             yield return null;
             Assert.AreEqual(FlowState.Lost, flow.State, "a continue was offered without an ad to play");
             yield return WaitForResult(flow);
@@ -176,7 +175,7 @@ namespace Claybreak.Tests
             yield return LoadScene(true);
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
             Assert.IsTrue(flow.enabled, "the flow disabled itself (see the log)");
-            var crowd = Object.FindFirstObjectByType<RunnerCrowd>();
+            RunCrowd crowd = flow.Crowd;
             bool grown = false;
             float deadline = Time.realtimeSinceStartup + 60f;
             while (Time.realtimeSinceStartup < deadline && flow.State != FlowState.Assault)
@@ -184,7 +183,7 @@ namespace Claybreak.Tests
                 // A real army at the firing line (the continue needs one).
                 if (!grown && flow.State == FlowState.Run)
                 {
-                    crowd.SetCount(41);
+                    crowd.SetArmy(40);
                     grown = true;
                 }
 

@@ -1264,3 +1264,58 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
 - **T-RT6t2-7 — Sem gate no OPPO.** O aceite diz "sem gate (dentro do teto da 6t.1)": a 6t.1 passou com 474 tri por
   unidade; as formas finais têm no máximo 492 (+4%), com a mesma única chamada por multidão, e a GPU do caso mais pesado
   usou 5,5 ms de 11.
+
+## 2026-11-21 — T-RT6t4-1..10 — A multidão instanciada na corrida — técnica (sessão RT-6t.4)
+
+- **T-RT6t4-1 — `RunCrowd` (jogo) dirige o `SwarmRenderer` (incubadora).** O exército da corrida é o `Swarm`: nenhum
+  objeto por unidade, nenhum líder. A contagem do `Swarm` **é o exército** (antes era exército + líder): `SetArmy`,
+  `Army`, `MaximumArmy` (= capacidade), evento `ArmyChanged` (HUD). O **centro da formação** faz o papel do líder: é a
+  posição que cruza portões e caixotes (`RunGateCourse.Track`, mesmo lado da pista pelo X) e que escolhe a faixa no
+  assalto. O `RunCrowd` avança o objeto do `Swarm` em Z pela velocidade da corrida (`ClaybreakLevel.RunSpeed`, a mesma de
+  antes), lê o arraste e roda antes do `Swarm` no quadro (`DefaultExecutionOrder(-50)`), sem alocar nada.
+  `PlayerController`, `RunnerCrowd`, `CameraFollow` e o colisor da pista saíram da cena (o validador recusa a volta).
+- **T-RT6t4-2 — Regras e save sem mudança.** `GateMath.Apply(portão, exército, teto)` igual; caixotes somam
+  especiais até o teto; exército 0 num portão perde a fase; continuar devolve `ContinueArmy` (até o teto); estrelas e
+  moedas pelo mesmo `armyAtLine`/`armyLeft`. O teto do exército continua 300 (antes: 300 seguidores do pool; agora:
+  capacidade do `Swarm`, **D27 sem resposta = 300**, `ClaybreakSceneBuilder.CrowdCapacity`). Save v3 intocado: a cor da
+  skin equipada vira a **tinta** do `Swarm` (`RunCrowd.Wear`), o save só guarda o id como antes.
+- **T-RT6t4-3 — Forma por dado (D25 aberta).** `ClaybreakTheme.crowdShape` (malha) aponta para uma das formas geradas;
+  o construtor só preenche quando está vazio (**Bolinha com olhos**, provisória) e depois respeita o asset. Trocar para
+  a Bolinha sem olhos ou para o Pintinho = trocar essa referência no `ClaybreakTheme.asset` (o fluxo aplica
+  `SwarmRenderer.SetUnitMesh` na partida; o construtor também põe a mesma malha no `Swarm` da cena). O validador exige
+  que seja uma das quatro formas e a mesma do `Swarm`.
+- **T-RT6t4-4 — O assalto fica como está (6t.7).** As unidades em voo continuam vindo do `RunnerPool` do kit (300
+  objetos), lançadas **da posição da unidade do anel de fora** da multidão parada na linha de tiro
+  (`RunCrowd.TryTakeOuterUnit`), na ordem de remoção do `Swarm`. O kit "aterra" as unidades do pool contra um
+  `CharacterController` do tamanho do antigo líder; sem líder, a cena tem um `UnitGrounding` com esse controlador
+  **desligado** (só dá o tamanho; nenhuma física). Some junto com o pool na 6t.7. A escala das unidades do assalto
+  continua 0,5.
+- **T-RT6t4-5 — Assets da multidão compartilhados.** O material da multidão, o da sombra-bolha e o disco da sombra
+  foram **movidos** (`git mv`, GUID mantido) de `Lab/Generated` para `Content/Generated/Units/` (`CrowdToon.mat`,
+  `CrowdShadow.mat`, `BlobShadowDisc.asset`), ao lado das formas: a `ToonLab` e a corrida usam os mesmos. O jogo tem os
+  seus dados próprios, criados uma vez com os valores do protótipo e depois deixados para ajuste à mão:
+  `Content/Data/SwarmCameraRun.asset` (perfil do rig) e `Content/Data/CrowdToonLook.asset` (rampa/ambiente, aplicado
+  pelo `ToonLookApplier` no sol). O cenário e as torres seguem no Simple Lit (6t.8/6t.10); a neblina do jogo continua a
+  de cada mundo (sem o ajuste de neblina da `ToonLab`).
+- **T-RT6t4-6 — Arraste.** Fórmula do protótipo (`alvo no toque + Δx/largura · M`, presa a meia pista − 0,5 m) com
+  M = 16 × 4/6 ≈ 10,7 m por largura de tela, a mesma sensação do protótipo (16 m numa pista de 6 m de meia largura)
+  na pista de 8 m do jogo. Arrasta na corrida e no assalto; não arrasta no menu, no resultado nem na oferta de
+  continuar (antes o líder ainda andava de lado atrás da tela de continuar).
+- **T-RT6t4-7 — Portão ruim = remoção simples + tremor.** O anel de fora some na hora e a câmera treme 0,35 s
+  (`SwarmCameraRig.Shake`); sem respingo de massinha na corrida. A morte balística é da 6t.5. O tropeço do líder deixou
+  de existir (não há líder).
+- **T-RT6t4-8 — Gate da corrida.** `--ez stress true --ez run true --ei world N` (e `ClaybreakFlow.EditorUsesDeviceGateRun`
+  nos testes) roda **a corrida** do nível de gate do mundo N: o exército no teto (300) correndo na pista com o cenário
+  do mundo, a torre e as defesas à frente, voltando ao começo 10 m antes da torre, sem nunca entrar no assalto (o nível
+  de gate não tem portões de corrida — o validador agora exige isso — então a contagem não muda). `Tools/rt2-gate.sh
+  <rótulo> 60 20 <apk> run:N`. Critério igual ao da `ToonLab` (quadro p95 ≤ 16,7 ms a 60 fps, CPU e GPU p95 ≤ 11 ms,
+  < 5% acima de 50 ms, PSS ≤ 450 MB), no mundo 4 (o mais pesado nos gates anteriores). O gate do assalto continua o
+  mesmo (`world N`).
+- **T-RT6t4-9 — Validação separada:** `ClaybreakLevel/World/Catalog.TryValidate(tetoDaMultidão, capacidadeDeVoo)`:
+  `startCount` ≤ teto da multidão (antes ≤ pool + 1), `maximumUnitsInFlight` ≤ pool. O validador do jogo confere o
+  `Swarm` da cena (capacidade = teto, pista centrada com meia largura 4 m, forma do tema, materiais da multidão, rig com o
+  perfil da corrida, `ToonLookApplier` com o look do jogo) e que só o pool e o `UnitGrounding` desligado têm colisores.
+- **T-RT6t4-10 — MSAA e HDR do jogo sem mudança (MSAA desligado, HDR ligado).** A T-RT6t1-3 deixou a escolha para cá: o
+  gate da 6t.1 mostrou que nenhuma das quatro combinações chega perto do teto e que HDR não custa nada no OPPO; MSAA 4×
+  custa ~1 ms de GPU com 1000. Sem motivo de desempenho para mudar, fica como está; a decisão visual de serrilhado volta
+  com as paletas e o cenário (6t.6/6t.8), olhando capturas do jogo inteiro.

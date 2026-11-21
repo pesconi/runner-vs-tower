@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using JungleDegree.StudioKit.Crowd;
+using JungleDegree.StudioKit.Swarm;
+using JungleDegree.StudioKit.Toon;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -10,12 +12,12 @@ namespace Claybreak.Editor
 {
     /// <summary>
     /// The game's validator (the theme completeness check of the plan): the meta catalog (RT-5) and every
-    /// world and level against the pool; per world (RT-6) its look, its own scenery and towers (no obvious
+    /// world and level against the crowd cap of the run and the assault pool (RT-6t.4); per world (RT-6) its look, its own scenery and towers (no obvious
     /// visual repetition between worlds), a boss with a rule, a level ramp that never gets easier, and its
     /// device-gate level (the world's heaviest tower, every defense at its limit); the theme, the save validator over
     /// the fixture saves (every version a phone may hold must migrate and pass <see cref="SaveValidator"/>),
-    /// the scene wiring (tower bodies, HUD, screens with one row per catalog entry, sounds, preallocated
-    /// pools), and the code rules (no Instantiate/Destroy at run time, rule 2.2.1; no physics queries,
+    /// the scene wiring (the instanced run crowd and its camera, tower bodies, HUD, screens with one row per catalog
+    /// entry, sounds, preallocated pools), and the code rules (no Instantiate/Destroy at run time, rule 2.2.1; no physics queries,
     /// rule 2.2.7).
     /// Batchmode: -executeMethod Claybreak.Editor.ClaybreakValidation.RunAndQuit
     /// </summary>
@@ -86,7 +88,7 @@ namespace Claybreak.Editor
                 return;
             }
 
-            if (!catalog.TryValidate(ClaybreakSceneBuilder.PoolSize, out string error))
+            if (!catalog.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.PoolSize, out string error))
             {
                 failures.Add("catalog: " + error);
                 return;
@@ -218,10 +220,11 @@ namespace Claybreak.Editor
                 worldHasShield |= level.ShieldEnabled;
             }
 
-            if (!stress.IsDeviceGateLevel || stress.StartCount != ClaybreakSceneBuilder.PoolSize
-                || stress.MaximumUnitsInFlight != ClaybreakSceneBuilder.PoolSize)
+            if (!stress.IsDeviceGateLevel || stress.StartCount != ClaybreakSceneBuilder.CrowdCapacity
+                || stress.MaximumUnitsInFlight != ClaybreakSceneBuilder.PoolSize || stress.RunGates.Count != 0)
             {
-                failures.Add($"{stress.name}: the device-gate level must auto-launch with {ClaybreakSceneBuilder.PoolSize} units in flight");
+                failures.Add($"{stress.name}: the device-gate level must run the crowd at its cap ({ClaybreakSceneBuilder.CrowdCapacity}, "
+                    + $"no run gate to change it) and auto-launch with {ClaybreakSceneBuilder.PoolSize} units in flight");
             }
 
             if (stress.Tower != boss.Tower || stress.BossRule != boss.BossRule || !stress.CannonEnabled || !stress.SweeperEnabled
@@ -235,7 +238,7 @@ namespace Claybreak.Editor
         private static void CheckSaves(List<string> failures)
         {
             var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
-            if (catalog == null || !catalog.TryValidate(ClaybreakSceneBuilder.PoolSize, out _))
+            if (catalog == null || !catalog.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.PoolSize, out _))
             {
                 return; // CheckData already reported it.
             }
@@ -293,7 +296,7 @@ namespace Claybreak.Editor
 
         private static void CheckLevel(ClaybreakLevel level, List<string> failures)
         {
-            if (!level.TryValidate(ClaybreakSceneBuilder.PoolSize, out string error))
+            if (!level.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.PoolSize, out string error))
             {
                 failures.Add($"{level.name}: {error}");
             }
@@ -334,7 +337,8 @@ namespace Claybreak.Editor
         }
 
         // RT-6t.1/6t.2: every crowd shape stays within the budget (one mesh, 200-500 triangles, 16-bit, tint mask, on the
-        // ground, front +Z, eyes only where wanted) and the toon lab scene exists for the measurement player.
+        // ground, front +Z, eyes only where wanted) and the toon lab scene exists for the measurement player. RT-6t.4: the
+        // crowd materials and the run camera profile are the game's too.
         private static void CheckToonLab(List<string> failures)
         {
             foreach (UnitShapeAssets.Entry entry in UnitShapeAssets.All)
@@ -367,20 +371,101 @@ namespace Claybreak.Editor
                 }
             }
 
-            // RT-6t.3: the lab camera is framed by data (portrait fit), so the profile must be there and coherent.
-            var cameraProfile = AssetDatabase.LoadAssetAtPath<JungleDegree.StudioKit.Swarm.SwarmCameraProfile>(ToonLabBuilder.CameraProfilePath);
-            if (cameraProfile == null)
+            // RT-6t.3: the lab and run cameras are framed by data (portrait fit), so the profiles must be there and coherent.
+            foreach (string path in new[] { ToonLabBuilder.CameraProfilePath, ClaybreakSceneBuilder.CrowdCameraProfilePath })
             {
-                failures.Add("missing " + ToonLabBuilder.CameraProfilePath + " (run Claybreak > Build Scene)");
+                var cameraProfile = AssetDatabase.LoadAssetAtPath<SwarmCameraProfile>(path);
+                if (cameraProfile == null)
+                {
+                    failures.Add("missing " + path + " (run Claybreak > Build Scene)");
+                }
+                else if (cameraProfile.MaxVerticalFov < cameraProfile.VerticalFov || cameraProfile.Growth <= 0f)
+                {
+                    failures.Add(path + ": the widest field of view must be at least the base one, and growth positive");
+                }
             }
-            else if (cameraProfile.MaxVerticalFov < cameraProfile.VerticalFov || cameraProfile.Growth <= 0f)
+
+            var look = AssetDatabase.LoadAssetAtPath<ToonLook>(ClaybreakSceneBuilder.CrowdLookPath);
+            string lookError = look == null ? "missing (run Claybreak > Build Scene)" : look.Validate();
+            if (lookError != null)
             {
-                failures.Add(ToonLabBuilder.CameraProfilePath + ": the widest field of view must be at least the base one, and growth positive");
+                failures.Add(ClaybreakSceneBuilder.CrowdLookPath + ": " + lookError);
             }
 
             if (!File.Exists(Claybreak.Lab.ToonLab.ScenePath))
             {
                 failures.Add("missing " + Claybreak.Lab.ToonLab.ScenePath + " (run Claybreak > Build Scene)");
+            }
+        }
+
+        // RT-6t.4: the run crowd is the instanced swarm (no leader, no object per unit): capped at the crowd cap (D27), kept on
+        // the track, drawn with the theme's shape (D25 is data) and the shared crowd materials, followed by the camera rig,
+        // with the toon look on the scene. The kit's per-unit crowd must be gone from the run.
+        private static void CheckCrowd(SerializedObject flow, List<string> failures)
+        {
+            if (Object.FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include) != null
+                || Object.FindFirstObjectByType<RunnerCrowd>(FindObjectsInactive.Include) != null
+                || Object.FindFirstObjectByType<CameraFollow>(FindObjectsInactive.Include) != null)
+            {
+                failures.Add("the run must not use the kit's leader, per-unit crowd or follow camera any more (RT-6t.4)");
+            }
+
+            var crowd = flow.FindProperty("crowd").objectReferenceValue as RunCrowd;
+            var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(ClaybreakSceneBuilder.ThemePath);
+            if (crowd == null || theme == null)
+            {
+                return; // the unassigned reference is already reported
+            }
+
+            var crowdSo = new SerializedObject(crowd);
+            var swarm = crowdSo.FindProperty("swarm").objectReferenceValue as SwarmRenderer;
+            var rig = crowdSo.FindProperty("cameraRig").objectReferenceValue as SwarmCameraRig;
+            if (swarm == null || rig == null)
+            {
+                failures.Add("the run crowd needs its swarm and camera rig");
+                return;
+            }
+
+            if (swarm.Capacity != ClaybreakSceneBuilder.CrowdCapacity)
+            {
+                failures.Add($"the run crowd holds {swarm.Capacity} units; the crowd cap (D27) is {ClaybreakSceneBuilder.CrowdCapacity}");
+            }
+
+            if (!Mathf.Approximately(swarm.LaneHalfWidth, ClaybreakSceneBuilder.TrackWidth * 0.5f)
+                || !Mathf.Approximately(swarm.transform.position.x, 0f))
+            {
+                failures.Add("the run crowd must be kept on the track (centered, half the track width)");
+            }
+
+            bool knownShape = false;
+            foreach (UnitShapeAssets.Entry entry in UnitShapeAssets.All)
+            {
+                knownShape |= AssetDatabase.GetAssetPath(theme.CrowdShape) == entry.Path;
+            }
+
+            if (!knownShape || swarm.UnitMesh != theme.CrowdShape)
+            {
+                failures.Add("the run crowd must be drawn with the theme's crowd shape, one of the generated shapes");
+            }
+
+            var swarmSo = new SerializedObject(swarm);
+            if (AssetDatabase.GetAssetPath(swarmSo.FindProperty("unitMaterial").objectReferenceValue) != ToonLabBuilder.SwarmMaterialPath
+                || AssetDatabase.GetAssetPath(swarmSo.FindProperty("shadowMaterial").objectReferenceValue) != ToonLabBuilder.ShadowMaterialPath
+                || AssetDatabase.GetAssetPath(swarmSo.FindProperty("shadowMesh").objectReferenceValue) != ToonLabBuilder.ShadowDiscPath)
+            {
+                failures.Add("the run crowd must use the crowd materials and the shadow disc");
+            }
+
+            if (AssetDatabase.GetAssetPath(new SerializedObject(rig).FindProperty("profile").objectReferenceValue)
+                != ClaybreakSceneBuilder.CrowdCameraProfilePath || rig.GetComponent<Camera>() == null || !rig.CompareTag("MainCamera"))
+            {
+                failures.Add("the main camera needs the swarm rig with the run camera profile");
+            }
+
+            ToonLookApplier applier = Object.FindFirstObjectByType<ToonLookApplier>();
+            if (applier == null || AssetDatabase.GetAssetPath(applier.Look) != ClaybreakSceneBuilder.CrowdLookPath)
+            {
+                failures.Add("the scene needs the toon look applier with " + ClaybreakSceneBuilder.CrowdLookPath);
             }
         }
 
@@ -418,23 +503,20 @@ namespace Claybreak.Editor
                 }
             }
 
-            // The kit's leader is a CharacterController with gravity: it needs a collider to stand on.
-            var track = so.FindProperty("track").objectReferenceValue as Renderer;
-            var leader = Object.FindFirstObjectByType<PlayerController>();
-            if (track == null || !track.TryGetComponent(out Collider ground) || !ground.enabled)
+            CheckCrowd(so, failures);
+
+            // No physics in the game: only the pool units of the assault (kit prefab) and the disabled unit grounding
+            // carry colliders.
+            if (Object.FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length
+                > ClaybreakSceneBuilder.PoolSize + 1)
             {
-                failures.Add("the track needs an enabled collider (the leader would fall through it)");
-            }
-            else if (leader == null || !ground.bounds.Contains(new Vector3(leader.transform.position.x,
-                         ground.bounds.max.y - 0.01f, leader.transform.position.z)))
-            {
-                failures.Add("the leader does not start above the track collider");
+                failures.Add("only the pool units and the unit grounding may carry colliders (no physics in the game)");
             }
 
-            if (Object.FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length
-                > 1 + ClaybreakSceneBuilder.PoolSize + 1)
+            var grounding = so.FindProperty("unitGrounding").objectReferenceValue as CharacterController;
+            if (grounding != null && grounding.enabled)
             {
-                failures.Add("only the track, the leader and the pool units may carry colliders (no physics in the game)");
+                failures.Add("the unit grounding must be a disabled CharacterController (it only gives the units' size)");
             }
 
             var pool = Object.FindFirstObjectByType<RunnerPool>(FindObjectsInactive.Include);
