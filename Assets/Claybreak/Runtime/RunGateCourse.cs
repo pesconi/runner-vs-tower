@@ -18,6 +18,9 @@ namespace Claybreak
         [SerializeField] private Transform[] pairRoots = new Transform[0];
         [SerializeField] private TextMesh[] leftLabels = new TextMesh[0];
         [SerializeField] private TextMesh[] rightLabels = new TextMesh[0];
+        [Tooltip("RT-6v: a dark copy of each label drawn just behind it (the number's drop shadow); empty = no shadow.")]
+        [SerializeField] private TextMesh[] leftShadows = new TextMesh[0];
+        [SerializeField] private TextMesh[] rightShadows = new TextMesh[0];
         [SerializeField] private Renderer[] leftPanels = new Renderer[0];
         [SerializeField] private Renderer[] rightPanels = new Renderer[0];
         [SerializeField] private Transform[] crateRoots = new Transform[0];
@@ -49,6 +52,7 @@ namespace Claybreak
             if (levelData == null || track == null || goodMaterial == null || badMaterial == null
                 || leftLabels.Length != capacity || rightLabels.Length != capacity
                 || leftPanels.Length != capacity || rightPanels.Length != capacity
+                || (leftShadows.Length != 0 && leftShadows.Length != capacity) || leftShadows.Length != rightShadows.Length
                 || crateLabels.Length != CrateCapacity || levelData.RunGates.Count > capacity
                 || levelData.Crates.Count > CrateCapacity)
             {
@@ -67,8 +71,8 @@ namespace Claybreak
                 RunGatePair pair = level.RunGates[i];
                 Vector3 position = pairRoots[i].position;
                 pairRoots[i].position = new Vector3(position.x, position.y, pair.z);
-                Dress(leftLabels[i], leftPanels[i], pair.left);
-                Dress(rightLabels[i], rightPanels[i], pair.right);
+                Dress(leftLabels[i], leftShadows.Length > 0 ? leftShadows[i] : null, leftPanels[i], pair.left);
+                Dress(rightLabels[i], rightShadows.Length > 0 ? rightShadows[i] : null, rightPanels[i], pair.right);
             }
 
             for (int i = 0; i < level.Crates.Count; i++)
@@ -133,10 +137,15 @@ namespace Claybreak
             return gate.operation == GateOperation.Add ? new GateSpec(gate.operation, gate.value + addBonus) : gate;
         }
 
-        private void Dress(TextMesh label, Renderer panel, GateSpec spec)
+        private void Dress(TextMesh label, TextMesh shadow, Renderer panel, GateSpec spec)
         {
             GateSpec gate = Boost(spec);
             label.text = gate.Label;
+            if (shadow != null)
+            {
+                shadow.text = label.text;
+            }
+
             panel.sharedMaterial = gate.IsGood ? goodMaterial : badMaterial;
         }
     }

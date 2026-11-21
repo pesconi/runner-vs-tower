@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using JungleDegree.StudioKit.Crowd;
+using JungleDegree.StudioKit.Characters;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -121,6 +122,15 @@ namespace Claybreak.Editor
             if (!theme.TryValidate(out error))
             {
                 failures.Add("theme: " + error);
+            }
+
+            // RT-6v (direction v2): the game's own soldier, painted in the kit's color regions, within its vertex budget.
+            RunnerBodyFrames soldier = theme.Roster.BuiltInBody;
+            if (soldier == null || soldier.Length == 0 || !soldier.VertexColorRegions
+                || soldier.Idle.vertexCount > SoldierArt.MaximumVertices
+                || AssetDatabase.GetAssetPath(soldier) != SoldierArt.FramesPath)
+            {
+                failures.Add($"theme: the soldier must be {SoldierArt.FramesPath} with color regions and at most {SoldierArt.MaximumVertices} vertices");
             }
         }
 

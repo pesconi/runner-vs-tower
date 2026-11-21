@@ -131,7 +131,7 @@ vértices) quando a multidão passa de ~150. É uma troca de malha, sem regra no
 
 ## 4. Prova visual (Unity, mesma câmera, antes e depois)
 
-Feita por `Assets/Claybreak/Editor/Prototypes/DirectionV2Prototype.cs` (menu *Claybreak > Prototype > Capture
+Feita (até a RT-6v.1, que o substituiu pelo visual real; o código fica no histórico do git, commit `ae0fd57`) por `Assets/Claybreak/Editor/Prototypes/DirectionV2Prototype.cs` (menu *Claybreak > Prototype > Capture
 Direction v2*, ou batchmode `-executeMethod Claybreak.Editor.Prototypes.DirectionV2Prototype.CaptureAndQuit`, sem
 `-nographics`). Monta cenas descartáveis: o **antes** com os construtores do próprio jogo (pista, cenário e torre do
 mundo 1, portão igual ao `CreateRunGates`, soldado e material do kit) e o **depois** com malhas arredondadas geradas
@@ -154,7 +154,7 @@ terá menos detalhe (≤ 600 vértices) que o das capturas. Nada disto foi medid
 
 ## 5. O que sai do studiokit e o que é só do jogo
 
-Regra: o kit nunca nomeia jogo nem tema, e mudar o kit muda também o Wild Pack. **Nada foi mexido no kit nesta
+Regra: o kit nunca nomeia jogo nem tema, e mudar o kit muda também o Wild Pack. **Feito na RT-6v.1 como entrega K.10 do kit (pacote 0.5.0).** Na revisão visual, nada foi mexido no kit nesta
 sessão.** Proposta para a RT-6v (uma entrega do studiokit antes, com o aceite do Wild Pack):
 
 **Kit (genérico, com o padrão = o visual de hoje, para o Wild Pack não mudar):**

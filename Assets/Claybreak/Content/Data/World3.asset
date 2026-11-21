@@ -36,6 +36,10 @@ MonoBehaviour:
     prop: {r: 0.45, g: 0.42, b: 0.34, a: 1}
     propDark: {r: 0.16, g: 0.16, b: 0.13, a: 1}
     accent: {r: 0.75, g: 0.92, b: 1, a: 1}
+    zenith: {r: 0, g: 0, b: 0, a: 0}
+    ambientGround: {r: 0, g: 0, b: 0, a: 0}
+    fogNear: 0
+    fogFar: 0
   expectedDamage: 1.5
   loopPowerExponent: 0.7
   healthPerLoop: 0.25

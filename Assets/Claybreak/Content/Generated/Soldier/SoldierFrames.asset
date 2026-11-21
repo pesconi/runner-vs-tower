@@ -1,0 +1,393 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60da87e88d0900148ae9f2d1f901b801, type: 3}
+  m_Name: SoldierFrames
+  m_EditorClassIdentifier: JungleDegree.StudioKit.Characters::JungleDegree.StudioKit.Characters.RunnerBodyFrames
+  frames:
+  - {fileID: 4300000, guid: e0a97bc9dfe3d694f8eedb548c589996, type: 2}
+  - {fileID: 4300000, guid: 08d2c3dc2cef6074ab5e6eb0e382b7fe, type: 2}
+  - {fileID: 4300000, guid: a1ea4144ff8d1e5459f8cf5e22c1453d, type: 2}
+  - {fileID: 4300000, guid: 26e365f5eb5ea084397d3360e8ba576d, type: 2}
+  - {fileID: 4300000, guid: d9e803896bb2afa468c7a6ac22396369, type: 2}
+  - {fileID: 4300000, guid: c15c0c3e7041f234eb35ef93dfd15795, type: 2}
+  - {fileID: 4300000, guid: 740492647b3eaab438abafff0906b661, type: 2}
+  - {fileID: 4300000, guid: a166103c430fd6246995fc77d8a78a9c, type: 2}
+  - {fileID: 4300000, guid: 3c8b56f4bcafe7740870af3d49282f0e, type: 2}
+  - {fileID: 4300000, guid: a2bb3cf8f07831b459c132ef174f48d4, type: 2}
+  - {fileID: 4300000, guid: 95544b5024b00804aac6703fc65c029a, type: 2}
+  - {fileID: 4300000, guid: c9170f6889fb1cf498794d75b00a82b5, type: 2}
+  - {fileID: 4300000, guid: 2837fe82deebfdd4fa9f72095ace284e, type: 2}
+  - {fileID: 4300000, guid: e9534b18e1e1aae47a6a9597c5b6c755, type: 2}
+  - {fileID: 4300000, guid: 61312fb9597a05b41be3d7e6ff807ca6, type: 2}
+  - {fileID: 4300000, guid: ba9df44ee64dddf479e05d67a365d9b8, type: 2}
+  - {fileID: 4300000, guid: 276eb31fd8ec50a47ae98f7dcd1deb9d, type: 2}
+  - {fileID: 4300000, guid: a11796ff371daa447ba0cdfe7cfa4a12, type: 2}
+  - {fileID: 4300000, guid: b46d03cf0e5610b459e5f604cc8f900b, type: 2}
+  - {fileID: 4300000, guid: 1625161564ad1b34d9155b77be72a68d, type: 2}
+  - {fileID: 4300000, guid: 89e16f5233d2a2a4aafdc286946d96cb, type: 2}
+  - {fileID: 4300000, guid: f4d22027aeb72bf4092e47cb4693ca6e, type: 2}
+  - {fileID: 4300000, guid: 44198340355f4fe45b66862588eebeb4, type: 2}
+  - {fileID: 4300000, guid: 4373bdbedd8e05947b3d3a81d147cb2c, type: 2}
+  - {fileID: 4300000, guid: 1d22de08861e5de43979479c2c641a88, type: 2}
+  anchors:
+  - HeadPosition: {x: 0, y: 1.0024781, z: 0.105364695}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.703917, z: 0.19075337}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.3464786, z: 0.03641637}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0287828, z: 0.108129434}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.72185206, z: 0.19263841}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.36441368, z: 0.03830142}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.053295, z: 0.110705756}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.73856485, z: 0.19439499}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.38112643, z: 0.040058002}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.074344, z: 0.1129181}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.75291646, z: 0.19590342}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.3954781, z: 0.04156642}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0904956, z: 0.11461569}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.7639289, z: 0.19706087}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.4064905, z: 0.04272387}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.1006488, z: 0.11568284}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.77085155, z: 0.19778846}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.41341317, z: 0.043451473}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.1041119, z: 0.11604683}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.77321273, z: 0.19803664}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.41577435, z: 0.043699645}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.1006488, z: 0.11568284}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.77085155, z: 0.19778846}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.41341317, z: 0.043451473}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0904956, z: 0.11461569}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.7639289, z: 0.19706087}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.4064905, z: 0.04272387}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.074344, z: 0.1129181}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.75291646, z: 0.19590342}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.3954781, z: 0.04156642}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.053295, z: 0.11070576}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.7385649, z: 0.194395}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.38112652, z: 0.04005801}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0287828, z: 0.108129434}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.72185206, z: 0.19263841}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.36441368, z: 0.03830142}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0024781, z: 0.105364695}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.703917, z: 0.19075337}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.3464786, z: 0.03641637}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0287828, z: 0.108129434}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.72185206, z: 0.19263841}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.36441368, z: 0.03830142}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.053295, z: 0.11070576}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.7385649, z: 0.194395}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.38112652, z: 0.04005801}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.074344, z: 0.1129181}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.75291646, z: 0.19590342}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.3954781, z: 0.04156642}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0904956, z: 0.11461569}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.7639289, z: 0.19706087}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.4064905, z: 0.04272387}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.1006488, z: 0.11568284}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.77085155, z: 0.19778846}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.41341317, z: 0.043451473}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.1041119, z: 0.11604683}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.77321273, z: 0.19803664}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.41577435, z: 0.043699645}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.1006488, z: 0.11568284}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.77085155, z: 0.19778846}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.41341317, z: 0.043451473}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0904956, z: 0.11461569}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.7639289, z: 0.19706087}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.4064905, z: 0.04272387}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.074344, z: 0.1129181}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.75291646, z: 0.19590342}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.3954781, z: 0.04156642}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.053295, z: 0.110705756}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.73856485, z: 0.19439499}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.38112643, z: 0.040058002}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0287828, z: 0.108129434}
+    HeadRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    ChestPosition: {x: 0, y: 0.72185206, z: 0.19263841}
+    ChestRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+    PelvisPosition: {x: 0, y: 0.36441368, z: 0.03830142}
+    PelvisRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  - HeadPosition: {x: 0, y: 1.0219355, z: 0}
+    HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+    ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+    ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+    PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+    PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+  clips:
+  - Name: Idle
+    Loop: 1
+    Frames:
+    - {fileID: 4300000, guid: 42a899fb071a6ca46854a06ac251ac6d, type: 2}
+    - {fileID: 4300000, guid: a654e825efa6fb34b85cd907fa0b0a9a, type: 2}
+    - {fileID: 4300000, guid: 7561286511e6da146b52c328a15acb4c, type: 2}
+    - {fileID: 4300000, guid: 1634637a1f6e2424a821418097d20a73, type: 2}
+    - {fileID: 4300000, guid: 9b718438934cfb549a55d95548fdaa89, type: 2}
+    - {fileID: 4300000, guid: a3bb85ff7afb93f4d9b7bdbaf3e11ffc, type: 2}
+    - {fileID: 4300000, guid: cea505f94364b7e40af15277e7ac14df, type: 2}
+    - {fileID: 4300000, guid: 48110a0ab356c9d48aa65f839db1079a, type: 2}
+    Anchors:
+    - HeadPosition: {x: 0, y: 1.0219355, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0120816, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.008, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0120816, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0219355, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0317894, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0358709, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0317894, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+  - Name: Start
+    Loop: 0
+    Frames:
+    - {fileID: 4300000, guid: 0e25d420bb5fe414d8d69ee9e1179993, type: 2}
+    - {fileID: 4300000, guid: 94f907e9e08ed2f4b8a43418c03d59ac, type: 2}
+    - {fileID: 4300000, guid: 9f56214115200af49b790fa08d285e27, type: 2}
+    - {fileID: 4300000, guid: dd79f38493fcd744f8dc274937554f27, type: 2}
+    Anchors:
+    - HeadPosition: {x: 0, y: 0.9632546, z: 0.20474608}
+      HeadRotation: {x: 0.104528464, y: 0, z: 0, w: 0.9945219}
+      ChestPosition: {x: 0, y: 0.6801217, z: 0.26328775}
+      ChestRotation: {x: 0.104528464, y: 0, z: 0, w: 0.9945219}
+      PelvisPosition: {x: 0, y: 0.34077403, z: 0.072433755}
+      PelvisRotation: {x: 0.104528464, y: 0, z: 0, w: 0.9945219}
+    - HeadPosition: {x: 0, y: 0.987457, z: 0.13877805}
+      HeadRotation: {x: 0.06975647, y: 0, z: 0, w: 0.9975641}
+      ChestPosition: {x: 0, y: 0.6968309, z: 0.21520351}
+      ChestRotation: {x: 0.06975647, y: 0, z: 0, w: 0.9975641}
+      PelvisPosition: {x: 0, y: 0.3449966, z: 0.048486117}
+      PelvisRotation: {x: 0.06975647, y: 0, z: 0, w: 0.9975641}
+    - HeadPosition: {x: 0, y: 1.0070893, z: 0.07042253}
+      HeadRotation: {x: 0.034899496, y: 0, z: 0, w: 0.99939084}
+      ChestPosition: {x: 0, y: 0.71014535, z: 0.1660708}
+      ChestRotation: {x: 0.034899496, y: 0, z: 0, w: 0.99939084}
+      PelvisPosition: {x: 0, y: 0.34753844, z: 0.024302253}
+      PelvisRotation: {x: 0.034899496, y: 0, z: 0, w: 0.99939084}
+    - HeadPosition: {x: 0, y: 1.0219355, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+  - Name: Cheer
+    Loop: 1
+    Frames:
+    - {fileID: 4300000, guid: abe9740bd8dc52b40b72ac0bdc238f29, type: 2}
+    - {fileID: 4300000, guid: 3c55b6a8cd124394ab158f0701de95f9, type: 2}
+    - {fileID: 4300000, guid: 73bc2c132e5cea7438733b98756c0696, type: 2}
+    - {fileID: 4300000, guid: d3b40cd665492744e888d49d3d2c8e19, type: 2}
+    - {fileID: 4300000, guid: 0e07d062e24614043aab82dfbd51ef0b, type: 2}
+    - {fileID: 4300000, guid: 15ee8811969fc7b48ae477626a64db79, type: 2}
+    - {fileID: 4300000, guid: c7d9480185c009f4080fc2077630914f, type: 2}
+    - {fileID: 4300000, guid: 37550b2f998a2cf40967f13d62bcd510, type: 2}
+    Anchors:
+    - HeadPosition: {x: 0, y: 0.9940645, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0865011, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.79110503, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.41949216, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.164865, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.85138494, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.4797721, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.217226, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.8916627, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.52004987, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.2356128, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.90580636, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.5341935, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.217226, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.8916627, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.52004987, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.164865, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.85138494, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.4797721, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 1.0865011, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.79110503, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.41949216, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+  - Name: Trip
+    Loop: 0
+    Frames:
+    - {fileID: 4300000, guid: 1b4e204a1a917a24b907873a8a9fdd87, type: 2}
+    - {fileID: 4300000, guid: a0caa5476e7db464b81c053f5d734ea1, type: 2}
+    - {fileID: 4300000, guid: 019dfce62b4c3ee4fae3b8d72ef17ad9, type: 2}
+    - {fileID: 4300000, guid: 03b22ef7053ca824784356c515e2536d, type: 2}
+    - {fileID: 4300000, guid: e1ca05195c1eb624eb16dcd36e58225f, type: 2}
+    - {fileID: 4300000, guid: c8777dcf9c449e845be4c3b0755d4f5b, type: 2}
+    Anchors:
+    - HeadPosition: {x: 0, y: 1.0219355, z: 0}
+      HeadRotation: {x: 0, y: 0, z: 0, w: 1}
+      ChestPosition: {x: 0, y: 0.71999997, z: 0.11612903}
+      ChestRotation: {x: 0, y: 0, z: 0, w: 1}
+      PelvisPosition: {x: 0, y: 0.3483871, z: 0}
+      PelvisRotation: {x: 0, y: 0, z: 0, w: 1}
+    - HeadPosition: {x: 0, y: 0.9894802, z: 0.19233547}
+      HeadRotation: {x: 0.09584575, y: 0, z: 0, w: 0.9953962}
+      ChestPosition: {x: 0, y: 0.6709336, z: 0.24871886}
+      ChestRotation: {x: 0.09584575, y: 0, z: 0, w: 0.9953962}
+      PelvisPosition: {x: 0, y: 0.32830676, z: 0.06381637}
+      PelvisRotation: {x: 0.09584575, y: 0, z: 0, w: 0.9953962}
+    - HeadPosition: {x: 0, y: 0.9216806, z: 0.37238312}
+      HeadRotation: {x: 0.190809, y: 0, z: 0, w: 0.98162717}
+      ChestPosition: {x: 0, y: 0.5982282, z: 0.36694905}
+      ChestRotation: {x: 0.190809, y: 0, z: 0, w: 0.98162717}
+      PelvisPosition: {x: 0, y: 0.2971774, z: 0.120067455}
+      PelvisRotation: {x: 0.190809, y: 0, z: 0, w: 0.98162717}
+    - HeadPosition: {x: 0, y: 0.8220054, z: 0.5338165}
+      HeadRotation: {x: 0.28401536, y: 0, z: 0, w: 0.95881975}
+      ChestPosition: {x: 0, y: 0.5055325, z: 0.46676466}
+      ChestRotation: {x: 0.28401536, y: 0, z: 0, w: 0.95881975}
+      PelvisPosition: {x: 0, y: 0.25712013, z: 0.16697578}
+      PelvisRotation: {x: 0.28401536, y: 0, z: 0, w: 0.95881975}
+    - HeadPosition: {x: 0, y: 0.6950215, z: 0.6711744}
+      HeadRotation: {x: 0.37460658, y: 0, z: 0, w: 0.92718387}
+      ChestPosition: {x: 0, y: 0.39715725, z: 0.5449686}
+      ChestRotation: {x: 0.37460658, y: 0, z: 0, w: 0.92718387}
+      PelvisPosition: {x: 0, y: 0.2105113, z: 0.20328838}
+      PelvisRotation: {x: 0.37460658, y: 0, z: 0, w: 0.92718387}
+    - HeadPosition: {x: 0, y: 0.5461928, z: 0.78004414}
+      HeadRotation: {x: 0.4617486, y: 0, z: 0, w: 0.8870108}
+      ChestPosition: {x: 0, y: 0.27788237, z: 0.5993219}
+      ChestRotation: {x: 0.4617486, y: 0, z: 0, w: 0.8870108}
+      PelvisPosition: {x: 0, y: 0.1598613, z: 0.22830558}
+      PelvisRotation: {x: 0.4617486, y: 0, z: 0, w: 0.8870108}
+  headBlend: {x: -0.23225807, y: -0.11612903}
+  headRadius: 0.46451613
+  vertexColorRegions: 1

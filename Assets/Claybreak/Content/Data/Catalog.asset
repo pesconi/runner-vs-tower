@@ -122,8 +122,8 @@ MonoBehaviour:
     unlockLevel: 0
   skins:
   - id: clay
-    title: CLAY
-    color: {r: 0.95, g: 0.55, b: 0.18, a: 1}
+    title: COBALT
+    color: {r: 0.18431373, g: 0.41960785, b: 1, a: 1}
     price: 0
   - id: ember
     title: EMBER

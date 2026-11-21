@@ -1191,3 +1191,123 @@ Se você não responder: nada é refeito; a RT-9 continua parada e o jogo segue 
 Responda: A, B, C ou D, ou "A + ajuste" (ex.: "A com paleta mais escura"), ou "explica melhor".
 
 **Resposta do usuário (2026-11-21): A, em etapas** — Brinquedo Brilhante. A RT-6v começa pelo soldado e o mundo 1, vistos no celular e com a regra de "público misto" da Play conferida; os mundos 2 a 4, torres, chefes e UI só seguem com o ok do usuário. A regra do GDD "direção adulta, paleta noturna, não castelo de brinquedo" deixa de valer; "sem rosto nem olhos" e 13+ continuam.
+
+## 2026-11-21 — T-RT6v-1 — Visual novo do mundo 1: soldado, fortes, cenário e céu como malhas geradas — técnica (sessão RT-6v.1)
+
+- Kit (K.10, pacote 0.5.0, decisão T23 do kit): brilho, ambiente de duas cores e cor de borda opcionais no
+  `RunnerClay` (padrão = desenho antigo, o Wild Pack não muda); shaders `StudioKit/SkyGradient` e
+  `StudioKit/SoftContactShadow`; `SoftMeshBuilder` no Editor do kit; corpo com regiões de cor nas cores de vértice
+  (`RunnerBodyFrames.vertexColorRegions`). O protótipo da revisão visual (T-V2-1) saiu do repositório: o construtor
+  foi para o kit e o resto foi refeito no jogo (fica no histórico do git, commit `ae0fd57`).
+- Soldado (`SoldierArt`): feijão com capacete, aba e pluma douradas, mãos, botas e escudo, **sem rosto nem olhos**,
+  552 vértices (limite 600, conferido pelo validador). 24 poses de corrida, pose de descanso e os clipes do kit
+  (Idle, Start, Cheer, Trip), todas da mesma malha, gravadas em `Content/Generated/Soldier/`; o kit faz a textura de
+  poses e a multidão continua um desenho só. Regiões: base = corpo e capacete (a cor da loja), destaque = dourado,
+  detalhe = botas azul-marinho, quarta = face do escudo creme. As skins da loja e as elites continuam trocando a
+  cor base; a skin grátis "clay" passou a azul-cobalto (título COBALT; o id não muda, os saves seguem válidos).
+- Material próprio do soldado (`Materials/Soldier.mat`, shader do kit com o brilho ligado); o do kit ficou intocado.
+- Mundo 1: `SceneryStyle.Meadow` (`ToyScenery`): platô creme com meio-fio coral sobre grama menta, flores e
+  pedrinhas perto, árvores redondas no meio, colinas e nuvens longe, numa malha e um material, mais uma malha de
+  sombras de contato. Céu em degradê (esfera na câmera, material por mundo; mundos sem céu ficam com o fundo
+  liso), neblina 55–165 m e duas cores de ambiente (globais `_ToySkyColor`/`_ToyGroundColor`) pelo `WorldScenery`.
+- Fortes do mundo 1 (`ToyTowerArt`): `ToyFort` (principal), `ToyFortTwin` (segunda torre; novo `TowerKind.World1Second`,
+  porque a forja era dividida com o mundo 2) e `ToyCitadel` (chefe com coroa de esferas douradas e bola de canhão).
+  Andares de uma cor só com borda creme (alerta de "castelo de bolo" da segunda opinião da D24). Muralha refeita
+  no mesmo material.
+- Portões (todos os mundos): moldura branca com bolas douradas, painéis de vidro (`Claybreak/ToyGlass`), número
+  2,3× maior com sombra azul-marinho (`RunGateCourse` ganhou as sombras dos rótulos).
+- Mundos 2–4 seguem com o cenário, as torres e a luz antigos (RT-6v.2), mas já mostram o soldado e os portões
+  novos.
+- Nada é criado em tempo de jogo: malhas e materiais são assets gerados pelo construtor da cena.
+- `ArtDirectionCapture.PreviewWorldAndQuit`: prévia rápida de um mundo (corrida, perto, torres e chefe), só na
+  pasta de captura, sem tocar em `docs/`.
+
+## Ficha D25 (RT-6v.1, aguardando resposta)
+
+### DECISÃO D25 — Com o visual novo, o jogo continua "13+, não feito para crianças" na Google Play?
+
+O que você está aprovando: "O Clay Siege continua declarado na Play Console como jogo para **13 anos ou mais, não
+feito para crianças**, mesmo com o visual Brinquedo Brilhante. Para a Google não o ler como jogo infantil, a página
+da loja (ícone, capturas, vídeo e texto) mostra estratégia e desafio: números grandes, exército em massa e a torre a
+cair. Não mostra soldado "fofo" em close nem palavras como "crianças", "kids", "fácil" ou "educativo". Na Play
+Console declaramos que o jogo não é feito para crianças e descrevemos o tema (cerco a fortes, canhões, contas nos
+portões). Guardamos cópia de tudo o que for enviado. Os anúncios ficam como hoje: classificação máxima PG
+("orientação dos pais"; a escala do Google vai de G, para todos, a MA, só adultos) e sem marcação infantil. Na RT-9
+conferimos a idade mínima de consentimento de cada país do soft launch e corrigimos a frase da política de
+privacidade que fala em anúncios de "público geral". Se a Google recusar, a primeira resposta é ajustar a página da
+loja. Se isso não bastar, voltamos a você com a opção B ou D."
+
+Por que agora: não trava código nem a RT-6v.2. Trava a RT-9 (página da loja, capturas, ícone e vídeo). Precisa sair
+antes de a RT-9 desenhar a página da loja.
+
+Contexto que você precisa saber:
+- Fato (decisão P3, GDD seção 2): o jogo é 13+, não feito para crianças, fora do programa "Famílias" da Google.
+  Hoje o código de anúncios já pede classificação máxima PG e diz ao Google que o jogador não é criança.
+- Fato (ajuda da Play Console, "Público-alvo e conteúdo",
+  support.google.com/googleplay/android-developer/answer/9867159): se o jogo não é feito para menores de 13 anos mas
+  a página da loja sugere o contrário, a Google pode **rejeitar** a publicação. O exemplo dela é "animação juvenil
+  ou personagens jovens" nas imagens. As saídas que ela dá são duas: tirar esses elementos da página da loja, ou
+  incluir crianças no público e cumprir a política Famílias.
+- Fato (mesma página): em alguns países, quem tem 13 a 15 ou 16 a 17 anos também conta como "criança" para a
+  Google.
+- Fato (política Famílias, answer/9893335): a Google revê se o público declarado é verdadeiro e olha as imagens e
+  os termos. **Conta também o que se vê dentro do jogo**, não só a página. Declarar errado pode levar a remoção ou
+  suspensão do app. A recusa pode vir numa atualização, com o jogo já publicado.
+- Fato (mesma política): se o público incluir crianças (público misto), são precisos:
+  - uma tela de idade neutra, que não incentive a mentir;
+  - para menores de 13 anos e para quem não diz a idade: anúncios sem personalização e só de empresas de anúncios
+    aprovadas pela Google para famílias;
+  - não enviar o identificador de publicidade do celular nem outros identificadores do aparelho dessas crianças.
+- Fato (ajuda do AdMob, support.google.com/admob/answer/6223431 e Play answer/9283445): o AdMob é aprovado para
+  famílias; num app de público misto, os pedidos de anúncio de crianças vão com classificação G (para todos).
+- Fato (lei portuguesa, Lei 58/2019, art. 16.º): em Portugal a idade para consentir o uso de dados pela internet é
+  13 anos. Não verificado (memória da segunda opinião): noutros países europeus é mais alta (16 na Alemanha, Países
+  Baixos e Irlanda; 15 em França; 14 em Espanha e Itália). Como o soft launch é na Europa (D23), isto conta para o
+  consentimento dos anúncios e da medição de quem tem 13 a 15 anos.
+- Fato (visual da RT-6v.1, nas capturas do mundo 1): soldados sem rosto nem olhos, azuis e dourados; tema de cerco e
+  canhões; contas nos portões (+20, ×2). Céu claro, cores vivas e formas de brinquedo de vinil.
+- Inferência nossa: o critério escrito pela Google fala de "personagens jovens". Os nossos soldados não têm rosto
+  nem idade. Mas cores vivas, visual de brinquedo e jogo simples podem fazer quem revê pensar "infantil". O risco é
+  real, mas moderado.
+- Lacunas (não achado nas páginas oficiais): o texto exato atual da pergunta da Play Console sobre apelo a
+  crianças; uma lista oficial de sinais (cores, estilo de arte); se ainda existe o aviso "Não feito para crianças"
+  na loja, que existia em 2019. Confere-se na própria Play Console, na RT-9.
+
+Opções:
+A) Manter 13+ e cuidar da página da loja — o jogo fica como está; a RT-9 desenha a página com foco em estratégia e
+   desafio (regras no "O que você está aprovando").
+   + Custo zero no código; anúncios personalizados (com consentimento) seguem como hoje.
+   - Riscos: a Google recusar na revisão (chance: média; impacto: médio, dias até ajustar a página). Se a Google
+     achar que o problema é o visual dentro do jogo, ajustar a página não basta: passa-se a B ou D, ou a mudar a
+     arte (chance: baixa; impacto: alto). Ícone e capturas sem o soldado em close podem atrair menos downloads
+     (chance: média; impacto: baixo a médio).
+   Custo: nenhum além da RT-9. Dá para voltar atrás? Sim, fácil.
+B) Declarar público misto — o jogo pergunta a idade numa tela neutra no primeiro uso. Abaixo de 13 anos (ou sem
+   resposta): anúncios sem personalização e de classificação G, sem identificador de publicidade e sem medição.
+   + Afasta a recusa por "apelo a crianças" e abre o jogo a menores de 13 anos.
+   - Riscos: menos receita por anúncio nesse grupo (chance: alta; impacto: médio). Mais uma tela no início, que faz
+     alguns desistirem (chance: média; impacto: baixo a médio). A revisão Famílias é mais exigente e tem regras
+     próprias de formato de anúncio, para sempre (chance de erro: média; impacto: alto, a Google pode remover o
+     app). Política de privacidade e formulário de dados da loja têm de ser refeitos.
+   Custo: ~1 entrega a mais. Dá para voltar atrás? Com custo.
+C) Decidir na RT-9 — preencher a seção do público na Play Console sem publicar, para ler a pergunta real.
+   + Decide-se com o texto exato do Console.
+   - Riscos: o Console pode não mostrar nada útil antes da revisão (chance: média; impacto: baixo). A página da
+     loja pode ter de ser desenhada duas vezes.
+   Custo: nenhum agora. Dá para voltar atrás? Sim.
+D) Subir para 16+ — declarar público 16 anos ou mais.
+   + Fica longe de "criança" em todos os países europeus e simplifica o consentimento (todo jogador decide por si).
+   - Riscos: perde o público de 13 a 15 anos, que joga muito este tipo de jogo (chance: alta; impacto: médio). O
+     visual de brinquedo com público 16+ pode parecer contraditório para quem revê (chance: baixa; impacto:
+     médio).
+   Custo: mudar declaração, política e textos. Dá para voltar atrás? Sim, com custo baixo.
+
+Recomendação: A — é o que o jogo já é (13+), não custa nada no código e a regra da Google pede, antes de tudo,
+ajustar a página da loja. B e D ficam como plano de recuo caso a revisão recuse.
+Segunda opinião (fable): concorda com A, porque é o estado atual e a própria Google dá como primeira saída ajustar
+a página. Pediu que a ficha deixasse claro que o visual dentro do jogo também conta e que a idade de consentimento
+nos países do soft launch seja resolvida antes da RT-9. Os dois pontos entraram na ficha.
+Se você não responder: nada muda no jogo. A RT-6v.2 pode seguir com o seu ok ao mundo 1, e a RT-9 parte de A, que
+é o estado atual.
+
+Responda: A, B, C ou D, ou "explica melhor".

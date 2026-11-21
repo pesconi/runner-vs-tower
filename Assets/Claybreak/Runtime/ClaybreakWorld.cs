@@ -14,7 +14,9 @@ namespace Claybreak
         /// <summary>World 3: barrels, chimneys, pipe arches and crucibles; a far factory skyline with lit windows.</summary>
         Foundry,
         /// <summary>World 4: ice shards, snow drifts, bone pikes and cairns; far jagged peaks with snow caps.</summary>
-        Peaks
+        Peaks,
+        /// <summary>RT-6v (direction v2, D24): a sunny meadow in three planes (flowers, round trees, hills and clouds).</summary>
+        Meadow
     }
 
     /// <summary>
@@ -41,8 +43,22 @@ namespace Claybreak
         public Color propDark;
         [Tooltip("Light sources of the scenery (braziers, lamps, crystals).")]
         public Color accent;
+        [Tooltip("RT-6v: top color of the gradient sky dome (the horizon is 'sky'); alpha 0 = no dome, flat background.")]
+        public Color zenith;
+        [Tooltip("RT-6v: ambient light from below for the toy materials ('ambient' comes from above); alpha 0 = 'ambient' everywhere.")]
+        public Color ambientGround;
+        [Tooltip("RT-6v: fog start and end in metres; 0 = the scene default (50 and 130).")]
+        public float fogNear;
+        public float fogFar;
+
+        public const float DefaultFogNear = 50f;
+        public const float DefaultFogFar = 130f;
 
         public bool IsSet => sunIntensity > 0f && sky.a > 0f && ground.a > 0f;
+        public bool HasSkyDome => zenith.a > 0f;
+        public Color GroundAmbient => ambientGround.a > 0f ? ambientGround : ambient;
+        public float FogNear => fogNear > 0f ? fogNear : DefaultFogNear;
+        public float FogFar => fogFar > FogNear ? fogFar : Mathf.Max(DefaultFogFar, FogNear + 1f);
     }
 
     /// <summary>

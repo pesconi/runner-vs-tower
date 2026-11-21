@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Soldier
+  m_Shader: {fileID: 4800000, guid: 9fd7b55459188734b9c08d805a1dfac9, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PoseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AmbientBlend: 1
+    - _PoseRows: 0
+    - _RimStrength: 0.35
+    - _SpecSize: 64
+    - _SpecStrength: 0.9
+    - _Wrap: 0.55
+    m_Colors:
+    - _AccentColor: {r: 1, g: 1, b: 1, a: 1}
+    - _AmbientGround: {r: 0.5568628, g: 0.43137255, b: 0.36862746, a: 1}
+    - _AmbientSky: {r: 0.654902, g: 0.76862746, b: 0.9254902, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EyeColor: {r: 0.09999997, g: 0.09999997, b: 0.11999995, a: 1}
+    - _RimColor: {r: 0.654902, g: 0.76862746, b: 0.9254902, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

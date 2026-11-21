@@ -251,6 +251,83 @@ namespace Claybreak.Editor
             scenery.Apply(0, catalog.Worlds[0].world.Look);
         }
 
+        /// <summary>
+        /// RT-6v: a quick look at one world in the real scene, written ONLY to the capture folder (docs untouched):
+        /// the run camera over a block of soldiers in the rest pose before a gate pair, and the assault camera on the
+        /// world's own tower and boss. -executeMethod Claybreak.Editor.ArtDirectionCapture.PreviewWorldAndQuit
+        /// [-claybreakCaptureDir C:\temp\rt6v\preview] [-claybreakWorld 1] (no -nographics).
+        /// </summary>
+        public static void PreviewWorldAndQuit()
+        {
+            BatchRunner.Run("ArtDirectionCapture", () =>
+            {
+                string folder = BatchRunner.GetArgument("-claybreakCaptureDir") ?? @"C:\temp\rt6v\preview";
+                int.TryParse(BatchRunner.GetArgument("-claybreakWorld") ?? "1", out int worldNumber);
+                PreviewWorld(folder, Mathf.Max(1, worldNumber) - 1);
+            });
+        }
+
+        private static void PreviewWorld(string folder, int worldIndex)
+        {
+            Directory.CreateDirectory(folder);
+            EditorSceneManager.OpenScene(ClaybreakSceneBuilder.ScenePath, OpenSceneMode.Single);
+            var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
+            ClaybreakWorld world = catalog.Worlds[worldIndex].world;
+            var scenery = UnityEngine.Object.FindAnyObjectByType<WorldScenery>(FindObjectsInactive.Include);
+            scenery.Apply(worldIndex, world.Look);
+            UnityEngine.Object.FindAnyObjectByType<ClaybreakScreens>(FindObjectsInactive.Include)?.HideAll();
+            Camera camera = Camera.main;
+            var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(ClaybreakSceneBuilder.ThemePath);
+            Mesh body = theme.Roster.BuiltInBody.Idle;
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(ClaybreakSceneBuilder.SoldierMaterialPath);
+            var colors = new JungleDegree.StudioKit.Characters.RunnerSkinColors(ToyPalette.Cobalt, ToyPalette.Gold, ToyPalette.Navy, ToyPalette.Cream);
+            var block = new MaterialPropertyBlock();
+            colors.ApplyTo(block);
+            var random = new System.Random(7);
+            for (int i = 0; i < 60; i++)
+            {
+                var soldier = new GameObject("PreviewSoldier", typeof(MeshFilter), typeof(MeshRenderer));
+                soldier.transform.position = new Vector3((float)random.NextDouble() * 5f - 2.5f, 0f, 2f + (float)random.NextDouble() * 5f);
+                soldier.GetComponent<MeshFilter>().sharedMesh = body;
+                var renderer = soldier.GetComponent<MeshRenderer>();
+                renderer.sharedMaterial = material;
+                renderer.SetPropertyBlock(block);
+            }
+
+            var course = UnityEngine.Object.FindAnyObjectByType<RunGateCourse>(FindObjectsInactive.Include);
+            course.Configure(world.Levels[1], GameObject.Find("Track").GetComponent<Renderer>(), false, 0);
+            camera.transform.position = new Vector3(0f, 9f, -4f);
+            camera.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
+            UnityEngine.Object.DestroyImmediate(Render(camera, 64, 64));
+            Preview(folder, $"mundo{worldIndex + 1}-corrida", camera);
+            camera.transform.position = new Vector3(0f, 2.6f, -1.5f);
+            camera.transform.rotation = Quaternion.Euler(18f, 0f, 0f);
+            Preview(folder, $"mundo{worldIndex + 1}-perto", camera);
+
+            var tower = UnityEngine.Object.FindAnyObjectByType<AssaultTower>();
+            InvokeAwake(tower);
+            foreach ((ClaybreakLevel level, string name, float height) in new[]
+            {
+                (world.Levels[1], "torre", 17f), (world.Levels[2], "torre2", 17f), (world.Levels[world.LevelCount - 1], "chefe", 20f)
+            })
+            {
+                tower.ResetTower(level.Tower, level.TowerHealth, level.Floors);
+                tower.transform.position = new Vector3(0f, 0f, level.TowerZ);
+                Vector3 line = new Vector3(0f, 0f, level.FiringLineZ);
+                camera.transform.position = line + new Vector3(0f, height, height - 31f);
+                camera.transform.LookAt(Vector3.Lerp(line, new Vector3(0f, 0f, level.TowerZ), 0.55f));
+                Preview(folder, $"mundo{worldIndex + 1}-{name}", camera);
+            }
+        }
+
+        private static void Preview(string folder, string name, Camera camera)
+        {
+            Texture2D shot = Render(camera, 540, 960);
+            File.WriteAllBytes(Path.Combine(folder, name + ".png"), shot.EncodeToPNG());
+            UnityEngine.Object.DestroyImmediate(shot);
+            Debug.Log("[ArtDirectionCapture] preview " + name);
+        }
+
         // The tab buttons are wired in Awake; a capture presses them through the same listener.
         private static void PickTab(ClaybreakScreens screens, ShopTab tab, Progression progression)
         {

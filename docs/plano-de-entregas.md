@@ -30,7 +30,7 @@ lançamento jun/2027.
 | ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
-| RT-6v Refazer o visual (direção v2; **D24 = A, em etapas**) | 2,5 | 3 | antes da RT-9 |
+| RT-6v Refazer o visual (direção v2; **D24 = A, em etapas**; RT-6v.1 feita em 2026-11-21, aceite pendente) | 2,5 | 3 | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -294,7 +294,22 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   (a métrica que a direção mais mexe; estimativa A: 5–6,5 ms), PSS ≤ 450 MB, alocação 0. Reserva prevista:
   soldado com menos vértices acima de ~150 em voo, se a GPU passar de ~8 ms.
 - **Exige o usuário:** responder a D24; aprovar as capturas dos 4 mundos no fim (sem ficha nova se seguir a direção).
-- **Status:** proposta em 2026-11-21; não iniciada.
+- **Status:** **RT-6v.1 feita em 2026-11-21** (aceite do dono pendente); RT-6v.2 e RT-6v.3 esperam o ok dele.
+  - Kit K.10 (pacote 0.5.0): brilho, ambiente de duas cores e borda opcionais no `RunnerClay`, céu em degradê,
+    sombra de contato de cenário, `SoftMeshBuilder`, corpo com regiões de cor. Aceite do Wild Pack igual à linha de
+    base: completude 90/0 (o mesmo aviso), assets 117/0, isolamento PASS, áudio 16 PASS, save 87/87.
+  - Jogo: soldado próprio de 552 vértices, sem rosto (`SoldierArt`); mundo 1 com platô e meio-fio, flores, árvores,
+    colinas, nuvens, céu em degradê e neblina (`ToyScenery`); fortes `ToyFort`, `ToyFortTwin` e chefe `ToyCitadel`
+    (`ToyTowerArt`); muralha nova; portões de vidro com número 2,3× maior e sombra (todos os mundos). Mundos 2–4
+    funcionam com o cenário e as torres antigos. Decisão técnica T-RT6v-1 (`decisoes.md`).
+  - Validação: cena, validador, isolamento PASS; EditMode 142/142 (4 novos do kit); PlayMode 13/13; tabela de
+    economia regravada; APKs em `C:\temp\rt6v` (jogo 38,4 MB, +2,5 MB). Prévias do Editor em `C:\temp\rt6v\preview`.
+  - Regra da Play sobre "público misto": pesquisada (Play Console "Público-alvo e conteúdo" e política Famílias).
+    Não trava código; vira a **ficha D25** (recomendação: manter 13+ e cuidar da página da loja).
+  - **Pendente (dono):** o OPPO estava bloqueado com senha, então a medição rápida de GPU e as capturas no
+    celular não foram feitas. O APK novo já está instalado. Passo: desbloquear o OPPO ligado ao PC e pedir para
+    rodar a medição e as capturas do mundo 1 (`Tools/rt2-gate.sh rt6v1-w1-oppo-60 60 20 /c/temp/rt6v/Claybreak-measure.apk 1`).
+    Depois, ver o mundo 1 no celular, dar o ok para a RT-6v.2 e responder a D25.
 
 ## RT-9 — Preparação do soft launch
 

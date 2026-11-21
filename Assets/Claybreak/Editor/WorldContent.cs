@@ -126,7 +126,7 @@ namespace Claybreak.Editor
             // 3: the forge and the sweeper (third defense). Its first win unlocks the Brute.
             fixedLevels[2] = Spec("LEVEL 3", 12, 5.5f, 98f,
                 new[] { Pair(18f, Mul(2), Add(8)), Pair(38f, Sub(10), Mul(3)), Pair(58f, Add(25), Div(2)), Pair(80f, Mul(2), Sub(20)) }, null,
-                Row(Div(2), Mul(3), Mul(2)), TowerKind.Forge, 300, 2, 32f, 60,
+                Row(Div(2), Mul(3), Mul(2)), TowerKind.World1Second, 300, 2, 32f, 60,
                 s => { Wall(s, false, 0, 22f, 60); Cannon(s, 2.3f, 0.9f, 1.1f, 4); Sweeper(s, 16f, 3.4f); });
 
             // 4: first crates; the wall now sits on the left x3 lane.
@@ -144,7 +144,7 @@ namespace Claybreak.Editor
                     Pair(80f, Add(30), Mul(2)), Pair(94f, Sub(25), Add(10))
                 },
                 new[] { Crate(28f, false, 3), Crate(68f, true, 4) },
-                Row(Mul(2), Mul(3), Div(2)), TowerKind.Forge, 440, 3, 34f, 85,
+                Row(Mul(2), Mul(3), Div(2)), TowerKind.World1Second, 440, 3, 34f, 85,
                 s => { Wall(s, false, 1, 22f, 60); Cannon(s, 1.9f, 0.85f, 1.15f, 5); Sweeper(s, 17f, 3f); });
 
             // 6: every defense at once before the new levels.
@@ -179,24 +179,29 @@ namespace Claybreak.Editor
             {
                 Id = SaveMigration.V1WorldId,
                 Name = "WORLD 1",
-                // Approved art (D17): bastion and citadel; the forge is the world's second tower.
+                // Direction v2 (D24 = A, RT-6v.1): the toy fort, its cream twin as the second tower and the toy citadel.
                 TowerOptions = new[] { TowerArt.ChosenTower },
                 BossOptions = new[] { TowerArt.ChosenBoss },
                 FixedLevels = fixedLevels,
                 StarsToUnlock = 0,
-                LookNames = new[] { "dusk marches (RT-4)" },
+                LookNames = new[] { "sunny valley (direction v2, D24 = A)" },
+                // RT-6v.1: the glossy toy look (direcao-visual-v2.md); colors in ToyPalette.
                 Look = new WorldLook
                 {
-                    scenery = SceneryStyle.Marches,
-                    sky = new Color(0.16f, 0.12f, 0.14f),
-                    ambient = new Color(0.42f, 0.36f, 0.34f),
-                    sun = new Color(1f, 0.86f, 0.7f),
-                    sunIntensity = 1.2f,
-                    ground = new Color(0.34f, 0.27f, 0.24f),
-                    field = new Color(0.2f, 0.17f, 0.17f),
-                    prop = new Color(0.46f, 0.42f, 0.42f),
-                    propDark = new Color(0.24f, 0.21f, 0.22f),
-                    accent = new Color(1f, 0.55f, 0.15f)
+                    scenery = SceneryStyle.Meadow,
+                    sky = ToyPalette.Horizon,
+                    zenith = ToyPalette.Zenith,
+                    ambient = ToyPalette.AmbientSky,
+                    ambientGround = ToyPalette.AmbientGround,
+                    sun = ToyPalette.Sun,
+                    sunIntensity = 0.95f,
+                    ground = ToyPalette.TrackTop,
+                    field = ToyPalette.Grass,
+                    prop = ToyPalette.Trunk,
+                    propDark = ToyPalette.Curb,
+                    accent = ToyPalette.FlowerCenter,
+                    fogNear = 55f,
+                    fogFar = 165f
                 },
                 Recipe = new WorldRecipe
                 {
@@ -204,7 +209,7 @@ namespace Claybreak.Editor
                     seed = 101,
                     levelCount = 10,
                     mainTower = TowerKind.Keep,
-                    secondTower = TowerKind.Forge,
+                    secondTower = TowerKind.World1Second,
                     secondTowerEvery = 3,
                     bossTower = TowerKind.Boss,
                     bossRule = BossRule.ShiftGates,
@@ -564,7 +569,8 @@ namespace Claybreak.Editor
             };
             var skins = new List<CrowdSkin>
             {
-                new CrowdSkin { id = "clay", title = "CLAY", color = new Color(0.95f, 0.55f, 0.18f), price = 0 },
+                // RT-6v: the free default is the army's cobalt (direction v2); the id stays (saves).
+                new CrowdSkin { id = "clay", title = "COBALT", color = ToyPalette.Cobalt, price = 0 },
                 new CrowdSkin { id = "ember", title = "EMBER", color = new Color(0.86f, 0.24f, 0.16f), price = 150 },
                 new CrowdSkin { id = "moss", title = "MOSS", color = new Color(0.42f, 0.62f, 0.3f), price = 300 },
                 new CrowdSkin { id = "slate", title = "SLATE", color = new Color(0.46f, 0.52f, 0.62f), price = 500 },

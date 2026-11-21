@@ -33,8 +33,9 @@ namespace Claybreak.Editor
         public readonly Material Crate = Solid("Crate", new Color(0.45f, 0.13f, 0.1f));
         public readonly Material Glow = Unlit("Glow", new Color(1f, 0.55f, 0.15f));
         public readonly Material GlowHot = Unlit("GlowHot", new Color(1f, 0.82f, 0.4f));
-        public readonly Material GateGood = Clear("GateGood", new Color(0.2f, 0.75f, 0.95f, 0.55f));
-        public readonly Material GateBad = Clear("GateBad", new Color(0.92f, 0.25f, 0.2f, 0.55f));
+        // RT-6v (direction v2): the gate panels are tinted toy glass in every world.
+        public readonly Material GateGood = ToyArt.Glass("GateGood", ToyPalette.GlassGood);
+        public readonly Material GateBad = ToyArt.Glass("GateBad", ToyPalette.GlassBad);
         public readonly Material Marker = Clear("LaneMarker", new Color(1f, 0.8f, 0.25f, 0.35f));
         public readonly Material Shadow = Clear("Shadow", new Color(0f, 0f, 0f, 0.5f));
         public readonly Material Danger = Clear("Danger", new Color(0.95f, 0.3f, 0.15f, 0.35f));
@@ -91,7 +92,8 @@ namespace Claybreak.Editor
             return material;
         }
 
-        private static Material LoadOrCreate(string name, string shaderName)
+        /// <summary>The material asset Materials/&lt;name&gt;.mat on <paramref name="shaderName"/> (created or switched to it).</summary>
+        internal static Material LoadOrCreate(string name, string shaderName)
         {
             string path = MaterialFolder + "/" + name + ".mat";
             Shader shader = Shader.Find(shaderName) ?? throw new InvalidOperationException("Shader not found: " + shaderName);

@@ -37,7 +37,9 @@ namespace Claybreak
         World3Tower,
         World3Boss,
         World4Tower,
-        World4Boss
+        World4Boss,
+        /// <summary>RT-6v: world 1's second tower (it shared the forge with world 2 before the direction v2).</summary>
+        World1Second
     }
 
     /// <summary>

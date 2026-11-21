@@ -35,7 +35,13 @@ namespace Claybreak.Editor
         /// <summary>World 4 boss option: a taller spire with a crown of ice shards and two ice obelisks.</summary>
         CrownSpire,
         /// <summary>World 4 boss option: a larger bone bastion with horns.</summary>
-        BoneHorns
+        BoneHorns,
+        /// <summary>RT-6v (direction v2): world 1's toy fort, coral and cream drums under navy roofs.</summary>
+        ToyFort,
+        /// <summary>RT-6v: world 1's second tower, the toy fort in cream with rounded square floors.</summary>
+        ToyFortTwin,
+        /// <summary>RT-6v: world 1's boss, a bigger toy fort with gold trim, a crown of round spikes and a cannon ball.</summary>
+        ToyCitadel
     }
 
     /// <summary>What the game needs from a built tower body.</summary>
@@ -57,13 +63,15 @@ namespace Claybreak.Editor
     public static class TowerArt
     {
         /// <summary>
-        /// Styles used in the game until the art direction is approved (decision D17, ficha in
-        /// docs/decisoes.md). Changing these two lines and rebuilding the scene swaps the art.
+        /// World 1's styles: the direction v2 toy forts (D24 = A, RT-6v.1). The RT-4 options (D17) stay buildable
+        /// for the art sheets; the forge is still the second tower of world 2.
         /// </summary>
-        public const TowerStyle ChosenTower = TowerStyle.StoneBastion;
-        public const TowerStyle ChosenBoss = TowerStyle.Citadel;
-        /// <summary>The second tower of the world (not under art review: forge levels).</summary>
-        public const TowerStyle SecondTower = TowerStyle.IronForge;
+        public const TowerStyle ChosenTower = TowerStyle.ToyFort;
+        public const TowerStyle ChosenBoss = TowerStyle.ToyCitadel;
+        /// <summary>World 1's second tower (its forge levels until RT-6v).</summary>
+        public const TowerStyle SecondTower = TowerStyle.ToyFortTwin;
+        /// <summary>The forge tower kind (world 2's second tower).</summary>
+        public const TowerStyle ForgeTower = TowerStyle.IronForge;
 
         /// <summary>
         /// The style each tower kind is built in (RT-6: one line per kind; a world's options are compared in
@@ -74,7 +82,8 @@ namespace Claybreak.Editor
             switch (kind)
             {
                 case TowerKind.Keep: return ChosenTower;
-                case TowerKind.Forge: return SecondTower;
+                case TowerKind.Forge: return ForgeTower;
+                case TowerKind.World1Second: return SecondTower;
                 case TowerKind.Boss: return ChosenBoss;
                 case TowerKind.World2Tower: return WorldContent.ChosenTowerStyle(1);
                 case TowerKind.World2Boss: return WorldContent.ChosenBossStyle(1);
@@ -108,6 +117,9 @@ namespace Claybreak.Editor
                 case TowerStyle.CrownSpire: FrostSpire(body, p, ref parts, 1.15f); CrownExtras(body, p, parts); break;
                 case TowerStyle.BoneBastion: BoneBastion(body, p, ref parts, 1f); break;
                 case TowerStyle.BoneHorns: BoneBastion(body, p, ref parts, 1.2f); BoneHornExtras(body, p, parts); break;
+                case TowerStyle.ToyFort:
+                case TowerStyle.ToyFortTwin:
+                case TowerStyle.ToyCitadel: ToyTowerArt.Build(style, body, ref parts); break;
                 default: throw new System.ArgumentOutOfRangeException(nameof(style), style, "no builder for this style");
             }
 

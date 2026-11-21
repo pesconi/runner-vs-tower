@@ -26,16 +26,20 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5dd4f783d4e8b9a45b06aa9f2be6937a, type: 2}
   - {fileID: 11400000, guid: f3847f31a2796134eaa0eb2724e98963, type: 2}
   look:
-    scenery: 0
-    sky: {r: 0.16, g: 0.12, b: 0.14, a: 1}
-    ambient: {r: 0.42, g: 0.36, b: 0.34, a: 1}
-    sun: {r: 1, g: 0.86, b: 0.7, a: 1}
-    sunIntensity: 1.2
-    ground: {r: 0.34, g: 0.27, b: 0.24, a: 1}
-    field: {r: 0.2, g: 0.17, b: 0.17, a: 1}
-    prop: {r: 0.46, g: 0.42, b: 0.42, a: 1}
-    propDark: {r: 0.24, g: 0.21, b: 0.22, a: 1}
-    accent: {r: 1, g: 0.55, b: 0.15, a: 1}
+    scenery: 4
+    sky: {r: 0.9019608, g: 0.9647059, b: 1, a: 1}
+    ambient: {r: 0.654902, g: 0.76862746, b: 0.9254902, a: 1}
+    sun: {r: 1, g: 0.9490196, b: 0.87058824, a: 1}
+    sunIntensity: 0.95
+    ground: {r: 1, g: 0.8509804, b: 0.5882353, a: 1}
+    field: {r: 0.4745098, g: 0.84705883, b: 0.5882353, a: 1}
+    prop: {r: 0.7882353, g: 0.5411765, b: 0.36862746, a: 1}
+    propDark: {r: 0.9411765, g: 0.47058824, b: 0.30588236, a: 1}
+    accent: {r: 1, g: 0.72156864, b: 0.23921569, a: 1}
+    zenith: {r: 0.3882353, g: 0.74509805, b: 1, a: 1}
+    ambientGround: {r: 0.5568628, g: 0.43137255, b: 0.36862746, a: 1}
+    fogNear: 55
+    fogFar: 165
   expectedDamage: 1
   loopPowerExponent: 0.7
   healthPerLoop: 0.25

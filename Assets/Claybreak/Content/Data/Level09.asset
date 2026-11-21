@@ -76,7 +76,7 @@ MonoBehaviour:
     value: 3
   autoLaunch: 0
   recycleUnits: 0
-  tower: 1
+  tower: 9
   towerDistance: 34.5
   towerHealth: 550
   floors: 3
