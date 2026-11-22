@@ -340,7 +340,6 @@ HDR ligado, renderScale 0,8, Vulkan, Mali-G1-Ultra; `[ToonLab] units=1000 dying=
 | PSS | 177 MB | ≤ 450 MB |
 | Alocação no quadro | 0 KB, GC +0 | — |
 
-`dying=512` em todas as linhas `[DevFps]`. A janela 1 (33,4 fps) é a carga da cena, como nos gates anteriores. Margem de
-GPU ~1,7× sobre o limite de 11 ms; 512 morrendo custam pouco na GPU em relação aos 1000 parados da 6t.1. Captura do
+`dying=512` em todas as linhas `[DevFps]`. A janela 1 (33,4 fps) é a carga da cena, como nos gates anteriores. Captura do
 aparelho durante o gate: [`art/rt6t/gate-d512-oppo.png`](art/rt6t/gate-d512-oppo.png) (o anel de fora voando e
 encolhendo nas bordas da multidão).
