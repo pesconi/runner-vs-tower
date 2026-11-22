@@ -693,6 +693,47 @@ namespace Claybreak.Editor
             }
         }
 
+        // RT-6t.10 (D28 = A): the towers, bosses, defenses, projectiles and crates are toon. Every opaque renderer under them
+        // draws with StudioKit/ToonLit on a mesh with vertex colors (the shader reads them); only translucent materials
+        // (shield dome, shadows, danger strip, gate panels) and text stay on other shaders.
+        private static void CheckAssaultArt(Component[] roots, List<string> failures)
+        {
+            int problems = 0;
+            foreach (Component root in roots)
+            {
+                if (root == null)
+                {
+                    continue;
+                }
+
+                foreach (MeshRenderer renderer in root.GetComponentsInChildren<MeshRenderer>(true))
+                {
+                    if (renderer.GetComponent<TMPro.TMP_Text>() != null || renderer.GetComponent<TextMesh>() != null)
+                    {
+                        continue;
+                    }
+
+                    var filter = renderer.GetComponent<MeshFilter>();
+                    foreach (Material material in renderer.sharedMaterials)
+                    {
+                        if (material != null && material.renderQueue >= (int)UnityEngine.Rendering.RenderQueue.Transparent)
+                        {
+                            continue;
+                        }
+
+                        string problem = material == null ? "has an empty material slot"
+                            : !ToonPrimitives.IsToon(material) ? $"draws with {material.shader?.name} ({material.name}), not {ToonShaderIds.ToonLitShader}"
+                            : filter == null || filter.sharedMesh == null || filter.sharedMesh.colors32.Length == 0 ? "has no vertex colors for the toon shader"
+                            : null;
+                        if (problem != null && problems++ < 5)
+                        {
+                            failures.Add($"assault art: {root.name}/{renderer.name} {problem} (rebuild the scene)");
+                        }
+                    }
+                }
+            }
+        }
+
         private static void CheckScene(List<string> failures)
         {
             EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
@@ -763,6 +804,14 @@ namespace Claybreak.Editor
             {
                 failures.Add("the wall, the sweeper and the shield need their parts");
             }
+
+            GameObject firingLine = GameObject.Find("FiringLine");
+            if (firingLine == null)
+            {
+                failures.Add("the scene has no FiringLine");
+            }
+
+            CheckAssaultArt(new Component[] { tower, cannon, wall, sweeper, shield, gates, firingLine?.transform }, failures);
 
             var worldCatalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
             var scenery = Object.FindFirstObjectByType<WorldScenery>(FindObjectsInactive.Include);

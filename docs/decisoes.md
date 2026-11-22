@@ -1613,3 +1613,54 @@ Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
   ao esconder/mostrar o HUD (não fica congelado entre fases), o HUD confere as peças do número flutuante, operando
   negativo não escreve lixo no rótulo, o número some pelo `CanvasRenderer` (sem refazer a malha do TMP a cada quadro), a
   rampa das capturas de edição é liberada, e saíram duas sobras de código.
+
+## 2026-11-22 — D28 sem resposta: vale A — produto (sessão RT-6t.10)
+
+- **D28 — Arte do assalto no estilo novo: A aplicada por padrão** (ficha em `direcao-visual-crowd.md`, "Se você não
+  responder: a 6t.10 aplica A"). Torres, chefes, canhão, muralha, escudo, varredor, projéteis, caixotes e efeitos ganham o
+  sombreado de 3 faixas e as cores de torre/defesa de cada paleta, sem remodelar e sem rostos. Reversível; a aprovação
+  visual do usuário fica como aceite pendente (capturas `docs/art/rt6t/chefes-oppo.png` e `chefes-perto.png`). Se ele
+  responder B ou C depois, vira entrega própria.
+
+## 2026-11-22 — T-RT6t10-1..8 — Arte do assalto no estilo toon — técnica (sessão RT-6t.10)
+
+- **T-RT6t10-1 — Cores de estrutura como globais do `ToonLit`, não material por mundo.** As torres são reaproveitadas
+  entre mundos (a Forja nos mundos 1 e 2, a torre do mundo 2 no 3, a do 3 no 4) e as defesas são as mesmas nos quatro:
+  a cor tem de seguir a paleta do mundo ativo. O `StudioKit/ToonLit` ganhou `_StructureWeights` (por material: quanto
+  de estrutura clara, escura, detalhe e defesa entra na tinta; o que falta até 1 fica branco) e quatro globais
+  (`_StudioKitStructureLight/Dark/Detail`, `_StudioKitDefense`, lineares) que o `ToonPaletteApplier` escreve junto com o
+  céu e a neblina. Trocar de mundo = 4 escritas globais; nada criado, nenhum bloco de propriedade (continua compatível
+  com o SRP Batcher). Descartados: 4 conjuntos de materiais por mundo trocados em cada renderizador (listas, trocas a cada
+  nível) e `MaterialPropertyBlock` por renderizador (tira do SRP Batcher). Com pesos 0, emissão 0 e neblina 1 o shader
+  dá exatamente o resultado anterior: multidão, cenário e postes não mudam. Global nunca escrita (alfa 0, modo de edição
+  antes de qualquer paleta) é lida como branco, não preto.
+- **T-RT6t10-2 — Os papéis antigos viram misturas da paleta (sem remodelar).** `ArtPalette` mantém os nomes (Stone,
+  Iron, Wood, Banner, Brick, Frost, Basalt...) para os construtores das torres não mudarem uma linha de forma; cada um
+  vira uma mistura: pedra = clara/escura, ferro = defesa, estandarte = detalhe, madeira = escura + defesa, caixote =
+  detalhe + escura etc. (tabela no código). Os temas dos mundos ficam nas formas, como a ficha diz.
+- **T-RT6t10-3 — Efeitos: o mesmo shader com emissão.** Chamas, janelas acesas, brasas, lanternas e gelo passam de URP
+  Unlit para `ToonLit` com `_ToonEmission` 1 e a cor de detalhe clareada (rosa no Pastel, coral no Pôr do sol, azul no
+  Doce, laranja na Aurora). Sinais de jogo ficam fixos: barra de vida (vermelha), núcleo e cúpula do escudo (ciano), faixa
+  de perigo, painéis dos portões. A sombra do projétil passa ao tom de sombra da direção (#2b2233) a 0,4 (mais forte que
+  a da multidão, 0,18: ela avisa onde a pedra cai).
+- **T-RT6t10-4 — Neblina das estruturas a 0,35.** A observação da 6t.6a (torre lavada na cor da neblina 22–75) se
+  resolve com `_ToonFogAmount` por material: as estruturas levam 35% da neblina, o cenário e a pista seguem com 100%.
+  Descartados: `fogEnd` maior por paleta (mexe na atmosfera da corrida aprovada) e neblina por perfil de câmera (mais
+  peças para o mesmo efeito).
+- **T-RT6t10-5 — Cores de torre do Pastel escurecidas [P].** Na primeira captura a torre do mundo 1 (#f6e9f2 / #c4a7c9)
+  quase sumia contra o céu rosa; passou a #f1d2e1 / #ab86b8. As outras três paletas ficaram como a 6t.6a propôs. Todas
+  continuam provisórias (o usuário não deu esses valores).
+- **T-RT6t10-6 — Primitivas com cor de vértice.** O `ToonLit` lê a cor de vértice, e as primitivas do Unity não têm (um
+  fluxo ausente não é garantidamente branco em toda API gráfica). `ToonPrimitives` gera cópias de cubo, cilindro e esfera
+  com branco (alfa 1 = leva a tinta) em `Content/Generated`; o `Prim` usa a cópia quando o material é toon. Ao trocar o
+  shader de um material antigo, o asset é sobrescrito por um material novo do mesmo shader (mesmo id), sem as
+  propriedades do Simple Lit.
+- **T-RT6t10-7 — Guardas.** Validador: todo renderizador opaco da torre, canhão, muralha, varredor, escudo, portões/caixotes
+  e linha de tiro usa `ToonLit` com malha de cor de vértice (todas as posições de material). EditMode `AssaultArtTests`:
+  os materiais do assalto commitados são toon, pesos em 0..1 com soma até 1, nenhum Simple Lit na pasta, primitivas
+  brancas. PlayMode de captura `BossCaptureTests` (`-bossCaptureDir`, só com GPU): os 4 chefes no nível de gate de cada
+  mundo, na câmera do jogo e de perto.
+- **T-RT6t10-8 — Revisão independente (subagente fable, só leitura): nada sério.** Aplicados: o teste lê os assets
+  commitados em vez de reconstruí-los, a troca de shader limpa as propriedades antigas, global não escrita vira branco,
+  o validador cobre a linha de tiro e todas as posições de material e roda mesmo com peça faltando, a barra de vida
+  voltou à cor exata de antes, a captura limpa câmera e texturas mesmo se falhar no meio.

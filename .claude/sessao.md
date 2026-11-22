@@ -116,3 +116,9 @@
   teste `GateFeedbackEditTests` confere). `UI.Text` e `TextMesh` usam a TTF dinâmica. Captura dos portões, número flutuante,
   pop e glifos: `-testFilter Claybreak.Tests.GateFeedbackTests -gateCaptureDir <pasta>` sem `-nographics`. As capturas de
   modo de edição agora aplicam o `ToonLook` (antes, objetos `ToonLit` sem slots saíam pretos).
+- 2026-11-22 (RT-6t.10): a arte do assalto é `ToonLit` com `_StructureWeights`; a cor vem das globais de estrutura/defesa
+  que o `ToonPaletteApplier` escreve (captura de modo de edição precisa chamar `Apply`/`ApplyGlobally` da paleta). Material
+  novo do assalto = papel novo em `ArtPalette` (mistura das 4 cores); primitiva toon precisa da malha com cor de vértice
+  (`ToonPrimitives`, o `Prim` troca sozinho). Ao mudar o shader de um material existente, reverter os `.mat` para o HEAD
+  antes de reconstruir não é preciso: o `ArtPalette` sobrescreve o asset limpo. Captura dos 4 chefes:
+  `-testFilter Claybreak.Tests.BossCaptureTests -bossCaptureDir <pasta>` sem `-nographics`.

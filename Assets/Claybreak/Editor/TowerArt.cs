@@ -743,6 +743,11 @@ namespace Claybreak.Editor
             go.transform.localScale = scale;
             var renderer = go.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
+            if (ToonPrimitives.IsToon(material))
+            {
+                go.GetComponent<MeshFilter>().sharedMesh = ToonPrimitives.Get(type);
+            }
+
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
             return renderer;

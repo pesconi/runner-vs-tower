@@ -573,3 +573,30 @@ Decisões T-RT6t9-1..11 em `decisoes.md` (a 11 é a revisão independente: nada 
 - Gate de desempenho: não faz parte do aceite desta entrega (fica para a 6t.12). Tentativa extra no fim: o OPPO estava
   conectado mas com a tela de bloqueio (senha), então não rodou. A mudança em jogo é pequena: texto TMP com atlas estático
   (nada rasterizado em jogo), 4 rótulos de HUD e postes de 1 malha cada.
+
+## RT-6t.10 — Arte do assalto (2026-11-22)
+
+D28 sem resposta: vale a opção A da ficha (sombreado toon e cores de torre/defesa da paleta, sem remodelar, sem rostos).
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| Cores de estrutura no `ToonLit` | incubadora, `ToonLit.shader`, `ToonShaderIds`, `ToonPaletteApplier` | Por material: `_StructureWeights` (clara, escura, detalhe, defesa; o resto até 1 fica branco), `_ToonEmission` (0 iluminado, 1 sem luz) e `_ToonFogAmount` (fração da neblina). Globais `_StudioKitStructureLight/Dark/Detail` e `_StudioKitDefense` escritas pelo aplicador da paleta na troca de mundo. Com os valores padrão o shader é o mesmo de antes (multidão, cenário e postes iguais). |
+| Materiais do assalto | `ArtPalette` | Os 28 papéis opacos (pedra, ferro, madeira, estandarte, tijolo, gelo, basalto, osso, muralha, caixote, chamas...) viram `ToonLit` com uma mistura das 4 cores da paleta; efeitos com emissão e a cor de detalhe clareada; estruturas com 35% da neblina. Cores fixas para sinais de jogo: vida, escudo, faixa de perigo, portões. Sombra do projétil #2b2233 a 0,4. |
+| Primitivas | `ToonPrimitives`, `Prim` | Cubo, cilindro e esfera com cor de vértice branca (o shader lê a cor de vértice). Mesmas formas: nenhuma torre foi remodelada. |
+| Paleta Pastel | `PaletteContent` | Torre clara/escura #f1d2e1 / #ab86b8 (antes #f6e9f2 / #c4a7c9, que sumiam no céu rosa). Demais paletas sem mudança. |
+| Guardas | `ClaybreakValidation`, `AssaultArtTests` | Todo renderizador opaco do assalto é toon com cor de vértice; materiais com pesos válidos; nenhum Simple Lit sobrou. |
+
+Decisões D28 (A por padrão) e T-RT6t10-1..8 em `decisoes.md`.
+
+### Capturas (Unity com GPU, formato do OPPO, metade do tamanho)
+
+- [`art/rt6t/chefes-oppo.png`](art/rt6t/chefes-oppo.png): os 4 chefes (cidadela, campanário afundado, martelo a vapor,
+  coroa de gelo) no nível de gate de cada mundo, na câmera do assalto do jogo, com canhão, pedras em voo, muralha, escudo,
+  varredor e a multidão atacando (o gate veste a skin mais cara).
+- [`art/rt6t/chefes-perto.png`](art/rt6t/chefes-perto.png): os mesmos 4 de perto (câmera só da captura, acima da linha
+  de tiro), para ver as 3 faixas do sombreado, as cores da paleta e o gerador do escudo.
+- `art/telas/` regravadas (menu, loja, assalto e os 4 mundos com as torres novas).
+- Comando: `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.BossCaptureTests -bossCaptureDir <pasta>` sem
+  `-nographics`.

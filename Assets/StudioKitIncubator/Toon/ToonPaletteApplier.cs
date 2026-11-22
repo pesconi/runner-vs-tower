@@ -4,7 +4,8 @@ namespace JungleDegree.StudioKit.Toon
 {
     /// <summary>
     /// Puts a <see cref="ToonPalette"/> on screen: the sky gradient (global values read by <c>StudioKit/SkyGradientScreen</c>,
-    /// drawn as the skybox) and the linear fog of the render settings, which every fogged shader reads. Applying is a
+    /// drawn as the skybox), the structure and defense colors (globals read by <c>StudioKit/ToonLit</c> materials with
+    /// structure weights) and the linear fog of the render settings, which every fogged shader reads. Applying is a
     /// handful of global writes (world or menu time, not per frame); nothing is created. Cameras that should show the sky
     /// clear to the skybox.
     /// </summary>
@@ -74,6 +75,12 @@ namespace JungleDegree.StudioKit.Toon
             Color bottom = palette.SkyBottom;
             Shader.SetGlobalVector(ToonShaderIds.SkyTop, new Vector4(top.r, top.g, top.b, 1f));
             Shader.SetGlobalVector(ToonShaderIds.SkyBottom, new Vector4(bottom.r, bottom.g, bottom.b, 1f));
+            // Structure and defense colors are albedo, used as they are in the working space; alpha 1 marks them as set
+            // (the palette validates them opaque).
+            Shader.SetGlobalVector(ToonShaderIds.StructureLight, ToonShaderIds.ShaderColor(palette.StructureLight));
+            Shader.SetGlobalVector(ToonShaderIds.StructureDark, ToonShaderIds.ShaderColor(palette.StructureDark));
+            Shader.SetGlobalVector(ToonShaderIds.StructureDetail, ToonShaderIds.ShaderColor(palette.StructureDetail));
+            Shader.SetGlobalVector(ToonShaderIds.Defense, ToonShaderIds.ShaderColor(palette.Defense));
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = palette.Fog;

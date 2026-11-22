@@ -25,8 +25,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _ToonEmission: 0
+    - _ToonFogAmount: 1
     m_Colors:
+    - _StructureWeights: {r: 0, g: 0, b: 0, a: 0}
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot0: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot1: {r: 1, g: 1, b: 1, a: 1}

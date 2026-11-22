@@ -25,7 +25,9 @@ namespace Claybreak.Editor
     /// The world palettes (RT-6t.6a) as code, like the rest of the content: the scene builder rewrites the assets from here
     /// on every build, so a palette change is a reviewed edit of this file. Worlds 1–3 are the user's palettes with the
     /// exact values (docs/direcao-visual-crowd.md section 1.1); world 4 is the provisional "Aurora" of section 5.1. The
-    /// tower and defense colors are provisional [P] for RT-6t.10 (not on screen yet); fog 22–75 is the reference's.
+    /// tower and defense colors are ours, provisional [P]: on screen since RT-6t.10 (towers, bosses, defenses, projectiles,
+    /// crates, through ArtPalette's structure weights), Pastel's tower light/dark darkened there so the towers read against
+    /// its pink sky; fog 22–75 is the reference's.
     /// </summary>
     public static class PaletteContent
     {
@@ -41,7 +43,7 @@ namespace Claybreak.Editor
                 Track = "#fff4ea", TrackStripe = "#ffe3d1", Crowd = "#ff8fab",
                 FoliageDark = "#7cc6a4", FoliageLight = "#a8dcbf", Trunk = "#c99076", Rock = "#e7d3f0",
                 UiAccent = "#ff6f91", UiInk = "#3b2f4a",
-                TowerLight = "#f6e9f2", TowerDark = "#c4a7c9", TowerDetail = "#ff6f91", Defense = "#7d6b91",
+                TowerLight = "#f1d2e1", TowerDark = "#ab86b8", TowerDetail = "#ff6f91", Defense = "#7d6b91",
             },
             new PaletteDefinition
             {

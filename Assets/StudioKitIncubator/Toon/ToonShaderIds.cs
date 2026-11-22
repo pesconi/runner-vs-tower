@@ -38,6 +38,24 @@ namespace JungleDegree.StudioKit.Toon
         public static readonly int DirectIntensity = Shader.PropertyToID("_StudioKitToonDirect");
 
         /// <summary>
+        /// Per material of <c>StudioKit/ToonLit</c>: how much of the palette's structure light, dark, detail and defense colors
+        /// (x, y, z, w) goes into the tint; the rest up to 1 stays white.
+        /// </summary>
+        public static readonly int StructureWeights = Shader.PropertyToID("_StructureWeights");
+
+        /// <summary>Per material of <c>StudioKit/ToonLit</c>: 0 = lit by the ramp, 1 = the unlit albedo (glows).</summary>
+        public static readonly int Emission = Shader.PropertyToID("_ToonEmission");
+
+        /// <summary>Per material of <c>StudioKit/ToonLit</c>: how much of the fog it takes (1 = all).</summary>
+        public static readonly int FogAmount = Shader.PropertyToID("_ToonFogAmount");
+
+        /// <summary>Global structure and defense colors of the palette on screen, linear (written by <see cref="ToonPaletteApplier"/>).</summary>
+        public static readonly int StructureLight = Shader.PropertyToID("_StudioKitStructureLight");
+        public static readonly int StructureDark = Shader.PropertyToID("_StudioKitStructureDark");
+        public static readonly int StructureDetail = Shader.PropertyToID("_StudioKitStructureDetail");
+        public static readonly int Defense = Shader.PropertyToID("_StudioKitDefense");
+
+        /// <summary>
         /// A color as a raw shader vector in the project's working space (linear when the project is linear), for
         /// <c>SetVector</c> on values the shaders use as they are (slot colors, track colors).
         /// </summary>
