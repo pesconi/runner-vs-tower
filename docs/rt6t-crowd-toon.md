@@ -741,11 +741,22 @@ O usuário jogou no OPPO e pediu: neblina "próxima de zero" e um líder visíve
 - `mundos-oppo.png`: os 4 mundos com a neblina nova (regravada). `corrida-oppo.png` e `portoes-oppo.png` regravadas com o
   líder e o novo feedback.
 
-### Gate 3× no OPPO CPH2791
+### Gate 3× no OPPO CPH2791 — **PASSOU** (2026-11-22)
 
-**Pendente.** O OPPO não apareceu no adb em nenhum momento da sessão (cabo desconectado). Os APKs desta entrega estão em
-`/c/temp/rt6t13/` (`Claybreak.apk`, `Claybreak-measure.apk`). Com o aparelho conectado e desbloqueado:
-`Tools/rt2-gate.sh rt6t13-run-w4 60 20 /c/temp/rt6t13/Claybreak-measure.apk run:4`, depois
-`Tools/rt2-gate.sh rt6t13-assault-w4 60 20 /c/temp/rt6t13/Claybreak-measure.apk 4`, `adb shell am force-stop com.jungledegree.runnervstower`
-e `adb install -r /c/temp/rt6t13/Claybreak.apk` (preserva o save). Custo esperado: +3 chamadas de desenho do líder e
-o dobro de árvores e pedras instanciadas (mesmas 2 chamadas), sobre a folga de >4× em CPU e 2,5× em GPU da 6t.12.
+APK de medição desta entrega (`/c/temp/rt6t13/Claybreak-measure.apk`), Vulkan, rota de buffer (`[ToonRoute] route=Buffer
+api=Vulkan gpu="Mali-G1-Ultra MC12"`). Critério de sempre (T-RT6t4-8): CPU principal p95 ≤ 11 ms, GPU p95 ≤ 11 ms, quadro
+p95 ≤ 16,7 ms, < 5% dos quadros > 50 ms, PSS ≤ 450 MB. CPU e GPU = pior p95 das janelas 1–5 (a 6ª coincide com a coleta de
+memória do script). O aparelho foi conectado e desbloqueado depois do commit da entrega; o gate rodou sobre o mesmo APK.
+
+| Caso | Comando | CPU p95 | GPU p95 | Quadro p95 | > 50 ms | PSS | Alocação | Resultado |
+|---|---|---|---|---|---|---|---|---|
+| corrida do mundo 4, 300 no teto + líder + cenário com o dobro de árvores e pedras | `Tools/rt2-gate.sh rt6t13-run-w4 60 20 /c/temp/rt6t13/Claybreak-measure.apk run:4` | 2,4 ms | 4,9 ms | 16 ms (62,5 fps) | 0,0% | 295 MB | 0 B | **passa** |
+| assalto do mundo 4: líder na linha, chefe, canhão 12/12, 299–300 em voo (100 elites, 16–54 morrendo) | `Tools/rt2-gate.sh rt6t13-assault-w4 60 20 /c/temp/rt6t13/Claybreak-measure.apk 4` | 2,5 ms | 4,4 ms | 16 ms (62,5 fps) | 0,0% | 296 MB | 0 B | **passa** |
+| antes: 6t.12 (corrida / assalto) | — | 1,8 / 2,3 ms | 4,4 / 4,4 ms | 16 ms | 0,0% | 305 / 313 MB | 0 B | passa |
+
+Leitura: o pior p95 de CPU e GPU cai na janela 1 (carga inicial); nas janelas estáveis (2–5) a CPU fica em 1,7–2,0 ms e a
+GPU em 2,9–3,1 ms, iguais à 6t.12. O líder (+3 chamadas) e o cenário dobrado não mudaram o custo: folga de mais de 4× em CPU
+e de 2,2× em GPU sobre o limite de 11 ms, quadro sempre a 60 fps, nenhuma alocação em jogo.
+
+Depois do gate: `adb shell am force-stop com.jungledegree.runnervstower` e `adb install -r /c/temp/rt6t13/Claybreak.apk`
+(save preservado; instalado em 2026-11-22 20:41). Falta só o usuário jogar e aprovar o líder e a neblina.
