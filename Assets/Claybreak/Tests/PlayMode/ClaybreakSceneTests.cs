@@ -1,5 +1,6 @@
 using System.Collections;
 using JungleDegree.StudioKit.Core;
+using JungleDegree.StudioKit.Toon;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -162,7 +163,9 @@ namespace Claybreak.Tests
             Assert.IsTrue(GameObject.Find("Home") != null, "the home screen is not shown");
 
             Assert.AreEqual(flow.ActiveLevel.StartCount, flow.Crowd.Army);
-            Assert.AreEqual(flow.Progress.Skin.color, flow.Crowd.Swarm.Tint, "the crowd does not wear the skin");
+            // RT-6t.6a: a fresh save wears the default skin, which takes world 1's palette color.
+            Assert.IsTrue(flow.Progress.WearsDefaultSkin);
+            Assert.AreEqual(flow.Progress.World.Look.palette.Crowd, flow.Crowd.Swarm.Tint, "the default skin does not wear the world's color");
         }
 
         [UnityTest]
@@ -334,6 +337,16 @@ namespace Claybreak.Tests
                 ClaybreakWorld data = catalog.Worlds[world - 1].world;
                 Assert.AreEqual(world - 1, flow.Scenery.Shown, "the world's scenery set is shown");
                 Assert.AreEqual(data.Levels[data.LevelCount - 1].Tower, flow.ActiveLevel.Tower, "the gate runs the world's boss tower");
+                // RT-6t.6a: the world's palette is on screen and the default skin wears its crowd color.
+                ToonPalette palette = data.Look.palette;
+                Assert.AreEqual(palette.Fog, RenderSettings.fogColor, $"world {world}: the fog is the palette's");
+                Assert.AreEqual(palette.FogStart, RenderSettings.fogStartDistance);
+                Assert.AreEqual(palette.FogEnd, RenderSettings.fogEndDistance);
+                Assert.AreEqual(ToonShaderIds.SkyGradientShader, RenderSettings.skybox.shader.name, "the sky is the palette gradient");
+                // The device gate wears the dearest skin (maximum loadout): its own color in every world.
+                Assert.IsFalse(flow.Progress.WearsDefaultSkin);
+                Assert.AreEqual(flow.Progress.Skin.color, flow.Progress.CrowdColorIn(world - 1));
+                Assert.AreEqual(flow.Progress.CrowdColorIn(world - 1), flow.Crowd.Swarm.Tint, $"world {world}: the crowd does not wear its color");
                 float deadline = Time.realtimeSinceStartup + 20f;
                 while (Time.realtimeSinceStartup < deadline && flow.Field.PeakInFlight < 300)
                 {

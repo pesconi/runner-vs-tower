@@ -27,7 +27,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 60d28d8f848d9294e8e97d13844c8385, type: 2}
   look:
     scenery: 2
-    sky: {r: 0.26, g: 0.25, b: 0.17, a: 1}
+    palette: {fileID: 11400000, guid: 3803c222053f68849900374e444b4fa7, type: 2}
     ambient: {r: 0.46, g: 0.46, b: 0.38, a: 1}
     sun: {r: 0.95, g: 0.95, b: 0.8, a: 1}
     sunIntensity: 1

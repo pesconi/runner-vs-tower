@@ -343,3 +343,55 @@ HDR ligado, renderScale 0,8, Vulkan, Mali-G1-Ultra; `[ToonLab] units=1000 dying=
 `dying=512` em todas as linhas `[DevFps]`. A janela 1 (33,4 fps) é a carga da cena, como nos gates anteriores. Captura do
 aparelho durante o gate: [`art/rt6t/gate-d512-oppo.png`](art/rt6t/gate-d512-oppo.png) (o anel de fora voando e
 encolhendo nas bordas da multidão).
+
+## RT-6t.6a — Paletas, céu e neblina (2026-11-22)
+
+A RT-6t.6 foi dividida (decisão do maestro em `decisoes.md`): esta é a parte sem a D26; formas e skins no menu e o
+save v4 ficaram na RT-6t.6b, que espera a D26 (e a D25).
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| `ToonPalette` | incubadora, `Toon` | ScriptableObject: céu topo/base, neblina + início/fim (22–75), chão, pista, faixa, multidão, folhagem 2 tons, tronco, pedra, destaque e tinta de UI, estrutura clara/escura/detalhe e defesa (cores de torre da 6t.10). Todas opacas; `Validate` sem alocar. |
+| `ToonPaletteApplier` | incubadora | Escreve as globais do céu (sRGB bruto), o skybox e a neblina linear do `RenderSettings`; `ApplyGlobally` estático para as capturas de modo de edição. |
+| `StudioKit/SkyGradientScreen` | incubadora | Skybox: degradê vertical em espaço de tela, topo → base, mistura em sRGB como o canvas do protótipo, sem neblina, sem textura. |
+| `ToonContrast` | incubadora | Razão WCAG e ΔE CIE76 (CIELAB, D65) para o validador. |
+| `PaletteContent` | jogo, Editor | As 4 paletas como código, regravadas a cada construção da cena: Pastel, Pôr do sol e Doce com os valores exatos do usuário, Aurora provisória (seção 5.1). Cores de estrutura/defesa [P]. |
+| `WorldLook.palette` | jogo | Substitui `WorldLook.sky` (o horizonte tem uma fonte só); sol e ambiente seguem para a arte antiga. `WorldScenery.Apply` aplica a paleta na troca de mundo/nível. A câmera limpa para o skybox. |
+| Cor da multidão | `Progression.CrowdColorIn`, `ClaybreakFlow.DressArmy` | Skin padrão (BARRO) → cor da paleta do mundo; outras skins → a cor delas em todos os mundos. Corrida, bonecos do assalto e especiais na mesma cor; save e loja iguais. |
+| Validador | `ClaybreakValidation` | Paleta de cada mundo = a do conteúdo, valor a valor; paletas não repetem entre mundos. **Avisos** (não reprovam) de contraste. |
+
+Decisões T-RT6t6a-1..10 em `decisoes.md`.
+
+### Avisos de contraste (valores exatos do usuário, mantidos)
+
+- Mundo 1 (Pastel): multidão #FF8FAB × portão ruim #FF6B81 — ΔE 19,7, contraste 1,27:1. A 6t.9 (cor do portão
+  semitransparente sobre a pista clara) confere na captura.
+- Mundo 2 (Pôr do sol): multidão #FFF1D6 × pista #F6CAA6 — ΔE 17,7, contraste 1,35:1. A captura mostra a multidão
+  creme legível (a pista ainda é a antiga, escura); a 6t.8 (pista listrada) confere.
+- Tinta de UI × destaque: todas acima de 3:1 (Doce é a menor, 3,85:1).
+
+### Testes e validação
+
+- EditMode **193/193** (novos: `ToonPaletteTests` — padrão válido, ordem das cores, rejeição de transparente e neblina
+  invertida, WCAG/CIELAB contra valores de referência, aplicador escreve céu e neblina; `PaletteContentTests` — os
+  valores aprovados, uma paleta por mundo, multidões diferentes; `ProgressionTests` — BARRO usa a cor de cada mundo,
+  skin comprada a própria cor, id desconhecido cai no padrão, save com o mesmo id).
+- PlayMode **19/19** com `-nographics` (+5 capturas que só rodam com GPU): o menu com save novo veste a cor do mundo 1;
+  o gate de cada mundo mostra a neblina e o céu da paleta e a skin mais cara com a cor dela.
+- `Tools/rt4-check.sh`: `scene`, `validate`, `isolation`, `editmode`, `playmode`, `economy`, `apk-game`, `apk-measure`,
+  `aab` PASS; `capture` falhou na primeira rodada (paleta descarregada ao abrir cena nova no modo de edição) e passou
+  depois da correção, junto com um novo `validate`. Nenhum `Shader error` no log do APK de medição.
+- Revisão independente (subagente fable, só leitura): o kit citava "tower" (isolamento) — corrigido; resto menor
+  (T-RT6t6a-10).
+- Sem gate no OPPO: o aceite não pede (1 desenho de céu no lugar da limpeza em cor sólida; o gate final é na 6t.12).
+
+### Capturas
+
+- [`art/rt6t/mundos-oppo.png`](art/rt6t/mundos-oppo.png) (Unity com GPU, formato do OPPO, metade do tamanho): os 4
+  mundos na corrida do gate com 300, skin padrão. O topo da tela tem exatamente a cor de topo do céu de cada paleta
+  (lido no pixel), a multidão sai rosa, creme, amarela e verde-limão, a neblina na cor do horizonte. Cenário e pista
+  ainda são a arte da RT-6 (escura), até a 6t.8.
+- `art/telas/` regravadas com as paletas (menu, loja, assalto e os 4 mundos). Observação para a 6t.10: com a neblina
+  22–75 a torre fica lavada na cor da neblina (no Pastel quase some contra o céu).

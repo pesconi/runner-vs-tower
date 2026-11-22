@@ -362,6 +362,27 @@ namespace Claybreak
         public bool CanBuySkin(int skin) => !IsSkinOwned(skin) && Save.coins >= catalog.Skins[skin].price;
         public CrowdSkin Skin => catalog.Skins[Mathf.Max(0, catalog.SkinIndexOf(Save.skin))];
 
+        /// <summary>True when the player wears the default look (the catalog's first skin, free; an unknown id falls back to it).</summary>
+        public bool WearsDefaultSkin => catalog.SkinIndexOf(Save.skin) <= 0;
+
+        /// <summary>
+        /// The army's body color in the world at catalog index <paramref name="world"/> (RT-6t.6a): the default skin wears
+        /// the world's palette color, any other skin its own color in every world. The save keeps the skin id as it is.
+        /// </summary>
+        public Color CrowdColorIn(int world)
+        {
+            if (WearsDefaultSkin && world >= 0 && world < catalog.Worlds.Count)
+            {
+                ClaybreakWorld entry = catalog.Worlds[world].world;
+                if (entry != null && entry.Look.palette != null)
+                {
+                    return entry.Look.palette.Crowd;
+                }
+            }
+
+            return Skin.color;
+        }
+
         public bool TryBuySkin(int skin)
         {
             if (skin < 0 || skin >= catalog.Skins.Count || !CanBuySkin(skin))

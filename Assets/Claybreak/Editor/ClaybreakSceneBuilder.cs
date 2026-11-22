@@ -39,6 +39,8 @@ namespace Claybreak.Editor
         public const int CrowdCapacity = 300;
         public const string CrowdCameraProfilePath = Root + "/Data/SwarmCameraRun.asset";
         public const string CrowdLookPath = Root + "/Data/CrowdToonLook.asset";
+        /// <summary>The skybox: the palette's screen-space sky gradient (RT-6t.6a).</summary>
+        public const string SkyMaterialPath = ArtPalette.MaterialFolder + "/SkyGradient.mat";
 
         /// <summary>The crowd shape a new theme starts with: the Bolinha with eyes (provisional while D25 is open).</summary>
         public static readonly UnitShapeAssets.Entry ProvisionalCrowdShape = UnitShapeAssets.All[0];
@@ -72,6 +74,10 @@ namespace Claybreak.Editor
             EnsureFolder(ArtPalette.MaterialFolder);
             EnsureFolder(GeneratedFolder);
             ProjectConfiguration.Apply();
+            // The palettes and the sky come before the worlds: each world's look points at its palette.
+            PaletteContent.Write();
+            BuildSkyMaterial();
+            AssetDatabase.SaveAssets();
             WorldContent.Write();
             MonetizationContent.Write();
             // The crowd shapes and the crowd materials come first: the theme points at a shape and the run draws with them.
@@ -141,6 +147,23 @@ namespace Claybreak.Editor
             AssetDatabase.SaveAssets();
         }
 
+        // The sky material (no properties of its own: it reads the palette's globals), created once.
+        private static void BuildSkyMaterial()
+        {
+            if (AssetDatabase.LoadAssetAtPath<Material>(SkyMaterialPath) != null)
+            {
+                return;
+            }
+
+            Shader shader = Shader.Find(ToonShaderIds.SkyGradientShader);
+            if (shader == null)
+            {
+                throw new System.InvalidOperationException($"shader {ToonShaderIds.SkyGradientShader} not found");
+            }
+
+            AssetDatabase.CreateAsset(new Material(shader) { name = "SkyGradient" }, SkyMaterialPath);
+        }
+
         // ---------- scene ----------
 
         private static void CreateScene()
@@ -193,8 +216,7 @@ namespace Claybreak.Editor
             var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
             cameraObject.tag = "MainCamera";
             Camera camera = cameraObject.GetComponent<Camera>();
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = RenderSettings.fogColor;
+            camera.clearFlags = CameraClearFlags.Skybox;
             camera.farClipPlane = 170f;
             camera.fieldOfView = 60f;
             cameraObject.transform.position = new Vector3(0f, 9f, -8f);
@@ -324,19 +346,29 @@ namespace Claybreak.Editor
             WorldMaterials materials = WorldMaterials.For(worldId, look);
             GameObject set = WorldSceneryArt.Build(look.scenery, "Scenery_" + worldId, materials, palette, TrackStartZ, trackEnd);
             track.sharedMaterial = materials.Ground;
+            // The caller may have taken the look before opening this scene, which unloads assets nothing references (the
+            // palette among them): the world's palette is loaded again here, by the world id.
+            look.palette = WorldContent.PaletteOf(worldId);
             ApplyLook(look, sun, camera);
             return set;
         }
 
+        // The world's palette (sky gradient as the skybox, fog), ambient and sun, as WorldScenery.Apply does at run time.
         private static void ApplyLook(WorldLook look, Light sun, Camera camera)
         {
-            RenderSettings.fogColor = look.sky;
+            string error = look.palette == null ? "no palette (rebuild the scene)" : look.palette.Validate();
+            if (error != null)
+            {
+                throw new System.InvalidOperationException("world look: " + error);
+            }
+
+            ToonPaletteApplier.ApplyGlobally(look.palette, Load<Material>(SkyMaterialPath));
             RenderSettings.ambientLight = look.ambient;
             sun.color = look.sun;
             sun.intensity = look.sunIntensity;
             if (camera != null)
             {
-                camera.backgroundColor = look.sky;
+                camera.clearFlags = CameraClearFlags.Skybox;
             }
         }
 
@@ -363,11 +395,14 @@ namespace Claybreak.Editor
 
             track.sharedMaterial = (Material)grounds[0];
             ApplyLook(catalog.Worlds[0].world.Look, sun, camera);
+            ToonPaletteApplier applier = root.AddComponent<ToonPaletteApplier>();
+            SetRef(applier, "palette", catalog.Worlds[0].world.Look.palette);
+            SetRef(applier, "skyMaterial", Load<Material>(SkyMaterialPath));
             SetArray(scenery, "sets", sets);
             SetArray(scenery, "trackMaterials", grounds);
             SetRef(scenery, "track", track);
             SetRef(scenery, "sun", sun);
-            SetRef(scenery, "sceneCamera", camera);
+            SetRef(scenery, "palette", applier);
             return scenery;
         }
 

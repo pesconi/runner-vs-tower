@@ -6,6 +6,7 @@
         "Claybreak.Editor",
         "JungleDegree.StudioKit.Ads",
         "JungleDegree.StudioKit.Analytics",
+        "JungleDegree.StudioKit.Toon",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

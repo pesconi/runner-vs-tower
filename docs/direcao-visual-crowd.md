@@ -216,9 +216,10 @@ projeto (dois Unity em batchmode derrubam um deles [F: aprendizado RT-8]).
 | RT-6t.3 | Formação girassol, arraste, câmera que se afasta, shake, ajuste a retrato 9:16 (cena de teste) | 6t.1 | — |
 | RT-6t.4 | **Fatia fina na corrida do jogo**: o `Swarm` substitui `RunnerCrowd`/`PlayerController`/`RunnerPool` na corrida (contagem, portões, caixotes, tropeço, continuar), câmera da corrida, cor da skin atual como tinta; gate na corrida | 6t.2, 6t.3 | **D27** só se o teto subir (sem resposta: 300) |
 | RT-6t.5 | Animações completas (inclinação, nascimento, morte balística com anel, sombra que encolhe) na cena de teste e na corrida | 6t.4 | — |
-| RT-6t.6 | Paletas como dado (3 do usuário + 4ª provisória; campos de torre/defesa), céu degradê, neblina, aplicador; formas e skins conforme D26 (menu, save v4) | 6t.5 | **D26** |
-| RT-6t.7 | Multidão nova no **assalto** (índices em vez de `Transform`; defesas leem os arrays; elites por instância; mortes pelo anel); teto da D27 | 6t.6 | D27 (sem resposta: 300) |
-| RT-6t.8 | **Cenário**: pista listrada, trilhos, árvores e pedras instanciadas e recicladas, chão, por mundo | 6t.6 | — |
+| RT-6t.6a | Paletas como dado (3 do usuário + 4ª provisória; campos de torre/defesa), céu degradê, neblina, aplicador; BARRO = cor do mundo | 6t.5 | — |
+| RT-6t.6b | Formas e skins conforme D26 (menu, save v4) — dividida da 6t.6 em 2026-11-22 | 6t.6a | **D26** |
+| RT-6t.7 | Multidão nova no **assalto** (índices em vez de `Transform`; defesas leem os arrays; elites por instância; mortes pelo anel); teto da D27 | 6t.6a | D27 (sem resposta: 300) |
+| RT-6t.8 | **Cenário**: pista listrada, trilhos, árvores e pedras instanciadas e recicladas, chão, por mundo | 6t.6a | — |
 | RT-6t.9 | **Portões e feedback**: painéis semitransparentes, Baloo 2 com contorno (corrida e assalto), número flutuante, pop do contador, shake no portão ruim; fonte do HUD e das telas | 6t.7 | — |
 | RT-6t.10 | Torres, defesas, chefes, projéteis e efeitos do assalto no estilo novo | 6t.8 | **D28** (sem resposta: opção A) |
 | RT-6t.11 | Caminho de reserva para aparelhos OpenGL ES sem buffer estruturado (`RenderMeshInstanced` em blocos) + teste forçando GLES no OPPO | 6t.7 | — |

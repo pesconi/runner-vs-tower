@@ -56,8 +56,43 @@ namespace Claybreak.Editor
         public static string StressLevelPath(int world) =>
             world == 0 ? $"{DataFolder}/DeviceGateLevel.asset" : $"{DataFolder}/DeviceGateLevelWorld{world + 1}.asset";
 
-        /// <summary>Every world in catalog order.</summary>
-        public static WorldDefinition[] Worlds => new[] { World1(), World2(), World3(), World4() };
+        /// <summary>
+        /// Every world in catalog order, each look (and each art option's look) on the world's palette
+        /// (<see cref="PaletteContent"/>; null before the palettes are first written).
+        /// </summary>
+        public static WorldDefinition[] Worlds
+        {
+            get
+            {
+                WorldDefinition[] worlds = { World1(), World2(), World3(), World4() };
+                for (int w = 0; w < worlds.Length; w++)
+                {
+                    JungleDegree.StudioKit.Toon.ToonPalette palette = PaletteContent.Load(w);
+                    worlds[w].Look.palette = palette;
+                    for (int i = 0; worlds[w].LookOptions != null && i < worlds[w].LookOptions.Length; i++)
+                    {
+                        worlds[w].LookOptions[i].palette = palette;
+                    }
+                }
+
+                return worlds;
+            }
+        }
+
+        /// <summary>The palette asset of the world with id <paramref name="worldId"/> (null when there is none).</summary>
+        public static JungleDegree.StudioKit.Toon.ToonPalette PaletteOf(string worldId)
+        {
+            WorldDefinition[] worlds = { World1(), World2(), World3(), World4() };
+            for (int w = 0; w < worlds.Length; w++)
+            {
+                if (worlds[w].Id == worldId)
+                {
+                    return PaletteContent.Load(w);
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>The art style in use for a world's own tower (TowerArt.StyleFor).</summary>
         public static TowerStyle ChosenTowerStyle(int world)
@@ -188,7 +223,6 @@ namespace Claybreak.Editor
                 Look = new WorldLook
                 {
                     scenery = SceneryStyle.Marches,
-                    sky = new Color(0.16f, 0.12f, 0.14f),
                     ambient = new Color(0.42f, 0.36f, 0.34f),
                     sun = new Color(1f, 0.86f, 0.7f),
                     sunIntensity = 1.2f,
@@ -249,7 +283,6 @@ namespace Claybreak.Editor
                     new WorldLook
                     {
                         scenery = SceneryStyle.Mire,
-                        sky = new Color(0.07f, 0.12f, 0.12f),
                         ambient = new Color(0.3f, 0.38f, 0.36f),
                         sun = new Color(0.72f, 0.88f, 0.82f),
                         sunIntensity = 1.05f,
@@ -262,7 +295,6 @@ namespace Claybreak.Editor
                     new WorldLook
                     {
                         scenery = SceneryStyle.Mire,
-                        sky = new Color(0.22f, 0.15f, 0.08f),
                         ambient = new Color(0.44f, 0.36f, 0.26f),
                         sun = new Color(1f, 0.78f, 0.5f),
                         sunIntensity = 1.15f,
@@ -328,7 +360,6 @@ namespace Claybreak.Editor
                     new WorldLook
                     {
                         scenery = SceneryStyle.Foundry,
-                        sky = new Color(0.14f, 0.06f, 0.05f),
                         ambient = new Color(0.4f, 0.3f, 0.28f),
                         sun = new Color(1f, 0.62f, 0.42f),
                         sunIntensity = 1.15f,
@@ -341,7 +372,6 @@ namespace Claybreak.Editor
                     new WorldLook
                     {
                         scenery = SceneryStyle.Foundry,
-                        sky = new Color(0.26f, 0.25f, 0.17f),
                         ambient = new Color(0.46f, 0.46f, 0.38f),
                         sun = new Color(0.95f, 0.95f, 0.8f),
                         sunIntensity = 1f,
@@ -411,7 +441,6 @@ namespace Claybreak.Editor
                     new WorldLook
                     {
                         scenery = SceneryStyle.Peaks,
-                        sky = new Color(0.07f, 0.09f, 0.16f),
                         ambient = new Color(0.4f, 0.45f, 0.56f),
                         sun = new Color(0.78f, 0.86f, 1f),
                         sunIntensity = 1f,
@@ -424,7 +453,6 @@ namespace Claybreak.Editor
                     new WorldLook
                     {
                         scenery = SceneryStyle.Peaks,
-                        sky = new Color(0.12f, 0.07f, 0.14f),
                         ambient = new Color(0.38f, 0.32f, 0.42f),
                         sun = new Color(1f, 0.78f, 0.9f),
                         sunIntensity = 1.05f,

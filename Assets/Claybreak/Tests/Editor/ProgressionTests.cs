@@ -239,6 +239,34 @@ namespace Claybreak.Tests
         }
 
         [Test]
+        public void TheDefaultSkinWearsEachWorldsPaletteColorAndOtherSkinsTheirOwn()
+        {
+            using (var twoWorlds = new TestContent(2))
+            {
+                var progression = new Progression(twoWorlds.Catalog, new SaveData { coins = 200 });
+                Assert.IsTrue(progression.WearsDefaultSkin);
+                Assert.AreEqual(TestContent.PaletteCrowd(0), progression.CrowdColorIn(0));
+                Assert.AreEqual(TestContent.PaletteCrowd(1), progression.CrowdColorIn(1));
+                Assert.AreNotEqual(progression.CrowdColorIn(0), progression.CrowdColorIn(1));
+
+                Assert.IsTrue(progression.TryBuySkin(1));
+                Assert.IsFalse(progression.WearsDefaultSkin);
+                Assert.AreEqual(progression.Skin.color, progression.CrowdColorIn(0));
+                Assert.AreEqual(progression.Skin.color, progression.CrowdColorIn(1));
+                Assert.AreEqual("ember", progression.Save.skin, "the save keeps the skin id");
+
+                Assert.IsTrue(progression.TryWearSkin(0));
+                Assert.AreEqual(TestContent.PaletteCrowd(1), progression.CrowdColorIn(1));
+                Assert.AreEqual("clay", progression.Save.skin);
+
+                // An unknown skin id falls back to the default look, so it wears the world's color too.
+                progression.Save.skin = "gone";
+                Assert.IsTrue(progression.WearsDefaultSkin);
+                Assert.AreEqual(TestContent.PaletteCrowd(0), progression.CrowdColorIn(0));
+            }
+        }
+
+        [Test]
         public void CanBuyAnythingFollowsTheCheapestItem()
         {
             Assert.IsFalse(Fresh(59).CanBuyAnything);

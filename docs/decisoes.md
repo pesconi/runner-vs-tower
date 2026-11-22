@@ -1368,3 +1368,64 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   unidades que ainda não apareceram (renascem e morrem antes do atraso do pop); a carga medida é a mesma (N + D
   instâncias), só o visual da rotação difere — aceito, é modo de medição. (e) O teste do nascimento confere o valor do
   protótipo pelo tempo de nascimento de cada unidade (`BirthTime`).
+
+## 2026-11-22 — Divisão da RT-6t.6 em 6t.6a e 6t.6b — técnica (maestro, escopo)
+
+A RT-6t.6 juntava duas partes de natureza diferente: paletas, céu e neblina (só dado e desenho, sem decisão aberta) e
+formas e skins no menu com save v4 (depende da **D26**, e da **D25** para a variante de forma, ainda sem resposta).
+Para a série não parar esperando o usuário, o maestro dividiu: **RT-6t.6a** = `ToonPalette` com cores de torre/defesa,
+aplicador, céu degradê, neblina, as 4 paletas, `WorldLook` → paleta, a regra "skin padrão (BARRO) = cor do mundo" sem
+mudar save nem loja, aviso de contraste no validador e capturas dos 4 mundos; **RT-6t.6b** = seletor de forma no menu,
+save v4 com o campo "forma" e migração v3 → v4, skins conforme a D26, revisão de segurança do save. A 6t.7 e a 6t.8 só
+precisam das paletas (tinta da multidão e cores do cenário) e passam a depender da 6t.6a; a 6t.6b não trava nenhuma
+outra entrega e entra quando a D26 for respondida. Plano, tabela da direção visual e linha da D26 atualizados.
+
+## 2026-11-22 — T-RT6t6a-1..9 — Paletas, céu e neblina — técnica (sessão RT-6t.6a)
+
+- **T-RT6t6a-1 — "BARRO = cor do mundo" agora não antecipa a D26.** As três opções da ficha (A, B e C) fazem a skin
+  padrão usar a cor da paleta do mundo; o que a D26 decide (formas no menu, cores e nomes das outras 8 skins, save v4)
+  ficou para a 6t.6b. Regra em `Progression.CrowdColorIn(mundo)`: skin padrão (a primeira do catálogo, grátis; id
+  desconhecido cai nela) → `paleta.Crowd`; qualquer outra skin → a cor dela em todos os mundos. O save guarda o mesmo id
+  de skin; a loja não mudou (o quadradinho do BARRO ainda mostra a cor de argila — a 6t.6b troca junto com as skins). A
+  mesma cor vai para a corrida (tinta do `Swarm`), para os bonecos do assalto e para os especiais; os bonecos do pool só
+  são repintados quando a cor muda (menu e início de nível, nunca em jogo).
+- **T-RT6t6a-2 — `ToonPalette` no kit (incubadora), conteúdo no jogo.** O ScriptableObject tem céu topo/base, neblina
+  + início/fim, chão, pista, faixa, multidão, folhagem 2 tons, tronco, pedra, destaque e tinta de UI e torre clara/escura,
+  detalhe de torre e defesa (para a 6t.10); todas opacas, validadas. Não nomeia jogo nem tema: as cores de torre se chamam `structureLight/Dark/Detail` no kit ("tower" é termo
+  proibido do isolamento; o conteúdo do jogo as preenche como cores de torre). As 4 paletas são código
+  do jogo (`Editor/PaletteContent.cs`), regravadas a cada construção da cena como o resto do conteúdo; o validador
+  confere asset a asset os valores exatos e um teste EditMode guarda a tabela aprovada (seções 1.1 e 5.1 da direção).
+  "Trocar a Aurora é editar um arquivo" continua valendo: é esse arquivo.
+- **T-RT6t6a-3 — Cores de torre/defesa provisórias [P].** O usuário não deu esses valores; escolhidos a partir de cada
+  paleta (claro/escuro do céu e da pedra, detalhe = destaque de UI). Ainda não aparecem na tela; a 6t.10 calibra por
+  captura.
+- **T-RT6t6a-4 — O horizonte tem uma fonte só.** `WorldLook.sky` saiu: a cor de neblina e o céu vêm da paleta
+  (`WorldLook.palette`). Sol e ambiente continuam no `WorldLook` porque a arte antiga (cenário e torres em Simple Lit)
+  ainda os lê até a 6t.8/6t.10. As fichas de opções da RT-6 (`docs/art/rt6`) e da RT-4 (`docs/art/rt4`) ficam como registro das
+  decisões D17/D20 (a captura as regrava com a paleta nova; não entram no commit, como nas entregas anteriores).
+- **T-RT6t6a-5 — Céu como skybox em espaço de tela.** Shader `StudioKit/SkyGradientScreen`: y de tela calculado do
+  clip-space por pixel (com `_ProjectionParams.x`, que desfaz a inversão ao desenhar em textura), mistura em sRGB como o
+  gradiente de canvas do protótipo e conversão para linear no fim; cores como globais brutas (`SetGlobalVector`, sem a
+  conversão de `SetGlobalColor`). Sem neblina no céu (como o fundo do three). 1 desenho de tela cheia, sem textura. A
+  câmera do jogo limpa para o skybox.
+- **T-RT6t6a-6 — Aplicador.** `ToonPaletteApplier` (componente na raiz do cenário) escreve as globais do céu, o skybox e a
+  neblina linear do `RenderSettings`; o `WorldScenery` chama `Apply` na troca de mundo/nível. Um `ApplyGlobally` estático
+  serve às capturas de modo de edição. Só as globais que algum shader lê hoje (céu); pista, faixa etc. entram como
+  globais quando a 6t.8 tiver os shaders.
+- **T-RT6t6a-7 — Sombra fora da paleta.** O item 17 citava "sombra" entre os campos, mas a seção 1.1 diz que a sombra
+  (#2b2233 a 0,18) não varia por paleta: continua no material da sombra-bolha. Campo sem uso não entrou.
+- **T-RT6t6a-8 — Aviso de contraste (não reprova).** `ToonContrast` (kit): razão WCAG e ΔE CIE76 em CIELAB. O validador
+  avisa quando a multidão fica a ΔE < 20 da pista, do chão ou das cores de portão da direção (#5ad1a0 / #ff6b81, que a
+  6t.9 põe nos portões), e quando a tinta de UI sobre o destaque fica abaixo de 3:1 (texto grande). Com os valores do
+  usuário saem 2 avisos, registrados em `rt6t-crowd-toon.md`, sem mudar cor (valores exatos aprovados).
+- **T-RT6t6a-10 — Correções da revisão independente (subagente fable, só leitura).** (a) Bloqueio real: o kit citava
+  "tower" (termo proibido do isolamento) — renomeado para "structure"; o passo `isolation` passou. (b) `Validate` não
+  aloca mais (campo a campo). (c) As capturas de modo de edição reaplicam a paleta depois de abrir cada cena nova (o
+  Unity descarrega a paleta carregada antes, e as globais do céu ficavam da foto anterior). Aceitos sem mudança:
+  testes de captura que vazam textura só se falharem no meio (mesmo padrão das outras capturas). Observação de
+  desenho, para a 6t.10: com a neblina 22–75 a torre distante fica lavada na cor da neblina, na corrida e no assalto
+  (no Pastel quase some contra o céu) — a 6t.10 decide entre neblina por perfil de câmera, `fogEnd` maior por paleta
+  ou cores de estrutura mais escuras.
+- **T-RT6t6a-9 — Neblina 22–75 já vale para tudo; sem gate.** A neblina do protótipo cobre também o cenário antigo:
+  silhuetas distantes somem até a 6t.8 trocar o cenário. Sem gate no OPPO: o aceite não pede, e o custo novo é 1 desenho
+  de céu de tela cheia no lugar da limpeza em cor sólida (a 6t.12 faz o gate final de tudo).

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JungleDegree.StudioKit.Toon;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,11 +16,6 @@ namespace Claybreak.Tests
         /// <summary>Damage multiplier the test worlds are tuned for (the replay adjustment compares with it).</summary>
         public const float ExpectedDamage = 1.2f;
 
-        public static readonly WorldLook Look = new WorldLook
-        {
-            scenery = SceneryStyle.Marches, sky = Color.gray, ambient = Color.gray, sun = Color.white, sunIntensity = 1f,
-            ground = Color.gray, field = Color.gray, prop = Color.gray, propDark = Color.black, accent = Color.yellow
-        };
         private readonly List<Object> made = new List<Object>();
 
         public TestContent(int worlds = 1, int starsForWorld2 = 0)
@@ -27,7 +23,7 @@ namespace Claybreak.Tests
             var entries = new WorldEntry[worlds];
             for (int w = 0; w < worlds; w++)
             {
-                entries[w] = new WorldEntry { world = World(w == 0 ? SaveMigration.V1WorldId : "world" + (w + 1)), starsToUnlock = w == 0 ? 0 : starsForWorld2 };
+                entries[w] = new WorldEntry { world = World(w == 0 ? SaveMigration.V1WorldId : "world" + (w + 1), w), starsToUnlock = w == 0 ? 0 : starsForWorld2 };
             }
 
             Catalog = Make<ClaybreakCatalog>("Catalog");
@@ -64,7 +60,10 @@ namespace Claybreak.Tests
             }
         }
 
-        private ClaybreakWorld World(string id)
+        /// <summary>The crowd color of test world <paramref name="world"/>'s palette (each world has its own).</summary>
+        public static Color PaletteCrowd(int world) => new Color(0.2f + 0.2f * world, 0.9f, 0.4f, 1f);
+
+        private ClaybreakWorld World(string id, int index)
         {
             var levels = new ClaybreakLevel[LevelsPerWorld];
             for (int i = 0; i < LevelsPerWorld; i++)
@@ -83,7 +82,16 @@ namespace Claybreak.Tests
             }
 
             ClaybreakWorld world = Make<ClaybreakWorld>(id);
-            world.EditorAssign(id, id.ToUpperInvariant(), levels, Look, ExpectedDamage, 0.25f, 0.25f);
+            ToonPalette palette = Make<ToonPalette>(id + "-Palette");
+            Color[] colors = palette.Colors;
+            colors[6] = PaletteCrowd(index);
+            palette.EditorAssign(colors, 22f, 75f);
+            var look = new WorldLook
+            {
+                scenery = SceneryStyle.Marches, palette = palette, ambient = Color.gray, sun = Color.white, sunIntensity = 1f,
+                ground = Color.gray, field = Color.gray, prop = Color.gray, propDark = Color.black, accent = Color.yellow
+            };
+            world.EditorAssign(id, id.ToUpperInvariant(), levels, look, ExpectedDamage, 0.25f, 0.25f);
             return world;
         }
 

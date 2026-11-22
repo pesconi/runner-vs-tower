@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JungleDegree.StudioKit.Toon;
 using UnityEngine;
 
 namespace Claybreak
@@ -18,16 +19,17 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// How a world looks (RT-6): the scenery it is dressed with and its palette. The scene builder bakes the
-    /// scenery and the ground colors into one preallocated set per world; at run time
-    /// <see cref="WorldScenery"/> shows the world's set and applies the sky, ambient and sun colors.
+    /// How a world looks (RT-6, RT-6t.6a): the scenery it is dressed with, its toon palette (sky, fog, the crowd's default
+    /// color and the colors the toon art reads) and the colors of the older scenery art. The scene builder bakes the
+    /// scenery and the ground colors into one preallocated set per world; at run time <see cref="WorldScenery"/> shows the
+    /// world's set, applies its palette and the ambient and sun colors.
     /// </summary>
     [Serializable]
     public struct WorldLook
     {
         public SceneryStyle scenery;
-        [Tooltip("Fog and camera background: the color of the horizon.")]
-        public Color sky;
+        [Tooltip("The world's toon palette: sky gradient, fog, the crowd's default color (RT-6t.6a).")]
+        public ToonPalette palette;
         public Color ambient;
         public Color sun;
         [Range(0.2f, 2f)] public float sunIntensity;
@@ -42,7 +44,7 @@ namespace Claybreak
         [Tooltip("Light sources of the scenery (braziers, lamps, crystals).")]
         public Color accent;
 
-        public bool IsSet => sunIntensity > 0f && sky.a > 0f && ground.a > 0f;
+        public bool IsSet => sunIntensity > 0f && palette != null && ground.a > 0f;
     }
 
     /// <summary>
@@ -122,7 +124,14 @@ namespace Claybreak
 
             if (!look.IsSet)
             {
-                error = "the world has no look (sky, ground and sun).";
+                error = "the world has no look (palette, ground and sun).";
+                return false;
+            }
+
+            string paletteError = look.palette.Validate();
+            if (paletteError != null)
+            {
+                error = $"palette {look.palette.name}: {paletteError}";
                 return false;
             }
 

@@ -1,3 +1,4 @@
+using JungleDegree.StudioKit.Toon;
 using UnityEngine;
 
 namespace Claybreak
@@ -5,7 +6,8 @@ namespace Claybreak
     /// <summary>
     /// Dresses the one scene for a world (RT-6): shows that world's preallocated scenery set (props, fields,
     /// far silhouettes; the others are hidden), puts the world's ground material on the track and applies
-    /// its sky, ambient and sun. Called at menu/level time only, never per frame; nothing is created.
+    /// its toon palette (sky gradient and fog, RT-6t.6a), ambient and sun. Called at menu/level time only, never per
+    /// frame; nothing is created.
     /// </summary>
     public sealed class WorldScenery : MonoBehaviour
     {
@@ -15,7 +17,8 @@ namespace Claybreak
         [SerializeField] private Material[] trackMaterials = new Material[0];
         [SerializeField] private Renderer track;
         [SerializeField] private Light sun;
-        [SerializeField] private Camera sceneCamera;
+        [Tooltip("Puts the world's palette on screen (sky and fog).")]
+        [SerializeField] private ToonPaletteApplier palette;
 
         private int shown = -1;
 
@@ -25,9 +28,16 @@ namespace Claybreak
         public bool TryValidate(int worlds, out string error)
         {
             if (sets == null || trackMaterials == null || sets.Length != worlds || trackMaterials.Length != worlds
-                || track == null || sun == null || sceneCamera == null)
+                || track == null || sun == null || palette == null)
             {
-                error = $"WorldScenery needs one set and one track material per world ({worlds}), the track, the sun and the camera.";
+                error = $"WorldScenery needs one set and one track material per world ({worlds}), the track, the sun and the palette applier.";
+                return false;
+            }
+
+            string paletteError = palette.Validate();
+            if (paletteError != null)
+            {
+                error = "WorldScenery: " + paletteError;
                 return false;
             }
 
@@ -63,9 +73,8 @@ namespace Claybreak
                 shown = world;
             }
 
-            RenderSettings.fogColor = look.sky;
+            palette.Apply(look.palette);
             RenderSettings.ambientLight = look.ambient;
-            sceneCamera.backgroundColor = look.sky;
             sun.color = look.sun;
             sun.intensity = look.sunIntensity;
         }

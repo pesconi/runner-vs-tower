@@ -114,6 +114,8 @@ namespace Claybreak
         private float nextDevLog;
 #endif
         private bool configured;
+        private bool armyDressed;
+        private Color armyColor;
 
 #if UNITY_EDITOR
         /// <summary>Editor only (PlayMode tests): the next flow to start runs the device-gate level.</summary>
@@ -274,7 +276,7 @@ namespace Claybreak
 
             progression = new Progression(catalog, LoadSave());
             crowd.UseShape(theme.CrowdShape);
-            if (!ApplySkin())
+            if (!DressArmy(progression.WorldIndex))
             {
                 error = "the crowd skin did not apply to the assault units (see the log above).";
                 return false;
@@ -613,12 +615,8 @@ namespace Claybreak
                     break;
                 default:
                     bought = progression.TryBuySkin(index);
+                    // The level prepared below dresses the army in the new color.
                     changed = bought || progression.TryWearSkin(index);
-                    if (changed && !ApplySkin())
-                    {
-                        Debug.LogError("[Claybreak] The crowd skin did not apply.", this);
-                    }
-
                     break;
             }
 
@@ -644,13 +642,21 @@ namespace Claybreak
             }
         }
 
-        // The crowd wears the skin as its tint (the save keeps the skin id, unchanged) and every idle pool unit of the
-        // assault wears it as clay (menu time only).
-        private bool ApplySkin()
+        // The army's color in the world shown (RT-6t.6a: the default skin wears the world's palette color, any other skin
+        // its own): the run crowd wears it as its tint and every idle pool unit of the assault as clay. Menu and level
+        // start only; the pool units are dressed again only when the color changes.
+        private bool DressArmy(int world)
         {
-            Color color = progression.Skin.color;
+            Color color = progression.CrowdColorIn(world);
             crowd.Wear(color);
-            return field.DressIdleUnits(theme.Roster, color, unitGrounding);
+            if (armyDressed && color == armyColor)
+            {
+                return true;
+            }
+
+            armyColor = color;
+            armyDressed = field.DressIdleUnits(theme.Roster, color, unitGrounding);
+            return armyDressed;
         }
 
         private void OnPrimary()
@@ -688,13 +694,17 @@ namespace Claybreak
             bool played = !level.IsDeviceGateLevel;
             runLoadout = progression.Loadout;
             loadoutCount = progression.FillLoadout(loadout);
-            field.ConfigureLoadout(loadout, progression.Skin.color, runLoadout.DamageMultiplier);
+            int world = played ? progression.WorldIndex : deviceGateWorld;
+            field.ConfigureLoadout(loadout, progression.CrowdColorIn(world), runLoadout.DamageMultiplier);
             int towerHealth = played ? progression.ScaleHealth(level.TowerHealth) : level.TowerHealth;
             int wallHealth = played ? progression.ScaleHealth(level.WallHealth) : level.WallHealth;
             int shieldHealth = played ? progression.ScaleHealth(level.ShieldHealth) : level.ShieldHealth;
-            int world = played ? progression.WorldIndex : deviceGateWorld;
             scenery.Apply(world, catalog.Worlds[world].world.Look);
             field.ResetField();
+            if (!DressArmy(world))
+            {
+                Debug.LogError("[Claybreak] The crowd color did not apply to the assault units.", this);
+            }
             field.Configure(level, track, wallHealth, shieldHealth, level.DamagePerUnit);
             tower.ResetTower(level.Tower, towerHealth, level.Floors);
             if (!cannon.Configure(level, field, tower.Muzzle)

@@ -282,11 +282,11 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   0.5.0, aceitação do Wild Pack uma vez); nada copiado do Wild Pack; regra 2.2.1 (nada de `Instantiate`/`Destroy`
   em jogo); gate 3× uma vez por entrega, no fim, no caso mais pesado; validação padrão = `Tools/rt4-check.sh`.
 - **Ordem:** sequencial (regra global: uma sessão escrevendo por repositório): 6t.1 (portão) → 6t.2 → 6t.3 → 6t.4
-  → 6t.5 → 6t.6 → 6t.7 → 6t.8 → 6t.9 → 6t.10 → 6t.11 → 6t.12. Só com autorização do usuário para duas sessões
+  → 6t.5 → 6t.6a → 6t.7 → 6t.8 → 6t.9 → 6t.10 → 6t.11 → 6t.12. Só com autorização do usuário para duas sessões
   aqui: 6t.2 ∥ 6t.3, 6t.8 ∥ 6t.9, 6t.10 ∥ 6t.11 (arquivos separados; quem commita por último regenera a cena
   depois do `git pull --ff-only`).
 - **Decisões do usuário:** D25 (público/"fofura"; trava a 6t.2), D27 (teto da multidão; sem resposta, 300), D26
-  (skins × formas; trava a 6t.6), D28 (arte do assalto; sem resposta, A na 6t.10), D29 (nome; trava a RT-9).
+  (skins × formas; trava a 6t.6b, que entra quando ela for respondida), D28 (arte do assalto; sem resposta, A na 6t.10), D29 (nome; trava a RT-9).
 
 ## RT-6t.1 — Portão técnico: 1 personagem, toon, instancing, 1000 unidades no OPPO
 
@@ -394,26 +394,52 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   `docs/direcao-visual-crowd.md` (itens 7 e 8, RT-6t.5) e o protótipo. Burst na incubadora, com testes; ligue a
   morte no portão ruim da corrida; gate 3× no OPPO com 1000 vivos + 512 morrendo."
 
-## RT-6t.6 — Paletas, céu, neblina, formas e skins
+## RT-6t.6a — Paletas, céu e neblina
 
-- **Escopo:** `ToonPalette` (com cores de torre/defesa), aplicador, céu degradê, neblina; Pastel, Pôr do sol,
-  Doce (valores exatos) e a 4ª provisória "Aurora"; `WorldLook` → paleta; formas e skins conforme **D26** (seletor
-  no menu, save v4 com o campo "forma" e migração); validador com aviso de contraste; capturas dos 4 mundos.
-- **Depende de:** RT-6t.5; **D26**.
-- **Aceite:** validação padrão; teste de migração v3 → v4; capturas; revisão de segurança (save).
-- **Exige o usuário:** D26.
-- **Status: aprovada em 2026-11-21.**
-- **Prompt da sessão:** "Entrega RT-6t.6 do Runner vs Tower: paletas, céu, neblina, formas e skins. Leia
-  `docs/direcao-visual-crowd.md` (itens 2–4 e 17, seções 1.1 e 5.1, RT-6t.6, ficha D26) e a resposta da D26 em
-  `docs/decisoes.md`. Paletas do usuário com os valores exatos; save v4 com migração e fixture; revisão de
-  segurança antes do commit."
+- **Origem:** a RT-6t.6 foi dividida pelo maestro em 2026-11-22 (decisão técnica de escopo, `decisoes.md`): a 6t.6a
+  é a parte que não depende da **D26**; formas e skins ficaram na RT-6t.6b.
+- **Escopo:** `ToonPalette` (ScriptableObject do kit, com cores de torre/defesa para a 6t.10), aplicador, céu
+  degradê em espaço de tela, neblina; Pastel, Pôr do sol, Doce (valores exatos do usuário) e a 4ª provisória
+  "Aurora"; `WorldLook` → paleta; a multidão usa a cor da paleta do mundo como tinta quando a skin equipada é a
+  padrão (BARRO), sem mudar o save nem a loja; validador com aviso de contraste; capturas dos 4 mundos.
+- **Depende de:** RT-6t.5.
+- **Aceite:** validação padrão; testes da paleta (valores exatos, contraste, regra da cor da multidão); capturas
+  dos 4 mundos. Sem gate no OPPO (o aceite não pede: troca de cor e um desenho de céu de tela cheia).
+- **Exige o usuário:** nada.
+- **Status: concluída em 2026-11-22.** `ToonPalette` + aplicador + céu degradê em espaço de tela + neblina 22–75 na
+  incubadora; as 4 paletas (valores exatos; Aurora provisória) como conteúdo; `WorldLook` → paleta; BARRO veste a cor
+  do mundo (save e loja iguais); validador confere os valores exatos e avisa contraste (2 avisos, valores mantidos).
+  Validação completa verde, capturas dos 4 mundos e detalhes em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões
+  T-RT6t6a-1..10 em `decisoes.md`. Próxima: 6t.7 (a 6t.6b espera a D26).
+- **Prompt da sessão:** "Entrega RT-6t.6a do Runner vs Tower: paletas, céu e neblina. Leia
+  `docs/direcao-visual-crowd.md` (itens 2–4 e 17, seções 1.1 e 5.1, RT-6t.6) e o protótipo. `ToonPalette` com
+  cores de torre/defesa, aplicador, céu degradê, neblina; as 4 paletas; `WorldLook` → paleta; BARRO usa a cor do
+  mundo (save e loja iguais); validador com aviso de contraste; capturas dos 4 mundos."
+
+## RT-6t.6b — Formas e skins no menu, save v4
+
+- **Origem:** o resto da RT-6t.6 original (divisão de 2026-11-22, ver RT-6t.6a).
+- **Escopo:** formas e skins conforme **D26** (e **D25**, que decide a variante de forma): seletor de forma no menu,
+  save v4 com o campo "forma" e migração v3 → v4 com valor padrão, fixture de save v4, cores e nomes novos das
+  skins se a D26 pedir (opção A: 8 cores novas no estilo, mesmos preços e ordem), aviso de contraste das skins
+  contra as 4 paletas e as cores dos portões; revisão de segurança do save.
+- **Depende de:** RT-6t.6a; **D26** (e **D25**). Pode entrar a qualquer momento depois da 6t.6a, assim que a D26
+  for respondida (nenhuma outra entrega da série depende dela).
+- **Aceite:** validação padrão; teste de migração do save v3 → v4; capturas (menu com o seletor, as formas nos
+  mundos); revisão de segurança (save).
+- **Exige o usuário:** D26 (e D25).
+- **Status: aguardando a D26.**
+- **Prompt da sessão:** "Entrega RT-6t.6b do Runner vs Tower: formas e skins. Leia `docs/direcao-visual-crowd.md`
+  (RT-6t.6, fichas D25 e D26) e as respostas da D25 e da D26 em `docs/decisoes.md`. A 6t.6a já fez as paletas e a
+  regra 'BARRO = cor do mundo'. Seletor de forma no menu, save v4 com o campo 'forma', migração v3 → v4 e
+  fixture; skins conforme a D26; revisão de segurança antes do commit."
 
 ## RT-6t.7 — Multidão nova no assalto
 
 - **Escopo:** `AssaultField` e defesas leem os índices do `Swarm` (mesmas regras), elites por instância, mortes
   pelo anel, limite em voo e valor por boneco conforme **D27**, `AssaultCamera` como perfil do rig, tabela de
   economia regenerada se o teto mudar.
-- **Depende de:** RT-6t.6.
+- **Depende de:** RT-6t.6a.
 - **Aceite:** validação padrão; PlayMode verde; gate 3× no chefe do mundo 4 com o assalto mais pesado.
 - **Exige o usuário:** OPPO conectado.
 - **Status: aprovada em 2026-11-21.**
@@ -426,7 +452,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 
 - **Escopo:** `InstancedProps` com reciclagem, pista listrada no shader, trilhos, árvores (2 tons + tronco) e
   pedras, chão, densidade por mundo; substitui o cenário Simple Lit dos 4 mundos.
-- **Depende de:** RT-6t.6.
+- **Depende de:** RT-6t.6a.
 - **Aceite:** validação padrão; ≤ 3 chamadas para o cenário lateral; capturas dos 4 mundos.
 - **Exige o usuário:** nada.
 - **Status: aprovada em 2026-11-21.**

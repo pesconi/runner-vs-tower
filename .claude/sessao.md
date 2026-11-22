@@ -91,3 +91,8 @@
   sobrou `Unity.exe`. "Tundra build failed due to an internal error" (renomear cache do Bee) é transitório: repetir o passo.
   Captura das animações e do chão sob a multidão: `-testFilter Claybreak.Tests.AnimationCaptureTests -animationCaptureDir <pasta>`
   sem `-nographics`; gate das mortes: `toonlab:1000:4:1:512` (5º campo = morrendo).
+- 2026-11-22 (RT-6t.6a): o passo `capture` regrava `docs/art/rt4` e `docs/art/rt6` (registros das decisões D17/D20): reverter
+  com `git checkout --` antes do commit; `docs/art/telas` fica (é a tela atual). Nas capturas de modo de edição, abrir cena nova
+  descarrega ScriptableObjects carregados antes (a paleta vira nula) e componentes não rodam `OnEnable`: recarregar e aplicar
+  depois de abrir a cena. O kit (incubadora) não pode dizer "tower" (termo do isolamento). O nível de gate veste a skin mais cara
+  (carga máxima), não o BARRO. Captura dos 4 mundos: `-testFilter Claybreak.Tests.WorldCaptureTests -worldCaptureDir <pasta>` sem `-nographics`.

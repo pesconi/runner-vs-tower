@@ -201,6 +201,9 @@ namespace Claybreak.Editor
             EditorSceneManager.OpenScene(ClaybreakSceneBuilder.ScenePath, OpenSceneMode.Single);
             var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
             ClaybreakWorld world = catalog.Worlds[0].world;
+            // Edit mode: nothing enabled the palette applier, so the sky globals are still the last capture's.
+            var scenery = UnityEngine.Object.FindAnyObjectByType<WorldScenery>(FindObjectsInactive.Include);
+            scenery.Apply(0, world.Look);
             var screens = UnityEngine.Object.FindAnyObjectByType<ClaybreakScreens>(FindObjectsInactive.Include);
             var hud = UnityEngine.Object.FindAnyObjectByType<ClaybreakHud>(FindObjectsInactive.Include);
             Camera camera = Camera.main;
@@ -239,7 +242,6 @@ namespace Claybreak.Editor
             AssaultShot(folder, "jogo-assalto-chefe", tower, camera, world.Levels[world.LevelCount - 1], 20f);
 
             // RT-6: every world in the real scene (its scenery set, look and own tower: level 2), and its boss.
-            var scenery = UnityEngine.Object.FindAnyObjectByType<WorldScenery>(FindObjectsInactive.Include);
             for (int w = 0; w < catalog.Worlds.Count; w++)
             {
                 ClaybreakWorld each = catalog.Worlds[w].world;

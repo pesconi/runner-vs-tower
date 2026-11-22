@@ -41,14 +41,20 @@ namespace Claybreak.Editor
             @"\b(Instantiate|Destroy|DestroyImmediate)\s*\(|new\s+GameObject\s*\(|\.AddComponent\s*<|\bPhysics\.",
             RegexOptions.Compiled);
 
+        // The gate colors of the art direction (RT-6t.9 puts them on the gates): a crowd must not read as a gate.
+        private static readonly Color ReferenceGateGood = new Color32(0x5a, 0xd1, 0xa0, 0xff);
+        private static readonly Color ReferenceGateBad = new Color32(0xff, 0x6b, 0x81, 0xff);
+
         [MenuItem("Claybreak/Validate")]
         public static void ValidateFromMenu()
         {
+            ReportWarnings(Warnings());
             Report(Run());
         }
 
         public static void RunAndQuit()
         {
+            ReportWarnings(Warnings());
             List<string> failures = Run();
             Report(failures);
             EditorApplication.Exit(failures.Count == 0 ? 0 : 1);
@@ -75,6 +81,62 @@ namespace Claybreak.Editor
             else
             {
                 Debug.LogError("FAIL Claybreak validation:\n" + string.Join("\n", failures));
+            }
+        }
+
+        /// <summary>
+        /// What deserves a look but does not fail the validation (RT-6t.6a): palette pairs that may be hard to tell apart.
+        /// The crowd against its track, its fields and the two gate colors (CIE76 ΔE under
+        /// <see cref="ToonContrast.DistinctDeltaE"/>), and the UI ink on the UI accent (WCAG ratio under
+        /// <see cref="ToonContrast.LargeTextRatio"/>).
+        /// </summary>
+        public static List<string> Warnings()
+        {
+            var warnings = new List<string>();
+            var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
+            if (catalog == null)
+            {
+                return warnings;
+            }
+
+            for (int w = 0; w < catalog.Worlds.Count; w++)
+            {
+                ToonPalette palette = catalog.Worlds[w].world == null ? null : catalog.Worlds[w].world.Look.palette;
+                if (palette == null)
+                {
+                    continue;
+                }
+
+                string where = $"world {w + 1} ({palette.name})";
+                WarnIfClose(warnings, where, "crowd", palette.Crowd, "track", palette.Track);
+                WarnIfClose(warnings, where, "crowd", palette.Crowd, "ground", palette.Ground);
+                WarnIfClose(warnings, where, "crowd", palette.Crowd, "good gate", ReferenceGateGood);
+                WarnIfClose(warnings, where, "crowd", palette.Crowd, "bad gate", ReferenceGateBad);
+                float ratio = ToonContrast.Ratio(palette.UiInk, palette.UiAccent);
+                if (ratio < ToonContrast.LargeTextRatio)
+                {
+                    warnings.Add($"{where}: UI ink on the UI accent has contrast {ratio:0.00}:1 (under {ToonContrast.LargeTextRatio}:1)");
+                }
+            }
+
+            return warnings;
+        }
+
+        private static void WarnIfClose(List<string> warnings, string where, string nameA, Color a, string nameB, Color b)
+        {
+            float deltaE = ToonContrast.DeltaE(a, b);
+            if (deltaE < ToonContrast.DistinctDeltaE)
+            {
+                warnings.Add($"{where}: {nameA} #{ColorUtility.ToHtmlStringRGB(a)} and {nameB} #{ColorUtility.ToHtmlStringRGB(b)} "
+                    + $"are close (delta E {deltaE:0.0}, contrast {ToonContrast.Ratio(a, b):0.00}:1)");
+            }
+        }
+
+        private static void ReportWarnings(List<string> warnings)
+        {
+            if (warnings.Count > 0)
+            {
+                Debug.LogWarning("WARN Claybreak validation (contrast; not a failure):\n" + string.Join("\n", warnings));
             }
         }
 
@@ -107,12 +169,12 @@ namespace Claybreak.Editor
             }
 
             var sceneries = new HashSet<SceneryStyle>();
-            var skies = new HashSet<Color>();
+            var palettes = new HashSet<ToonPalette>();
             var towersSeen = new Dictionary<TowerKind, string>();
             for (int w = 0; w < catalog.Worlds.Count; w++)
             {
                 ClaybreakWorld world = catalog.Worlds[w].world;
-                CheckWorld(world, w, sceneries, skies, towersSeen, failures);
+                CheckWorld(world, w, sceneries, palettes, towersSeen, failures);
                 var stress = AssetDatabase.LoadAssetAtPath<ClaybreakLevel>(WorldContent.StressLevelPath(w));
                 if (stress == null)
                 {
@@ -139,10 +201,10 @@ namespace Claybreak.Editor
             }
         }
 
-        // One world: levels within the menu, a look of its own (scenery style and sky not shared with another
-        // world), towers that no earlier world uses for its main tower or boss, 2+ kinds plus the boss,
-        // health that never drops from one plain level to the next and a boss above them all.
-        private static void CheckWorld(ClaybreakWorld world, int index, HashSet<SceneryStyle> sceneries, HashSet<Color> skies,
+        // One world: levels within the menu, a look of its own (scenery style and palette not shared with another
+        // world; the palette is the content's), towers that no earlier world uses for its main tower or boss, 2+ kinds
+        // plus the boss, health that never drops from one plain level to the next and a boss above them all.
+        private static void CheckWorld(ClaybreakWorld world, int index, HashSet<SceneryStyle> sceneries, HashSet<ToonPalette> palettes,
             Dictionary<TowerKind, string> towersSeen, List<string> failures)
         {
             if (world.LevelCount > ClaybreakSceneBuilder.LevelDots)
@@ -152,11 +214,15 @@ namespace Claybreak.Editor
 
             if (!world.Look.IsSet)
             {
-                failures.Add($"{world.name}: no look (sky, ground, sun)");
+                failures.Add($"{world.name}: no look (palette, ground, sun)");
             }
-            else if (!sceneries.Add(world.Look.scenery) || !skies.Add(world.Look.sky))
+            else if (!sceneries.Add(world.Look.scenery) || !palettes.Add(world.Look.palette))
             {
-                failures.Add($"{world.name}: scenery {world.Look.scenery} or its sky repeats another world's (no obvious visual repetition)");
+                failures.Add($"{world.name}: scenery {world.Look.scenery} or its palette repeats another world's (no obvious visual repetition)");
+            }
+            else
+            {
+                CheckPalette(world, index, failures);
             }
 
             var kinds = new HashSet<TowerKind>();
@@ -206,6 +272,41 @@ namespace Claybreak.Editor
             if (index == 0 && world.WorldId != SaveMigration.V1WorldId)
             {
                 failures.Add("the first world must keep the slice id " + SaveMigration.V1WorldId);
+            }
+        }
+
+        // The world's palette is the content's (PaletteContent: the user's exact values), complete and valid.
+        private static void CheckPalette(ClaybreakWorld world, int index, List<string> failures)
+        {
+            ToonPalette palette = world.Look.palette;
+            string error = palette.Validate();
+            if (error != null)
+            {
+                failures.Add($"{world.name}: palette {palette.name}: {error}");
+                return;
+            }
+
+            if (index >= PaletteContent.Palettes.Length || palette != PaletteContent.Load(index))
+            {
+                failures.Add($"{world.name}: palette {palette.name} is not the content's palette for world {index + 1} (rebuild the scene)");
+                return;
+            }
+
+            PaletteDefinition definition = PaletteContent.Palettes[index];
+            Color[] expected = PaletteContent.Colors(definition);
+            Color[] actual = palette.Colors;
+            for (int i = 0; i < expected.Length; i++)
+            {
+                if (ColorUtility.ToHtmlStringRGBA(expected[i]) != ColorUtility.ToHtmlStringRGBA(actual[i]))
+                {
+                    failures.Add($"{world.name}: palette {palette.name} {ToonPalette.ColorNames[i]} is #{ColorUtility.ToHtmlStringRGB(actual[i])}, "
+                        + $"the content says {definition.Hex[i]} (rebuild the scene)");
+                }
+            }
+
+            if (!Mathf.Approximately(palette.FogStart, definition.FogStart) || !Mathf.Approximately(palette.FogEnd, definition.FogEnd))
+            {
+                failures.Add($"{world.name}: palette {palette.name} fog {palette.FogStart}-{palette.FogEnd}, the content says {definition.FogStart}-{definition.FogEnd}");
             }
         }
 
