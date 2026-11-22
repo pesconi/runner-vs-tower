@@ -11,7 +11,36 @@ struct ToonInstanceData
     float4 tint;
 };
 
+// Two routes (ToonInstanceRouting, global keyword STUDIOKIT_TOON_BUFFER):
+// - buffer: every instance in one structured buffer, read by SV_InstanceID (RenderMeshPrimitives, one call);
+// - chunks (fallback for devices without structured buffers in the vertex shader): Unity's instancing arrays, filled
+//   by RenderMeshInstanced in blocks of 256 (ToonInstanceDraw.ChunkSize = forcemaxcount): the matrix is the transform,
+//   _ToonInstanceTint the tint. Include after Core.hlsl, with the instancing pragmas of the toon shaders.
+#if defined(STUDIOKIT_TOON_BUFFER)
 StructuredBuffer<ToonInstanceData> _ToonInstances;
+#define TOON_SETUP_INSTANCE(input)
+#else
+UNITY_INSTANCING_BUFFER_START(ToonInstanceProps)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _ToonInstanceTint)
+UNITY_INSTANCING_BUFFER_END(ToonInstanceProps)
+#define TOON_SETUP_INSTANCE(input) UNITY_SETUP_INSTANCE_ID(input)
+#endif
+
+// The instance drawn by this vertex, the same data on both routes (TOON_SETUP_INSTANCE first).
+ToonInstanceData ToonLoadInstance(uint instanceID)
+{
+#if defined(STUDIOKIT_TOON_BUFFER)
+    return _ToonInstances[instanceID];
+#else
+    float4x4 m = GetObjectToWorldMatrix();
+    ToonInstanceData instance;
+    instance.row0 = m[0];
+    instance.row1 = m[1];
+    instance.row2 = m[2];
+    instance.tint = UNITY_ACCESS_INSTANCED_PROP(ToonInstanceProps, _ToonInstanceTint);
+    return instance;
+#endif
+}
 
 float3 ToonInstancePosition(ToonInstanceData instance, float3 positionOS)
 {

@@ -17,6 +17,9 @@
 # its cap (D27: 300) running on the track with the world's scenery, looping back before the tower. Same gate as the toon lab
 # (frame p95 <= 16.7 ms at 60 fps). Example:
 #   Tools/rt2-gate.sh run-w3 60 20 /c/temp/rt4/Claybreak-measure.apk run:3
+# RT-6t.11: RT2_EXTRA adds launch arguments to every run, e.g. the fallback draw route on OpenGL ES:
+#   RT2_EXTRA="--ez chunks true -e unity -force-gles" Tools/rt2-gate.sh assault-w4-gles 60 20 <apk> 4
+# The [ToonRoute] line of the log says the route, the API and the GPU.
 # Gate (SISTEMA.md 5.4 of the studio): CPU main p95 <= 11 ms, GPU p95 <= 11 ms, frame p95 <= 33.3 ms,
 # < 5% of frames over 50 ms, PSS <= 450 MB, with inFlight=300 and projectiles at the level's limit.
 set -euo pipefail
@@ -35,6 +38,7 @@ adb install -r "$APK" >/dev/null
 adb shell am force-stop "$PKG"
 adb logcat -c
 ACTIVITY=$(adb shell cmd package resolve-activity --brief "$PKG" | tr -d '\r' | tail -n 1)
+read -r -a EXTRA_ARGS <<<"${RT2_EXTRA:-}"
 if [[ "$WORLD" == toonlab:* ]]; then
   IFS=: read -r _ UNITS MSAA HDR DYING <<<"$WORLD"
   EXTRAS=(--ez toonlab true --ei units "${UNITS:-1000}")
@@ -43,15 +47,15 @@ if [[ "$WORLD" == toonlab:* ]]; then
   if [ -n "${HDR:-}" ]; then
     if [ "$HDR" = 1 ]; then EXTRAS+=(--ez hdr true); else EXTRAS+=(--ez hdr false); fi
   fi
-  adb shell am start -n "$ACTIVITY" "${EXTRAS[@]}" --ei fps "$FPS" >/dev/null
+  adb shell am start -n "$ACTIVITY" "${EXTRAS[@]}" --ei fps "$FPS" "${EXTRA_ARGS[@]}" >/dev/null
   # Load, then the switch to the lab scene: the crowd is complete from its first frame.
   sleep "${RT2_SETTLE_SECONDS:-8}"
 elif [[ "$WORLD" == run:* ]]; then
-  adb shell am start -n "$ACTIVITY" --ez stress true --ez run true --ei world "${WORLD#run:}" --ei fps "$FPS" >/dev/null
+  adb shell am start -n "$ACTIVITY" --ez stress true --ez run true --ei world "${WORLD#run:}" --ei fps "$FPS" "${EXTRA_ARGS[@]}" >/dev/null
   # Load, auto start (1 s), the crowd at its cap from the first frame of the run.
   sleep "${RT2_SETTLE_SECONDS:-8}"
 else
-  adb shell am start -n "$ACTIVITY" --ez stress true --ei world "$WORLD" --ei fps "$FPS" >/dev/null
+  adb shell am start -n "$ACTIVITY" --ez stress true --ei world "$WORLD" --ei fps "$FPS" "${EXTRA_ARGS[@]}" >/dev/null
   # Load, auto start (1 s), 300 units launched in 2 s, first wave in flight: sample after it settles.
   sleep "${RT2_SETTLE_SECONDS:-14}"
 fi
@@ -59,4 +63,5 @@ fi
 adb logcat -d -s Unity | tr -d '\r' \
   | grep -E '\[DevTiming\] window|\[ClaybreakGate\]|\[Claybreak\]|\[ToonLab\]|\[DevFps\]' \
   | tail -n 24 | tee -a "$OUT/gate-$LABEL.txt"
+adb logcat -d -s Unity | tr -d '\r' | grep -E '\[ToonRoute\]' | tail -n 2 | tee -a "$OUT/gate-$LABEL.txt" || true
 echo "Saved: $OUT/gate-$LABEL.txt"

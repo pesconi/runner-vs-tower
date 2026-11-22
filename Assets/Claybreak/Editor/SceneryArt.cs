@@ -107,7 +107,7 @@ namespace Claybreak.Editor
             {
                 material.EnableKeyword(ToonShaderIds.InstancesKeyword);
                 material.EnableKeyword(ToonShaderIds.SlotsKeyword);
-                material.enableInstancing = false;
+                material.enableInstancing = true; // the fallback route draws it with RenderMeshInstanced (RT-6t.11)
             });
             SaveMaterial(GroundMaterialPath, toon, material =>
             {

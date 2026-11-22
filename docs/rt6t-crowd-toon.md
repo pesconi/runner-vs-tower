@@ -2,7 +2,7 @@
 
 Plano e decisões: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) (aprovado em 2026-11-21). Referência visual:
 [`reference/crowd-proto.html`](reference/crowd-proto.html). Decisões técnicas: `decisoes.md` (T-RT6t-1..9,
-T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10, T-RT6t5-1..10, T-RT6t6a-1..10, T-RT6t8-1..11, T-RT6t7-1..10 e T-RT6t9-1..11).
+T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10, T-RT6t5-1..10, T-RT6t6a-1..10, T-RT6t8-1..11, T-RT6t7-1..10, T-RT6t9-1..11, T-RT6t10-1..8 e T-RT6t11-1..7).
 
 ## RT-6t.1 — Portão técnico (2026-11-21)
 
@@ -600,3 +600,55 @@ Decisões D28 (A por padrão) e T-RT6t10-1..8 em `decisoes.md`.
 - `art/telas/` regravadas (menu, loja, assalto e os 4 mundos com as torres novas).
 - Comando: `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.BossCaptureTests -bossCaptureDir <pasta>` sem
   `-nographics`.
+
+## RT-6t.11 — Reserva para OpenGL ES (2026-11-22)
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| `ToonInstanceRouting` | incubadora, `Swarm` | Escolhe a rota uma vez por aparelho: **buffer** se `SystemInfo.supportsInstancing`, `maxComputeBufferInputsVertex > 0` e `graphicsShaderLevel >= 45`; senão **blocos**. Liga/desliga a palavra-chave global `STUDIOKIT_TOON_BUFFER` e escreve no log `[ToonRoute] route=… api=… gpu=… vertexBuffers=…`. Testes e o APK de medição podem forçar uma rota (`Forced`). |
+| `ToonInstanceDraw` | incubadora, `Swarm` | Uma peça de desenho para as duas rotas. Buffer: o de antes (1 buffer estruturado, 1 chamada para corpos + 1 para sombras, `RenderMeshPrimitives`). Blocos: um job Burst escreve a matriz e a tinta de cada instância numa passada; cada bloco de **256** é uma chamada `RenderMeshInstanced` com as tintas no seu `MaterialPropertyBlock`; as sombras saem das mesmas matrizes e blocos. Tudo alocado na carga; nada por quadro. |
+| `SwarmRenderer`, `LooseSwarmRenderer`, `InstancedProps` | incubadora | Os três desenham pela `ToonInstanceDraw` (corrida, unidades em voo do assalto e cenário). Expõem `Route` e `DrawCalls`. Se uma rota for forçada com o jogo rodando, trocam de rota no quadro seguinte. |
+| `ToonLit`, `BlobShadowInstanced`, `ToonInstanceData.hlsl` | incubadora | Variante própria da rota de blocos: sem a palavra-chave global, a instância vem dos arrays de instancing do Unity (matriz + `_ToonInstanceTint`) em vez do buffer, com a **mesma conta** de posição, normal e tinta. `#pragma target 3.5` (OpenGL ES 3.0 basta) e `4.5` só com o buffer; `forcemaxcount:256` = 16 KB, o menor bloco uniforme do GLES 3. |
+| Materiais | jogo | `CrowdToon`, `CrowdShadow` e `PropsToon` com GPU instancing ligado (a rota de blocos exige; o validador confere). |
+| `DrawRouteExtra` | jogo | Só no APK de medição: `--ez chunks true|false` força a rota antes da primeira cena. Com `-e unity -force-gles` o aparelho roda em OpenGL ES. `Tools/rt2-gate.sh` aceita `RT2_EXTRA` para isso. |
+
+Chamadas na rota de blocos: 300 na corrida = 2 (corpos) + 2 (sombras); 300 em voo + até 212 morrendo = 2 + 2;
+1000 vivos + 512 morrendo = 6 + 4. Cenário: uma por camada (menos de 256 por camada).
+
+### Testes e validação
+
+- `Tools/rt4-check.sh` completo (2026-11-22): `scene`, `validate`, `isolation`, `editmode` (**229/229**), `playmode`
+  (**22 passam**, 12 capturas só com GPU), `economy`, `capture`, `apk-game`, `apk-measure`, `aab`: **PASS**, nenhum erro de
+  shader nos builds.
+- Novos EditMode (`ToonInstanceDrawTests`): a matriz é a transformação da instância; o job escreve matriz e tinta de
+  todas; uma chamada por bloco; os shaders usam blocos de 256 e compilam; rota forçada vence e liga a palavra-chave;
+  material sem instancing é recusado. Validador: os três materiais instanciados com instancing ligado.
+- Revisor independente (subagente fable, só leitura): nada bloqueante; aplicados o comentário da margem zero do bloco de
+  16 KB e o job sem paralelismo para camadas pequenas.
+
+### As duas rotas desenham igual (captura)
+
+`-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.DrawRouteCaptureTests -routeCaptureDir <pasta>` sem
+`-nographics`: corrida e assalto mais pesados do mundo 4 congelados (escala de tempo 0), desenhados por cada rota no
+formato do OPPO e comparados pixel a pixel. Resultado no Editor (Direct3D 12): **0 pixels diferentes** nas duas cenas
+(corrida: 300 + cenário, 4 chamadas na rota de blocos; assalto: 300 em voo + 12 morrendo, 4 chamadas).
+[`art/rt6t/rotas-oppo.png`](art/rt6t/rotas-oppo.png): corrida buffer | corrida blocos | assalto buffer | assalto blocos.
+
+### Gate 3× no OPPO CPH2791 em OpenGL ES — **PASSOU** (2026-11-22)
+
+Comando: `RT2_EXTRA="--ez chunks true -e unity -force-gles" Tools/rt2-gate.sh assault-w4-gles-chunks 60 20
+/c/temp/rt6t11/Claybreak-measure.apk 4` (assalto do mundo 4, o caso mais pesado: 300 em voo com 100 elites, 37–75
+morrendo, canhão com 12 pedras, forma e skin mais pesadas, teto D27 = 300). Linha do log:
+`[ToonRoute] route=Chunks forced=yes api=OpenGLES3 gpu="Mali-G1-Ultra MC12" shaderLevel=50 vertexBuffers=0`.
+
+| Rodada | API | Rota | CPU p95 | GPU p95 | Quadro p95 | > 50 ms | PSS | Alocação | Resultado |
+|---|---|---|---|---|---|---|---|---|---|
+| assalto, mundo 4 (6t.11) | OpenGL ES 3 | blocos | 2,5 ms (3,5 na janela 6, coleta de memória) | 6,9 ms | 16 ms (62,5 fps) | 0,0% | 309 MB | 0 B | **passa** |
+| antes: assalto, mundo 4 (6t.7) | Vulkan | buffer | 2,6 ms | 4,3 ms | 16 ms | 0,0% | 292 MB | 0 B | passa |
+
+Leitura: **em OpenGL ES o Mali do OPPO não lê buffer estruturado no vertex shader** (`vertexBuffers=0`): sem a reserva, a
+multidão não desenharia nesse modo; a escolha automática já cairia na rota de blocos. A reserva custa ~2,6 ms de GPU a
+mais que o Vulkan com buffer e continua com mais de 3× de folga em CPU e GPU. Captura do aparelho durante o gate
+(desenho certo, sem shader de erro): [`art/rt6t/assalto-oppo-gles.png`](art/rt6t/assalto-oppo-gles.png).

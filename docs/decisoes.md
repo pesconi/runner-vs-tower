@@ -1664,3 +1664,42 @@ Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
   commitados em vez de reconstruí-los, a troca de shader limpa as propriedades antigas, global não escrita vira branco,
   o validador cobre a linha de tiro e todas as posições de material e roda mesmo com peça faltando, a barra de vida
   voltou à cor exata de antes, a captura limpa câmera e texturas mesmo se falhar no meio.
+
+## 2026-11-22 — RT-6t.10 — Aceite visual da arte do assalto — aprovado — usuário
+
+- O usuário olhou as capturas dos 4 chefes da RT-6t.10 (`docs/art/rt6t/chefes-perto.png` e `chefes-oppo.png`) e
+  respondeu "Aprovo". O aceite visual pendente da RT-6t.10 está resolvido; a entrega fica concluída sem pendência.
+- **D28 = A confirmada** por essa aprovação: a arte do assalto fica com o sombreado toon de 3 faixas e as cores de
+  torre/defesa da paleta de cada mundo, sem remodelar e sem rostos (antes valia A só por falta de resposta).
+
+## 2026-11-22 — T-RT6t11-1..7 — Reserva de desenho para OpenGL ES — técnica (sessão RT-6t.11)
+
+- **T-RT6t11-1 — Uma peça de desenho para as duas rotas (`ToonInstanceDraw`), usada pelos três desenhistas.** A reserva
+  não fica só no `SwarmRenderer`: o assalto (`LooseSwarmRenderer`) e o cenário (`InstancedProps`) também liam buffer
+  estruturado no vertex shader e quebrariam no mesmo aparelho. Os três guardam os mesmos `ToonInstance` e entregam à peça,
+  que sobe para o buffer ou converte para blocos. Descartado: um segundo caminho dentro de cada desenhista (três cópias da
+  mesma lógica).
+- **T-RT6t11-2 — Escolha por palavra-chave global, sem material extra.** A rota liga/desliga `STUDIOKIT_TOON_BUFFER`
+  (global) uma vez; os materiais instanciados continuam os mesmos assets. Descartados: um segundo material por desenhista
+  (assets e fiação a mais no construtor de cena) e criar material em jogo (`Destroy` na saída fere a regra 2.2.1). Custo:
+  o `ToonLit` e a sombra dobram de variantes; build sem mudança perceptível.
+- **T-RT6t11-3 — Critério da escolha:** `supportsInstancing`, `maxComputeBufferInputsVertex > 0` e
+  `graphicsShaderLevel >= 45`; lido uma vez. As variantes do buffer pedem `target 4.5` só com a palavra-chave
+  (`#pragma target 4.5 STUDIOKIT_TOON_BUFFER`); as de blocos ficam em `target 3.5`, então rodam até em OpenGL ES 3.0.
+- **T-RT6t11-4 — Blocos de 256 (`forcemaxcount:256`).** 256 matrizes = 16 KB, o menor bloco uniforme garantido pelo
+  GLES 3; cabe porque `assumeuniformscaling nolightprobe nolightmap nolodfade` tiram o resto do bloco (a normal é
+  calculada pela nossa conta, que aceita escala não uniforme). Cada bloco recebe uma fatia da matriz (`GetSubArray`, sem
+  cópia) e as tintas no seu `MaterialPropertyBlock` (arrays de 256 fixos desde a carga).
+- **T-RT6t11-5 — Sombras pelas mesmas matrizes, não por um segundo array.** O plano previa um array de matrizes de sombra
+  calculado no mesmo job. Como a tinta por instância (com a escala da sombra em `w`) já vai por bloco, a sombra lê x, z e a
+  escala da mesma instância, com a mesma conta da rota de buffer; o job único escreve matrizes e tintas para corpos e
+  sombras. Menos memória e uma fonte só; a captura confirma o desenho igual.
+- **T-RT6t11-6 — Rota forçável e troca em jogo.** `ToonInstanceRouting.Forced` (testes, APK de medição com
+  `--ez chunks true`) troca a palavra-chave na hora e os desenhistas refazem a peça no quadro seguinte (única alocação
+  fora da carga, e só quando alguém força). É o que permite a captura comparar as duas rotas no mesmo quadro congelado.
+- **T-RT6t11-7 — Guardas e revisão.** Validador: materiais instanciados com instancing ligado. EditMode
+  `ToonInstanceDrawTests`; PlayMode de captura `DrawRouteCaptureTests` (`-routeCaptureDir`, só com GPU, falha se mais de
+  0,2% dos pixels diferirem). Revisor independente (subagente fable, só leitura): nada bloqueante; aplicados o comentário
+  da margem zero do bloco e o job sem paralelismo para menos de 256 instâncias. Não aplicados: `multi_compile_vertex`
+  (economia de variantes pequena, risco de mudar a seleção de variantes sem ganho medido) e passar `startInstance` em
+  vez da fatia (a fatia deixa explícito que o array de tintas do bloco começa em 0).

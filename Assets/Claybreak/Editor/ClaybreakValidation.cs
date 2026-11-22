@@ -585,6 +585,17 @@ namespace Claybreak.Editor
                 }
             }
 
+            // RT-6t.11: the instanced materials are drawn by both routes; the fallback (RenderMeshInstanced) needs instancing on.
+            foreach (string path in new[] { ToonLabBuilder.SwarmMaterialPath, ToonLabBuilder.ShadowMaterialPath, SceneryArt.PropsMaterialPath })
+            {
+                var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+                string problem = material == null ? "missing (run Claybreak > Build Scene)" : ToonInstanceDraw.ValidateMaterial(material);
+                if (problem != null)
+                {
+                    failures.Add(path + ": " + problem);
+                }
+            }
+
             // RT-6t.3: the lab and run cameras are framed by data (portrait fit), so the profiles must be there and coherent.
             foreach (string path in new[] { ToonLabBuilder.CameraProfilePath, ClaybreakSceneBuilder.CrowdCameraProfilePath })
             {

@@ -11,8 +11,9 @@ namespace JungleDegree.StudioKit.Swarm
     /// <summary>
     /// Draws loose units, each placed by its owner (no formation): units sent off one by one, each with its own size and
     /// tint, that hop and lean like a <see cref="SwarmRenderer"/>'s and die the same ballistic death (a
-    /// <see cref="SwarmDyingRing"/>). Same look and cost model as the swarm: no per-unit object, one structured buffer,
-    /// one call for the bodies (live, then dying) and one for the blob shadows of the live ones. Units are kept in a dense
+    /// <see cref="SwarmDyingRing"/>). Same look and cost model as the swarm: no per-unit object, a
+    /// <see cref="ToonInstanceDraw"/> for the bodies (live, then dying) and the blob shadows of the live ones (one call
+    /// each on the buffer route, one per block of matrices on the fallback route). Units are kept in a dense
     /// array: a removal moves the last unit into the freed index (the owner mirrors it in its own arrays). Everything is
     /// allocated when enabled (scene load) and released when disabled; nothing is allocated while playing.
     /// </summary>
@@ -41,9 +42,7 @@ namespace JungleDegree.StudioKit.Swarm
         private NativeArray<ToonInstance> instances;
         private SwarmDyingRing dying;
         private Unity.Mathematics.Random random;
-        private GraphicsBuffer buffer;
-        private RenderParams unitParams;
-        private RenderParams shadowParams;
+        private ToonInstanceDraw draw;
         private Bounds area;
         private bool drawShadows;
         private bool headless;
@@ -63,6 +62,12 @@ namespace JungleDegree.StudioKit.Swarm
 
         /// <summary>True without a graphics device (batchmode -nographics): units are kept but nothing is drawn.</summary>
         public bool Headless => headless;
+
+        /// <summary>The draw route in use (null while headless or disabled).</summary>
+        public ToonInstanceRoute? Route => draw?.Route;
+
+        /// <summary>Instanced calls of the last frame (bodies and shadows).</summary>
+        public int DrawCalls { get; private set; }
 
         /// <summary>
         /// Where the live units can be (the culling box of the draws; the dying grow it by how far they fly). Set it when
@@ -202,26 +207,14 @@ namespace JungleDegree.StudioKit.Swarm
                 return;
             }
 
-            buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, capacity + dyingCapacity, ToonInstance.Stride);
-            unitParams = new RenderParams(unitMaterial)
-            {
-                matProps = new MaterialPropertyBlock(),
-                shadowCastingMode = ShadowCastingMode.Off,
-                receiveShadows = false,
-                layer = gameObject.layer,
-            };
-            unitParams.matProps.SetBuffer(ToonShaderIds.Instances, buffer);
             drawShadows = shadowMaterial != null && shadowMesh != null;
-            if (drawShadows)
-            {
-                shadowParams = new RenderParams(shadowMaterial)
-                {
-                    matProps = unitParams.matProps,
-                    shadowCastingMode = ShadowCastingMode.Off,
-                    receiveShadows = false,
-                    layer = gameObject.layer,
-                };
-            }
+            CreateDraw();
+        }
+
+        // Scene load, or the frame after a route was forced (tests, measurement builds).
+        private void CreateDraw()
+        {
+            draw = new ToonInstanceDraw(unitMaterial, drawShadows ? shadowMaterial : null, capacity + dyingCapacity, gameObject.layer);
         }
 
         private void OnDisable()
@@ -237,8 +230,9 @@ namespace JungleDegree.StudioKit.Swarm
                 instances.Dispose();
             }
 
-            buffer?.Release();
-            buffer = null;
+            draw?.Dispose();
+            draw = null;
+            DrawCalls = 0;
         }
 
         // The owner moves its units in Update; they are animated and drawn after.
@@ -268,16 +262,18 @@ namespace JungleDegree.StudioKit.Swarm
             handle = dying.ScheduleFly(instances.GetSubArray(count, dyingCount), deltaTime, time, 0f, death, handle);
             handle.Complete();
 
-            buffer.SetData(instances, 0, 0, drawn);
+            if (draw.Stale)
+            {
+                draw.Dispose();
+                CreateDraw();
+            }
+
+            draw.Upload(instances, drawn);
             Bounds bounds = area;
             dying.Encapsulate(ref bounds, 0f, area.max.y, death);
-            unitParams.worldBounds = bounds;
-            Graphics.RenderMeshPrimitives(unitParams, unitMesh, 0, drawn);
-            if (drawShadows && count > 0)
-            {
-                shadowParams.worldBounds = bounds;
-                Graphics.RenderMeshPrimitives(shadowParams, shadowMesh, 0, count);
-            }
+            draw.Draw(unitMesh, drawn, bounds);
+            draw.DrawShadows(shadowMesh, count, bounds);
+            DrawCalls = ToonInstanceDraw.Calls(draw.Route, drawn) + (drawShadows ? ToonInstanceDraw.Calls(draw.Route, count) : 0);
         }
 
         private string Validate()
@@ -292,13 +288,8 @@ namespace JungleDegree.StudioKit.Swarm
                 return $"{unitMaterial.name} must have {ToonShaderIds.InstancesKeyword} on";
             }
 
-            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null
-                && (!SystemInfo.supportsInstancing || SystemInfo.maxComputeBufferInputsVertex < 1))
-            {
-                return $"this device cannot read a structured buffer in the vertex shader ({SystemInfo.graphicsDeviceType})";
-            }
-
-            return null;
+            return ToonInstanceDraw.ValidateMaterial(unitMaterial)
+                ?? (shadowMaterial != null && shadowMesh != null ? ToonInstanceDraw.ValidateMaterial(shadowMaterial) : null);
         }
     }
 

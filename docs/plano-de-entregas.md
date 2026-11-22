@@ -500,14 +500,14 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.8.
 - **Aceite:** validação padrão; capturas dos 4 chefes; aprovação visual do usuário como aceite pendente.
 - **Exige o usuário:** D28; olhar as capturas.
-- **Status: concluída em 2026-11-22 — aceite visual pendente.** D28 sem resposta: A. Torres, chefes, canhão e pedras,
+- **Status: concluída em 2026-11-22; aceite visual aprovado pelo usuário em 2026-11-22 ("Aprovo", capturas dos 4
+  chefes), o que confirma D28 = A.** D28 sem resposta: A. Torres, chefes, canhão e pedras,
   muralha, escudo, varredor, caixotes e efeitos no `ToonLit` (3 faixas) com as cores de torre/defesa da paleta do mundo
   ativo (globais escritas na troca de mundo; nada criado em jogo), sem remodelar e sem rostos; efeitos com emissão; sinais
   de jogo (vida, escudo, perigo, portões) com cor fixa; estruturas com 35% da neblina (a torre não some mais na cor do
   horizonte); cores de torre do Pastel escurecidas. Validação completa verde. Capturas dos 4 chefes em
   [`art/rt6t/chefes-oppo.png`](art/rt6t/chefes-oppo.png) e [`chefes-perto.png`](art/rt6t/chefes-perto.png); detalhes em
-  [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t10-1..8 em `decisoes.md`. Falta: o usuário olhar as
-  capturas (A fica, ou pede B/C como entrega nova). Próxima: 6t.11.
+  [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t10-1..8 em `decisoes.md`. Próxima: 6t.11.
 - **Prompt da sessão:** "Entrega RT-6t.10 do Runner vs Tower: arte do assalto no estilo toon. Leia
   `docs/direcao-visual-crowd.md` (RT-6t.10, ficha D28) e a resposta da D28. Aplique a opção escolhida; capturas
   dos 4 mundos."
@@ -519,7 +519,13 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.7.
 - **Aceite:** validação padrão; as duas rotas desenham igual (captura); gate 3× em GLES no OPPO.
 - **Exige o usuário:** OPPO conectado.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-22.** Rota de reserva `RenderMeshInstanced` em blocos de 256 (variante própria do
+  `ToonLit` e da sombra, matrizes e tintas num job Burst, sombras dos mesmos blocos) para a corrida, o assalto e o
+  cenário; escolha por `SystemInfo` com palavra-chave global; forçável no APK de medição (`--ez chunks true`). As duas
+  rotas desenham igual (0 pixels diferentes, [`art/rt6t/rotas-oppo.png`](art/rt6t/rotas-oppo.png)). Gate 3× no OPPO em
+  OpenGL ES, assalto do mundo 4: CPU p95 2,5 ms, GPU p95 6,9 ms, quadro 16 ms, 0% > 50 ms, PSS 309 MB — passa. Em GLES o
+  Mali do OPPO não lê buffer no vertex shader (`vertexBuffers=0`): a reserva é necessária nesse modo. Validação completa
+  verde. Detalhes em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t11-1..7 em `decisoes.md`. Próxima: 6t.12.
 - **Prompt da sessão:** "Entrega RT-6t.11 do Runner vs Tower: caminho de desenho de reserva para OpenGL ES. Leia
   `docs/direcao-visual-crowd.md` (item 9, R-T2, RT-6t.11). Implemente na incubadora, escolha por `SystemInfo`, e
   meça o gate 3× no OPPO com GLES forçado."

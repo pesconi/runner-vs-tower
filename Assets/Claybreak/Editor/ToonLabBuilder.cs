@@ -63,6 +63,7 @@ namespace Claybreak.Editor
             {
                 material.EnableKeyword(ToonShaderIds.InstancesKeyword);
                 material.SetColor(ToonShaderIds.TintColor, Color.white);
+                material.enableInstancing = true; // the fallback route draws it with RenderMeshInstanced (RT-6t.11)
             });
             SaveMaterial(StaticMaterialPath, toon, material =>
             {
@@ -72,6 +73,7 @@ namespace Claybreak.Editor
             SaveMaterial(ShadowMaterialPath, Find("StudioKit/BlobShadowInstanced"), material =>
             {
                 material.SetColor("_ShadowColor", new Color(0x2b / 255f, 0x22 / 255f, 0x33 / 255f, 0.18f));
+                material.enableInstancing = true;
             });
             if (AssetDatabase.LoadAssetAtPath<ToonLook>(LookPath) == null)
             {

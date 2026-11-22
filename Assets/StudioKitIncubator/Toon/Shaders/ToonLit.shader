@@ -2,8 +2,11 @@
 // _StudioKitToonRamp, point filtered) plus a two-tone ambient (ground color from below, sky color from above),
 // linear fog, vertex colors. Vertex color alpha is the tint mask: 1 = takes the tint (material _TintColor, or the
 // instance tint in the instanced variant), 0 = keeps its own color (eyes, leaves...). No shadows, no PBR.
-// Keyword STUDIOKIT_TOON_INSTANCES: the transform and tint come from _ToonInstances[SV_InstanceID]
-// (Graphics.RenderMeshPrimitives, one draw for any count). Global values come from ToonLookApplier.
+// Keyword STUDIOKIT_TOON_INSTANCES: the transform and tint come from the instance (ToonInstanceData.hlsl): with the
+// global keyword STUDIOKIT_TOON_BUFFER from _ToonInstances[SV_InstanceID] (Graphics.RenderMeshPrimitives, one draw for
+// any count; shader model 4.5), without it from Unity's instancing arrays (Graphics.RenderMeshInstanced in blocks of 256,
+// the fallback for devices without structured buffers in the vertex shader; OpenGL ES 3.0 is enough). Both routes run
+// the same math. Materials drawn instanced need GPU instancing on. Global values come from ToonLookApplier.
 // Keyword STUDIOKIT_TOON_SLOTS: the vertex color RGB are weights of three palette slots (_ToonSlot0..2, linear)
 // instead of a color, so one mesh takes any palette (props: trunk / foliage / foliage light).
 // Structure colors: _StructureWeights (x light, y dark, z detail, w defense) mix the palette's global structure and
@@ -35,12 +38,18 @@ Shader "StudioKit/ToonLit"
             ZWrite On
 
             HLSLPROGRAM
-            #pragma target 4.5
+            #pragma target 3.5
+            #pragma target 4.5 STUDIOKIT_TOON_BUFFER
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma multi_compile_fog
             #pragma multi_compile_local _ STUDIOKIT_TOON_INSTANCES
             #pragma multi_compile_local _ STUDIOKIT_TOON_SLOTS
+            #pragma multi_compile _ STUDIOKIT_TOON_BUFFER
+            #pragma multi_compile_instancing
+            // 256 object-to-world matrices = 16 KB, the smallest uniform block of OpenGL ES 3 (ToonInstanceDraw.ChunkSize):
+            // keep the options that leave the other per-instance built-ins out, or lower the count.
+            #pragma instancing_options assumeuniformscaling nolightprobe nolightmap nolodfade forcemaxcount:256
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
@@ -91,7 +100,8 @@ Shader "StudioKit/ToonLit"
                 float3 normalWS;
                 half3 tint;
             #if defined(STUDIOKIT_TOON_INSTANCES)
-                ToonInstanceData instance = _ToonInstances[input.instanceID];
+                TOON_SETUP_INSTANCE(input);
+                ToonInstanceData instance = ToonLoadInstance(input.instanceID);
                 positionWS = ToonInstancePosition(instance, input.positionOS.xyz);
                 normalWS = ToonInstanceNormal(instance, input.normalOS);
                 tint = instance.tint.rgb;

@@ -1,5 +1,6 @@
 using System;
 using JungleDegree.StudioKit.Toon;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -24,8 +25,9 @@ namespace JungleDegree.StudioKit.Swarm
     }
 
     /// <summary>
-    /// Side scenery with no object per prop: each <see cref="PropLayer"/> is drawn in one instanced call
-    /// (<c>StudioKit/ToonLit</c> with the instances and slots keywords) from a structured buffer, its props scattered by
+    /// Side scenery with no object per prop: each <see cref="PropLayer"/> is drawn by its own <see cref="ToonInstanceDraw"/>
+    /// (<c>StudioKit/ToonLit</c> with the instances and slots keywords; one call from a structured buffer, or one per block of
+    /// matrices on the fallback route of <see cref="ToonInstanceRouting"/>), its props scattered by
     /// <see cref="PropScatter"/> in a window that follows the anchor (the camera) and recycled to the far end when the
     /// anchor passes them — an endless roadside from a fixed number of instances. Buffers are allocated when enabled
     /// (scene load) and released when disabled; switching worlds is <see cref="SetLayer"/> (count and slot colors),
@@ -43,9 +45,8 @@ namespace JungleDegree.StudioKit.Swarm
         [Tooltip("Height of the drawn bounds (m): the tallest prop at its largest scale fits under it.")]
         [Min(0.1f)] [SerializeField] private float boundsHeight = 8f;
 
-        private ToonInstance[][] instances;
-        private GraphicsBuffer[] buffers;
-        private RenderParams[] drawParams;
+        private NativeArray<ToonInstance>[] instances;
+        private ToonInstanceDraw[] draws;
         private bool allocated;
         private bool headless;
         private bool dirty = true;
@@ -55,18 +56,21 @@ namespace JungleDegree.StudioKit.Swarm
         public PropScatterSettings Scatter => scatter;
         public Transform Anchor => anchor;
 
-        /// <summary>Instanced draws per frame: one per layer with props shown.</summary>
+        /// <summary>
+        /// Instanced draws per frame on the route in use: one per layer with props shown on the buffer route, one per block
+        /// of <see cref="ToonInstanceDraw.ChunkSize"/> on the fallback route.
+        /// </summary>
         public int DrawCalls
         {
             get
             {
-                int draws = 0;
+                int calls = 0;
                 for (int i = 0; i < LayerCount; i++)
                 {
-                    draws += layers[i].Count > 0 ? 1 : 0;
+                    calls += ToonInstanceDraw.Calls(ToonInstanceRouting.Current, layers[i].Count);
                 }
 
-                return draws;
+                return calls;
             }
         }
 
@@ -100,13 +104,7 @@ namespace JungleDegree.StudioKit.Swarm
                 }
             }
 
-            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null
-                && (!SystemInfo.supportsInstancing || SystemInfo.maxComputeBufferInputsVertex < 1))
-            {
-                return $"this device cannot read a structured buffer in the vertex shader ({SystemInfo.graphicsDeviceType})";
-            }
-
-            return scatter.Validate();
+            return ToonInstanceDraw.ValidateMaterial(material) ?? scatter.Validate();
         }
 
         /// <summary>
@@ -128,7 +126,7 @@ namespace JungleDegree.StudioKit.Swarm
             layers[layer] = data;
             if (allocated && !headless)
             {
-                SetSlots(drawParams[layer].matProps, data);
+                SetSlots(draws[layer], data);
             }
 
             dirty = true;
@@ -154,6 +152,13 @@ namespace JungleDegree.StudioKit.Swarm
                 return;
             }
 
+            if (!headless && draws[0].Stale)
+            {
+                // A route was forced (tests, measurement builds): the other route's draws, uploaded again below.
+                CreateDraws();
+                dirty = true;
+            }
+
             float anchorZ = AnchorZ;
             if (dirty || anchorZ != builtAnchorZ)
             {
@@ -176,25 +181,25 @@ namespace JungleDegree.StudioKit.Swarm
                     continue;
                 }
 
-                drawParams[i].camera = camera;
-                drawParams[i].worldBounds = bounds;
-                Graphics.RenderMeshPrimitives(drawParams[i], layers[i].Mesh, 0, layers[i].Count);
+                draws[i].Draw(layers[i].Mesh, layers[i].Count, bounds, camera);
             }
         }
 
         /// <summary>Frees the buffers (done when disabled; tools call it after an edit-mode <see cref="Render"/>).</summary>
         public void Release()
         {
-            if (buffers != null)
+            DisposeDraws();
+            if (instances != null)
             {
-                foreach (GraphicsBuffer buffer in buffers)
+                foreach (NativeArray<ToonInstance> placed in instances)
                 {
-                    buffer?.Release();
+                    if (placed.IsCreated)
+                    {
+                        placed.Dispose();
+                    }
                 }
             }
 
-            buffers = null;
-            drawParams = null;
             instances = null;
             allocated = false;
             dirty = true;
@@ -228,29 +233,15 @@ namespace JungleDegree.StudioKit.Swarm
             }
 
             headless = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
-            instances = new ToonInstance[layers.Length][];
+            instances = new NativeArray<ToonInstance>[layers.Length];
             for (int i = 0; i < layers.Length; i++)
             {
-                instances[i] = new ToonInstance[layers[i].Capacity];
+                instances[i] = new NativeArray<ToonInstance>(layers[i].Capacity, Allocator.Persistent);
             }
 
             if (!headless)
             {
-                buffers = new GraphicsBuffer[layers.Length];
-                drawParams = new RenderParams[layers.Length];
-                for (int i = 0; i < layers.Length; i++)
-                {
-                    buffers[i] = new GraphicsBuffer(GraphicsBuffer.Target.Structured, layers[i].Capacity, ToonInstance.Stride);
-                    drawParams[i] = new RenderParams(material)
-                    {
-                        matProps = new MaterialPropertyBlock(),
-                        shadowCastingMode = ShadowCastingMode.Off,
-                        receiveShadows = false,
-                        layer = gameObject.layer,
-                    };
-                    drawParams[i].matProps.SetBuffer(ToonShaderIds.Instances, buffers[i]);
-                    SetSlots(drawParams[i].matProps, layers[i]);
-                }
+                CreateDraws();
             }
 
             allocated = true;
@@ -258,12 +249,37 @@ namespace JungleDegree.StudioKit.Swarm
             return true;
         }
 
+        // Scene load, or the frame after a route was forced.
+        private void CreateDraws()
+        {
+            DisposeDraws();
+            draws = new ToonInstanceDraw[layers.Length];
+            for (int i = 0; i < layers.Length; i++)
+            {
+                draws[i] = new ToonInstanceDraw(material, null, layers[i].Capacity, gameObject.layer);
+                SetSlots(draws[i], layers[i]);
+            }
+        }
+
+        private void DisposeDraws()
+        {
+            if (draws != null)
+            {
+                foreach (ToonInstanceDraw draw in draws)
+                {
+                    draw?.Dispose();
+                }
+            }
+
+            draws = null;
+        }
+
         private void Build(float anchorZ)
         {
             for (int l = 0; l < layers.Length; l++)
             {
                 PropLayer layer = layers[l];
-                ToonInstance[] placed = instances[l];
+                NativeArray<ToonInstance> placed = instances[l];
                 var scale = new float2(layer.Scale.x, layer.Scale.y);
                 for (int i = 0; i < layer.Count; i++)
                 {
@@ -272,7 +288,7 @@ namespace JungleDegree.StudioKit.Swarm
 
                 if (!headless && layer.Count > 0)
                 {
-                    buffers[l].SetData(placed, 0, 0, layer.Count);
+                    draws[l].Upload(placed, layer.Count);
                 }
             }
 
@@ -281,11 +297,11 @@ namespace JungleDegree.StudioKit.Swarm
         }
 
         // The shader mixes the slots as linear colors (vertex weights are not colors, so nothing converts them there).
-        private static void SetSlots(MaterialPropertyBlock block, PropLayer layer)
+        private static void SetSlots(ToonInstanceDraw draw, PropLayer layer)
         {
-            block.SetVector(ToonShaderIds.Slot0, ToonShaderIds.ShaderColor(layer.Slot0));
-            block.SetVector(ToonShaderIds.Slot1, ToonShaderIds.ShaderColor(layer.Slot1));
-            block.SetVector(ToonShaderIds.Slot2, ToonShaderIds.ShaderColor(layer.Slot2));
+            draw.SetVector(ToonShaderIds.Slot0, ToonShaderIds.ShaderColor(layer.Slot0));
+            draw.SetVector(ToonShaderIds.Slot1, ToonShaderIds.ShaderColor(layer.Slot1));
+            draw.SetVector(ToonShaderIds.Slot2, ToonShaderIds.ShaderColor(layer.Slot2));
         }
     }
 }

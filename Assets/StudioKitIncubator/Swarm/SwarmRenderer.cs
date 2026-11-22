@@ -6,10 +6,10 @@ using UnityEngine.Rendering;
 namespace JungleDegree.StudioKit.Swarm
 {
     /// <summary>
-    /// Draws a swarm with no per-unit object: a <see cref="SwarmSimulation"/> animated by Burst every frame, uploaded
-    /// to one structured buffer and drawn in one call for the bodies (<c>StudioKit/ToonLit</c> with
-    /// <see cref="ToonShaderIds.InstancesKeyword"/>) plus one for the blob shadows (<c>StudioKit/BlobShadowInstanced</c>),
-    /// both reading the same buffer. Units removed with <see cref="SwarmRemoval.Die"/> fly out in the ballistic death,
+    /// Draws a swarm with no per-unit object: a <see cref="SwarmSimulation"/> animated by Burst every frame and drawn by a
+    /// <see cref="ToonInstanceDraw"/> (<c>StudioKit/ToonLit</c> with <see cref="ToonShaderIds.InstancesKeyword"/> for the
+    /// bodies, <c>StudioKit/BlobShadowInstanced</c> for the blob shadows): one structured buffer and one call each where
+    /// the device reads buffers in the vertex shader, blocks of matrices otherwise (<see cref="ToonInstanceRouting"/>). Units removed with <see cref="SwarmRemoval.Die"/> fly out in the ballistic death,
     /// drawn in the same body call after the live ones (a ring of fixed capacity; no shadows). Everything is allocated
     /// when enabled (scene load) and released when disabled.
     /// </summary>
@@ -37,10 +37,7 @@ namespace JungleDegree.StudioKit.Swarm
         [SerializeField] private uint seed = 1;
 
         private SwarmSimulation simulation;
-        private GraphicsBuffer buffer;
-        private RenderParams unitParams;
-        private RenderParams shadowParams;
-        private bool drawShadows;
+        private ToonInstanceDraw draw;
         private bool headless;
 
         public int Capacity => capacity;
@@ -66,6 +63,12 @@ namespace JungleDegree.StudioKit.Swarm
         public Color Tint => tint;
         public int UnitTriangles => unitMesh == null ? 0 : (int)(unitMesh.GetIndexCount(0) / 3);
         public bool DrawsShadows => shadowMaterial != null && shadowMesh != null;
+
+        /// <summary>The draw route in use (null while headless or disabled).</summary>
+        public ToonInstanceRoute? Route => draw?.Route;
+
+        /// <summary>Instanced calls of the last frame (bodies and shadows).</summary>
+        public int DrawCalls { get; private set; }
 
         /// <summary>
         /// Draws the bodies (default). Off, only the blob shadows are drawn: tools and captures use it to see the ground
@@ -178,27 +181,7 @@ namespace JungleDegree.StudioKit.Swarm
                 return;
             }
 
-            buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, capacity + dyingCapacity, ToonInstance.Stride);
-            unitParams = new RenderParams(unitMaterial)
-            {
-                matProps = new MaterialPropertyBlock(),
-                shadowCastingMode = ShadowCastingMode.Off,
-                receiveShadows = false,
-                layer = gameObject.layer,
-            };
-            unitParams.matProps.SetBuffer(ToonShaderIds.Instances, buffer);
-            drawShadows = DrawsShadows;
-            if (drawShadows)
-            {
-                shadowParams = new RenderParams(shadowMaterial)
-                {
-                    matProps = unitParams.matProps,
-                    shadowCastingMode = ShadowCastingMode.Off,
-                    receiveShadows = false,
-                    layer = gameObject.layer,
-                };
-            }
-
+            CreateDraw();
             SetCount(initialCount);
         }
 
@@ -206,8 +189,9 @@ namespace JungleDegree.StudioKit.Swarm
         {
             simulation?.Dispose();
             simulation = null;
-            buffer?.Release();
-            buffer = null;
+            draw?.Dispose();
+            draw = null;
+            DrawCalls = 0;
         }
 
         private void Update()
@@ -228,19 +212,34 @@ namespace JungleDegree.StudioKit.Swarm
                 return;
             }
 
-            buffer.SetData(simulation.Instances, 0, 0, drawn);
-            Bounds bounds = simulation.GroundBounds(1.5f);
-            unitParams.worldBounds = bounds;
-            if (DrawBodies)
+            if (draw.Stale)
             {
-                Graphics.RenderMeshPrimitives(unitParams, unitMesh, 0, drawn);
+                draw.Dispose();
+                CreateDraw();
             }
 
-            if (drawShadows && count > 0)
+            draw.Upload(simulation.Instances, drawn);
+            Bounds bounds = simulation.GroundBounds(1.5f);
+            int calls = 0;
+            if (DrawBodies)
             {
-                shadowParams.worldBounds = bounds;
-                Graphics.RenderMeshPrimitives(shadowParams, shadowMesh, 0, count);
+                draw.Draw(unitMesh, drawn, bounds);
+                calls += ToonInstanceDraw.Calls(draw.Route, drawn);
             }
+
+            if (DrawsShadows)
+            {
+                draw.DrawShadows(shadowMesh, count, bounds);
+                calls += ToonInstanceDraw.Calls(draw.Route, count);
+            }
+
+            DrawCalls = calls;
+        }
+
+        // Scene load, or the frame after a route was forced (tests, measurement builds).
+        private void CreateDraw()
+        {
+            draw = new ToonInstanceDraw(unitMaterial, DrawsShadows ? shadowMaterial : null, capacity + dyingCapacity, gameObject.layer);
         }
 
         private string Validate()
@@ -255,13 +254,8 @@ namespace JungleDegree.StudioKit.Swarm
                 return $"{unitMaterial.name} must have {ToonShaderIds.InstancesKeyword} on";
             }
 
-            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null
-                && (!SystemInfo.supportsInstancing || SystemInfo.maxComputeBufferInputsVertex < 1))
-            {
-                return $"this device cannot read a structured buffer in the vertex shader ({SystemInfo.graphicsDeviceType})";
-            }
-
-            return null;
+            return ToonInstanceDraw.ValidateMaterial(unitMaterial)
+                ?? (DrawsShadows ? ToonInstanceDraw.ValidateMaterial(shadowMaterial) : null);
         }
     }
 }

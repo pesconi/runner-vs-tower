@@ -19,6 +19,7 @@ namespace JungleDegree.StudioKit.Tests
             material = new Material(Shader.Find(ToonShaderIds.ToonLitShader));
             material.EnableKeyword(ToonShaderIds.InstancesKeyword);
             material.EnableKeyword(ToonShaderIds.SlotsKeyword);
+            material.enableInstancing = true;
             mesh = new LowPolyMeshBuilder().AddBox(Matrix4x4.identity, new Color32(255, 0, 0, 0)).ToMesh("prop");
             // Not enabled in edit mode (no OnEnable): only the data side is tested here, nothing is allocated.
             owner = new GameObject("props");

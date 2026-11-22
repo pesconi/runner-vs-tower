@@ -122,3 +122,8 @@
   (`ToonPrimitives`, o `Prim` troca sozinho). Ao mudar o shader de um material existente, reverter os `.mat` para o HEAD
   antes de reconstruir não é preciso: o `ArtPalette` sobrescreve o asset limpo. Captura dos 4 chefes:
   `-testFilter Claybreak.Tests.BossCaptureTests -bossCaptureDir <pasta>` sem `-nographics`.
+- 2026-11-22 (RT-6t.11): o desenho instanciado tem duas rotas (`ToonInstanceDraw`/`ToonInstanceRouting`): buffer (Vulkan) e
+  blocos de 256 (GLES; o Mali do OPPO em GLES tem `vertexBuffers=0`). Material instanciado novo precisa de GPU instancing
+  ligado (o validador confere). Gate em GLES com a reserva: `RT2_EXTRA="--ez chunks true -e unity -force-gles"
+  Tools/rt2-gate.sh ...` (a linha `[ToonRoute]` do log diz API e rota). Captura comparando as rotas:
+  `-testFilter Claybreak.Tests.DrawRouteCaptureTests -routeCaptureDir <pasta>` sem `-nographics`.
