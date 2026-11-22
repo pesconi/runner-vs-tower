@@ -1473,3 +1473,21 @@ outra entrega e entra quando a D26 for respondida. Plano, tabela da direção vi
   capturas em `finally`. Aceitos: pista e chão guardam a cor em bloco de propriedade (não salvo na cena; o fluxo aplica
   o mundo antes de qualquer tela); a pista só tem passo de forward, como o `ToonLit` (sem pré-passo de profundidade no
   URP do projeto).
+
+## 2026-11-22 — D25 — Visual "fofo" (crowd toon) e público na Play — **A** — usuário
+
+Aprovado: adotar o visual do protótipo como está (bolinhas e pintinhos com olhos, cores pastel) e continuar
+declarando na Play o público de 13 anos para cima (13–15, 16–17, 18+), sem faixas infantis; responder "sim" se a Play
+perguntar se a ficha pode atrair crianças sem querer, para receber a marca "Não é destinado a crianças"; compensar na
+loja (ícone e capturas mostrando o desafio, sem rostos em destaque no ícone, textos sem palavras infantis). A regra do
+GDD "sem bichinhos fofos / nada de olhos" deixa de valer para a multidão; continua valendo para o ícone, torres e
+chefes (sem rosto). A variante "sem olhos" da RT-6t.2 fica como reserva. Na RT-9, conferir na Central de Ajuda da
+Play como a pergunta é feita hoje (regras citadas de memória na ficha). Ficha: `direcao-visual-crowd.md` seção 5.
+
+## 2026-11-22 — D26 — Skins × 2 formas × cor do mundo — **A** — usuário
+
+Aprovado: (1) Bolinha e Pintinho livres para o jogador escolher no menu, sem custo, escolha gravada no save;
+(2) a skin grátis padrão BARRO passa a ser "cor do mundo" (a multidão usa a cor da paleta de cada mundo); (3) as
+outras 8 skins continuam sendo uma cor que vale em todos os mundos, mesmos preços e mesma ordem (D19), com cores e
+nomes novos no estilo, conferidos contra as 4 paletas e as cores dos portões; (4) elites com tamanho e cor próprios.
+Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
