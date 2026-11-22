@@ -32,7 +32,7 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// The player's progress, versioned JSON (RT-5, version 2). Content is referenced by stable ids from
+    /// The player's progress, versioned JSON (RT-5; version 4 since RT-6t.6b). Content is referenced by stable ids from
     /// <see cref="ClaybreakCatalog"/>, so adding worlds, upgrades, units or skins never breaks a save, and a
     /// removed id is dropped when the save is normalized. Preferences (sound, music, vibration) are not here:
     /// they stay in the kit's own PlayerPrefs keys, so a broken save never resets them and vice versa.
@@ -41,7 +41,7 @@ namespace Claybreak
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int version = CurrentVersion;
         public int coins;
@@ -57,9 +57,11 @@ namespace Claybreak
         public string[] skins = new string[0];
         [Tooltip("Id of the crowd skin worn.")]
         public string skin = string.Empty;
+        [Tooltip("Id of the crowd shape picked on the home screen (version 4, D26 A; free, never bought).")]
+        public string shape = string.Empty;
         public int levelsWon;
         public int levelsLost;
-        // RT-7 (additive, so still version 3: a save without them reads 0 = "never", which is right).
+        // RT-7 (additive, so it stayed version 3: a save without them reads 0 = "never", which is right).
         [Tooltip("Local day number (since 1970-01-01) of the first launch; 0 = not yet recorded. Used for D1/D7 only.")]
         public int firstDay;
         [Tooltip("Local day number of the last daily reward claim; 0 = never.")]
@@ -116,6 +118,24 @@ namespace Claybreak
         /// <summary>World 1 had 7 levels (6 + boss) up to save version 2; RT-6 made it 10 (9 + boss).</summary>
         public const int World1LevelsBeforeV3 = 7;
         public const int World1LevelsFromV3 = 10;
+
+        /// <summary>
+        /// The shape every save before version 4 was drawn with (the Bolinha with eyes, RT-6t.4). Part of the save format:
+        /// it must stay a catalog shape id.
+        /// </summary>
+        public const string ShapeBeforeV4 = "ball";
+
+        /// <summary>
+        /// Versions 1 to 3 to 4 (RT-6t.6b): the crowd shape became the player's pick. An older save keeps the shape it was
+        /// already drawn with; everything else stays.
+        /// </summary>
+        public static void AddShape(SaveData save)
+        {
+            if (save != null && string.IsNullOrEmpty(save.shape))
+            {
+                save.shape = ShapeBeforeV4;
+            }
+        }
 
         /// <summary>
         /// Versions 1 and 2 to 3: world 1 grew from 7 to 10 levels, the three new ones before the boss. Levels
@@ -224,10 +244,16 @@ namespace Claybreak
                         SaveDataV1 old = JsonUtility.FromJson<SaveDataV1>(json);
                         parsed = old == null ? null : SaveMigration.FromV1(old);
                         SaveMigration.World1To10Levels(parsed);
+                        SaveMigration.AddShape(parsed);
                         break;
                     case 2:
                         parsed = JsonUtility.FromJson<SaveData>(json);
                         SaveMigration.World1To10Levels(parsed);
+                        SaveMigration.AddShape(parsed);
+                        break;
+                    case 3:
+                        parsed = JsonUtility.FromJson<SaveData>(json);
+                        SaveMigration.AddShape(parsed);
                         break;
                     case SaveData.CurrentVersion:
                         parsed = JsonUtility.FromJson<SaveData>(json);
@@ -301,6 +327,7 @@ namespace Claybreak
             save.dailyClaims = Mathf.Max(0, save.dailyClaims);
             save.world ??= string.Empty;
             save.skin ??= string.Empty;
+            save.shape ??= string.Empty;
             save.worlds = Cut(save.worlds ?? new WorldSave[0]);
             for (int i = 0; i < save.worlds.Length; i++)
             {

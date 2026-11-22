@@ -45,14 +45,14 @@ Média: **365 moedas por minuto** de jogo.
 | 24 | GATE BOOST 6 | 950 | 42 | 35,5 | 0 |
 | 25 | SPRINTER | 600 | 43 | 36,4 | 0 |
 | 26 | WARDEN | 900 | 45 | 38,3 | 0 |
-| 27 | skin EMBER | 150 | 45 | 38,3 | 0 |
-| 28 | skin MOSS | 300 | 47 | 39,8 | 0 |
-| 29 | skin SLATE | 500 | 48 | 40,7 | 0 |
-| 30 | skin BONE | 800 | 50 | 42,5 | 1 |
-| 31 | skin INK | 1200 | 52 | 44,0 | 1 |
-| 32 | skin MIRE | 1500 | 55 | 46,8 | 1 |
-| 33 | skin CINDER | 2000 | 59 | 50,1 | 1 |
-| 34 | skin FROST | 2500 | 63 | 53,4 | 2 |
+| 27 | skin CORAL | 150 | 45 | 38,3 | 0 |
+| 28 | skin MANGO | 300 | 47 | 39,8 | 0 |
+| 29 | skin SKY | 500 | 48 | 40,7 | 0 |
+| 30 | skin LILAC | 800 | 50 | 42,5 | 1 |
+| 31 | skin INDIGO | 1200 | 52 | 44,0 | 1 |
+| 32 | skin LAGOON | 1500 | 55 | 46,8 | 1 |
+| 33 | skin BERRY | 2000 | 59 | 50,1 | 1 |
+| 34 | skin BUBBLEGUM | 2500 | 63 | 53,4 | 2 |
 
 Total: **19380 moedas**, tudo comprado em **53 minutos** (63 fases).
 

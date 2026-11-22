@@ -243,6 +243,33 @@ namespace Claybreak.Tests
             yield return null;
         }
 
+        // RT-6t.6b (D26 A): the home screen's shape button walks through the free crowd shapes; the crowd behind the menu
+        // and the next run are drawn with the pick, the label names it, nothing is charged, and it comes back around.
+        [UnityTest]
+        public IEnumerator ShapePickerDrawsTheRunWithThePickedShape()
+        {
+            yield return LoadScene(false);
+            var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
+            RunCrowd crowd = flow.Crowd;
+            ClaybreakCatalog catalog = flow.Progress.Catalog;
+            Assert.GreaterOrEqual(catalog.Shapes.Count, 2, "Bolinha and Pintinho");
+            Assert.AreEqual(catalog.Shapes[0].mesh, crowd.Swarm.UnitMesh, "a fresh save starts with the default shape");
+            int coins = flow.Progress.Save.coins;
+            var label = GameObject.Find("/Ui/Screens/Home/Safe/ShapeButton").GetComponentInChildren<UnityEngine.UI.Text>();
+            StringAssert.Contains(catalog.Shapes[0].title, label.text);
+
+            Press("/Ui/Screens/Home/Safe/ShapeButton");
+            Assert.AreEqual(catalog.Shapes[1].id, flow.Progress.Save.shape);
+            Assert.AreEqual(catalog.Shapes[1].mesh, crowd.Swarm.UnitMesh, "the crowd behind the menu did not change shape");
+            StringAssert.Contains(catalog.Shapes[1].title, label.text);
+            Assert.AreEqual(coins, flow.Progress.Save.coins, "shapes are free");
+
+            Press("/Ui/Screens/Home/Safe/Play");
+            Assert.AreEqual(FlowState.Run, flow.State);
+            yield return null;
+            Assert.AreEqual(catalog.Shapes[1].mesh, crowd.Swarm.UnitMesh, "the run is not drawn with the picked shape");
+        }
+
         // RT-8: SETTINGS opens the settings page; its switches drive the kit's preferences and come back as they
         // were; the policy link says when it is not published yet; BACK returns home.
         [UnityTest]

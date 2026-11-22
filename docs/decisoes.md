@@ -1491,3 +1491,43 @@ Aprovado: (1) Bolinha e Pintinho livres para o jogador escolher no menu, sem cus
 outras 8 skins continuam sendo uma cor que vale em todos os mundos, mesmos preços e mesma ordem (D19), com cores e
 nomes novos no estilo, conferidos contra as 4 paletas e as cores dos portões; (4) elites com tamanho e cor próprios.
 Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
+
+## 2026-11-22 — T-RT6t6b-1..9 — Formas e skins no menu, save v4 — técnica (sessão RT-6t.6b)
+
+- **T-RT6t6b-1 — As formas são dado do catálogo (`ClaybreakCatalog.Shapes`, `CrowdShapeOption` id/título/malha), não do
+  tema.** O catálogo já é "tudo o que o meta oferece" (skins com cor); o save guarda o id e é normalizado contra ele, como
+  skins e elites. O `ClaybreakTheme.crowdShape` saiu (uma fonte só). O catálogo valida: pelo menos 1 forma, ids únicos no
+  padrão de save, malha com 1 submalha. O validador exige que toda forma oferecida seja uma das geradas **com olhos**
+  (D25 A); as sem olhos continuam geradas como reserva.
+- **T-RT6t6b-2 — Ids `ball` e `chick`, títulos BALL e CHICK [P].** A interface do jogo é em inglês (PLAY, SHOP); os nomes
+  são dado (`WorldContent.Shapes`), trocar é uma linha. `ball` é o padrão e a forma que todo save antigo já mostrava.
+- **T-RT6t6b-3 — Save v4 = v3 + `shape`.** `SaveMigration.AddShape` dá `ball` (`ShapeBeforeV4`, constante do formato) a
+  saves v1, v2 e v3; v4 lê direto. Id desconhecido, vazio ou nulo cai na primeira forma do catálogo na normalização; o
+  `SaveValidator` reprova forma fora do catálogo. O backup do JSON original por versão (`Claybreak.Save.backup.v3`) já
+  existia e vale para a migração nova. Fixture nova `v4-chick-bubblegum.json`; os `v1`–`v3` não foram tocados.
+- **T-RT6t6b-4 — Seletor = um botão na tela inicial ("SHAPE: BALL"), sob a linha de elites**, que passa para a próxima
+  forma do catálogo (escala para N formas sem mudar a tela). Grátis (D26 A), grava o save na hora e troca a malha da
+  multidão que espera atrás do menu (troca de referência, nada criado). Fora do menu e no nível de gate não faz nada.
+- **T-RT6t6b-5 — A corrida usa a forma do save** (`progression.Shape.mesh` no `Configure` e a cada troca). A cena começa
+  com a forma padrão; o validador confere isso. O assalto continua com os bonecos antigos até a 6t.7.
+- **T-RT6t6b-6 — O gate veste a forma de mais triângulos** (`Progression.MaximumLoadout`, pela contagem de índices: hoje o
+  Pintinho, 492 contra 484), junto com a skin mais cara — o pior caso da corrida.
+- **T-RT6t6b-7 — Skins (D26 A): mesmos ids, ordem e preços; cores e nomes novos.** Ids são formato de save e ficam
+  (`ember`, `moss`… — nunca renomear id publicado). CORAL #ff8a5c 150, MANGO #ffc94a 300, SKY #6fa8ff 500, LILAC #b98cf0
+  800, INDIGO #3d3a7c 1200, LAGOON #2fb3c4 1500, BERRY #e0569b 2000, BUBBLEGUM #ff9ed2 2500 (total 19.380 igual). Escolhidas
+  por ΔE CIE76 ≥ 20 contra pista, faixa e chão das 4 paletas, contra os 2 portões de referência e entre si (menor: 22,5,
+  INDIGO × chão do Pôr do sol; entre skins 26,0). A grátis (`clay`) passa a se chamar WORLD COLOR, mostra na loja a cor do
+  mundo atual e diz "Each world's own color".
+- **T-RT6t6b-8 — Aviso de contraste das skins no validador** (`ClaybreakValidation.Warnings`): cada skin paga contra pista,
+  faixa e chão de cada mundo, os 2 portões e as outras skins; só avisa (como a 6t.6a). Com as cores escolhidas: nenhum aviso
+  de skin.
+- **T-RT6t6b-9 — Ordem da construção:** `ToonLabBuilder.Build` (gera as malhas das formas) passou para antes de
+  `WorldContent.Write`, que agora aponta o catálogo para elas.
+- **T-RT6t6b-10 — Revisão de segurança do save (subagente fable, só leitura): nada sério.** Save hostil não derruba o
+  jogo, não corrompe estado nem dá item pago (o `shape` é limitado pelo teto de 64 KB, nulo vira vazio, desconhecido vira o
+  padrão; formas são grátis); todos os caminhos v1–v4 terminam válidos; nada de `Instantiate`/`Destroy` no código de jogo.
+  Aplicados: o validador reprova catálogo sem a forma `ball` (para onde migram os saves antigos); o botão some com uma
+  forma só; teste do gate com a forma mais pesada em primeiro (pega "a última" por engano); comentário antigo corrigido.
+  Aceitos: (a) o salto para v4 faz um APK anterior recusar o save novo (comportamento antigo, sem jogadores reais e a
+  entrega pede v4); (b) cada toque no botão grava o save na hora (como loja e mundos); (c) capturas usam `AssetDatabase`
+  sem `#if UNITY_EDITOR`, igual às capturas existentes (só rodam no Editor).

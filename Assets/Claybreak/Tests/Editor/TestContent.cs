@@ -47,6 +47,11 @@ namespace Claybreak.Tests
                     new CrowdSkin { id = "ember", title = "EMBER", price = 150 },
                     new CrowdSkin { id = "ink", title = "INK", price = 1200 }
                 },
+                new[]
+                {
+                    new CrowdShapeOption { id = SaveMigration.ShapeBeforeV4, title = "BALL", mesh = Shape("ball", 12) },
+                    new CrowdShapeOption { id = "chick", title = "CHICK", mesh = Shape("chick", 24) }
+                },
                 2, 3);
         }
 
@@ -58,6 +63,22 @@ namespace Claybreak.Tests
             {
                 Object.DestroyImmediate(item);
             }
+        }
+
+        // A stand-in crowd shape: one submesh of <paramref name="triangles"/> triangles (the gate picks the heaviest).
+        private Mesh Shape(string name, int triangles)
+        {
+            var mesh = new Mesh { name = name };
+            made.Add(mesh);
+            mesh.vertices = new[] { Vector3.zero, Vector3.up, Vector3.right };
+            var indices = new int[triangles * 3];
+            for (int i = 0; i < indices.Length; i++)
+            {
+                indices[i] = i % 3;
+            }
+
+            mesh.triangles = indices;
+            return mesh;
         }
 
         /// <summary>The crowd color of test world <paramref name="world"/>'s palette (each world has its own).</summary>

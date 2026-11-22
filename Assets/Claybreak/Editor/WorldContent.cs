@@ -565,27 +565,97 @@ namespace Claybreak.Editor
             };
             var skins = new List<CrowdSkin>
             {
-                new CrowdSkin { id = "clay", title = "CLAY", color = new Color(0.95f, 0.55f, 0.18f), price = 0 },
-                new CrowdSkin { id = "ember", title = "EMBER", color = new Color(0.86f, 0.24f, 0.16f), price = 150 },
-                new CrowdSkin { id = "moss", title = "MOSS", color = new Color(0.42f, 0.62f, 0.3f), price = 300 },
-                new CrowdSkin { id = "slate", title = "SLATE", color = new Color(0.46f, 0.52f, 0.62f), price = 500 },
-                new CrowdSkin { id = "bone", title = "BONE", color = new Color(0.9f, 0.86f, 0.74f), price = 800 },
-                new CrowdSkin { id = "ink", title = "INK", color = new Color(0.22f, 0.2f, 0.27f), price = 1200 },
-                // RT-6: one skin in the colors of each new world, so the shop outlasts the first pass of the four
-                // worlds (docs/rt6-economia.md); the RT-5 prices stay as approved (D19 A).
-                new CrowdSkin { id = "mire", title = "MIRE", color = new Color(0.36f, 0.6f, 0.5f), price = 1500 },
-                new CrowdSkin { id = "cinder", title = "CINDER", color = new Color(0.55f, 0.2f, 0.12f), price = 2000 },
-                new CrowdSkin { id = "frost", title = "FROST", color = new Color(0.7f, 0.85f, 0.95f), price = 2500 }
+                // The free default wears each world's palette color (RT-6t.6a, D26 A); its own color is never drawn.
+                new CrowdSkin { id = "clay", title = "WORLD COLOR", color = new Color(0.95f, 0.55f, 0.18f), price = 0 },
             };
+            foreach (SkinDefinition skin in Skins)
+            {
+                skins.Add(new CrowdSkin { id = skin.Id, title = skin.Title, color = Hex(skin.Hex), price = skin.Price });
+            }
+
+            var shapes = new List<CrowdShapeOption>();
+            foreach (ShapeDefinition shape in Shapes)
+            {
+                shapes.Add(new CrowdShapeOption { id = shape.Id, title = shape.Title, mesh = UnitShapeAssets.Load(shape.Asset) });
+            }
             var entries = new WorldEntry[worlds.Length];
             for (int w = 0; w < worlds.Length; w++)
             {
                 entries[w] = new WorldEntry { world = worlds[w], starsToUnlock = definitions[w].StarsToUnlock };
             }
 
-            catalog.EditorAssign(entries, upgrades, units, skins.ToArray(), ClaybreakCatalog.MaximumLoadoutSlots, 3);
+            catalog.EditorAssign(entries, upgrades, units, skins.ToArray(), shapes.ToArray(), ClaybreakCatalog.MaximumLoadoutSlots, 3);
             EditorUtility.SetDirty(catalog);
             return catalog;
+        }
+
+        /// <summary>A paid crowd skin: stable save id, shop title, sRGB color and price in coins.</summary>
+        public readonly struct SkinDefinition
+        {
+            public SkinDefinition(string id, string title, string hex, int price)
+            {
+                Id = id;
+                Title = title;
+                Hex = hex;
+                Price = price;
+            }
+
+            public string Id { get; }
+            public string Title { get; }
+            public string Hex { get; }
+            public int Price { get; }
+        }
+
+        /// <summary>
+        /// The 8 paid skins (D26 A, RT-6t.6b): the ids, order and prices of RT-5/RT-6 (D19 A), with new pastel colors and names
+        /// in the crowd-toon style. Each color stays apart (CIE76 delta E of 20 or more) from every palette's track, stripe and
+        /// ground, from both gate colors and from the other skins; the validator warns if a change breaks that.
+        /// </summary>
+        public static readonly SkinDefinition[] Skins =
+        {
+            new SkinDefinition("ember", "CORAL", "#ff8a5c", 150),
+            new SkinDefinition("moss", "MANGO", "#ffc94a", 300),
+            new SkinDefinition("slate", "SKY", "#6fa8ff", 500),
+            new SkinDefinition("bone", "LILAC", "#b98cf0", 800),
+            new SkinDefinition("ink", "INDIGO", "#3d3a7c", 1200),
+            new SkinDefinition("mire", "LAGOON", "#2fb3c4", 1500),
+            new SkinDefinition("cinder", "BERRY", "#e0569b", 2000),
+            new SkinDefinition("frost", "BUBBLEGUM", "#ff9ed2", 2500),
+        };
+
+        /// <summary>A crowd shape on offer: stable save id, title on the home screen and the generated mesh it draws.</summary>
+        public readonly struct ShapeDefinition
+        {
+            public ShapeDefinition(string id, string title, UnitShapeAssets.Entry asset)
+            {
+                Id = id;
+                Title = title;
+                Asset = asset;
+            }
+
+            public string Id { get; }
+            public string Title { get; }
+            public UnitShapeAssets.Entry Asset { get; }
+        }
+
+        /// <summary>
+        /// The free crowd shapes (D26 A), both with eyes (D25 A; the eyeless meshes stay generated as the reserve). The first
+        /// is the default and the shape every save before version 4 was drawn with (<see cref="SaveMigration.ShapeBeforeV4"/>).
+        /// </summary>
+        public static readonly ShapeDefinition[] Shapes =
+        {
+            new ShapeDefinition(SaveMigration.ShapeBeforeV4, "BALL", UnitShapeAssets.All[0]),
+            new ShapeDefinition("chick", "CHICK", UnitShapeAssets.All[2]),
+        };
+
+        private static Color Hex(string hex)
+        {
+            if (!ColorUtility.TryParseHtmlString(hex, out Color color))
+            {
+                throw new System.FormatException($"'{hex}' is not a color");
+            }
+
+            return color;
         }
 
         private static UpgradeTrack Track(string id, string title, UpgradeKind kind, params (int cost, int bonus)[] steps)

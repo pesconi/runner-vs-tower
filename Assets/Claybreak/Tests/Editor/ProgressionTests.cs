@@ -253,6 +253,7 @@ namespace Claybreak.Tests
                 Assert.IsFalse(progression.WearsDefaultSkin);
                 Assert.AreEqual(progression.Skin.color, progression.CrowdColorIn(0));
                 Assert.AreEqual(progression.Skin.color, progression.CrowdColorIn(1));
+                Assert.AreEqual(TestContent.PaletteCrowd(1), progression.WorldCrowdColor(1), "the shop still shows the world color on the default row");
                 Assert.AreEqual("ember", progression.Save.skin, "the save keeps the skin id");
 
                 Assert.IsTrue(progression.TryWearSkin(0));

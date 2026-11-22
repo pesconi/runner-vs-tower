@@ -42,8 +42,6 @@ namespace Claybreak.Editor
         /// <summary>The skybox: the palette's screen-space sky gradient (RT-6t.6a).</summary>
         public const string SkyMaterialPath = ArtPalette.MaterialFolder + "/SkyGradient.mat";
 
-        /// <summary>The crowd shape a new theme starts with: the Bolinha with eyes (provisional while D25 is open).</summary>
-        public static readonly UnitShapeAssets.Entry ProvisionalCrowdShape = UnitShapeAssets.All[0];
         public const int ProjectilePoolSize = 32;
         public const int LevelDots = ClaybreakWorld.MaximumLevels;
         public const float RowStep = 230f;
@@ -80,10 +78,10 @@ namespace Claybreak.Editor
             PaletteContent.Write();
             BuildSkyMaterial();
             AssetDatabase.SaveAssets();
+            // The crowd shapes and the crowd materials come first: the catalog offers the shapes and the run draws with them.
+            ToonLabBuilder.Build();
             WorldContent.Write();
             MonetizationContent.Write();
-            // The crowd shapes and the crowd materials come first: the theme points at a shape and the run draws with them.
-            ToonLabBuilder.Build();
             BuildCrowdData();
             BuildTheme();
             new ArtPalette();
@@ -114,13 +112,6 @@ namespace Claybreak.Editor
             var so = new SerializedObject(theme);
             so.FindProperty("roster.builtInBody").objectReferenceValue = Load<RunnerBodyFrames>(BodyFramesPath);
             so.FindProperty("crowdColor").colorValue = Orange;
-            // The crowd shape is data (D25): set once, then whatever the asset says stays.
-            SerializedProperty shape = so.FindProperty("crowdShape");
-            if (shape.objectReferenceValue == null)
-            {
-                shape.objectReferenceValue = Load<Mesh>(ProvisionalCrowdShape.Path);
-            }
-
             ClaybreakAudio.Apply(so.FindProperty("audio"));
 
             SerializedProperty death = so.FindProperty("deathEffect");
@@ -223,7 +214,7 @@ namespace Claybreak.Editor
             camera.fieldOfView = 60f;
             cameraObject.transform.position = new Vector3(0f, 9f, -8f);
             cameraObject.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
-            RunCrowd crowd = CreateCrowd(cameraObject, theme);
+            RunCrowd crowd = CreateCrowd(cameraObject, theme, catalog);
             var assaultCamera = cameraObject.AddComponent<AssaultCamera>();
             WorldScenery scenery = CreateScenery(catalog, trackEnd, sun, camera);
             Renderer track = scenery.Track;
@@ -294,13 +285,14 @@ namespace Claybreak.Editor
 
         // RT-6t.4: the run crowd, instanced (one draw for the bodies, one for the shadows), kept on the track, in the
         // theme's shape and the skin's tint, with the camera rig on the main camera.
-        private static RunCrowd CreateCrowd(GameObject cameraObject, ClaybreakTheme theme)
+        private static RunCrowd CreateCrowd(GameObject cameraObject, ClaybreakTheme theme, ClaybreakCatalog catalog)
         {
             var crowdObject = new GameObject("Crowd");
             crowdObject.transform.position = Vector3.zero;
             var swarm = crowdObject.AddComponent<SwarmRenderer>();
             var so = new SerializedObject(swarm);
-            so.FindProperty("unitMesh").objectReferenceValue = theme.CrowdShape;
+            // The scene starts with the default shape; the flow swaps in the player's pick (RT-6t.6b).
+            so.FindProperty("unitMesh").objectReferenceValue = catalog.Shapes[0].mesh;
             so.FindProperty("unitMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.SwarmMaterialPath);
             so.FindProperty("shadowMesh").objectReferenceValue = Load<Mesh>(ToonLabBuilder.ShadowDiscPath);
             so.FindProperty("shadowMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.ShadowMaterialPath);
@@ -796,6 +788,9 @@ namespace Claybreak.Editor
             (Button worldsButton, Text _) = PillButton("WorldsButton", home, pill, new Vector2(0.5f, 0f), new Vector2(235f, 235f),
                 new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "WORLDS", 56);
             // RT-7: the daily gift over PLAY (shown only when due). RT-8: SETTINGS top left opens the settings page.
+            // RT-6t.6b: the crowd shape picker under the loadout line (free shapes, D26 A); the crowd behind the menu shows it.
+            (Button shapeButton, Text shapeLabel) = PillButton("ShapeButton", home, pill, new Vector2(0.5f, 1f), new Vector2(0f, -830f),
+                new Vector2(520f, 110f), new Color(0.42f, 0.3f, 0.5f), ClaybreakScreens.ShapeLine(catalog.Shapes[0].title), 44);
             (Button daily, Text dailyLabel) = PillButton("DailyGift", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 600f),
                 new Vector2(560f, 110f), new Color(0.3f, 0.55f, 0.3f), "DAILY GIFT", 44);
             (Button settingsButton, Text _) = PillButton("SettingsButton", home, pill, new Vector2(0f, 1f), new Vector2(190f, -150f),
@@ -919,6 +914,8 @@ namespace Claybreak.Editor
             SetRef(screens, "shopButton", shop);
             SetRef(screens, "shopBadge", badge.gameObject);
             SetRef(screens, "worldsButton", worldsButton);
+            SetRef(screens, "shapeButton", shapeButton);
+            SetRef(screens, "shapeLabel", shapeLabel);
             SetRef(screens, "soundButton", sound);
             SetRef(screens, "soundLabel", soundLabel);
             SetRef(screens, "musicButton", music);

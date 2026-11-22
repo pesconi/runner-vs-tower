@@ -396,6 +396,53 @@ Decisões T-RT6t6a-1..10 em `decisoes.md`.
 - `art/telas/` regravadas com as paletas (menu, loja, assalto e os 4 mundos). Observação para a 6t.10: com a neblina
   22–75 a torre fica lavada na cor da neblina (no Pastel quase some contra o céu).
 
+## RT-6t.6b — Formas e skins no menu, save v4 (2026-11-22)
+
+D25 = A (com olhos) e D26 = A (formas livres, BARRO = cor do mundo, 8 skins com cores novas, mesmos preços), respondidas
+em 2026-11-22.
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| Formas no catálogo | `ClaybreakCatalog.Shapes` (`CrowdShapeOption`), `WorldContent.Shapes` | BALL (`ball`, Bolinha com olhos, padrão) e CHICK (`chick`, Pintinho com olhos); malhas geradas da 6t.2. Saiu o `ClaybreakTheme.crowdShape`. |
+| Save v4 | `SaveData.shape`, `SaveMigration.AddShape` | v1/v2/v3 → v4 recebem `ball` (a forma que já mostravam); desconhecido/vazio/nulo cai no padrão; `SaveValidator` reprova forma fora do catálogo; backup do JSON original por versão (já existia). |
+| Seletor | tela inicial, `ClaybreakScreens.ShowShape`, `ClaybreakFlow.OnShape` | Botão "SHAPE: BALL" sob a linha de elites; cada toque passa à próxima forma, grava o save e troca a malha da multidão atrás do menu (grátis; some com uma forma só). |
+| Corrida | `ClaybreakFlow.Configure`/`OnShape` → `RunCrowd.UseShape` | Desenha com a forma do save; o gate veste a de mais triângulos (Pintinho, 492 contra 484). O assalto segue com os bonecos antigos até a 6t.7. |
+| Skins | `WorldContent.Skins` | Mesmos ids, ordem e preços (total 19.380); cores e nomes novos: CORAL #ff8a5c, MANGO #ffc94a, SKY #6fa8ff, LILAC #b98cf0, INDIGO #3d3a7c, LAGOON #2fb3c4, BERRY #e0569b, BUBBLEGUM #ff9ed2. A grátis vira WORLD COLOR e mostra a cor do mundo atual na loja. |
+| Contraste | `ClaybreakValidation.Warnings` | Cada skin paga contra pista, faixa e chão dos 4 mundos, os 2 portões e as outras skins (ΔE CIE76 < 20 avisa). Menor folga: INDIGO × chão do Pôr do sol 22,5; entre skins 26,0. **Nenhum aviso de skin**; seguem só os 2 avisos da paleta registrados na 6t.6a. |
+
+Decisões T-RT6t6b-1..10 em `decisoes.md`.
+
+### Testes e validação
+
+- EditMode **214/214**: migração v3 → v4 (fixture `v3-four-worlds` intacta, sai com `ball` e o resto igual), v1 e v2 →
+  `ball`, fixture nova `v4-chick-bubblegum` mantém `chick`, forma desconhecida/vazia/ausente/nula cai no padrão e passa no
+  validador, troca de forma grátis e circular com ida e volta pelo JSON, validador reprova forma fora do catálogo, gate com
+  a forma mais pesada (também com ela em primeiro), amostra da cor do mundo na loja com outra skin vestida.
+- PlayMode **21/21** com `-nographics` (+8 capturas que só rodam com GPU): novo `ShapePickerDrawsTheRunWithThePickedShape`
+  (o botão troca a malha atrás do menu, o rótulo, não cobra, e a corrida sai com a forma escolhida).
+- `Tools/rt4-check.sh`: `scene`, `validate`, `isolation`, `editmode`, `playmode`, `economy`, `capture`, `apk-game`,
+  `apk-measure`, `aab` PASS; sem `Shader error` no APK de medição. Depois dos ajustes da revisão e de uma correção vista
+  na captura da loja (a amostra de WORLD COLOR mostrava a cor da skin vestida; agora `Progression.WorldCrowdColor`),
+  `validate`, `editmode`, `playmode` e `capture` rodaram de novo: PASS.
+- Revisão de segurança do save (subagente fable, só leitura; o `/security-review` não roda neste repositório): nada sério;
+  ajustes aplicados em T-RT6t6b-10.
+- Sem gate no OPPO: o aceite não pede (troca de malha e de cor; o Pintinho tem 8 triângulos a mais que a Bolinha medida
+  na 6t.4/6t.5).
+
+### Capturas (Unity com GPU, formato do OPPO)
+
+- [`art/rt6t/menu-forma.png`](art/rt6t/menu-forma.png): a tela inicial com o seletor, antes e depois de um toque (BALL →
+  CHICK; a multidão atrás do menu troca de forma).
+- [`art/rt6t/formas-mundos.png`](art/rt6t/formas-mundos.png): Bolinha (em cima) e Pintinho (embaixo) nos 4 mundos, skin
+  padrão (cor de cada mundo), corrida do gate com 300.
+- [`art/rt6t/skins-mundos.png`](art/rt6t/skins-mundos.png): WORLD COLOR e as 8 skins (colunas) nos 4 mundos (linhas): todas
+  legíveis sobre a pista; MANGO no mundo Doce fica perto da cor padrão do mundo (amarela), o que é esperado e não confunde
+  com portão.
+- `art/telas/` regravadas (menu com o botão SHAPE, loja de skins com os nomes novos); `art/rt6t/mundos-oppo.png` regravada
+  com a Bolinha.
+
 ## RT-6t.8 — Cenário instanciado e pista listrada (2026-11-22)
 
 ### O que foi feito

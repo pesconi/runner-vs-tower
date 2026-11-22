@@ -369,9 +369,15 @@ namespace Claybreak
         /// The army's body color in the world at catalog index <paramref name="world"/> (RT-6t.6a): the default skin wears
         /// the world's palette color, any other skin its own color in every world. The save keeps the skin id as it is.
         /// </summary>
-        public Color CrowdColorIn(int world)
+        public Color CrowdColorIn(int world) => WearsDefaultSkin ? WorldCrowdColor(world) : Skin.color;
+
+        /// <summary>
+        /// The color the default skin wears in the world at catalog index <paramref name="world"/>: its palette's crowd color
+        /// (the default skin's own color when the world or its palette is missing). The shop shows it on the default skin's row.
+        /// </summary>
+        public Color WorldCrowdColor(int world)
         {
-            if (WearsDefaultSkin && world >= 0 && world < catalog.Worlds.Count)
+            if (world >= 0 && world < catalog.Worlds.Count)
             {
                 ClaybreakWorld entry = catalog.Worlds[world].world;
                 if (entry != null && entry.Look.palette != null)
@@ -380,7 +386,7 @@ namespace Claybreak
                 }
             }
 
-            return Skin.color;
+            return catalog.Skins[0].color;
         }
 
         public bool TryBuySkin(int skin)
@@ -406,6 +412,26 @@ namespace Claybreak
             Save.skin = catalog.Skins[skin].id;
             return true;
         }
+
+        // ---------- crowd shape (RT-6t.6b, D26 A: free, picked on the home screen) ----------
+
+        public int ShapeIndex => Mathf.Max(0, catalog.ShapeIndexOf(Save.shape));
+        public CrowdShapeOption Shape => catalog.Shapes[ShapeIndex];
+
+        /// <summary>Picks the crowd shape at catalog index <paramref name="shape"/>; false when it is out of range or already picked.</summary>
+        public bool TrySelectShape(int shape)
+        {
+            if (shape < 0 || shape >= catalog.Shapes.Count || shape == ShapeIndex)
+            {
+                return false;
+            }
+
+            Save.shape = catalog.Shapes[shape].id;
+            return true;
+        }
+
+        /// <summary>Picks the next crowd shape of the catalog (the home screen's single button walks through them).</summary>
+        public bool TrySelectNextShape() => TrySelectShape((ShapeIndex + 1) % catalog.Shapes.Count);
 
         /// <summary>True when the shop has something the player can buy now (the home screen shows a dot).</summary>
         public bool CanBuyAnything
@@ -444,7 +470,7 @@ namespace Claybreak
 
         /// <summary>
         /// The maximum loadout (RT-5 device gate): every upgrade at its top step, every unit owned, the loadout
-        /// full and the last (dearest) skin worn. Never written to the player's save.
+        /// full, the last (dearest) skin worn and the heaviest crowd shape. Never written to the player's save.
         /// </summary>
         public static SaveData MaximumLoadout(ClaybreakCatalog catalog)
         {
@@ -473,7 +499,23 @@ namespace Claybreak
 
             save.skins = skins;
             save.skin = skins[skins.Length - 1];
+            save.shape = catalog.Shapes[HeaviestShape(catalog)].id;
             return save;
+        }
+
+        // The device gate draws the crowd with the shape of most triangles (the run's worst case).
+        private static int HeaviestShape(ClaybreakCatalog catalog)
+        {
+            int heaviest = 0;
+            for (int i = 1; i < catalog.Shapes.Count; i++)
+            {
+                if (catalog.Shapes[i].mesh.GetIndexCount(0) > catalog.Shapes[heaviest].mesh.GetIndexCount(0))
+                {
+                    heaviest = i;
+                }
+            }
+
+            return heaviest;
         }
 
         // ---------- normalization ----------
@@ -546,6 +588,11 @@ namespace Claybreak
             if (!Contains(Save.skins, Save.skin))
             {
                 Save.skin = free;
+            }
+
+            if (catalog.ShapeIndexOf(Save.shape) < 0)
+            {
+                Save.shape = catalog.Shapes[0].id;
             }
 
             int selected = catalog.WorldIndexOf(Save.world);

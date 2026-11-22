@@ -72,6 +72,7 @@ namespace Claybreak
             CheckIds(save.skins, id => catalog.SkinIndexOf(id) >= 0, "skin", problems);
             Check(save.skins != null && System.Array.IndexOf(save.skins, catalog.Skins[0].id) >= 0, "the free skin is not owned.", problems);
             Check(save.skins != null && System.Array.IndexOf(save.skins, save.skin) >= 0, $"worn skin '{save.skin}' is not owned.", problems);
+            Check(catalog.ShapeIndexOf(save.shape) >= 0, $"crowd shape '{save.shape}' is not in the catalog.", problems);
             return problems.Count == before;
         }
 

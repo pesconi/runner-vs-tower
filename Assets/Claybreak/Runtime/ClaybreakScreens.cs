@@ -34,6 +34,9 @@ namespace Claybreak
         [SerializeField] private Button shopButton;
         [SerializeField] private GameObject shopBadge;
         [SerializeField] private Button worldsButton;
+        [Tooltip("RT-6t.6b: the crowd shape picker (one button that walks through the catalog's shapes).")]
+        [SerializeField] private Button shapeButton;
+        [SerializeField] private Text shapeLabel;
         [SerializeField] private Button soundButton;
         [SerializeField] private Text soundLabel;
         [SerializeField] private Button musicButton;
@@ -109,6 +112,7 @@ namespace Claybreak
         public event Action PlayPressed;
         public event Action ShopPressed;
         public event Action WorldsPressed;
+        public event Action ShapePressed;
         public event Action BackPressed;
         public event Action<ShopTab, int> ShopItemPressed;
         public event Action<int> WorldPressed;
@@ -134,7 +138,8 @@ namespace Claybreak
 
         public bool HasParts => home != null && homeCoins != null && worldText != null && starsText != null
             && loadoutText != null && levelDots != null && levelDots.Length > 0 && playButton != null && playLabel != null
-            && shopButton != null && shopBadge != null && worldsButton != null && soundButton != null && soundLabel != null
+            && shopButton != null && shopBadge != null && worldsButton != null && shapeButton != null && shapeLabel != null
+            && soundButton != null && soundLabel != null
             && musicButton != null && musicLabel != null && vibrationButton != null && vibrationLabel != null
             && shop != null && shopCoins != null && shopTabs != null && shopTabs.Length == 3 && Array.TrueForAll(shopTabs, b => b != null)
             && shopContent != null && shopRows != null && Array.TrueForAll(shopRows, r => r != null && r.HasParts) && shopBack != null
@@ -159,6 +164,7 @@ namespace Claybreak
             playButton.onClick.AddListener(() => Raise(PlayPressed));
             shopButton.onClick.AddListener(() => Raise(ShopPressed));
             worldsButton.onClick.AddListener(() => Raise(WorldsPressed));
+            shapeButton.onClick.AddListener(() => Raise(ShapePressed));
             shopBack.onClick.AddListener(Back);
             worldsBack.onClick.AddListener(Back);
             primaryButton.onClick.AddListener(() => Raise(PrimaryPressed));
@@ -290,8 +296,18 @@ namespace Claybreak
             playLabel.text = progression.CurrentLevel.IsBoss ? "FIGHT BOSS" : "PLAY";
             loadoutText.text = LoadoutLine(progression);
             shopBadge.SetActive(progression.CanBuyAnything);
+            ShowShape(progression);
             RefreshSwitches();
         }
+
+        /// <summary>The shape picker's label: the shape worn now (a tap moves to the next one).</summary>
+        public void ShowShape(Progression progression)
+        {
+            shapeButton.gameObject.SetActive(progression.Catalog.Shapes.Count > 1);
+            shapeLabel.text = ShapeLine(progression.Shape.title);
+        }
+
+        public static string ShapeLine(string title) => $"SHAPE: {title}";
 
         /// <summary>The daily reward button: shown with its coins when a claim is due, hidden otherwise.</summary>
         public void SetDaily(int coins)
@@ -453,21 +469,23 @@ namespace Claybreak
         private void FillSkin(ClaybreakListRow row, Progression progression, int skin)
         {
             CrowdSkin data = progression.Catalog.Skins[skin];
+            string owned = skin == 0 ? "Each world's own color" : "Owned";
             if (progression.IsSkinWorn(skin))
             {
-                row.Show(data.title, "Your army wears it", "WORN", false, buttonOwned);
+                row.Show(data.title, skin == 0 ? owned : "Your army wears it", "WORN", false, buttonOwned);
             }
             else if (progression.IsSkinOwned(skin))
             {
-                row.Show(data.title, "Owned", "WEAR", true, buttonEnabled);
+                row.Show(data.title, owned, "WEAR", true, buttonEnabled);
             }
             else
             {
                 bool canBuy = progression.CanBuySkin(skin);
-                row.Show(data.title, "Clay color for the whole army", data.price + " ¢", canBuy, canBuy ? buttonEnabled : buttonDisabled);
+                row.Show(data.title, "One color for the army in every world", data.price + " ¢", canBuy, canBuy ? buttonEnabled : buttonDisabled);
             }
 
-            row.ShowSwatch(data.color);
+            // The free default skin has no color of its own (RT-6t.6a): it wears each world's palette color.
+            row.ShowSwatch(skin == 0 ? progression.WorldCrowdColor(progression.WorldIndex) : data.color);
         }
 
         // ---------- worlds ----------

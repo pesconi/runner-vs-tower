@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Claybreak.Tests
 {
     /// <summary>
     /// The versioned save (RT-5): every fixture save of the slice (version 1) migrates to version 2 keeping
     /// coins, stars, the upgrade and the Brute; damaged saves start fresh; normalized saves pass the
-    /// validator and survive a write and a read. Also the world list rules (more than one world).
+    /// validator and survive a write and a read. Also the world list rules (more than one world) and the crowd shape of
+    /// version 4 (RT-6t.6b: older saves get the shape they were drawn with; an unknown shape falls back to the default).
     /// </summary>
     public sealed class SaveMigrationTests
     {
@@ -206,6 +208,112 @@ namespace Claybreak.Tests
             var progression = new Progression(two.Catalog, new SaveData { world = "world2" });
             Assert.AreEqual(0, progression.WorldIndex);
             Assert.AreEqual(SaveMigration.V1WorldId, progression.Save.world);
+        }
+
+        [Test]
+        public void VersionThreeSaveMigratesToVersionFourWithTheBall()
+        {
+            Assert.IsTrue(Fixture("v3-four-worlds.json").Contains("\"version\":3"), "the fixture stands for a version-3 save");
+            Assert.IsFalse(Fixture("v3-four-worlds.json").Contains("\"shape\""));
+            Progression progression = Load("v3-four-worlds.json", out int version);
+            Assert.AreEqual(3, version);
+            Assert.AreEqual(4, SaveData.CurrentVersion);
+            Assert.AreEqual(SaveData.CurrentVersion, progression.Save.version);
+            Assert.AreEqual(SaveMigration.ShapeBeforeV4, progression.Save.shape);
+            Assert.AreEqual(0, progression.ShapeIndex, "the Bolinha older saves were drawn with is the catalog default");
+            Assert.AreEqual(4200, progression.Save.coins, "nothing else changes");
+            StringAssert.Contains("\"shape\":\"ball\"", SaveStore.Serialize(progression.Save));
+        }
+
+        [TestCase("v1-mid-world.json", 1)]
+        [TestCase("v2-world1-at-boss.json", 2)]
+        public void OlderSavesGetTheBallToo(string name, int expectedVersion)
+        {
+            Progression progression = Load(name, out int version);
+            Assert.AreEqual(expectedVersion, version);
+            Assert.AreEqual(SaveMigration.ShapeBeforeV4, progression.Save.shape);
+        }
+
+        [Test]
+        public void VersionFourSaveKeepsItsShape()
+        {
+            Progression progression = Load("v4-chick-bubblegum.json", out int version);
+            Assert.AreEqual(4, version);
+            Assert.AreEqual("chick", progression.Save.shape);
+            Assert.AreEqual(1, progression.ShapeIndex);
+            Assert.AreEqual("chick", progression.Shape.id);
+        }
+
+        [TestCase("{\"version\":4,\"shape\":\"dragon\"}")]
+        [TestCase("{\"version\":4,\"shape\":\"\"}")]
+        [TestCase("{\"version\":4}")]
+        [TestCase("{\"version\":4,\"shape\":null}")]
+        public void UnknownOrMissingShapeFallsBackToTheDefault(string json)
+        {
+            Assert.IsTrue(SaveStore.TryDeserialize(json, out SaveData read));
+            var progression = new Progression(content.Catalog, read);
+            Assert.AreEqual(content.Catalog.Shapes[0].id, progression.Save.shape);
+            var problems = new List<string>();
+            Assert.IsTrue(SaveValidator.Validate(progression.Save, content.Catalog, problems), string.Join("; ", problems));
+        }
+
+        [Test]
+        public void ShapePickWalksTheCatalogAndRoundTrips()
+        {
+            var progression = new Progression(content.Catalog, new SaveData());
+            Assert.AreEqual(0, progression.ShapeIndex);
+            Assert.IsFalse(progression.TrySelectShape(0), "already picked");
+            Assert.IsFalse(progression.TrySelectShape(-1));
+            Assert.IsFalse(progression.TrySelectShape(content.Catalog.Shapes.Count));
+            int coins = progression.Save.coins;
+            Assert.IsTrue(progression.TrySelectNextShape());
+            Assert.AreEqual("chick", progression.Save.shape);
+            Assert.AreEqual(coins, progression.Save.coins, "shapes are free (D26 A)");
+            string written = SaveStore.Serialize(progression.Save);
+            Assert.IsTrue(SaveStore.TryDeserialize(written, out SaveData read, out int version));
+            Assert.AreEqual(SaveData.CurrentVersion, version);
+            Assert.AreEqual("chick", new Progression(content.Catalog, read).Save.shape);
+            Assert.IsTrue(progression.TrySelectNextShape(), "wraps around");
+            Assert.AreEqual(SaveMigration.ShapeBeforeV4, progression.Save.shape);
+        }
+
+        [Test]
+        public void ValidatorRefusesAShapeOutsideTheCatalog()
+        {
+            var progression = new Progression(content.Catalog, new SaveData());
+            progression.Save.shape = "dragon";
+            var problems = new List<string>();
+            Assert.IsFalse(SaveValidator.Validate(progression.Save, content.Catalog, problems));
+            StringAssert.Contains("dragon", string.Join("; ", problems));
+        }
+
+        [Test]
+        public void DeviceGateWearsTheHeaviestShape()
+        {
+            SaveData gate = Progression.MaximumLoadout(content.Catalog);
+            Assert.AreEqual("chick", gate.shape, "the test chick has the most triangles");
+
+            // The heaviest shape first: the pick is by triangles, not by position.
+            var heavy = new Mesh { name = "heavy", vertices = new[] { Vector3.zero, Vector3.up, Vector3.right }, triangles = new int[30 * 3] };
+            var light = new Mesh { name = "light", vertices = heavy.vertices, triangles = new int[3] };
+            var catalog = ScriptableObject.CreateInstance<ClaybreakCatalog>();
+            try
+            {
+                catalog.EditorAssign(new WorldEntry[0], new UpgradeTrack[0], new UnitType[0], new[] { new CrowdSkin { id = "clay", title = "CLAY" } },
+                    new[]
+                    {
+                        new CrowdShapeOption { id = "heavy", title = "HEAVY", mesh = heavy },
+                        new CrowdShapeOption { id = "light", title = "LIGHT", mesh = light }
+                    },
+                    1, 3);
+                Assert.AreEqual("heavy", Progression.MaximumLoadout(catalog).shape);
+            }
+            finally
+            {
+                Object.DestroyImmediate(catalog);
+                Object.DestroyImmediate(heavy);
+                Object.DestroyImmediate(light);
+            }
         }
     }
 }

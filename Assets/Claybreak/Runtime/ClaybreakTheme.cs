@@ -6,7 +6,8 @@ namespace Claybreak
 {
     /// <summary>
     /// The game's theme contract (prototype size): it assembles the kit's data blocks (character
-    /// roster, audio, death effect) with this game's own colors and the crowd shape (RT-6t.4).
+    /// roster, audio, death effect) with this game's own colors. The crowd shapes are the player's pick since RT-6t.6b
+    /// (<see cref="ClaybreakCatalog.Shapes"/>).
     /// </summary>
     [CreateAssetMenu(menuName = "Claybreak/Theme")]
     public sealed class ClaybreakTheme : ScriptableObject
@@ -15,15 +16,11 @@ namespace Claybreak
 
         [SerializeField] private ThemeCharacterRoster roster = new ThemeCharacterRoster();
         [SerializeField] private Color crowdColor = new Color(0.95f, 0.55f, 0.18f);
-        [Tooltip("Shape the crowd is drawn with (one of the generated crowd shapes). Decision D25 is open: the Bolinha with eyes "
-            + "is the provisional choice; changing it is changing this reference.")]
-        [SerializeField] private Mesh crowdShape;
         [SerializeField] private ThemeAudio audio = new ThemeAudio();
         [SerializeField] private ThemeDeathEffect deathEffect = new ThemeDeathEffect();
 
         public ThemeCharacterRoster Roster => roster;
         public Color CrowdColor => crowdColor;
-        public Mesh CrowdShape => crowdShape;
         public ThemeAudio Audio => audio;
         public ThemeDeathEffect DeathEffect => deathEffect;
 
@@ -37,12 +34,6 @@ namespace Claybreak
 
             if (!roster.TryValidate(id => id == CrowdColorId, out error))
             {
-                return false;
-            }
-
-            if (crowdShape == null || crowdShape.subMeshCount != 1)
-            {
-                error = "crowdShape needs one of the generated crowd shapes (one submesh).";
                 return false;
             }
 

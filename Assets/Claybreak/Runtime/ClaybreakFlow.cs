@@ -199,7 +199,7 @@ namespace Claybreak
             Debug.Log($"[Claybreak] Ready: {catalog.Worlds.Count} world(s), {progression.World.WorldName}, next {progression.CurrentLevel.name}, "
                 + $"coins {progression.Save.coins}, stars {progression.TotalStars}, army +{ready.StartingArmy}, damage x{ready.DamageMultiplier:0.##}, "
                 + $"gates +{ready.GateBonus}, launch x{ready.LaunchRateMultiplier:0.##}, loadout [{string.Join(", ", progression.Save.loadout)}], "
-                + $"skin {progression.Skin.id}, crowd cap {crowd.MaximumArmy} ({theme.CrowdShape.name}), assault pool {field.PoolCapacity}"
+                + $"skin {progression.Skin.id}, crowd cap {crowd.MaximumArmy} (shape {progression.Shape.id}), assault pool {field.PoolCapacity}"
                 + (deviceGate ? $", DEVICE GATE world {deviceGateWorld + 1} {(deviceGateRun ? "RUN" : "assault")} (maximum loadout)" : string.Empty) + ".", this);
             if (deviceGate)
             {
@@ -275,7 +275,7 @@ namespace Claybreak
             deviceGateWorld = Mathf.Clamp(deviceGateWorld, 0, stressLevels.Length - 1);
 
             progression = new Progression(catalog, LoadSave());
-            crowd.UseShape(theme.CrowdShape);
+            crowd.UseShape(progression.Shape.mesh);
             if (!DressArmy(progression.WorldIndex))
             {
                 error = "the crowd skin did not apply to the assault units (see the log above).";
@@ -297,6 +297,7 @@ namespace Claybreak
             screens.PlayPressed += () => StartLevel(progression.CurrentLevel);
             screens.ShopPressed += () => screens.ShowShop(progression);
             screens.WorldsPressed += () => screens.ShowWorlds(progression);
+            screens.ShapePressed += OnShape;
             screens.BackPressed += ShowMenu;
             screens.ShopItemPressed += OnShopItem;
             screens.WorldPressed += OnWorld;
@@ -433,6 +434,21 @@ namespace Claybreak
                 ? DailyReward.NextAmount(progression.Save, monetization.DailyRewards) : 0);
             screens.SetPrivacyVisible(adGateway.PrivacyOptionsRequired);
             Enter(FlowState.Menu);
+        }
+
+        // RT-6t.6b (D26 A): the home screen's shape button walks through the free crowd shapes; the crowd waiting behind the
+        // menu changes at once (a mesh reference swap, nothing created).
+        private void OnShape()
+        {
+            if (state != FlowState.Menu || deviceGate || !progression.TrySelectNextShape())
+            {
+                return;
+            }
+
+            crowd.UseShape(progression.Shape.mesh);
+            WriteSave();
+            Debug.Log($"[Claybreak] Crowd shape: {progression.Shape.id}.", this);
+            screens.ShowShape(progression);
         }
 
         private void OnDaily()

@@ -88,7 +88,8 @@ namespace Claybreak.Editor
         /// What deserves a look but does not fail the validation (RT-6t.6a): palette pairs that may be hard to tell apart.
         /// The crowd against its track, its fields and the two gate colors (CIE76 ΔE under
         /// <see cref="ToonContrast.DistinctDeltaE"/>), and the UI ink on the UI accent (WCAG ratio under
-        /// <see cref="ToonContrast.LargeTextRatio"/>).
+        /// <see cref="ToonContrast.LargeTextRatio"/>). RT-6t.6b: every paid skin (its color is the same in every world)
+        /// against each palette's track, stripe and ground, the two gate colors and the other paid skins.
         /// </summary>
         public static List<string> Warnings()
         {
@@ -119,7 +120,36 @@ namespace Claybreak.Editor
                 }
             }
 
+            WarnSkins(catalog, warnings);
             return warnings;
+        }
+
+        // The free default skin (index 0) wears the world's crowd color, already checked above.
+        private static void WarnSkins(ClaybreakCatalog catalog, List<string> warnings)
+        {
+            for (int s = 1; s < catalog.Skins.Count; s++)
+            {
+                CrowdSkin skin = catalog.Skins[s];
+                string name = $"skin {skin.id} ({skin.title})";
+                WarnIfClose(warnings, name, "color", skin.color, "good gate", ReferenceGateGood);
+                WarnIfClose(warnings, name, "color", skin.color, "bad gate", ReferenceGateBad);
+                for (int w = 0; w < catalog.Worlds.Count; w++)
+                {
+                    ToonPalette palette = catalog.Worlds[w].world == null ? null : catalog.Worlds[w].world.Look.palette;
+                    if (palette != null)
+                    {
+                        string where = $"{name} in world {w + 1} ({palette.name})";
+                        WarnIfClose(warnings, where, "color", skin.color, "track", palette.Track);
+                        WarnIfClose(warnings, where, "color", skin.color, "track stripe", palette.TrackStripe);
+                        WarnIfClose(warnings, where, "color", skin.color, "ground", palette.Ground);
+                    }
+                }
+
+                for (int other = s + 1; other < catalog.Skins.Count; other++)
+                {
+                    WarnIfClose(warnings, name, "color", skin.color, "skin " + catalog.Skins[other].id, catalog.Skins[other].color);
+                }
+            }
         }
 
         /// <summary>Most draw calls of the side scenery (ground with rails, trees, rocks): direction item 14, RT-6t.8.</summary>
@@ -541,7 +571,7 @@ namespace Claybreak.Editor
         }
 
         // RT-6t.4: the run crowd is the instanced swarm (no leader, no object per unit): capped at the crowd cap (D27), kept on
-        // the track, drawn with the theme's shape (D25 is data) and the shared crowd materials, followed by the camera rig,
+        // the track, drawn with a catalog shape (the player's pick, RT-6t.6b) and the shared crowd materials, followed by the camera rig,
         // with the toon look on the scene. The kit's per-unit crowd must be gone from the run.
         private static void CheckCrowd(SerializedObject flow, List<string> failures)
         {
@@ -553,10 +583,10 @@ namespace Claybreak.Editor
             }
 
             var crowd = flow.FindProperty("crowd").objectReferenceValue as RunCrowd;
-            var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(ClaybreakSceneBuilder.ThemePath);
-            if (crowd == null || theme == null)
+            var catalog = flow.FindProperty("catalog").objectReferenceValue as ClaybreakCatalog;
+            if (crowd == null || catalog == null || catalog.Shapes.Count == 0)
             {
-                return; // the unassigned reference is already reported
+                return; // the unassigned reference or the empty catalog is already reported
             }
 
             var crowdSo = new SerializedObject(crowd);
@@ -579,15 +609,25 @@ namespace Claybreak.Editor
                 failures.Add("the run crowd must be kept on the track (centered, half the track width)");
             }
 
-            bool knownShape = false;
-            foreach (UnitShapeAssets.Entry entry in UnitShapeAssets.All)
+            // D25 A: every shape on offer is one of the generated shapes with eyes (the eyeless ones stay as the reserve).
+            foreach (CrowdShapeOption shape in catalog.Shapes)
             {
-                knownShape |= AssetDatabase.GetAssetPath(theme.CrowdShape) == entry.Path;
+                string path = AssetDatabase.GetAssetPath(shape.mesh);
+                if (System.Array.Find(UnitShapeAssets.All, entry => entry.HasEyes && entry.Path == path) == null)
+                {
+                    failures.Add($"crowd shape '{shape.id}' must be one of the generated shapes with eyes (D25 A)");
+                }
             }
 
-            if (!knownShape || swarm.UnitMesh != theme.CrowdShape)
+            // Every save before version 4 migrates to this id: it must stay on offer, or those players silently lose their shape.
+            if (catalog.ShapeIndexOf(SaveMigration.ShapeBeforeV4) < 0)
             {
-                failures.Add("the run crowd must be drawn with the theme's crowd shape, one of the generated shapes");
+                failures.Add($"the catalog must keep the shape '{SaveMigration.ShapeBeforeV4}' older saves migrate to");
+            }
+
+            if (swarm.UnitMesh != catalog.Shapes[0].mesh)
+            {
+                failures.Add("the run crowd must start with the catalog's default shape (the flow swaps in the player's pick)");
             }
 
             var swarmSo = new SerializedObject(swarm);

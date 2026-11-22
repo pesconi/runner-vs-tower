@@ -78,6 +78,19 @@ namespace Claybreak
         [Min(0)] public int price;
     }
 
+    /// <summary>
+    /// A crowd shape the player picks on the home screen (D26 A: free, no price). The mesh is one of the generated crowd
+    /// shapes (one submesh, body tinted by the skin); the first shape is the default for a new or migrated save.
+    /// </summary>
+    [Serializable]
+    public sealed class CrowdShapeOption
+    {
+        [Tooltip("Stable save id; never rename a shipped id.")]
+        public string id = "shape";
+        public string title = "SHAPE";
+        public Mesh mesh;
+    }
+
     /// <summary>A world in the world list and what opens it.</summary>
     [Serializable]
     public sealed class WorldEntry
@@ -101,6 +114,8 @@ namespace Claybreak
         [SerializeField] private UpgradeTrack[] upgrades = new UpgradeTrack[0];
         [SerializeField] private UnitType[] units = new UnitType[0];
         [SerializeField] private CrowdSkin[] skins = new CrowdSkin[0];
+        [Tooltip("Crowd shapes picked on the home screen (D26 A: free); the first is the default.")]
+        [SerializeField] private CrowdShapeOption[] shapes = new CrowdShapeOption[0];
         [Tooltip("Special unit types equipped at once (GDD 6: 1-2).")]
         [SerializeField, Range(1, MaximumLoadoutSlots)] private int loadoutSlots = MaximumLoadoutSlots;
         [Tooltip("A special unit goes out every Nth launch while there are any.")]
@@ -112,6 +127,7 @@ namespace Claybreak
         public IReadOnlyList<UpgradeTrack> Upgrades => upgrades;
         public IReadOnlyList<UnitType> Units => units;
         public IReadOnlyList<CrowdSkin> Skins => skins;
+        public IReadOnlyList<CrowdShapeOption> Shapes => shapes;
         public int LoadoutSlots => loadoutSlots;
         public int SpecialEvery => specialEvery;
         public string WorldsFooter => worldsFooter;
@@ -120,6 +136,7 @@ namespace Claybreak
         public int UpgradeIndexOf(string id) => IndexOf(upgrades, id, track => track.id);
         public int UnitIndexOf(string id) => IndexOf(units, id, unit => unit.id);
         public int SkinIndexOf(string id) => IndexOf(skins, id, skin => skin.id);
+        public int ShapeIndexOf(string id) => IndexOf(shapes, id, shape => shape.id);
 
         /// <summary>Total levels over every world (the most stars the player can hold is 3x this).</summary>
         public int LevelCount
@@ -139,8 +156,9 @@ namespace Claybreak
 #if UNITY_EDITOR
         /// <summary>Editor only: the content writer and the tests fill the catalog from code.</summary>
         public void EditorAssign(WorldEntry[] worldEntries, UpgradeTrack[] upgradeTracks, UnitType[] unitTypes,
-            CrowdSkin[] crowdSkins, int slots, int every)
+            CrowdSkin[] crowdSkins, CrowdShapeOption[] crowdShapes, int slots, int every)
         {
+            shapes = crowdShapes;
             worlds = worldEntries;
             upgrades = upgradeTracks;
             units = unitTypes;
@@ -267,6 +285,28 @@ namespace Claybreak
                 if (skins[i] == null || !IsId(skins[i].id) || !ids.Add("skin:" + skins[i].id) || string.IsNullOrEmpty(skins[i].title))
                 {
                     error = $"skins[{i}] needs a unique id and a title.";
+                    return false;
+                }
+            }
+
+            if (shapes == null || shapes.Length == 0)
+            {
+                error = "the catalog needs at least one crowd shape (the first is the default).";
+                return false;
+            }
+
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                CrowdShapeOption shape = shapes[i];
+                if (shape == null || !IsId(shape.id) || !ids.Add("shape:" + shape.id) || string.IsNullOrEmpty(shape.title))
+                {
+                    error = $"shapes[{i}] needs a unique id and a title.";
+                    return false;
+                }
+
+                if (shape.mesh == null || shape.mesh.subMeshCount != 1)
+                {
+                    error = $"shape '{shape.id}' needs one of the generated crowd shapes (one submesh).";
                     return false;
                 }
             }

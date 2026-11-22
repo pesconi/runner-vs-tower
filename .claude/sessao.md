@@ -101,3 +101,8 @@
   (`InstancedProps`, sem objetos): nas capturas de modo de edição ele só aparece porque o `ArtDirectionCapture` chama
   `Render(câmera)` antes de cada render; ferramenta nova de captura em modo de edição precisa fazer o mesmo. Nos testes
   PlayMode, a câmera recua um pouco no começo da corrida (o rig enquadra a multidão): medir movimento depois de ~1 s.
+- 2026-11-22 (RT-6t.6b): a forma da multidão é dado do catálogo (`ClaybreakCatalog.Shapes`) e vai no save v4 (`shape`); o
+  nível de gate veste a skin mais cara E a forma mais pesada: capturas que queiram a skin padrão ou outra forma precisam
+  trocar as duas (`TryWearSkin(0)` + `Crowd.Wear`, `Crowd.UseShape`). Captura do menu com o seletor, das formas e das skins
+  nos 4 mundos: `-testFilter Claybreak.Tests.ShapeSkinCaptureTests -shapeSkinCaptureDir <pasta>` sem `-nographics`; para a UI
+  sair na textura, pôr o canvas em `ScreenSpaceCamera` com a câmera da corrida.

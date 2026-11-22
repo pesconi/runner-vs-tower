@@ -428,7 +428,12 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** validação padrão; teste de migração do save v3 → v4; capturas (menu com o seletor, as formas nos
   mundos); revisão de segurança (save).
 - **Exige o usuário:** D26 (e D25).
-- **Status: aguardando a D26.**
+- **Status: concluída em 2026-11-22.** Formas no catálogo (Bolinha `ball` e Pintinho `chick`, com olhos — D25 A),
+  botão "SHAPE" na tela inicial (grátis, troca a multidão na hora), save v4 com `shape` e migração v1/v2/v3 → v4 para
+  `ball` (fixture `v4-chick-bubblegum.json`); a corrida usa a forma escolhida (o gate, a mais pesada); 8 skins com cores e
+  nomes novos (CORAL, MANGO, SKY, LILAC, INDIGO, LAGOON, BERRY, BUBBLEGUM), mesmos ids, ordem e preços; a grátis vira
+  WORLD COLOR; aviso de contraste das skins no validador (nenhum aviso). Validação completa verde, capturas e detalhes em
+  [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t6b-1..10 em `decisoes.md`. Próxima: 6t.7.
 - **Prompt da sessão:** "Entrega RT-6t.6b do Runner vs Tower: formas e skins. Leia `docs/direcao-visual-crowd.md`
   (RT-6t.6, fichas D25 e D26) e as respostas da D25 e da D26 em `docs/decisoes.md`. A 6t.6a já fez as paletas e a
   regra 'BARRO = cor do mundo'. Seletor de forma no menu, save v4 com o campo 'forma', migração v3 → v4 e

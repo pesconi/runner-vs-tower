@@ -25,7 +25,6 @@ MonoBehaviour:
     builtInBody: {fileID: 11400000, guid: 0a489c7d6e4c1854e8648a4df9827262, type: 2}
     colorSkins: []
   crowdColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
-  crowdShape: {fileID: 4300000, guid: 3492d2dda05ae874b91f0decb7196476, type: 2}
   audio:
     enabled: 1
     sounds:
