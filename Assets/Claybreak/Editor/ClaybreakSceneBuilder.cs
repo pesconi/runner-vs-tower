@@ -22,7 +22,7 @@ namespace Claybreak.Editor
     /// Builds the game module from code: Android settings, the content (<see cref="WorldContent"/>: worlds,
     /// levels and the meta catalog), generated materials, placeholder sounds, the theme and the one scene
     /// with everything preallocated: the instanced run crowd (RT-6t.4, capped at <see cref="CrowdCapacity"/>), the
-    /// 300-unit runner pool of the assault, every projectile, the gate pairs and crates,
+    /// instanced units in flight of the assault (RT-6t.7, <see cref="FlightCapacity"/>), every projectile, the gate pairs and crates,
     /// the three tower bodies (<see cref="TowerArt"/>), the wall, the sweeper, the HUD and the menu screens
     /// with one shop row and one world row per catalog entry (rule 2.2.1: nothing is created or destroyed
     /// while playing). Idempotent.
@@ -33,11 +33,18 @@ namespace Claybreak.Editor
         public const string Root = "Assets/Claybreak/Content";
         public const string ScenePath = Root + "/Claybreak.unity";
         public const string ThemePath = Root + "/Data/ClaybreakTheme.asset";
-        public const int PoolSize = 300;
+        /// <summary>Most units in flight at once in the assault (the instanced renderer's capacity; D27 unanswered: 300).</summary>
+        public const int FlightCapacity = 300;
+
+        /// <summary>Most assault units dying at once (the ballistic death ring of the units in flight).</summary>
+        public const int FlightDyingCapacity = 512;
 
         /// <summary>Crowd cap of the run (decision D27, unanswered: 300); the swarm is built for 1000+, the cap is data.</summary>
         public const int CrowdCapacity = 300;
         public const string CrowdCameraProfilePath = Root + "/Data/SwarmCameraRun.asset";
+        /// <summary>The camera rig's fixed shots of the assault (RT-6t.7; the old AssaultCamera values).</summary>
+        public const string AssaultShotPath = Root + "/Data/SwarmCameraAssault.asset";
+        public const string BossAssaultShotPath = Root + "/Data/SwarmCameraAssaultBoss.asset";
         public const string CrowdLookPath = Root + "/Data/CrowdToonLook.asset";
         /// <summary>The skybox: the palette's screen-space sky gradient (RT-6t.6a).</summary>
         public const string SkyMaterialPath = ArtPalette.MaterialFolder + "/SkyGradient.mat";
@@ -48,13 +55,10 @@ namespace Claybreak.Editor
 
         private const string GeneratedFolder = Root + "/Generated";
         public const string FontPath = Root + "/Fonts/Roboto-Black.ttf";
-        private const string UnitPrefabPath = GeneratedFolder + "/RunnerUnit.prefab";
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
         private const string KitShared = "Packages/com.jungledegree.studiokit/Shared";
-        private const string BodyPath = KitShared + "/ClayRunner/ClayRunner.fbx";
         private const string BodyFramesPath = KitShared + "/ClayRunner/ClayRunnerFrames.asset";
-        private const string ClayMaterialPath = KitShared + "/RunnerClay.mat";
         private const string SplatMaterialPath = KitShared + "/RunnerSplat.mat";
         public const float TrackWidth = 8f;
         private const float TrackStartZ = -12f;
@@ -137,6 +141,11 @@ namespace Claybreak.Editor
                 AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<ToonLook>(), CrowdLookPath);
             }
 
+            // The assault shots keep the framing the assault camera had (17 m up and 11 m back, the boss 3 m higher and
+            // farther back, looking 55% of the way to the tower, 60 degrees, 0.8 s blend).
+            CreateShotOnce(AssaultShotPath, new Vector3(0f, 17f, -11f));
+            CreateShotOnce(BossAssaultShotPath, new Vector3(0f, 20f, -14f));
+
             AssetDatabase.SaveAssets();
         }
 
@@ -174,8 +183,6 @@ namespace Claybreak.Editor
             var theme = Load<ClaybreakTheme>(ThemePath);
             var monetization = Load<ClaybreakMonetization>(MonetizationContent.MonetizationPath);
             var palette = new ArtPalette();
-            Mesh body = LoadFirstMesh(BodyPath);
-            Material clay = Load<Material>(ClayMaterialPath);
 
             float trackEnd = 0f;
             foreach (ClaybreakLevel level in stress)
@@ -202,10 +209,6 @@ namespace Claybreak.Editor
             FrameRateGovernor governor = flowObject.AddComponent<FrameRateGovernor>();
             ClaybreakAds ads = CreateAds(flowObject.transform, monetization);
 
-            RunnerPool pool = CreatePool(body, clay);
-
-            CharacterController grounding = CreateUnitGrounding();
-
             var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
             cameraObject.tag = "MainCamera";
             Camera camera = cameraObject.GetComponent<Camera>();
@@ -215,7 +218,6 @@ namespace Claybreak.Editor
             cameraObject.transform.position = new Vector3(0f, 9f, -8f);
             cameraObject.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
             RunCrowd crowd = CreateCrowd(cameraObject, theme, catalog);
-            var assaultCamera = cameraObject.AddComponent<AssaultCamera>();
             WorldScenery scenery = CreateScenery(catalog, trackEnd, sun, camera);
             Renderer track = scenery.Track;
 
@@ -229,7 +231,7 @@ namespace Claybreak.Editor
             AssaultWall wall = CreateWall(first, palette);
             SweeperDefense sweeper = CreateSweeper(palette);
             ShieldDefense shield = CreateShield(palette);
-            AssaultField field = CreateField(pool, tower, wall, sweeper, shield, first, palette);
+            AssaultField field = CreateField(tower, wall, sweeper, shield, first, palette, catalog);
             Sprite pill = Load<Sprite>(PillTexturePath);
             Sprite star = Load<Sprite>(StarTexturePath);
             Transform canvas = CreateCanvas();
@@ -243,8 +245,8 @@ namespace Claybreak.Editor
             SetRef(flow, "theme", theme);
             SetRef(flow, "track", track);
             SetRef(flow, "crowd", crowd);
-            SetRef(flow, "unitGrounding", grounding);
-            SetRef(flow, "assaultCamera", assaultCamera);
+            SetRef(flow, "assaultShot", Load<SwarmCameraShot>(AssaultShotPath));
+            SetRef(flow, "bossAssaultShot", Load<SwarmCameraShot>(BossAssaultShotPath));
             SetRef(flow, "gates", gates);
             SetRef(flow, "field", field);
             SetRef(flow, "tower", tower);
@@ -261,7 +263,7 @@ namespace Claybreak.Editor
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             Debug.Log($"[Claybreak] Scene {ScenePath}: {catalog.Worlds.Count} world(s) with their scenery, {catalog.LevelCount} levels, {stress.Length} device-gate levels, "
-                + $"{catalog.Upgrades.Count} upgrades, {catalog.Units.Count} units, {catalog.Skins.Count} skins, crowd cap {CrowdCapacity}, pool {PoolSize}, {ProjectilePoolSize} projectiles, "
+                + $"{catalog.Upgrades.Count} upgrades, {catalog.Units.Count} units, {catalog.Skins.Count} skins, crowd cap {CrowdCapacity}, {FlightCapacity} in flight, {ProjectilePoolSize} projectiles, "
                 + $"{RunGateCourse.MaximumPairs} gate pairs, {ClaybreakLevel.MaximumCrates} crates, track to z={trackEnd:0}.");
         }
 
@@ -314,20 +316,6 @@ namespace Claybreak.Editor
             crowdSo.FindProperty("startZ").floatValue = 0f;
             crowdSo.ApplyModifiedPropertiesWithoutUndo();
             return crowd;
-        }
-
-        // The kit grounds the assault's pool units against a leader-sized CharacterController; this one is disabled and
-        // only gives that size (the old leader's), until the assault moves to the instanced crowd (RT-6t.7).
-        private static CharacterController CreateUnitGrounding()
-        {
-            var groundingObject = new GameObject("UnitGrounding", typeof(CharacterController));
-            groundingObject.transform.position = new Vector3(0f, 0.5f, 0f);
-            var controller = groundingObject.GetComponent<CharacterController>();
-            controller.height = 1f;
-            controller.radius = 0.3f;
-            controller.center = new Vector3(0f, 0.5f, 0f);
-            controller.enabled = false;
-            return controller;
         }
 
         /// <summary>
@@ -411,38 +399,6 @@ namespace Claybreak.Editor
             return ads;
         }
 
-        private static RunnerPool CreatePool(Mesh body, Material clay)
-        {
-            var unitObject = new GameObject("RunnerUnit", typeof(MeshFilter), typeof(MeshRenderer));
-            unitObject.GetComponent<MeshFilter>().sharedMesh = body;
-            unitObject.GetComponent<MeshRenderer>().sharedMaterial = clay;
-            unitObject.AddComponent<RunnerUnit>();
-            var capsule = unitObject.GetComponent<CapsuleCollider>();
-            capsule.height = 1f;
-            capsule.radius = 0.25f;
-            capsule.center = new Vector3(0f, 0.5f, 0f);
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(unitObject, UnitPrefabPath);
-            UnityEngine.Object.DestroyImmediate(unitObject);
-
-            var poolObject = new GameObject("RunnerPool");
-            var pool = poolObject.AddComponent<RunnerPool>();
-            var so = new SerializedObject(pool);
-            so.FindProperty("runnerPrefab").objectReferenceValue = prefab.GetComponent<RunnerUnit>();
-            so.FindProperty("poolSize").intValue = PoolSize;
-            SerializedProperty units = so.FindProperty("preallocatedUnits");
-            units.arraySize = PoolSize;
-            for (int i = 0; i < PoolSize; i++)
-            {
-                var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, poolObject.transform);
-                instance.name = $"RunnerUnit_{i + 1:000}";
-                instance.SetActive(false);
-                units.GetArrayElementAtIndex(i).objectReferenceValue = instance.GetComponent<RunnerUnit>();
-            }
-
-            so.ApplyModifiedPropertiesWithoutUndo();
-            return pool;
-        }
-
         private static RunGateCourse CreateRunGates(ArtPalette palette)
         {
             var root = new GameObject("RunGates");
@@ -504,11 +460,42 @@ namespace Claybreak.Editor
             return course;
         }
 
-        private static AssaultField CreateField(RunnerPool pool, AssaultTower tower, AssaultWall wall, SweeperDefense sweeper,
-            ShieldDefense shield, ClaybreakLevel level, ArtPalette palette)
+        // RT-6t.7: the assault's units in flight, instanced like the run crowd (same shape, material and shadows), with
+        // their own ballistic death ring. The flow swaps in the player's shape.
+        private static LooseSwarmRenderer CreateFlyers(Transform parent, ClaybreakCatalog catalog)
+        {
+            var flyersObject = new GameObject("UnitsInFlight");
+            flyersObject.transform.SetParent(parent, false);
+            var flyers = flyersObject.AddComponent<LooseSwarmRenderer>();
+            var so = new SerializedObject(flyers);
+            so.FindProperty("unitMesh").objectReferenceValue = catalog.Shapes[0].mesh;
+            so.FindProperty("unitMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.SwarmMaterialPath);
+            so.FindProperty("shadowMesh").objectReferenceValue = Load<Mesh>(ToonLabBuilder.ShadowDiscPath);
+            so.FindProperty("shadowMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.ShadowMaterialPath);
+            so.FindProperty("capacity").intValue = FlightCapacity;
+            so.FindProperty("dyingCapacity").intValue = FlightDyingCapacity;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return flyers;
+        }
+
+        private static void CreateShotOnce(string path, Vector3 offset)
+        {
+            if (AssetDatabase.LoadAssetAtPath<SwarmCameraShot>(path) != null)
+            {
+                return;
+            }
+
+            var shot = ScriptableObject.CreateInstance<SwarmCameraShot>();
+            shot.Offset = offset;
+            AssetDatabase.CreateAsset(shot, path);
+        }
+
+        private static AssaultField CreateField(AssaultTower tower, AssaultWall wall, SweeperDefense sweeper,
+            ShieldDefense shield, ClaybreakLevel level, ArtPalette palette, ClaybreakCatalog catalog)
         {
             var root = new GameObject("AssaultField");
             AssaultField field = root.AddComponent<AssaultField>();
+            LooseSwarmRenderer flyers = CreateFlyers(root.transform, catalog);
             var visuals = new UnityEngine.Object[ClaybreakLevel.LaneCount];
             var labels = new UnityEngine.Object[ClaybreakLevel.LaneCount];
             var panels = new UnityEngine.Object[ClaybreakLevel.LaneCount];
@@ -525,7 +512,7 @@ namespace Claybreak.Editor
                 visuals[i] = gate.transform;
             }
 
-            SetRef(field, "runnerPool", pool);
+            SetRef(field, "flyers", flyers);
             SetRef(field, "tower", tower);
             SetRef(field, "wall", wall);
             SetRef(field, "sweeper", sweeper);
@@ -1286,19 +1273,6 @@ namespace Claybreak.Editor
         {
             return so.FindProperty(property)
                 ?? throw new InvalidOperationException($"{so.targetObject.GetType().Name}.{property} not found");
-        }
-
-        private static Mesh LoadFirstMesh(string path)
-        {
-            foreach (UnityEngine.Object asset in AssetDatabase.LoadAllAssetsAtPath(path))
-            {
-                if (asset is Mesh mesh)
-                {
-                    return mesh;
-                }
-            }
-
-            throw new InvalidOperationException("No mesh in " + path);
         }
 
         private static T Load<T>(string path) where T : UnityEngine.Object

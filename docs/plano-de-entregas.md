@@ -447,7 +447,13 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.6a.
 - **Aceite:** validação padrão; PlayMode verde; gate 3× no chefe do mundo 4 com o assalto mais pesado.
 - **Exige o usuário:** OPPO conectado.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-22.** As unidades em voo são instanciadas (`LooseSwarmRenderer`: 1 chamada para corpos
+  + 1 para sombras, na forma e na skin da multidão; elites com tamanho e cor por instância); quem cai no portão ÷ ou nas
+  defesas morre pela morte balística (anel extraído do `Swarm`); regras, fases e economia iguais (D27 sem resposta: 300);
+  a câmera do assalto virou dois planos de dado do rig (`SwarmCameraShot`); saíram o pool de 300 objetos do kit, o
+  `UnitGrounding` e o respingo de massinha. Validação completa verde, **gate 3× no chefe do mundo 4 passou** (CPU 2,6 ms,
+  GPU 4,3 ms, 62,5 fps, PSS 292 MB). Detalhes e capturas em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões
+  T-RT6t7-1..10 em `decisoes.md`. Próxima: 6t.9.
 - **Prompt da sessão:** "Entrega RT-6t.7 do Runner vs Tower: a multidão instanciada no assalto. Leia
   `docs/direcao-visual-crowd.md` (seção 2, RT-6t.7) e a resposta da D27. Adapte `AssaultField` e as defesas para os
   arrays do `Swarm` sem mudar regras; se o teto mudar, regenere fases e economia pelas ferramentas existentes;

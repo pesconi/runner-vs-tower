@@ -176,6 +176,21 @@ namespace JungleDegree.StudioKit.Swarm
             return math.distance(pose.Position, pose.Target) / math.distance(reference.Position, reference.Target);
         }
 
+        /// <summary>
+        /// Pose of a fixed shot (<see cref="SwarmCameraShot"/>): the camera at <paramref name="anchor"/> +
+        /// <paramref name="offset"/>, looking at the point <paramref name="focus"/> of the way from the anchor to
+        /// <paramref name="target"/>, with field of view <paramref name="verticalFov"/>.
+        /// </summary>
+        public static SwarmCameraPose ShotPose(float3 anchor, float3 target, float3 offset, float focus, float verticalFov)
+        {
+            return new SwarmCameraPose
+            {
+                Position = anchor + offset,
+                Target = math.lerp(anchor, target, focus),
+                VerticalFov = verticalFov,
+            };
+        }
+
         /// <summary>Jitter (x, y, meters) for <paramref name="shakeLeft"/> seconds of shake and two uniform 0..1 draws.</summary>
         public static float2 ShakeJitter(float shakeLeft, float amplitude, float2 uniform)
         {

@@ -257,5 +257,30 @@ namespace JungleDegree.StudioKit.Tests
             Assert.AreEqual(expected.x, actual.x, 1e-5f);
             Assert.AreEqual(expected.y, actual.y, 1e-5f);
         }
+
+        // A fixed shot: anchor + offset, looking the focus share of the way to the target (the framing a game held before as its own camera).
+        [Test]
+        public void ShotPoseIsTheAnchorOffsetLookingPartOfTheWay()
+        {
+            var anchor = new float3(0f, 0.1f, 40f);
+            var target = new float3(0f, 0.1f, 73f);
+            SwarmCameraPose pose = SwarmCameraMath.ShotPose(anchor, target, new float3(0f, 17f, -11f), 0.55f, 60f);
+            AssertNear(new float3(0f, 17.1f, 29f), pose.Position);
+            AssertNear(new float3(0f, 0.1f, 40f + 0.55f * 33f), pose.Target);
+            Assert.AreEqual(60f, pose.VerticalFov);
+
+            var shot = ScriptableObject.CreateInstance<SwarmCameraShot>();
+            try
+            {
+                SwarmCameraPose fromAsset = shot.Pose(anchor, target);
+                AssertNear(pose.Position, fromAsset.Position);
+                AssertNear(pose.Target, fromAsset.Target);
+                Assert.AreEqual(60f, fromAsset.VerticalFov, "the default shot keeps 60 degrees");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(shot);
+            }
+        }
     }
 }

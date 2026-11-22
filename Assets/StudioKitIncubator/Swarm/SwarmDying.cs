@@ -49,7 +49,10 @@ namespace JungleDegree.StudioKit.Swarm
         };
     }
 
-    /// <summary>One unit on its way out: position (world x, height, z relative to the swarm center) and speed.</summary>
+    /// <summary>
+    /// One unit on its way out: position (world x, height, z relative to the swarm center), speed, and its size when it
+    /// died (1 = the mesh as modeled; it shrinks from there).
+    /// </summary>
     public struct SwarmDyingUnit
     {
         public float3 Position;
@@ -57,6 +60,7 @@ namespace JungleDegree.StudioKit.Swarm
         public float DiedAt;
         public float Spin;
         public float3 Tint;
+        public float Size;
     }
 
     /// <summary>Formulas of the ballistic death, pure and Burst-compatible (tested in EditMode against the reference).</summary>
@@ -73,7 +77,17 @@ namespace JungleDegree.StudioKit.Swarm
         public static SwarmDyingUnit Launch(float2 ground, float2 slotOffset, float time, float3 tint,
             in SwarmDeathSettings settings, ref Unity.Mathematics.Random random)
         {
-            float angle = math.atan2(slotOffset.y, slotOffset.x);
+            return Launch(ground, slotOffset, time, tint, 1f, settings, ref random);
+        }
+
+        /// <summary>
+        /// As the formation launch, for a unit of <paramref name="size"/> (1 = the mesh as modeled) thrown along
+        /// <paramref name="outward"/> (any length; only its direction counts), for units that are not in a formation.
+        /// </summary>
+        public static SwarmDyingUnit Launch(float2 ground, float2 outward, float time, float3 tint, float size,
+            in SwarmDeathSettings settings, ref Unity.Mathematics.Random random)
+        {
+            float angle = math.atan2(outward.y, outward.x);
             math.sincos(angle, out float sin, out float cos);
             float vx = cos * settings.OutwardSpeedX + (random.NextFloat() - 0.5f) * settings.JitterX;
             float vy = settings.UpSpeedMin + random.NextFloat() * settings.UpSpeedRange;
@@ -85,6 +99,7 @@ namespace JungleDegree.StudioKit.Swarm
                 DiedAt = time,
                 Spin = random.NextFloat() * settings.SpinMax,
                 Tint = tint,
+                Size = size,
             };
         }
 
@@ -159,7 +174,7 @@ namespace JungleDegree.StudioKit.Swarm
                 SwarmDyingUnit unit = Ring[slot];
                 SwarmDying.Step(ref unit, DeltaTime, Death.Gravity);
                 Ring[slot] = unit;
-                float scale = SwarmDying.Scale(Time, unit.DiedAt, Death.Lifetime);
+                float scale = SwarmDying.Scale(Time, unit.DiedAt, Death.Lifetime) * unit.Size;
                 float2 tumble = SwarmDying.Tumble(Time, unit.Spin);
                 var instance = new ToonInstance { Tint = new float4(unit.Tint, 0f) };
                 SwarmAnimation.Compose(ref instance, new float3(unit.Position.x, unit.Position.y, CenterZ + unit.Position.z),

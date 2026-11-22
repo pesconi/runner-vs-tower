@@ -401,5 +401,59 @@ namespace JungleDegree.StudioKit.Tests
             simulation.SetCount(100, T, SwarmRemoval.Die);
             Assert.AreEqual(200, simulation.DrawCount, "the draw keeps the last written frame until the next one");
         }
+
+        // RT-6t.7: a loose unit (not in a formation) is thrown along a direction with its own size; the formation launch
+        // is the same throw at size 1 (same draws in the same order).
+        [Test]
+        public void LooseLaunchThrowsAlongTheDirectionAtItsSize()
+        {
+            SwarmDeathSettings death = SwarmDeathSettings.Default;
+            var a = new Unity.Mathematics.Random(5);
+            var b = new Unity.Mathematics.Random(5);
+            SwarmDyingUnit formation = SwarmDying.Launch(new float2(1f, 30f), new float2(0f, -2f), 2f, new float3(0.5f), death, ref a);
+            SwarmDyingUnit loose = SwarmDying.Launch(new float2(1f, 30f), new float2(0f, -0.1f), 2f, new float3(0.5f), 1.45f, death, ref b);
+            Assert.AreEqual(1f, formation.Size, "a formation unit dies at the mesh size");
+            Assert.AreEqual(1.45f, loose.Size);
+            Assert.AreEqual(formation.Velocity.x, loose.Velocity.x, 1e-5f, "only the direction of the outward vector counts");
+            Assert.AreEqual(formation.Velocity.z, loose.Velocity.z, 1e-5f);
+            Assert.Less(loose.Velocity.z, -death.OutwardSpeedZ + 0.5f * death.JitterZ + 1e-4f, "thrown backward");
+        }
+
+        // The ring alone: oldest first, the oldest makes room when full, the expired leave from the head, the flight
+        // writes one instance per unit with the size applied, and bounds grow by the reach.
+        [Test]
+        public void DyingRingKeepsTheNewestAndShrinksFromTheSize()
+        {
+            SwarmDeathSettings death = SwarmDeathSettings.Default;
+            var random = new Unity.Mathematics.Random(3);
+            using var ring = new SwarmDyingRing(4);
+            using var instances = new Unity.Collections.NativeArray<ToonInstance>(4, Unity.Collections.Allocator.Persistent);
+            for (int i = 0; i < 6; i++)
+            {
+                ring.Push(SwarmDying.Launch(new float2(i, 0f), new float2(1f, 0f), i * 0.1f, new float3(1f), 2f, death, ref random));
+            }
+
+            Assert.AreEqual(4, ring.Count);
+            Assert.AreEqual(2f, ring[0].Position.x, "the two oldest made room");
+            Assert.AreEqual(5f, ring[3].Position.x);
+
+            ring.ScheduleFly(instances, 0f, 0.5f, 0f, death, default).Complete();
+            float expected = SwarmDying.Scale(0.5f, ring[0].DiedAt, death.Lifetime) * 2f;
+            float drawn = math.length(new float3(instances[0].Row0.x, instances[0].Row1.x, instances[0].Row2.x));
+            Assert.AreEqual(expected, drawn, 1e-4f, "the dying unit shrinks from its own size");
+
+            var bounds = new Bounds(Vector3.zero, Vector3.zero);
+            ring.Encapsulate(ref bounds, 0f, 1f, death);
+            Assert.Greater(bounds.max.x, 5f, "the bounds hold where the units can fly");
+
+            ring.DropExpired(0.3f + death.Lifetime + 1e-3f, death.Lifetime);
+            Assert.AreEqual(2, ring.Count, "the units dead longer than the lifetime left");
+            ring.Clear();
+            Assert.AreEqual(0, ring.Count);
+
+            using var none = new SwarmDyingRing(0);
+            none.Push(new SwarmDyingUnit { Size = 1f });
+            Assert.AreEqual(0, none.Count, "a ring with no room keeps nothing");
+        }
     }
 }

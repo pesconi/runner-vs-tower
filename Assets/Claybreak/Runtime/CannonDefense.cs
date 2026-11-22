@@ -1,4 +1,3 @@
-using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using UnityEngine;
 
@@ -175,7 +174,6 @@ namespace Claybreak
             int killed = field.KillInRadius(targets[index], level.BlastRadius);
             if (killed > 0)
             {
-                RunnerDeathEffects.Play(targets[index], Mathf.Min(killed, 6));
                 GameAudio.Play(GameSound.UnitLoss);
             }
         }

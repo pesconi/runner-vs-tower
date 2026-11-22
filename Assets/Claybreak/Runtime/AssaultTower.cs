@@ -1,5 +1,4 @@
 using System;
-using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using UnityEngine;
 
@@ -55,6 +54,12 @@ namespace Claybreak
 
         /// <summary>Raised when a floor falls, with the floors still standing (never for the last one).</summary>
         public event Action<int> FloorFallen;
+
+        /// <summary>Raised for each block a falling floor drops, with where it stood (the field throws units off there).</summary>
+        public event Action<Vector3> BlockDropped;
+
+        /// <summary>Units thrown off per dropped block.</summary>
+        public const int UnitsPerBlock = 6;
 
         public bool TryValidate(out string error)
         {
@@ -174,7 +179,7 @@ namespace Claybreak
             {
                 Transform block = floorBlocks[first + BlocksPerBody - blocksStanding];
                 block.gameObject.SetActive(false);
-                RunnerDeathEffects.Play(block.position, RunnerDeathEffects.MaximumJumpersPerHit);
+                BlockDropped?.Invoke(block.position);
                 blocksStanding--;
             }
 

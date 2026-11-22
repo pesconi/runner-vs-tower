@@ -222,7 +222,7 @@ namespace Claybreak.Editor
                 return;
             }
 
-            if (!catalog.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.PoolSize, out string error))
+            if (!catalog.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.FlightCapacity, out string error))
             {
                 failures.Add("catalog: " + error);
                 return;
@@ -381,6 +381,48 @@ namespace Claybreak.Editor
             }
         }
 
+        // RT-6t.7: the assault's units in flight are instanced like the run crowd (its shape, materials and shadow disc),
+        // with room for the units in flight of every level, and the camera rig frames the assault with its two shots.
+        private static void CheckFlight(SerializedObject flowSo, ClaybreakCatalog catalog, List<string> failures)
+        {
+            if (Object.FindFirstObjectByType<RunnerPool>(FindObjectsInactive.Include) != null
+                || Object.FindFirstObjectByType<RunnerUnit>(FindObjectsInactive.Include) != null)
+            {
+                failures.Add("the assault no longer uses the kit's runner pool (RT-6t.7): no RunnerPool or RunnerUnit in the scene");
+            }
+
+            AssaultField field = Object.FindFirstObjectByType<AssaultField>(FindObjectsInactive.Include);
+            LooseSwarmRenderer flyers = field == null
+                ? null
+                : new SerializedObject(field).FindProperty("flyers").objectReferenceValue as LooseSwarmRenderer;
+            if (flyers == null)
+            {
+                failures.Add("the assault field needs its instanced units in flight (LooseSwarmRenderer)");
+                return;
+            }
+
+            if (flyers.Capacity != ClaybreakSceneBuilder.FlightCapacity || flyers.DyingCapacity != ClaybreakSceneBuilder.FlightDyingCapacity)
+            {
+                failures.Add($"the units in flight hold {flyers.Capacity} (dying {flyers.DyingCapacity}); expected "
+                    + $"{ClaybreakSceneBuilder.FlightCapacity} ({ClaybreakSceneBuilder.FlightDyingCapacity})");
+            }
+
+            var flyersSo = new SerializedObject(flyers);
+            if (catalog == null || catalog.Shapes.Count == 0 || flyers.UnitMesh != catalog.Shapes[0].mesh
+                || AssetDatabase.GetAssetPath(flyersSo.FindProperty("unitMaterial").objectReferenceValue) != ToonLabBuilder.SwarmMaterialPath
+                || AssetDatabase.GetAssetPath(flyersSo.FindProperty("shadowMaterial").objectReferenceValue) != ToonLabBuilder.ShadowMaterialPath
+                || AssetDatabase.GetAssetPath(flyersSo.FindProperty("shadowMesh").objectReferenceValue) != ToonLabBuilder.ShadowDiscPath)
+            {
+                failures.Add("the units in flight must start with the default crowd shape and use the crowd materials and the shadow disc");
+            }
+
+            if (AssetDatabase.GetAssetPath(flowSo.FindProperty("assaultShot").objectReferenceValue) != ClaybreakSceneBuilder.AssaultShotPath
+                || AssetDatabase.GetAssetPath(flowSo.FindProperty("bossAssaultShot").objectReferenceValue) != ClaybreakSceneBuilder.BossAssaultShotPath)
+            {
+                failures.Add("the flow needs the assault shots " + ClaybreakSceneBuilder.AssaultShotPath + " and " + ClaybreakSceneBuilder.BossAssaultShotPath);
+            }
+        }
+
         // The device gate of a world: its boss body, its boss rule, every defense the world has, at its limits.
         private static void CheckStress(ClaybreakWorld world, ClaybreakLevel stress, List<string> failures)
         {
@@ -393,10 +435,10 @@ namespace Claybreak.Editor
             }
 
             if (!stress.IsDeviceGateLevel || stress.StartCount != ClaybreakSceneBuilder.CrowdCapacity
-                || stress.MaximumUnitsInFlight != ClaybreakSceneBuilder.PoolSize || stress.RunGates.Count != 0)
+                || stress.MaximumUnitsInFlight != ClaybreakSceneBuilder.FlightCapacity || stress.RunGates.Count != 0)
             {
                 failures.Add($"{stress.name}: the device-gate level must run the crowd at its cap ({ClaybreakSceneBuilder.CrowdCapacity}, "
-                    + $"no run gate to change it) and auto-launch with {ClaybreakSceneBuilder.PoolSize} units in flight");
+                    + $"no run gate to change it) and auto-launch with {ClaybreakSceneBuilder.FlightCapacity} units in flight");
             }
 
             if (stress.Tower != boss.Tower || stress.BossRule != boss.BossRule || !stress.CannonEnabled || !stress.SweeperEnabled
@@ -410,7 +452,7 @@ namespace Claybreak.Editor
         private static void CheckSaves(List<string> failures)
         {
             var catalog = AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(WorldContent.CatalogPath);
-            if (catalog == null || !catalog.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.PoolSize, out _))
+            if (catalog == null || !catalog.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.FlightCapacity, out _))
             {
                 return; // CheckData already reported it.
             }
@@ -468,7 +510,7 @@ namespace Claybreak.Editor
 
         private static void CheckLevel(ClaybreakLevel level, List<string> failures)
         {
-            if (!level.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.PoolSize, out string error))
+            if (!level.TryValidate(ClaybreakSceneBuilder.CrowdCapacity, ClaybreakSceneBuilder.FlightCapacity, out string error))
             {
                 failures.Add($"{level.name}: {error}");
             }
@@ -687,25 +729,13 @@ namespace Claybreak.Editor
 
             CheckCrowd(so, failures);
 
-            // No physics in the game: only the pool units of the assault (kit prefab) and the disabled unit grounding
-            // carry colliders.
-            if (Object.FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length
-                > ClaybreakSceneBuilder.PoolSize + 1)
+            // No physics in the game (RT-6t.7: the assault's units are instanced too, no object carries a collider).
+            if (Object.FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length > 0)
             {
-                failures.Add("only the pool units and the unit grounding may carry colliders (no physics in the game)");
+                failures.Add("no object may carry a collider (no physics in the game)");
             }
 
-            var grounding = so.FindProperty("unitGrounding").objectReferenceValue as CharacterController;
-            if (grounding != null && grounding.enabled)
-            {
-                failures.Add("the unit grounding must be a disabled CharacterController (it only gives the units' size)");
-            }
-
-            var pool = Object.FindFirstObjectByType<RunnerPool>(FindObjectsInactive.Include);
-            if (pool == null || pool.Capacity != ClaybreakSceneBuilder.PoolSize)
-            {
-                failures.Add($"the scene needs a RunnerPool with {ClaybreakSceneBuilder.PoolSize} preallocated units");
-            }
+            CheckFlight(so, so.FindProperty("catalog").objectReferenceValue as ClaybreakCatalog, failures);
 
             var cannon = Object.FindFirstObjectByType<CannonDefense>();
             if (cannon == null || cannon.PoolSize != ClaybreakSceneBuilder.ProjectilePoolSize)

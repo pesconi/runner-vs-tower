@@ -484,3 +484,49 @@ estático. A pista é 1 chamada. Nenhum objeto por árvore/pedra; nada é criado
   pedras com "musgo", tudo nas cores de cada paleta e sumindo na neblina. O registro da 6t.6a
   ([`mundos-oppo.png`](art/rt6t/mundos-oppo.png)) fica com o cenário antigo.
 - `art/telas/` regravadas com o cenário novo.
+
+## RT-6t.7 — A multidão instanciada no assalto (2026-11-22)
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| `LooseSwarmRenderer` | incubadora, `Swarm` | Unidades soltas, cada uma posta pelo dono (as do assalto não têm formação): posição, velocidade lateral, **tamanho e tinta por instância**, pulo/agachamento/inclinação do `Swarm` num job Burst, mesma malha, `ToonLit` e sombra-bolha. **1 chamada para corpos (vivos + morrendo) + 1 para sombras.** Remoção = a última unidade ocupa o índice livre. Nada alocado em jogo. |
+| `SwarmDyingRing` | incubadora, `Swarm` | O anel de morte balística saiu do `SwarmSimulation` (mesmo comportamento) e é usado pelos dois renderizadores; a morte guarda o tamanho (elites encolhem do próprio tamanho) e pode nascer acima do chão. |
+| `SwarmCameraShot` + `SwarmCameraRig.HoldShot` | incubadora, `Swarm` | Plano fixo como dado: o rig sai da multidão e vai para o plano em 0,8 s, e volta com `ReleaseShot`. `Content/Data/SwarmCameraAssault.asset` e `SwarmCameraAssaultBoss.asset` = o enquadramento do antigo `AssaultCamera` (removido). |
+| `AssaultField` | jogo | Os mesmos arrays e regras; o índice i do campo é a unidade i do renderizador. Portão ÷ (0 saem), varredor, muro, escudo e canhão (para longe do impacto) matam pelo anel; quem chega à torre some. O andar da torre que cai joga 6 bonecos por bloco, da altura do bloco. |
+| Defesas e torre | jogo | Sem mudança de regra; o canhão e a torre deixaram o respingo do kit (`RunnerDeathEffects` saiu do jogo). |
+| Forma e skin | `ClaybreakFlow` | A forma escolhida no menu vale na corrida e no assalto; os comuns vestem a cor da skin, os elites a cor e o tamanho do tipo. |
+| Cena | `ClaybreakSceneBuilder` | Saíram o `RunnerPool` (300 objetos), o `UnitGrounding` e o `RunnerUnit.prefab`; entrou `AssaultField/UnitsInFlight` (300 + 512 morrendo; D27 sem resposta = 300). |
+
+Regras, fases e economia sem mudança (`docs/rt6-economia.md` regenerada igual). Decisões T-RT6t7-1..10 em `decisoes.md`.
+
+### Testes e validação
+
+- `Tools/rt4-check.sh` completo (2026-11-22): `scene`, `validate`, `isolation`, `editmode` (**217/217**), `playmode`
+  (**21/21**, 9 capturas só com GPU), `economy`, `capture`, `apk-game`, `aab`: PASS; `apk-measure` falhou na primeira
+  vez (um `using` removido que só a medição compila) e passou depois da correção, junto com `apk-game` (sem erro de shader).
+- Novos: EditMode `ShotPoseIsTheAnchorOffsetLookingPartOfTheWay`, `LooseLaunchThrowsAlongTheDirectionAtItsSize`,
+  `DyingRingKeepsTheNewestAndShrinksFromTheSize`; PlayMode: no assalto do nível 1 cada unidade em voo é uma instância e
+  fica na pista, o rig segura o plano do assalto com o FOV dele; a forma do menu chega às unidades em voo; no gate,
+  300 instâncias, elites redimensionados e mortes pelo anel. Validador: nenhum collider, nada do pool do kit, capacidades,
+  materiais e os dois planos.
+- Revisor independente (subagente fable, só leitura): nada sério; os pontos menores foram aplicados (T-RT6t7-10).
+- Capturas com GPU no formato do OPPO: [`art/rt6t/assalto-oppo.png`](art/rt6t/assalto-oppo.png) (gate do mundo 4:
+  Pintinho 492 tri, skin BUBBLEGUM, 300 em voo com Brutos e Corredores, mortes) e o quadro "assault" de
+  [`art/rt6t/corrida-oppo.png`](art/rt6t/corrida-oppo.png) (nível 1).
+
+### Gate 3× no assalto (OPPO CPH2791) — **PASSOU** (2026-11-22)
+
+Caso: nível de gate do **mundo 4** (torre do chefe, canhão com 12 pedras, varredor, muro, escudo), 300 em voo
+reciclando com 100 elites, 40–65 morrendo o tempo todo, forma mais pesada e skin mais cara. Comando:
+`Tools/rt2-gate.sh assault-w4 60 20 /c/temp/rt6t7/Claybreak-measure.apk 4`. CPU e GPU = pior p95 das janelas 1–5 (a 6ª
+coincide com a coleta de memória do script).
+
+| Rodada | CPU p95 | GPU p95 | Quadro p95 | > 50 ms | PSS | Alocação | Resultado |
+|---|---|---|---|---|---|---|---|
+| assalto, mundo 4, 300 em voo (6t.7) | 2,6 ms | 4,3 ms | 16 ms (62,5 fps) | 0,0% | 292 MB | 0 B | **passa** |
+| antes: assalto com o pool do kit (6t.4) | 9,4 ms | 4,5 ms | 16 ms | 0,2% | 310 MB | 0 B | dentro do gate |
+
+Captura do aparelho durante o gate: [`art/rt6t/assalto-oppo-gate.png`](art/rt6t/assalto-oppo-gate.png) (sem shader de
+erro; elites no próprio tamanho e cor).

@@ -105,15 +105,25 @@ namespace Claybreak.Tests
             Assert.AreEqual(expected, crowd.Army, "the gates did not make the army");
             Assert.AreEqual(expected, flow.Crowd.Swarm.Count);
 
-            // The assault shot keeps its own field of view (the run rig widens it for the portrait fit).
+            // RT-6t.7: the units sent off (level 1 sends while the player holds) are the instanced loose swarm, one instance per
+            // unit in flight, on the track; the device-gate and end-to-end tests fill the field.
             for (float wait = 0f; wait < 1f; wait += Time.deltaTime)
             {
+                Assert.AreEqual(flow.Field.InFlight, flow.Field.Flyers.Count, "the drawn units are not the units in flight");
+                for (int i = 0; i < flow.Field.Flyers.Count; i++)
+                {
+                    Assert.LessOrEqual(Mathf.Abs(flow.Field.Flyers.PositionOf(i).x), halfWidth, "a unit in flight left the track");
+                }
+
                 yield return null;
             }
 
-            var assaultCamera = Object.FindFirstObjectByType<AssaultCamera>();
-            Assert.AreEqual(assaultCamera.FieldOfView, assaultCamera.GetComponent<Camera>().fieldOfView, 0.01f,
-                "the assault camera kept the run rig's field of view");
+            // The camera rig holds the assault shot (a profile asset of the rig) with its own field of view (the run rig
+            // widens it for the portrait fit), and goes back to the crowd on the next level.
+            SwarmCameraRig rig = crowd.CameraRig;
+            Assert.IsNotNull(rig.HeldShot, "the camera rig does not hold the assault shot");
+            Assert.AreEqual(rig.HeldShot.VerticalFov, rig.GetComponent<Camera>().fieldOfView, 0.01f,
+                "the assault shot kept the run rig's field of view");
         }
 
         // RT-6t.4: the run gate keeps the crowd at its cap on the track (looping before the tower), never assaulting.
@@ -202,6 +212,20 @@ namespace Claybreak.Tests
 
             Assert.AreEqual(300, flow.Field.InFlight);
             Assert.LessOrEqual(flow.Cannon.ActiveCount, flow.ActiveLevel.MaximumProjectiles);
+
+            // RT-6t.7: one instance per unit in flight; the elites drawn at their own size; the units the defenses take die
+            // through the ballistic death ring (the gate leaves a dying copy behind and sends the unit around again).
+            LooseSwarmRenderer flyers = flow.Field.Flyers;
+            Assert.AreEqual(300, flyers.Count);
+            int resized = 0;
+            for (int i = 0; i < flyers.Count; i++)
+            {
+                resized += Mathf.Approximately(flyers.SizeOf(i), 1f) ? 0 : 1;
+            }
+
+            Assert.Greater(resized, 0, "no elite is drawn at its own size");
+            Assert.LessOrEqual(resized, flow.Field.SpecialsInFlight, "a plain unit is drawn resized");
+            Assert.Greater(flyers.DyingCount, 0, "no unit dies through the ring in the heaviest assault");
         }
 
         // RT-5 end to end: the shop sells an upgrade, an elite and a skin through its buttons, and the next
@@ -261,6 +285,7 @@ namespace Claybreak.Tests
             Press("/Ui/Screens/Home/Safe/ShapeButton");
             Assert.AreEqual(catalog.Shapes[1].id, flow.Progress.Save.shape);
             Assert.AreEqual(catalog.Shapes[1].mesh, crowd.Swarm.UnitMesh, "the crowd behind the menu did not change shape");
+            Assert.AreEqual(catalog.Shapes[1].mesh, flow.Field.Flyers.UnitMesh, "the assault is not drawn with the picked shape");
             StringAssert.Contains(catalog.Shapes[1].title, label.text);
             Assert.AreEqual(coins, flow.Progress.Save.coins, "shapes are free");
 

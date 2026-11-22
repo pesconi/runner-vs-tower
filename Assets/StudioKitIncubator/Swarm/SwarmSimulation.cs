@@ -42,13 +42,11 @@ namespace JungleDegree.StudioKit.Swarm
         private NativeArray<float> acrossSpeeds;
         private NativeArray<float> phases;
         private NativeArray<float> bornAt;
-        private NativeArray<SwarmDyingUnit> dying;
+        private readonly SwarmDyingRing dying;
         private NativeArray<ToonInstance> instances;
         private Unity.Mathematics.Random random;
         private JobHandle pending;
         private bool scheduled;
-        private int dyingHead;
-        private float4 dyingOrigins; // min x, min z, max x, max z of where the units in the ring died (z relative)
         private int writtenCount;
         private int writtenDying;
 
@@ -61,7 +59,7 @@ namespace JungleDegree.StudioKit.Swarm
         public int Count { get; private set; }
 
         /// <summary>Units on their way out (drawn after the live ones).</summary>
-        public int DyingCount { get; private set; }
+        public int DyingCount => dying.Count;
 
         /// <summary>
         /// Instances written by the last frame (<see cref="Schedule"/>): <see cref="WrittenCount"/> live, then the dying.
@@ -128,8 +126,7 @@ namespace JungleDegree.StudioKit.Swarm
             acrossSpeeds = new NativeArray<float>(capacity, Allocator.Persistent);
             phases = new NativeArray<float>(capacity, Allocator.Persistent);
             bornAt = new NativeArray<float>(capacity, Allocator.Persistent);
-            // A ring of at least one slot keeps the jobs' arrays valid; with no capacity nothing is ever put in it.
-            dying = new NativeArray<SwarmDyingUnit>(math.max(1, dyingCapacity), Allocator.Persistent);
+            dying = new SwarmDyingRing(dyingCapacity);
             instances = new NativeArray<ToonInstance>(capacity + dyingCapacity, Allocator.Persistent);
             SunflowerFormation.FillOffsets(offsets.AsSpan(), formation.Spacing, formation.DepthStretch);
             random = new Unity.Mathematics.Random(seed == 0 ? 1u : seed);
@@ -187,7 +184,7 @@ namespace JungleDegree.StudioKit.Swarm
                 // In slot order, as the reference does: when the ring overflows, the first thrown goes first.
                 for (int i = next; i < Count; i++)
                 {
-                    PushDying(SwarmDying.Launch(positions[i], offsets[i], time, Tint, Death, ref random));
+                    dying.Push(SwarmDying.Launch(positions[i], offsets[i], time, Tint, Death, ref random));
                 }
             }
 
@@ -220,20 +217,14 @@ namespace JungleDegree.StudioKit.Swarm
         public void ClearDying()
         {
             Complete();
-            dyingHead = 0;
-            DyingCount = 0;
+            dying.Clear();
         }
 
         /// <summary>Unit <paramref name="index"/> of the ring of dying units, oldest first (tests and tools).</summary>
         public SwarmDyingUnit DyingUnit(int index)
         {
             Complete();
-            if (index < 0 || index >= DyingCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            return dying[(dyingHead + index) % DyingCapacity];
+            return dying[index];
         }
 
         /// <summary>Where unit <paramref name="index"/> stands now (world x, z), after the last completed frame.</summary>
@@ -266,14 +257,7 @@ namespace JungleDegree.StudioKit.Swarm
 
             var size = new Vector3(maxX - minX, height, 2f * radius * formation.DepthStretch);
             var bounds = new Bounds(new Vector3(0.5f * (minX + maxX), 0.5f * height, CenterZ), size);
-            if (DyingCount > 0)
-            {
-                // The box of where the units in the ring died, grown by how far they can fly, holds them all.
-                float3 reach = SwarmDying.Reach(Death);
-                bounds.Encapsulate(new Vector3(dyingOrigins.x - reach.x, 0f, CenterZ + dyingOrigins.y - reach.z));
-                bounds.Encapsulate(new Vector3(dyingOrigins.z + reach.x, height + reach.y, CenterZ + dyingOrigins.w + reach.z));
-            }
-
+            dying.Encapsulate(ref bounds, CenterZ, height, Death);
             return bounds;
         }
 
@@ -287,7 +271,7 @@ namespace JungleDegree.StudioKit.Swarm
             Complete();
             Clock = time;
             Tint = tint;
-            DropExpired(time);
+            dying.DropExpired(time, Death.Lifetime);
             CenterX += (TargetX - CenterX) * SunflowerFormation.FollowFactor(formation.CenterSharpness, deltaTime);
             var follow = new SwarmFollowJob
             {
@@ -317,21 +301,7 @@ namespace JungleDegree.StudioKit.Swarm
             };
             JobHandle followed = follow.Schedule(Count, JobBatch);
             pending = animate.Schedule(Count, JobBatch, followed);
-            if (DyingCount > 0)
-            {
-                var fly = new SwarmDyingJob
-                {
-                    Ring = dying,
-                    Instances = instances.GetSubArray(Count, DyingCount),
-                    Head = dyingHead,
-                    Count = DyingCount,
-                    DeltaTime = deltaTime,
-                    Time = time,
-                    CenterZ = CenterZ,
-                    Death = Death,
-                };
-                pending = fly.Schedule(pending);
-            }
+            pending = dying.ScheduleFly(instances.GetSubArray(Count, DyingCount), deltaTime, time, CenterZ, Death, pending);
 
             writtenCount = Count;
             writtenDying = DyingCount;
@@ -356,7 +326,7 @@ namespace JungleDegree.StudioKit.Swarm
             DisposeArray(ref acrossSpeeds);
             DisposeArray(ref phases);
             DisposeArray(ref bornAt);
-            DisposeArray(ref dying);
+            dying.Dispose();
             DisposeArray(ref instances);
         }
 
@@ -365,39 +335,6 @@ namespace JungleDegree.StudioKit.Swarm
             if (array.IsCreated)
             {
                 array.Dispose();
-            }
-        }
-
-        // The ring is full: the oldest unit makes room (it is the nearest to gone).
-        private void PushDying(in SwarmDyingUnit unit)
-        {
-            if (DyingCapacity == 0)
-            {
-                return;
-            }
-
-            if (DyingCount == DyingCapacity)
-            {
-                dyingHead = (dyingHead + 1) % DyingCapacity;
-                DyingCount--;
-            }
-
-            dying[(dyingHead + DyingCount) % DyingCapacity] = unit;
-            var origin = new float2(unit.Position.x, unit.Position.z);
-            dyingOrigins = DyingCount == 0
-                ? new float4(origin, origin)
-                : new float4(math.min(dyingOrigins.xy, origin), math.max(dyingOrigins.zw, origin));
-            DyingCount++;
-        }
-
-        // All share one lifetime and enter in time order, so the expired are always at the head of the ring.
-        private void DropExpired(float time)
-        {
-            float lifetime = Death.Lifetime;
-            while (DyingCount > 0 && !SwarmDying.Alive(time, dying[dyingHead].DiedAt, lifetime))
-            {
-                dyingHead = (dyingHead + 1) % DyingCapacity;
-                DyingCount--;
             }
         }
 

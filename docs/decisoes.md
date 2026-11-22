@@ -1531,3 +1531,41 @@ Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
   Aceitos: (a) o salto para v4 faz um APK anterior recusar o save novo (comportamento antigo, sem jogadores reais e a
   entrega pede v4); (b) cada toque no botão grava o save na hora (como loja e mundos); (c) capturas usam `AssetDatabase`
   sem `#if UNITY_EDITOR`, igual às capturas existentes (só rodam no Editor).
+
+## 2026-11-22 — T-RT6t7-1..10 — Multidão instanciada no assalto — técnica (sessão RT-6t.7)
+
+- **T-RT6t7-1 — `LooseSwarmRenderer` (incubadora, `Swarm`): unidades soltas, cada uma posta pelo dono.** As unidades em voo
+  não seguem formação, então não cabem no `Swarm` (girassol); o renderizador novo guarda posição, velocidade lateral,
+  tamanho, tinta e fase por unidade em `NativeArray` fixos, anima com o mesmo pulo/agachamento/inclinação do `Swarm`
+  (um job Burst) e desenha com a mesma malha, o mesmo `ToonLit` e a mesma sombra-bolha: **1 chamada para os corpos (vivos +
+  morrendo) e 1 para as sombras**. Remoção = a última unidade ocupa o índice livre, igual ao `AssaultField`, que mantém
+  seus arrays de regra (x, z, faixa, armadura, tipo, velocidade) com o índice i = unidade i do renderizador.
+- **T-RT6t7-2 — Anel de morte extraído (`SwarmDyingRing`)** do `SwarmSimulation` (comportamento igual; testes da 6t.5
+  verdes) e usado pelos dois renderizadores. `SwarmDyingUnit.Size` (1 = malha) e `SwarmDying.Launch` com direção qualquer e
+  tamanho, para unidades fora de formação; uma morte pode nascer acima do chão (bloco da torre).
+- **T-RT6t7-3 — Regras sem mudança.** Mesma ordem portão → varredor → muro → escudo → torre, mesmos danos, frações,
+  armadura, clones, reciclagem do nível de gate, `PeakInFlight`/`TowerHits` (conferido pelo revisor contra o `HEAD`).
+  Só o visual mudou: quem cai no portão ÷ (0 saem), no varredor, no muro, no escudo e no canhão (jogado para longe do
+  impacto) **morre pelo anel**; quem chega à torre some (a torre reage). O respingo de massinha do kit
+  (`RunnerDeathEffects`) saiu do jogo: o andar da torre que cai joga 6 bonecos da cor da multidão por bloco, da altura do
+  bloco. O tema ainda guarda `roster`/`deathEffect` (limpeza na 6t.12).
+- **T-RT6t7-4 — Nível de gate:** a unidade reciclada deixa uma cópia morrendo no lugar, para o gate medir também as mortes
+  (antes ele pagava o respingo).
+- **T-RT6t7-5 — Elites por instância:** tamanho = `UnitType.scale` sobre a malha da multidão (Bruto 1,45, Corredor 0,9,
+  Guardião 1,25) e cor do tipo; os comuns e os clones vestem a cor da skin no lançamento. O boneco em voo tem o tamanho
+  do boneco da corrida (antes, o boneco de massinha era 0,5 do líder).
+- **T-RT6t7-6 — Câmera do assalto = `SwarmCameraShot` (dado) que o `SwarmCameraRig` segura** (`HoldShot`/`ReleaseShot`):
+  `Content/Data/SwarmCameraAssault.asset` (0, 17, −11) e `SwarmCameraAssaultBoss.asset` (0, 20, −14), foco 55% até a torre,
+  60°, transição suave de 0,8 s no tempo real — o enquadramento do antigo `AssaultCamera`, que foi removido. Um tremor
+  da corrida não passa para o plano do assalto.
+- **T-RT6t7-7 — A forma escolhida no menu vale no assalto** (`ClaybreakFlow.UseShape` troca a malha da corrida e das
+  unidades em voo; o gate usa a mais pesada).
+- **T-RT6t7-8 — Pool do kit fora da cena:** saíram o `RunnerPool` com 300 `RunnerUnit`, o `UnitGrounding` e o
+  `Generated/RunnerUnit.prefab`. `PoolSize` virou `FlightCapacity` = 300 (**D27 sem resposta: 300**, fases e economia
+  iguais) e o anel do assalto tem 512. O validador reprova qualquer collider, `RunnerPool`/`RunnerUnit` na cena, e confere
+  capacidades, malha padrão, materiais, sombra e os dois planos de câmera.
+- **T-RT6t7-9 — Caixa de desenho por fase:** da linha de tiro − 8 m até a torre + 3 m, largura da pista + 2 m, 3 m de
+  altura, crescida pelo alcance dos que morrem.
+- **T-RT6t7-10 — Revisão independente (subagente fable, só leitura): nada sério.** Aplicados: transição da câmera em
+  tempo real (não no passo limitado), tremor zerado ao entrar no plano, proteção contra renderizador desligado no meio
+  (limpa o campo em vez de dessincronizar), morte do bloco da torre na altura do bloco, um assert que não podia falhar.

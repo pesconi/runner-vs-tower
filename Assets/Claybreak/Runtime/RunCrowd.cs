@@ -167,15 +167,19 @@ namespace Claybreak
             cameraRig.Shake();
         }
 
-        /// <summary>The run camera follows the crowd while on (the assault camera takes over at the firing line).</summary>
-        public void SetCameraFollowing(bool following)
+        /// <summary>The camera rig follows the crowd again (from its settled framing at once).</summary>
+        public void FollowWithCamera()
         {
-            if (following && !cameraRig.enabled)
-            {
-                cameraRig.Snap();
-            }
+            cameraRig.ReleaseShot();
+        }
 
-            cameraRig.enabled = following;
+        /// <summary>
+        /// The camera rig leaves the crowd for a fixed <paramref name="shot"/> of <paramref name="anchor"/> looking toward
+        /// <paramref name="target"/> (the assault at the firing line, RT-6t.7), until <see cref="FollowWithCamera"/>.
+        /// </summary>
+        public void FrameWithCamera(SwarmCameraShot shot, Vector3 anchor, Vector3 target)
+        {
+            cameraRig.HoldShot(shot, anchor, target);
         }
 
         private void PlaceAtStart()

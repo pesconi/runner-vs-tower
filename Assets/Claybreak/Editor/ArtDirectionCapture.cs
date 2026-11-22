@@ -92,7 +92,7 @@ namespace Claybreak.Editor
             }
         }
 
-        // The assault camera's framing (AssaultCamera): 17 m up (20 for a boss) behind the firing line, looking
+        // The assault camera's framing (the SwarmCameraAssault shots): 17 m up (20 for a boss) behind the firing line, looking
         // past the gate row at the tower 34 m ahead, portrait, with the world's scenery and look.
         private static Color[] PlayDistanceShot(string worldId, WorldLook look, TowerStyle style, bool boss)
         {
@@ -263,7 +263,7 @@ namespace Claybreak.Editor
             button.onClick.Invoke();
         }
 
-        // The assault camera's framing (AssaultCamera: 17 m up and 11 m back, plus the boss offset).
+        // The assault camera's framing (the SwarmCameraAssault shots: 17 m up and 11 m back, the boss 3 m more of each).
         private static void AssaultShot(string folder, string name, AssaultTower tower, Camera camera, ClaybreakLevel level,
             float height)
         {

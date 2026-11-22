@@ -106,3 +106,8 @@
   trocar as duas (`TryWearSkin(0)` + `Crowd.Wear`, `Crowd.UseShape`). Captura do menu com o seletor, das formas e das skins
   nos 4 mundos: `-testFilter Claybreak.Tests.ShapeSkinCaptureTests -shapeSkinCaptureDir <pasta>` sem `-nographics`; para a UI
   sair na textura, pôr o canvas em `ScreenSpaceCamera` com a câmera da corrida.
+- 2026-11-22 (RT-6t.7): as unidades em voo do assalto são o `LooseSwarmRenderer` (`flow.Field.Flyers`), índice i = unidade i
+  do `AssaultField`. O `apk-measure` compila código que só existe com `RELEASE_MEASUREMENT` (sonda de quadro): ao tirar um
+  `using`, rodar o passo `apk` antes de dar a validação por boa. Captura do assalto mais pesado (gate do mundo 4):
+  `-testFilter Claybreak.Tests.AssaultCaptureTests -assaultCaptureDir <pasta>` sem `-nographics`. No nível 1 nada voa
+  sem o jogador segurar.
