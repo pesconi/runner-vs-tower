@@ -187,7 +187,7 @@ uma antes da entrega indicada.
 | **D26** | **Skins × 2 formas × cor do mundo** | Loja (D19), save, cor da multidão por paleta | RT-6t.6b (a 6t.6a segue sem ela) | A: formas livres; BARRO = cor do mundo; 8 skins com cores novas, mesmos preços — ficha em `direcao-visual-crowd.md` — **decidido em 2026-11-22: A** |
 | **D27** | **Teto da multidão** (hoje 300; motor novo aguenta 1000) | Espetáculo × equilíbrio das 40 fases e peso do assalto no celular | RT-6t.4 (sem resposta: 300) | A: 1000 na corrida, até 300 em voo valendo mais — ficha em `direcao-visual-crowd.md` — **decidido em 2026-11-22: teto 300 no jogo, configurável no motor; portões não passam de 300** (revisão do usuário) |
 | **D28** | **Arte do assalto no estilo novo** (torres, defesas, chefes, efeitos) | O protótipo não mostra o assalto | RT-6t.10 (sem resposta: A) | **decidido em 2026-11-22: A** (aplicada por padrão na RT-6t.10: sombreado toon + cores da paleta, sem remodelar, sem rostos; confirmada pelo usuário ao aprovar as capturas `docs/art/rt6t/chefes-*.png`) — ficha em `direcao-visual-crowd.md` |
-| **D29** | **Nome "Clay Siege" sem massinha** | Ícone, loja e domínio; checagem de marca pendente | RT-9 | B: 3 nomes novos checados + "Clay Siege", escolha antes da RT-9 — ficha em `direcao-visual-crowd.md` — **decidido em 2026-11-22: B** (EUIPO, INPI Portugal, TMview e lojas) |
+| **D29** | **Nome "Clay Siege" sem massinha** | Ícone, loja e domínio; checagem de marca pendente | RT-9 | B: 3 nomes novos checados + "Clay Siege", escolha antes da RT-9 — ficha em `direcao-visual-crowd.md` — **decidido em 2026-11-22: "Clay Siege" sai; pesquisar nomes ligados à proposta** (revisão do usuário) |
 
 ### Dúvidas abertas registradas pela sessão (sem resposta)
 

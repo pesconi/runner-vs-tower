@@ -1831,3 +1831,10 @@ O usuário jogou no OPPO e pediu dois ajustes (registrados pela sessão RT-6t.13
   motor da multidão aceita um teto configurável por jogo (dado, não código); neste jogo o teto é 300 na corrida e no
   ataque; as contas dos portões são ajustadas para o exército nunca passar de 300. Sem valor fracionado por boneco e
   sem entrega de reequilíbrio para 1000.
+- **2026-11-22 — D29 revista pelo usuário: "Clay Siege" sai.** Substitui o "B" acima. Palavras do usuário: "D29 tem
+  que remover o nome Clay siege e pesquisar nomes que tem mais a ver com a proposta." Texto aprovado: "Clay Siege" deixa
+  de ser candidato; pesquisar nomes ligados à proposta do jogo (multidão fofa de bolinhas/pintinhos que cresce em
+  portões de conta e invade/derruba a torre inimiga), checados nas bases EUIPO, INPI Portugal e TMview (classes 9 e 41)
+  e por colisão no Google Play e na App Store; o usuário escolhe. O nome escolhido substitui "Clay Siege" no jogo
+  (`productName`, título do menu, ícone, política de privacidade, domínio) antes da RT-9; id do pacote, save e nomes
+  internos não mudam.
