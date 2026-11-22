@@ -1807,3 +1807,20 @@ O usuário jogou no OPPO e pediu dois ajustes (registrados pela sessão RT-6t.13
   para 200 m (árvores e pedras de cada mundo × 200/90 das de referência, mesma densidade) e o validador troca a regra:
   o ponto mais perto onde uma árvore reaparece à vista de qualquer câmera do jogo tem de ficar além do plano de corte
   (170 m). Medido: 172,5 m. O teste EditMode prova que a janela antiga (90 m) faria árvores surgirem na tela.
+
+## 2026-11-22 — Decisões D27 e D29 (usuário, via /maestro decidir)
+
+- **2026-11-22 — D27 Teto da multidão — A — usuário.** Texto aprovado: na corrida, a multidão pode chegar a 1000
+  bonecos; no ataque à torre continuam saindo no máximo 300 em voo, e quando a multidão passa de 300 cada boneco lançado
+  vale mais (1000 na corrida = 300 lançados valendo ~3,3 cada; o contador mostra o total). Vida das torres, portões e as
+  40 fases são recalculados para manter dificuldade e tempo de fase (D19). Vira **uma entrega nova antes da RT-9**, que
+  inclui: medir o gate 3× da corrida do mundo 4 com 1000 dentro do jogo; câmera e líder conferidos até 1000; valores dos
+  portões multiplicadores; arredondamento do valor fracionado no contador, moedas e estrelas (`armyLeft`) e elites.
+  Segunda opinião (fable): concorda; apontou a opção B (600, valendo 2) como alternativa mais segura.
+- **2026-11-22 — D29 Nome "Clay Siege" sem massinha — B — usuário.** Texto aprovado: antes da RT-9, gerar 3 nomes novos
+  no estilo do visual de bolinhas e checar todos, junto com "Clay Siege", nas bases de marca gratuitas EUIPO, INPI
+  Portugal e TMview (classes 9 e 41) e por colisão de nome no Google Play e na App Store; o usuário escolhe entre os
+  aprovados e pode incluir nomes seus. Até lá, "Clay Siege" segue como nome de trabalho. A troca mexe em `productName`,
+  título do menu, ícone, política de privacidade e domínio; o id do pacote `com.jungledegree.runnervstower`, o save e os
+  nomes internos (`Claybreak`) não mudam; os sons "de argila" (D22) continuam. Correção: a checagem de marca é EUIPO +
+  INPI Portugal + TMview (empresa portuguesa), não INPI Brasil/USPTO como em notas antigas.
