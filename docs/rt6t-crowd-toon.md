@@ -326,10 +326,21 @@ Decisões T-RT6t5-1..10 em `decisoes.md`.
   pista empilham unidades (linhas escuras visíveis só sem os corpos; com os corpos, cobertas). Fica como observação para
   a 6t.6 (opacidade por paleta) — sem stencil por enquanto.
 
-### Gate 3× no OPPO (1000 vivos + 512 morrendo) — **pendente**
+### Gate 3× no OPPO (1000 vivos + 512 morrendo) — **PASSOU** (2026-11-22)
 
-O OPPO estava conectado mas **bloqueado** (`isKeyguardShowing=true`) durante toda a sessão. APK de medição pronto em
-`/c/temp/rt6t5/Claybreak-measure.apk`. Com o celular desbloqueado:
-`Tools/rt2-gate.sh toon1000-d512 60 20 /c/temp/rt6t5/Claybreak-measure.apk toonlab:1000:4:1:512` (critério da 6t.1:
-CPU principal p95 ≤ 11 ms, GPU p95 ≤ 11 ms, quadro p95 ≤ 16,7 ms, < 5% > 50 ms, PSS ≤ 450 MB; conferir `dying=512`
-nas linhas `[DevFps]` e a captura do aparelho).
+`Tools/rt2-gate.sh toon1000-d512 60 20 /c/temp/rt6t5/Claybreak-measure.apk toonlab:1000:4:1:512` (Bolinha, MSAA 4×,
+HDR ligado, renderScale 0,8, Vulkan, Mali-G1-Ultra; `[ToonLab] units=1000 dying=512 draws=1+1`):
+
+| Medida | Resultado | Limite |
+|---|---|---|
+| CPU principal p95 (janelas 2–5) | 1,8–1,9 ms | ≤ 11 ms |
+| GPU p95 (janelas 2–5) | 6,2–6,4 ms | ≤ 11 ms |
+| Quadro p95 (SurfaceFlinger, 1214 quadros) | 16 ms (média 62,5 fps; 60,5 fps no `[DevFps]`) | ≤ 16,7 ms |
+| Quadros > 50 ms | 0,0% (0 perdidos, 0 travados) | < 5% |
+| PSS | 177 MB | ≤ 450 MB |
+| Alocação no quadro | 0 KB, GC +0 | — |
+
+`dying=512` em todas as linhas `[DevFps]`. A janela 1 (33,4 fps) é a carga da cena, como nos gates anteriores. Margem de
+GPU ~1,7× sobre o limite de 11 ms; 512 morrendo custam pouco na GPU em relação aos 1000 parados da 6t.1. Captura do
+aparelho durante o gate: [`art/rt6t/gate-d512-oppo.png`](art/rt6t/gate-d512-oppo.png) (o anel de fora voando e
+encolhendo nas bordas da multidão).

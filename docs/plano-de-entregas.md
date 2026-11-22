@@ -382,7 +382,8 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** testes das fórmulas contra o protótipo; capturas/vídeo; **gate 3× com 1000 vivos + 512 morrendo**;
   captura do chão sob a multidão (sombras somadas).
 - **Exige o usuário:** OPPO conectado.
-- **Status: concluída em 2026-11-22; gate 3× (1000 vivos + 512 morrendo) pendente: o OPPO estava bloqueado.**
+- **Status: concluída e aprovada em 2026-11-22: gate 3× no OPPO com 1000 vivos + 512 morrendo passou** (CPU principal
+  p95 1,9 ms, GPU p95 6,4 ms, quadro p95 16 ms, 0% > 50 ms, PSS 177 MB).
   Inclinação lateral, nascimento elástico, morte balística num anel fixo de 512, sombra que encolhe e remoção do anel
   de fora, no `Swarm` (Burst, 1 chamada para vivos + morrendo, sombras só dos vivos); `ToonLab` (baixar a contagem e
   "÷2" matam, modo de rotação `--ei dying 512` para o gate) e corrida (portão ruim = morte + tremor; recomeço sem pop).
