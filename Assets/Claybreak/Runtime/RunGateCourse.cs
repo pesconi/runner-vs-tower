@@ -1,5 +1,6 @@
 using System;
 using JungleDegree.StudioKit.Core;
+using TMPro;
 using UnityEngine;
 
 namespace Claybreak
@@ -10,20 +11,26 @@ namespace Claybreak
     /// crates; each level places and labels the ones it uses. A pair is crossed when the crowd center passes its
     /// distance; the side is the half of the track the center is on. A crate is taken when the center
     /// passes it on its side. No colliders: distance checks only (no physics queries per frame).
+    /// RT-6t.9: each side is a translucent panel half the track wide (good / bad material) with a TextMeshPro label in
+    /// Baloo 2 whose outline preset follows the side (dark green / wine); labels are written without allocating.
     /// </summary>
     public sealed class RunGateCourse : MonoBehaviour
     {
         public const int MaximumPairs = 5;
 
         [SerializeField] private Transform[] pairRoots = new Transform[0];
-        [SerializeField] private TextMesh[] leftLabels = new TextMesh[0];
-        [SerializeField] private TextMesh[] rightLabels = new TextMesh[0];
+        [SerializeField] private TMP_Text[] leftLabels = new TMP_Text[0];
+        [SerializeField] private TMP_Text[] rightLabels = new TMP_Text[0];
         [SerializeField] private Renderer[] leftPanels = new Renderer[0];
         [SerializeField] private Renderer[] rightPanels = new Renderer[0];
         [SerializeField] private Transform[] crateRoots = new Transform[0];
-        [SerializeField] private TextMesh[] crateLabels = new TextMesh[0];
+        [SerializeField] private TMP_Text[] crateLabels = new TMP_Text[0];
         [SerializeField] private Material goodMaterial;
         [SerializeField] private Material badMaterial;
+        [SerializeField] private Material goodLabelMaterial;
+        [SerializeField] private Material badLabelMaterial;
+
+        private readonly char[] labelBuffer = new char[GateSpec.MaximumLabelLength];
 
         private ClaybreakLevel level;
         private float trackCenterX;
@@ -47,6 +54,7 @@ namespace Claybreak
         {
             int capacity = Capacity;
             if (levelData == null || track == null || goodMaterial == null || badMaterial == null
+                || goodLabelMaterial == null || badLabelMaterial == null
                 || leftLabels.Length != capacity || rightLabels.Length != capacity
                 || leftPanels.Length != capacity || rightPanels.Length != capacity
                 || crateLabels.Length != CrateCapacity || levelData.RunGates.Count > capacity
@@ -77,7 +85,9 @@ namespace Claybreak
                 Vector3 position = crateRoots[i].position;
                 crateRoots[i].position = new Vector3(trackCenterX + (crate.right ? crateOffsetX : -crateOffsetX),
                     position.y, crate.z);
-                crateLabels[i].text = "+" + crate.units;
+                // Crates are specials, always good: "+n" with the good outline.
+                crateLabels[i].SetCharArray(labelBuffer, 0, new GateSpec(GateOperation.Add, Mathf.Max(1, crate.units)).WriteLabel(labelBuffer));
+                crateLabels[i].fontSharedMaterial = goodLabelMaterial;
             }
 
             ResetCourse();
@@ -133,11 +143,18 @@ namespace Claybreak
             return gate.operation == GateOperation.Add ? new GateSpec(gate.operation, gate.value + addBonus) : gate;
         }
 
-        private void Dress(TextMesh label, Renderer panel, GateSpec spec)
+        private void Dress(TMP_Text label, Renderer panel, GateSpec spec)
         {
             GateSpec gate = Boost(spec);
-            label.text = gate.Label;
+            label.SetCharArray(labelBuffer, 0, gate.WriteLabel(labelBuffer));
+            label.fontSharedMaterial = gate.IsGood ? goodLabelMaterial : badLabelMaterial;
             panel.sharedMaterial = gate.IsGood ? goodMaterial : badMaterial;
+        }
+
+        /// <summary>The label shown on one side of a placed pair (tests and captures).</summary>
+        public TMP_Text LabelOf(int pair, bool right)
+        {
+            return right ? rightLabels[pair] : leftLabels[pair];
         }
     }
 }

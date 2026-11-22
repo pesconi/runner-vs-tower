@@ -11,7 +11,8 @@
         "JungleDegree.StudioKit.Swarm",
         "JungleDegree.StudioKit.Toon",
         "Unity.InputSystem",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

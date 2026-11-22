@@ -2,6 +2,7 @@
     "name": "Claybreak.PlayModeTests",
     "rootNamespace": "Claybreak.Tests",
     "references": [
+        "Unity.TextMeshPro",
         "Claybreak.Runtime",
         "Claybreak.Lab",
         "JungleDegree.StudioKit.Swarm",

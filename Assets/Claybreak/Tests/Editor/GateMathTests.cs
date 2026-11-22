@@ -59,7 +59,26 @@ namespace Claybreak.Tests
             Assert.IsTrue(new GateSpec(GateOperation.Multiply, 2).IsGood);
             Assert.IsFalse(new GateSpec(GateOperation.Multiply, 1).IsGood);
             Assert.IsFalse(new GateSpec(GateOperation.Divide, 2).IsGood);
-            Assert.AreEqual("x2", new GateSpec(GateOperation.Multiply, 2).Label);
+            Assert.AreEqual("×2", new GateSpec(GateOperation.Multiply, 2).Label);
+        }
+
+        [Test]
+        public void LabelsUseTheTrueSignsAndWriteWithoutAllocating()
+        {
+            Assert.AreEqual("+15", new GateSpec(GateOperation.Add, 15).Label);
+            Assert.AreEqual("−30", new GateSpec(GateOperation.Subtract, 30).Label);
+            Assert.AreEqual("÷2", new GateSpec(GateOperation.Divide, 2).Label);
+            Assert.AreEqual("×1000000000", new GateSpec(GateOperation.Multiply, 1000000000).Label);
+
+            var buffer = new char[GateSpec.MaximumLabelLength];
+            var gate = new GateSpec(GateOperation.Add, 205);
+            gate.WriteLabel(buffer);
+            long before = System.GC.GetAllocatedBytesForCurrentThread();
+            int length = gate.WriteLabel(buffer);
+            Assert.AreEqual(0, System.GC.GetAllocatedBytesForCurrentThread() - before);
+            Assert.AreEqual("+205", new string(buffer, 0, length));
+            Assert.Throws<System.ArgumentException>(() => gate.WriteLabel(new char[3]));
+            Assert.AreEqual("+0", new GateSpec(GateOperation.Add, -5).Label, "a negative operand writes garbage");
         }
     }
 }

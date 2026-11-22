@@ -111,3 +111,8 @@
   `using`, rodar o passo `apk` antes de dar a validação por boa. Captura do assalto mais pesado (gate do mundo 4):
   `-testFilter Claybreak.Tests.AssaultCaptureTests -assaultCaptureDir <pasta>` sem `-nographics`. No nível 1 nada voa
   sem o jogador segurar.
+- 2026-11-22 (RT-6t.9): texto com contorno é TextMeshPro com o atlas **estático** `Content/Fonts/Baloo2-ExtraBold SDF.asset`
+  (`GameFonts`; só é refeito se faltar caractere): caractere novo em rótulo TMP precisa entrar em `GameFonts.Characters` (o
+  teste `GateFeedbackEditTests` confere). `UI.Text` e `TextMesh` usam a TTF dinâmica. Captura dos portões, número flutuante,
+  pop e glifos: `-testFilter Claybreak.Tests.GateFeedbackTests -gateCaptureDir <pasta>` sem `-nographics`. As capturas de
+  modo de edição agora aplicam o `ToonLook` (antes, objetos `ToonLit` sem slots saíam pretos).

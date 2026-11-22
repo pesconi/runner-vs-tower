@@ -2,6 +2,7 @@
     "name": "Claybreak.Editor",
     "rootNamespace": "Claybreak.Editor",
     "references": [
+        "Unity.TextMeshPro",
         "Claybreak.Runtime",
         "JungleDegree.StudioKit.Core",
         "JungleDegree.StudioKit.Characters",

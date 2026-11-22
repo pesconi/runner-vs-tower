@@ -2,6 +2,7 @@
     "name": "Claybreak.Tests",
     "rootNamespace": "Claybreak.Tests",
     "references": [
+        "Unity.TextMeshPro",
         "Claybreak.Runtime",
         "Claybreak.Editor",
         "JungleDegree.StudioKit.Ads",

@@ -29,18 +29,62 @@ namespace Claybreak
         public bool IsGood => operation == GateOperation.Add
             || (operation == GateOperation.Multiply && value > 1);
 
+        /// <summary>Longest label: the operation sign and up to 10 digits.</summary>
+        public const int MaximumLabelLength = 11;
+
+        /// <summary>The label as text: "+10", "−10", "×2", "÷2" (true minus and times signs, Baloo 2 has them).</summary>
         public string Label
+        {
+            get
+            {
+                var buffer = new char[MaximumLabelLength];
+                return new string(buffer, 0, WriteLabel(buffer));
+            }
+        }
+
+        /// <summary>The operation sign of the label.</summary>
+        public char Sign
         {
             get
             {
                 switch (operation)
                 {
-                    case GateOperation.Add: return "+" + value;
-                    case GateOperation.Subtract: return "-" + value;
-                    case GateOperation.Multiply: return "x" + value;
-                    default: return "÷" + value;
+                    case GateOperation.Add: return '+';
+                    case GateOperation.Subtract: return '−';
+                    case GateOperation.Multiply: return '×';
+                    default: return '÷';
                 }
             }
+        }
+
+        /// <summary>
+        /// Writes the label into <paramref name="buffer"/> (at least <see cref="MaximumLabelLength"/> long) without
+        /// allocating, for TextMeshPro's <c>SetCharArray</c>; returns its length.
+        /// </summary>
+        public int WriteLabel(char[] buffer)
+        {
+            if (buffer == null || buffer.Length < MaximumLabelLength)
+            {
+                throw new ArgumentException("The label buffer needs " + MaximumLabelLength + " characters.", nameof(buffer));
+            }
+
+            buffer[0] = Sign;
+            // [Min(1)] is only an Inspector hint: a negative operand never writes garbage.
+            int number = Math.Max(0, value);
+            int digits = 1;
+            for (int rest = number / 10; rest > 0; rest /= 10)
+            {
+                digits++;
+            }
+
+            int remaining = number;
+            for (int i = digits; i >= 1; i--)
+            {
+                buffer[i] = (char)('0' + remaining % 10);
+                remaining /= 10;
+            }
+
+            return digits + 1;
         }
     }
 

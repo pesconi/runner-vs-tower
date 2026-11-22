@@ -8,6 +8,7 @@ using JungleDegree.StudioKit.Crowd;
 using JungleDegree.StudioKit.Swarm;
 using JungleDegree.StudioKit.Toon;
 using JungleDegree.StudioKit.UI;
+using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -54,7 +55,7 @@ namespace Claybreak.Editor
         public const float RowStep = 230f;
 
         private const string GeneratedFolder = Root + "/Generated";
-        public const string FontPath = Root + "/Fonts/Roboto-Black.ttf";
+        public const string FontPath = GameFonts.TtfPath;
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
         private const string KitShared = "Packages/com.jungledegree.studiokit/Shared";
@@ -89,6 +90,7 @@ namespace Claybreak.Editor
             BuildCrowdData();
             BuildTheme();
             new ArtPalette();
+            GateArt.BuildAssets();
             CreatePillSprite();
             CreateStarSprite();
             AssetDatabase.SaveAssets();
@@ -409,26 +411,22 @@ namespace Claybreak.Editor
             var rightLabels = new UnityEngine.Object[pairs];
             var leftPanels = new UnityEngine.Object[pairs];
             var rightPanels = new UnityEngine.Object[pairs];
+            // RT-6t.9, after the prototype: two translucent panels, each half the track wide less a post's gap, a big
+            // outlined label on each and three white posts (edges and middle); no lintel.
             float half = TrackWidth * 0.25f;
+            var panelSize = new Vector3(TrackWidth * 0.5f - 0.25f, 2.3f, 0.12f);
             for (int i = 0; i < pairs; i++)
             {
                 var pair = new GameObject("Pair" + (i + 1));
                 pair.transform.SetParent(root.transform, false);
                 pair.transform.localPosition = new Vector3(0f, 0f, 20f * (i + 1));
-                leftPanels[i] = Prim.Box(pair.transform, "Left", new Vector3(-half, 1.1f, 0f),
-                    new Vector3(TrackWidth * 0.48f, 2.2f, 0.12f), palette.GateGood);
-                rightPanels[i] = Prim.Box(pair.transform, "Right", new Vector3(half, 1.1f, 0f),
-                    new Vector3(TrackWidth * 0.48f, 2.2f, 0.12f), palette.GateBad);
-                leftLabels[i] = CreateLabel("LeftLabel", pair.transform, new Vector3(-half, 1.2f, -0.1f), 0.32f);
-                rightLabels[i] = CreateLabel("RightLabel", pair.transform, new Vector3(half, 1.2f, -0.1f), 0.32f);
-                Prim.Box(pair.transform, "Post", new Vector3(0f, 1.2f, 0f), new Vector3(0.18f, 2.4f, 0.18f), palette.Line);
-                for (int side = -1; side <= 1; side += 2)
-                {
-                    Prim.Box(pair.transform, "SidePost", new Vector3(side * (TrackWidth * 0.5f + 0.1f), 1.25f, 0f),
-                        new Vector3(0.3f, 2.5f, 0.3f), palette.StoneDark);
-                }
-
-                Prim.Box(pair.transform, "Lintel", new Vector3(0f, 2.45f, 0f), new Vector3(TrackWidth + 0.5f, 0.2f, 0.25f), palette.StoneDark);
+                leftPanels[i] = Prim.Box(pair.transform, "Left", new Vector3(-half, 1.15f, 0f), panelSize, palette.GateGood);
+                rightPanels[i] = Prim.Box(pair.transform, "Right", new Vector3(half, 1.15f, 0f), panelSize, palette.GateBad);
+                leftLabels[i] = GateArt.Label(pair.transform, "LeftLabel", new Vector3(-half, 1.3f, -0.08f), GateArt.LabelEm, panelSize.x, GameFonts.GateGoodPath);
+                rightLabels[i] = GateArt.Label(pair.transform, "RightLabel", new Vector3(half, 1.3f, -0.08f), GateArt.LabelEm, panelSize.x, GameFonts.GateBadPath);
+                GateArt.Post(pair.transform, "PostLeft", -TrackWidth * 0.5f, 2.6f);
+                GateArt.Post(pair.transform, "PostMiddle", 0f, 2.6f);
+                GateArt.Post(pair.transform, "PostRight", TrackWidth * 0.5f, 2.6f);
                 roots[i] = pair.transform;
             }
 
@@ -443,7 +441,7 @@ namespace Claybreak.Editor
                 Prim.Box(crate.transform, "Box", new Vector3(0f, 0.55f, 0f), new Vector3(1.1f, 1.1f, 1.1f), palette.Crate, new Vector3(0f, 20f, 0f));
                 Prim.Box(crate.transform, "Band", new Vector3(0f, 0.55f, 0f), new Vector3(1.16f, 0.2f, 1.16f), palette.Iron, new Vector3(0f, 20f, 0f));
                 Prim.Box(crate.transform, "Band2", new Vector3(0f, 0.55f, 0f), new Vector3(0.2f, 1.16f, 1.16f), palette.Iron, new Vector3(0f, 20f, 0f));
-                crateLabels[i] = CreateLabel("Label", crate.transform, new Vector3(0f, 1.7f, 0f), 0.3f);
+                crateLabels[i] = GateArt.Label(crate.transform, "Label", new Vector3(0f, 1.7f, 0f), 0.6f, 2f, GameFonts.GateGoodPath);
                 crate.SetActive(false);
                 crateRoots[i] = crate.transform;
             }
@@ -457,6 +455,8 @@ namespace Claybreak.Editor
             SetArray(course, "crateLabels", crateLabels);
             SetRef(course, "goodMaterial", palette.GateGood);
             SetRef(course, "badMaterial", palette.GateBad);
+            SetRef(course, "goodLabelMaterial", GameFonts.Preset(GameFonts.GateGoodPath));
+            SetRef(course, "badLabelMaterial", GameFonts.Preset(GameFonts.GateBadPath));
             return course;
         }
 
@@ -507,8 +507,13 @@ namespace Claybreak.Editor
                 gate.transform.position = new Vector3(-TrackWidth * 0.5f + laneWidth * (i + 0.5f), 0f, level.AssaultGateZ);
                 panels[i] = Prim.Box(gate.transform, "Panel", new Vector3(0f, 0.9f, 0f),
                     new Vector3(laneWidth * 0.92f, 1.8f, 0.12f), palette.GateGood);
-                labels[i] = CreateLabel("Label", gate.transform, new Vector3(0f, 1f, -0.1f), 0.28f);
-                Prim.Box(gate.transform, "Top", new Vector3(0f, 1.9f, 0f), new Vector3(laneWidth * 0.98f, 0.16f, 0.2f), palette.StoneDark);
+                labels[i] = GateArt.Label(gate.transform, "Label", new Vector3(0f, 1f, -0.08f), GateArt.LabelEm * 0.8f, laneWidth * 0.92f, GameFonts.GateGoodPath);
+                // RT-6t.9: white posts between the lanes (each gate its left one, the last also its right one).
+                GateArt.Post(gate.transform, "PostLeft", -laneWidth * 0.5f, 2f);
+                if (i == ClaybreakLevel.LaneCount - 1)
+                {
+                    GateArt.Post(gate.transform, "PostRight", laneWidth * 0.5f, 2f);
+                }
                 visuals[i] = gate.transform;
             }
 
@@ -522,6 +527,8 @@ namespace Claybreak.Editor
             SetArray(field, "gatePanels", panels);
             SetRef(field, "goodGateMaterial", palette.GateGood);
             SetRef(field, "badGateMaterial", palette.GateBad);
+            SetRef(field, "goodLabelMaterial", GameFonts.Preset(GameFonts.GateGoodPath));
+            SetRef(field, "badLabelMaterial", GameFonts.Preset(GameFonts.GateBadPath));
             return field;
         }
 
@@ -694,7 +701,10 @@ namespace Claybreak.Editor
             RectTransform root = Stretch("Hud", canvas);
             root.gameObject.AddComponent<SafeAreaFitter>();
             Text level = Label("Level", root, new Vector2(0.5f, 1f), new Vector2(0f, -150f), 54, TextAnchor.MiddleCenter);
-            Text army = Label("Army", root, new Vector2(0f, 1f), new Vector2(60f, -235f), 62, TextAnchor.UpperLeft);
+            // RT-6t.9: the army counter is TextMeshPro with an outline and pops on change; it scales from its middle-left.
+            TextMeshProUGUI army = UiLabel("Army", root, new Vector2(0f, 1f), new Vector2(60f, -270f), 66f, GameFonts.CounterPath);
+            army.alignment = TextAlignmentOptions.Left;
+            army.rectTransform.pivot = new Vector2(0f, 0.5f);
             Text specials = Label("Specials", root, new Vector2(0f, 1f), new Vector2(60f, -315f), 46, TextAnchor.UpperLeft);
             specials.color = new Color(1f, 0.55f, 0.45f);
             Image coin = Img("CoinIcon", root, pill, new Vector2(1f, 1f), new Vector2(-215f, -150f), new Vector2(46f, 46f), Gold);
@@ -720,6 +730,8 @@ namespace Claybreak.Editor
             banner.color = Gold;
             banner.gameObject.SetActive(false);
 
+            FloatingNumbers floating = CreateFloatingNumbers(root);
+
             ClaybreakHud hud = root.gameObject.AddComponent<ClaybreakHud>();
             SetRef(hud, "root", root.gameObject);
             SetRef(hud, "levelText", level);
@@ -731,7 +743,51 @@ namespace Claybreak.Editor
             SetRef(hud, "towerText", towerText);
             SetRef(hud, "hintText", hint);
             SetRef(hud, "bannerText", banner);
+            SetRef(hud, "floatingNumbers", floating);
             return hud;
+        }
+
+        // RT-6t.9: four preallocated labels (the prototype's floatText: 38% from the top, 40 px Baloo 2 ExtraBold,
+        // white outline), reused in turn; colors are set per gate.
+        public const int FloatingNumberSlots = 4;
+
+        private static FloatingNumbers CreateFloatingNumbers(Transform hudRoot)
+        {
+            RectTransform root = Stretch("FloatingNumbers", hudRoot);
+            var slots = new UnityEngine.Object[FloatingNumberSlots];
+            for (int i = 0; i < slots.Length; i++)
+            {
+                TextMeshProUGUI label = UiLabel("Number" + (i + 1), root, new Vector2(0.5f, 0.62f), Vector2.zero, 96f, GameFonts.FloatPath);
+                label.gameObject.SetActive(false);
+                slots[i] = label;
+            }
+
+            FloatingNumbers floating = root.gameObject.AddComponent<FloatingNumbers>();
+            SetArray(floating, "slots", slots);
+            return floating;
+        }
+
+        private static TextMeshProUGUI UiLabel(string name, Transform parent, Vector2 anchor, Vector2 position, float size, string preset)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = new Vector2(600f, size * 1.4f);
+            var text = go.GetComponent<TextMeshProUGUI>();
+            text.font = GameFonts.Sdf();
+            text.fontSharedMaterial = GameFonts.Preset(preset);
+            text.fontSize = size;
+            text.enableAutoSizing = false;
+            text.alignment = TextAlignmentOptions.Center;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.overflowMode = TextOverflowModes.Overflow;
+            text.color = Color.white;
+            text.raycastTarget = false;
+            text.text = "0";
+            return text;
         }
 
         private static ClaybreakScreens CreateScreens(Transform canvas, Sprite pill, Sprite star, ClaybreakCatalog catalog)
@@ -803,7 +859,7 @@ namespace Claybreak.Editor
             Text settingsNote = Label("Note", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 400f), 36, TextAnchor.MiddleCenter);
             settingsNote.color = new Color(1f, 0.86f, 0.72f);
             Text credits = Label("Credits", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 270f), 30, TextAnchor.MiddleCenter);
-            credits.text = "CLAY SIEGE  ·  JUNGLE DEGREE\nMUSIC AND SOUND: JUNGLE DEGREE  ·  FONT: ROBOTO (APACHE 2.0)";
+            credits.text = "CLAY SIEGE  ·  JUNGLE DEGREE\nMUSIC AND SOUND: JUNGLE DEGREE  ·  FONT: BALOO 2 (SIL OFL 1.1)";
             credits.color = new Color(1f, 1f, 1f, 0.6f);
             (Button settingsBack, Text _) = PillButton("Back", settingsRoot, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
                 new Vector2(420f, 120f), grey, "BACK", 48);
@@ -1083,7 +1139,7 @@ namespace Claybreak.Editor
             return image;
         }
 
-        // RT-8: the game's own font (Roboto Black, Apache 2.0, Content/Fonts with its license), heavy by itself.
+        // RT-6t.9: the game's own font (Baloo 2 ExtraBold, SIL OFL 1.1, Content/Fonts with its license; GameFonts).
         public static Font GameFont()
         {
             var font = AssetDatabase.LoadAssetAtPath<Font>(FontPath);

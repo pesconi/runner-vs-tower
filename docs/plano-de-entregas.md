@@ -482,7 +482,13 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.7.
 - **Aceite:** validação padrão; glifos `+ − × ÷` e acentos; capturas; licença registrada.
 - **Exige o usuário:** nada.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-22.** Portões como o protótipo (painéis de meia pista #5ad1a0 / #ff6b81 a 0,45, postes
+  brancos no `ToonLit`, rótulos TextMeshPro em Baloo 2 ExtraBold com contorno verde-escuro / vinho, na corrida, nos
+  caixotes e na fileira do assalto), sinais verdadeiros `+ − × ÷`, número flutuante em pool de 4 com o "bounce" do
+  protótipo, pop do contador (1,18), shake já ligado; Baloo 2 em todas as telas e no HUD. Fonte baixada só do
+  `github.com/google/fonts` (commit fixado), `OFL.txt` e hashes em `audio-licenses.md`; a Roboto saiu. Validação completa
+  verde (EditMode 221/221, PlayMode 22/22); glifos e acentos conferidos em captura com GPU. Detalhes e capturas em
+  [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t9-1..11 em `decisoes.md`. Próxima: 6t.10.
 - **Prompt da sessão:** "Entrega RT-6t.9 do Runner vs Tower: portões, texto Baloo 2 e feedback. Leia
   `docs/direcao-visual-crowd.md` (itens 18–21, RT-6t.9) e o protótipo (portões, `floatText`, `.count.pop`). Baixe a
   Baloo 2 só de github.com/google/fonts (ofl/baloo2), guarde `OFL.txt` e o hash. Não toque cenário nem pista."

@@ -46,10 +46,13 @@ estiver nesta lista ou se houver arquivo de áudio sem uso na pasta.
 
 | Arquivo | Fonte | Licença | Origem | Observação |
 |---|---|---|---|---|
-| `Assets/Claybreak/Content/Fonts/Roboto-Black.ttf` | Roboto Black 1.100141 (2013), © Google 2012 | Apache License 2.0 (texto em `Roboto-LICENSE.txt`, ao lado; a licença também está gravada na própria fonte) | cópia sem modificação da Roboto que vem no pacote `com.unity.searcher` da Unity (nada baixado) | SHA-256 `b6a38ddfb6b7d92a644da3a175cab3858438b3c791486aeeca2094a611430f27`. Créditos na tela de ajustes: "FONT: ROBOTO (APACHE 2.0)". |
+| `Assets/Claybreak/Content/Fonts/Baloo2-ExtraBold.ttf` | Baloo 2 ExtraBold 1.700, © 2019 The Baloo 2 Project Authors (Ek Type) | SIL Open Font License 1.1 (texto em `Baloo2-OFL.txt`, ao lado; aviso e licença também gravados na própria fonte, campos 0, 13 e 14 da tabela `name`) | `github.com/google/fonts`, pasta `ofl/baloo2`, commit `c13390277dfb1fcc7415d84ef7ef9cfc1e52f8c1` (baixado em 2026-11-22): `Baloo2[wght].ttf` (variável, peso 400–800), SHA-256 `d47a6852548059b1db49a1319d06d499d546c3fa2237cf9eee9c43c8abb025c2`, e `OFL.txt`, SHA-256 `ad09b05dc8bc678c9daf7c4c5f7ef1f55e5726127f4330b2e98e40b9dffcb860` (o `Baloo2-OFL.txt` é ele, sem mudança) | **Versão modificada** (permitido pela OFL): o repositório só tem a fonte variável; `python -I Tools/fonts/baloo2-extrabold.py <pasta baixada> <saída>` confere os dois hashes de origem e fixa o eixo de peso em 800 (fontTools 4.59, `instancer`), byte a byte reprodutível: SHA-256 `73e6a48f3fce3efdd0dea8f4f444279e87763be97be07310739b56cefe29d3e2`. A fonte não tem "Reserved Font Name", então o nome "Baloo 2" continua. Créditos na tela de ajustes: "FONT: BALOO 2 (SIL OFL 1.1)". |
+| `Assets/Claybreak/Content/Fonts/Baloo2-ExtraBold SDF.asset` (+ 4 materiais `Baloo2 *.mat`) | atlas SDF do TextMeshPro gerado da `Baloo2-ExtraBold.ttf` acima (124 caracteres: ASCII, `− × ÷ · …` e acentos do português) | a mesma OFL 1.1 (obra derivada da fonte) | gerado no Editor por `GameFonts` (Claybreak.Editor) a cada reconstrução da cena, se faltar | O teste `GateFeedbackEditTests` confere os dois hashes (fonte e licença) e os glifos. |
+| `Assets/TextMesh Pro/**` | "TMP Essential Resources" da Unity (shaders, configurações, LiberationSans SDF de reserva) | licença do pacote `com.unity.ugui` (Unity Companion License) e OFL da LiberationSans (`LiberationSans - OFL.txt`, ao lado) | importado do próprio pacote `com.unity.ugui` 2.6.0 do projeto (nada baixado) | Necessário para o TextMeshPro funcionar; o jogo só desenha com a Baloo 2. |
 
-A Apache 2.0 permite uso comercial e redistribuição desde que a licença acompanhe o arquivo
-(cumprido pelo `Roboto-LICENSE.txt`) e que mudanças sejam indicadas (não houve mudança).
+A OFL 1.1 permite uso comercial, embutir no app e modificar, desde que a licença acompanhe a fonte (cumprido pelo
+`Baloo2-OFL.txt` e pela tabela `name` da própria fonte, que vai dentro do app), que a fonte não seja vendida sozinha e que
+uma versão modificada não use nome reservado (não há). A Roboto Black (Apache 2.0, RT-8) saiu do jogo na RT-6t.9.
 
 ## 3. O que não entra
 

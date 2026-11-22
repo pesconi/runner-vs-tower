@@ -164,7 +164,7 @@ namespace Claybreak.Tests
 
         // One camera drawn into a render texture; WaitForEndOfFrame never fires in batchmode, so the texture is read a
         // frame after the camera drew into it.
-        private sealed class Shot : IDisposable
+        internal sealed class Shot : IDisposable
         {
             private readonly Camera view;
             private readonly RenderTexture target;
@@ -203,7 +203,7 @@ namespace Claybreak.Tests
         }
 
         // Panels in a grid on white (column 0 on the left, row 0 at the top).
-        private sealed class Sheet : IDisposable
+        internal sealed class Sheet : IDisposable
         {
             private readonly Texture2D texture;
             private readonly int width;

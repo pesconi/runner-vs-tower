@@ -2,7 +2,7 @@
 
 Plano e decisões: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) (aprovado em 2026-11-21). Referência visual:
 [`reference/crowd-proto.html`](reference/crowd-proto.html). Decisões técnicas: `decisoes.md` (T-RT6t-1..9,
-T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10, T-RT6t5-1..10, T-RT6t6a-1..10 e T-RT6t8-1..11).
+T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10, T-RT6t5-1..10, T-RT6t6a-1..10, T-RT6t8-1..11, T-RT6t7-1..10 e T-RT6t9-1..11).
 
 ## RT-6t.1 — Portão técnico (2026-11-21)
 
@@ -530,3 +530,46 @@ coincide com a coleta de memória do script).
 
 Captura do aparelho durante o gate: [`art/rt6t/assalto-oppo-gate.png`](art/rt6t/assalto-oppo-gate.png) (sem shader de
 erro; elites no próprio tamanho e cor).
+
+## RT-6t.9 — Portões, Baloo 2 e feedback (2026-11-22)
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| Baloo 2 ExtraBold | `Content/Fonts/` | Baixada só de `github.com/google/fonts` (`ofl/baloo2`, commit fixado), `OFL.txt` ao lado, hashes registrados em [`audio-licenses.md`](audio-licenses.md) seção 2. O repositório só tem a fonte variável: `Tools/fonts/baloo2-extrabold.py` confere os hashes e fixa o peso 800 (reprodutível). A Roboto saiu. |
+| `GameFonts` | Editor | Atlas SDF **estático** do TextMeshPro (124 caracteres: ASCII, `− × ÷ · …`, acentos do português) e 4 presets de contorno no mesmo atlas: portão bom #1f7a55, portão ruim #a52a3a, número flutuante (branco), contador (#3b2f4a). TMP Essential Resources importados do próprio pacote `com.unity.ugui`. |
+| Portões da corrida | `RunGateCourse`, `GateArt` | Como o protótipo: dois painéis de meia pista (#5ad1a0 / #ff6b81 a 0,45, transparentes sem escrita de profundidade), três postes brancos no `ToonLit`, rótulo TMP grande em Baloo 2 com o contorno do lado; caixotes com "+n" no mesmo estilo. Saíram a verga e os postes de pedra. |
+| Fileira do assalto | `AssaultField` (só `DressGates`), cena | Mesmos painéis, rótulos TMP e postes brancos entre as faixas (saiu a barra de pedra); a regra de chefe que vira/gira portões troca o preset junto. |
+| Sinais verdadeiros | `GateSpec` | `×2`, `−30`, `÷2`, `+10` (antes `x2`, `-30`); `WriteLabel(char[])` escreve sem alocar para `SetCharArray`. |
+| Número flutuante | `FloatingNumbers` (HUD) | 4 rótulos TMP pré-alocados em rodízio; sobe 110 px do protótipo com o "bounce" 0,4 → 1,25 → 1 e some em 1 s; verde #2fbf86 / vermelho #ff4d6d com contorno branco. |
+| Pop do contador | `ClaybreakHud` | Contador da multidão em TMP com contorno; escala 1,18 em 0,15 s e volta. |
+| Shake no portão ruim | (já ligado na 6t.4/6t.5) | `OnGateCrossed` → `RunCrowd.Shake` → rig. |
+| Telas e HUD | `ClaybreakSceneBuilder.FontPath` | Toda `UI.Text` e os rótulos de vida passam a usar a Baloo 2 (TTF dinâmica), sem migrar telas para TMP. Créditos: "FONT: BALOO 2 (SIL OFL 1.1)". |
+| Capturas de modo de edição | `ArtDirectionCapture` | Passa a aplicar o `ToonLook` do jogo antes das fotos (o `OnEnable` do aplicador não roda em modo de edição; os postes brancos saíam pretos). |
+
+Decisões T-RT6t9-1..11 em `decisoes.md` (a 11 é a revisão independente: nada sério, pontos menores aplicados). Nada foi tocado no cenário nem na pista.
+
+### Testes e validação
+
+- EditMode novos: rótulos com os sinais verdadeiros e escrita sem alocação; curva do número e do pop iguais ao protótipo;
+  hashes da fonte e da licença, atlas estático com todos os glifos, presets com contorno no mesmo atlas.
+- PlayMode novo `GateFeedbackTests`: rótulos da corrida e do assalto em Baloo 2 com o preset do lado; ao cruzar o primeiro
+  portão, o número flutua (texto e cor do portão), o contador chega a 1,18 e volta, o número some em 1 s; nenhum objeto
+  criado em jogo.
+- `Tools/rt4-check.sh` (2026-11-22): `scene`, `validate`, `isolation`, `editmode` (**221/221**), `playmode` (**22/22**, 10 capturas só com
+  GPU), `economy` (tabela igual), `capture`, `apk-game`, `apk-measure` (sem erro de shader), `aab`: PASS. Na primeira rodada um
+  teste novo comparou cores sem tolerância (corrigido); depois do ajuste de tamanho dos rótulos, segunda rodada de `scene`,
+  `validate`, `editmode`, `playmode`, `capture` e `apk`: PASS.
+
+### Capturas (Unity com GPU, formato do OPPO)
+
+- [`art/rt6t/portoes-oppo.png`](art/rt6t/portoes-oppo.png): (1) o primeiro par chegando (painéis, postes, rótulos com
+  contorno); (2) logo depois de cruzar: "×2" flutuando e o contador no pop; (3) glifos — contador TMP com `+10 −30 ×2 ÷2`,
+  número flutuante `÷2` e o banner `UI.Text` com `AÇÃO ÁÉÍÓÚ ÂÊÔ ÃÕ àçãéêõ` e os sinais; (4) a fileira do assalto.
+  Comando: `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.GateFeedbackTests -gateCaptureDir <pasta>` sem
+  `-nographics`.
+- `art/telas/` regeneradas (fonte Baloo 2 nas telas e nos portões).
+- Gate de desempenho: não faz parte do aceite desta entrega (fica para a 6t.12). Tentativa extra no fim: o OPPO estava
+  conectado mas com a tela de bloqueio (senha), então não rodou. A mudança em jogo é pequena: texto TMP com atlas estático
+  (nada rasterizado em jogo), 4 rótulos de HUD e postes de 1 malha cada.

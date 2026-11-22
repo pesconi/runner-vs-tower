@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,13 +7,15 @@ namespace Claybreak
     /// <summary>
     /// In-level HUD (RT-4): level name, army and special-unit count, coins, the tower bar during the assault, a
     /// hint line and a short banner (floor down, boss rule). Texts change only when their value changes;
-    /// the counters use cached strings (<see cref="NumberLabels"/>), so a frame never allocates.
+    /// the counters use cached strings (<see cref="NumberLabels"/>), so a frame never allocates. RT-6t.9: the army
+    /// counter is TextMeshPro (Baloo 2 with outline) and pops (scale 1.18 in 0.15 s and back) when it changes; the
+    /// gate numbers float up from <see cref="FloatingNumbers"/>.
     /// </summary>
     public sealed class ClaybreakHud : MonoBehaviour
     {
         [SerializeField] private GameObject root;
         [SerializeField] private Text levelText;
-        [SerializeField] private Text armyText;
+        [SerializeField] private TMP_Text armyText;
         [SerializeField] private Text specialText;
         [SerializeField] private Text coinsText;
         [SerializeField] private GameObject towerBar;
@@ -20,17 +23,23 @@ namespace Claybreak
         [SerializeField] private Text towerText;
         [SerializeField] private Text hintText;
         [SerializeField] private Text bannerText;
+        [SerializeField] private FloatingNumbers floatingNumbers;
         [SerializeField, Min(0.5f)] private float bannerSeconds = 1.8f;
+
+        /// <summary>The counter's pop, after the prototype's <c>.count.pop</c> (scale 1.18, CSS transition 0.15 s).</summary>
+        public const float PopScale = 1.18f;
+        public const float PopHalfSeconds = 0.15f;
 
         private int shownArmy = -1;
         private int shownSpecials = -1;
         private int shownTower = -1;
         private int towerMaximum = 1;
         private float bannerTime;
+        private float popAge = float.MaxValue;
 
         public bool HasParts => root != null && levelText != null && armyText != null && specialText != null
             && coinsText != null && towerBar != null && towerFill != null && towerText != null && hintText != null
-            && bannerText != null;
+            && bannerText != null && floatingNumbers != null && floatingNumbers.HasParts;
 
         private void Awake()
         {
@@ -44,6 +53,21 @@ namespace Claybreak
         public void Show(bool visible)
         {
             root.SetActive(visible);
+            floatingNumbers.Clear();
+            // Update stops while hidden: a pop in flight (or one started by the level setup) would stay frozen.
+            popAge = float.MaxValue;
+            armyText.rectTransform.localScale = Vector3.one;
+        }
+
+        /// <summary>The army counter's current scale (tests and captures).</summary>
+        public float ArmyScale => armyText.rectTransform.localScale.x;
+
+        public FloatingNumbers Floating => floatingNumbers;
+
+        /// <summary>Floats the gate the crowd just crossed above the crowd.</summary>
+        public void FloatGate(GateSpec gate)
+        {
+            floatingNumbers.Show(gate);
         }
 
         public void SetLevel(string title)
@@ -60,8 +84,14 @@ namespace Claybreak
         {
             if (army != shownArmy)
             {
+                bool first = shownArmy < 0;
                 shownArmy = army;
                 armyText.text = NumberLabels.Army(army);
+                // A pop already running is not restarted: in the assault the count changes every few frames.
+                if (!first && popAge >= 2f * PopHalfSeconds)
+                {
+                    popAge = 0f;
+                }
             }
         }
 
@@ -114,8 +144,28 @@ namespace Claybreak
             bannerText.gameObject.SetActive(false);
         }
 
+        /// <summary>Counter scale <paramref name="age"/> seconds after a pop: up to <see cref="PopScale"/> and back, eased out.</summary>
+        public static float CounterPop(float age)
+        {
+            if (age < 0f || age >= 2f * PopHalfSeconds)
+            {
+                return 1f;
+            }
+
+            float u = age < PopHalfSeconds ? age / PopHalfSeconds : 2f - age / PopHalfSeconds;
+            float eased = 1f - (1f - u) * (1f - u);
+            return 1f + (PopScale - 1f) * eased;
+        }
+
         private void Update()
         {
+            if (popAge < 2f * PopHalfSeconds)
+            {
+                popAge += Time.deltaTime;
+                float counter = CounterPop(popAge);
+                armyText.rectTransform.localScale = new Vector3(counter, counter, 1f);
+            }
+
             if (bannerTime <= 0f)
             {
                 return;

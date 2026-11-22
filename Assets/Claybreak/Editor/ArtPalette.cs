@@ -31,8 +31,9 @@ namespace Claybreak.Editor
         public readonly Material Crate = Solid("Crate", new Color(0.45f, 0.13f, 0.1f));
         public readonly Material Glow = Unlit("Glow", new Color(1f, 0.55f, 0.15f));
         public readonly Material GlowHot = Unlit("GlowHot", new Color(1f, 0.82f, 0.4f));
-        public readonly Material GateGood = Clear("GateGood", new Color(0.2f, 0.75f, 0.95f, 0.55f));
-        public readonly Material GateBad = Clear("GateBad", new Color(0.92f, 0.25f, 0.2f, 0.55f));
+        // RT-6t.9: the prototype's gate panels, #5ad1a0 (good) and #ff6b81 (bad) at 0.45, no depth write.
+        public readonly Material GateGood = Clear("GateGood", new Color(0x5a / 255f, 0xd1 / 255f, 0xa0 / 255f, 0.45f));
+        public readonly Material GateBad = Clear("GateBad", new Color(1f, 0x6b / 255f, 0x81 / 255f, 0.45f));
         public readonly Material Marker = Clear("LaneMarker", new Color(1f, 0.8f, 0.25f, 0.35f));
         public readonly Material Shadow = Clear("Shadow", new Color(0f, 0f, 0f, 0.5f));
         public readonly Material Danger = Clear("Danger", new Color(0.95f, 0.3f, 0.15f, 0.35f));

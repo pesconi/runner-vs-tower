@@ -134,6 +134,8 @@ namespace Claybreak
         public FlowState State => state;
         public AssaultField Field => field;
         public RunCrowd Crowd => crowd;
+        public RunGateCourse Gates => gates;
+        public ClaybreakHud Hud => hud;
 
         /// <summary>True when the device gate measures the run (the crowd loops at its cap and never reaches the assault).</summary>
         public bool MeasuresRun => deviceGate && deviceGateRun;
@@ -903,6 +905,7 @@ namespace Claybreak
         {
             int before = crowd.Army;
             int army = GateMath.Apply(gate, before, crowd.MaximumArmy);
+            hud.FloatGate(gate);
             // A bad gate throws the outer ring out in the ballistic death and shakes the camera.
             crowd.SetArmy(army, SwarmRemoval.Die);
             if (army < before)

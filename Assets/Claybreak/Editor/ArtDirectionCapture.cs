@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using JungleDegree.StudioKit.Swarm;
+using JungleDegree.StudioKit.Toon;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -196,6 +197,32 @@ namespace Claybreak.Editor
             return Render(camera, Width, Height);
         }
 
+        // Edit mode: the ToonLookApplier never ran OnEnable, so the toon globals (ramp, sky and ground light) are whatever the
+        // last scene left; write the game's look as the applier would (RT-6t.9: the white gate posts came out black).
+        private static Texture2D captureRamp;
+
+        private static void ApplyToonLook()
+        {
+            var applier = UnityEngine.Object.FindAnyObjectByType<ToonLookApplier>(FindObjectsInactive.Include);
+            if (applier == null || applier.Look == null)
+            {
+                return;
+            }
+
+            ToonLook look = applier.Look;
+            if (captureRamp != null)
+            {
+                UnityEngine.Object.DestroyImmediate(captureRamp);
+            }
+
+            captureRamp = ToonLook.CreateRampTexture(look.RampLevels);
+            Shader.SetGlobalTexture(ToonShaderIds.Ramp, captureRamp);
+            Shader.SetGlobalColor(ToonShaderIds.SkyLight, look.SkyLight);
+            Shader.SetGlobalColor(ToonShaderIds.GroundLight, look.GroundLight);
+            Shader.SetGlobalFloat(ToonShaderIds.AmbientIntensity, look.AmbientIntensity);
+            Shader.SetGlobalFloat(ToonShaderIds.DirectIntensity, look.DirectIntensity);
+        }
+
         // The game scene as the player sees it: home, settings (RT-8), shop, world list and the assault of the boss.
         private static void GameShots(string folder)
         {
@@ -205,6 +232,7 @@ namespace Claybreak.Editor
             // Edit mode: nothing enabled the palette applier, so the sky globals are still the last capture's.
             var scenery = UnityEngine.Object.FindAnyObjectByType<WorldScenery>(FindObjectsInactive.Include);
             scenery.Apply(0, world.Look);
+            ApplyToonLook();
             var screens = UnityEngine.Object.FindAnyObjectByType<ClaybreakScreens>(FindObjectsInactive.Include);
             var hud = UnityEngine.Object.FindAnyObjectByType<ClaybreakHud>(FindObjectsInactive.Include);
             Camera camera = Camera.main;

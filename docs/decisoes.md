@@ -1569,3 +1569,47 @@ Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
 - **T-RT6t7-10 — Revisão independente (subagente fable, só leitura): nada sério.** Aplicados: transição da câmera em
   tempo real (não no passo limitado), tremor zerado ao entrar no plano, proteção contra renderizador desligado no meio
   (limpa o campo em vez de dessincronizar), morte do bloco da torre na altura do bloco, um assert que não podia falhar.
+
+## 2026-11-22 — T-RT6t9-1..11 — Portões, Baloo 2 e feedback — técnica (sessão RT-6t.9)
+
+- **T-RT6t9-1 — Fonte: Baloo 2 ExtraBold estática, derivada da variável oficial.** O `github.com/google/fonts`
+  (`ofl/baloo2`) só tem `Baloo2[wght].ttf` (400–800). O Unity e o TextMeshPro leem a instância padrão (400) de uma fonte
+  variável, e o visual pede 800; `Tools/fonts/baloo2-extrabold.py` confere os hashes da origem (commit fixado) e fixa o
+  peso em 800 com o `instancer` do fontTools, de forma reprodutível (mesmo hash a cada rodada). É uma "versão modificada"
+  permitida pela OFL 1.1; sem "Reserved Font Name", o nome continua. Só um peso no jogo (a UI antiga também era um peso só,
+  Roboto Black). Licença e hashes em `audio-licenses.md` seção 2; a Roboto saiu.
+- **T-RT6t9-2 — TextMeshPro com atlas estático.** `GameFonts` (Editor) gera `Baloo2-ExtraBold SDF.asset` (SDFAA, 64 pt,
+  margem 8, atlas 1024², 124 caracteres: ASCII, `− × ÷ · …` e acentos do português) e o põe em modo **estático**: nada é
+  rasterizado em jogo e a build não limpa o atlas. Só é refeito se faltar ou se faltar caractere. Os "TMP Essential
+  Resources" foram importados do próprio pacote `com.unity.ugui` (sem download).
+- **T-RT6t9-3 — Contorno por material (quatro presets no mesmo atlas):** portão bom (contorno #1f7a55), portão ruim
+  (#a52a3a), número flutuante (contorno branco) e contador (#3b2f4a); shader `TextMeshPro/Mobile/Distance Field` com
+  `OUTLINE_ON`. Trocar o lado do portão troca só `fontSharedMaterial` (sem instanciar material).
+- **T-RT6t9-4 — Sinais verdadeiros.** `GateSpec.Label` passou de `x2`/`-30` para `×2`/`−30` (U+00D7, U+2212; `÷` já era).
+  `GateSpec.WriteLabel(char[])` escreve o rótulo sem alocar e alimenta `TMP_Text.SetCharArray` nos portões da corrida, nos
+  caixotes, na fileira do assalto e no número flutuante.
+- **T-RT6t9-5 — Portões da corrida como o protótipo:** dois painéis com metade da pista menos 0,25 m (2,3 m de altura,
+  #5ad1a0 / #ff6b81 a 0,45, Unlit transparente sem escrita de profundidade), rótulo de 0,85 m de "em" a 1,3 m, três postes
+  brancos (r 0,14 m, 2,6 m) no `StudioKit/ToonLit` (malha de cilindro com cor de vértice branca e alfa 0 = sem tinta);
+  saíram a verga e os postes de pedra. Fileira do assalto: mesmos materiais e postes brancos entre as faixas (saiu a
+  barra de pedra). Pool de portões igual (5 pares, 4 caixotes, 3 faixas).
+- **T-RT6t9-6 — Número flutuante:** `FloatingNumbers` (jogo) com 4 `TextMeshProUGUI` pré-alocados no HUD, usados em
+  rodízio (o mais antigo é reaproveitado); curva do `@keyframes up` do protótipo (0%: escala 0,4 e transparente; 20%:
+  sobe 20 px, escala 1,25; 100%: sobe 110 px, escala 1, some), cada trecho com saída suavizada, 1 px do protótipo =
+  2,4 unidades do canvas (1920 de altura). Verde #2fbf86 / vermelho #ff4d6d. Só nos portões da corrida (a fileira do
+  assalto age unidade a unidade).
+- **T-RT6t9-7 — Pop do contador:** o contador da multidão virou `TextMeshProUGUI` (contorno) e sobe a 1,18 em 0,15 s e
+  volta em 0,15 s (a transição do `.count.pop`). Um pop em andamento não reinicia (no assalto o número muda a cada
+  poucos quadros). O `HudPulse` do kit não foi usado: ele não conhece TMP e o tween é de 10 linhas.
+- **T-RT6t9-8 — Shake no portão ruim já estava ligado** desde a 6t.4/6t.5 (`ClaybreakFlow.OnGateCrossed` →
+  `RunCrowd.Shake` → `SwarmCameraRig`); nada mudou.
+- **T-RT6t9-9 — Fonte das telas:** `ClaybreakSceneBuilder.FontPath` aponta para a Baloo 2: toda `UI.Text` e os rótulos de
+  vida (`TextMesh` das torres, muro e escudo) usam a TTF dinâmica, sem migrar telas para TMP (item 19b do plano).
+- **T-RT6t9-10 — Testes:** EditMode — rótulos com os sinais verdadeiros e escrita sem alocação, curva do número e do pop,
+  hashes da fonte e da licença, atlas estático com todos os glifos, presets com contorno no mesmo atlas. PlayMode — rótulos
+  da corrida e do assalto em Baloo 2 com o preset do lado, número flutuante ao cruzar o portão (cor, texto, some em 1 s),
+  pop do contador, nenhum objeto criado em jogo; captura com GPU `GateFeedbackTests` (`-gateCaptureDir`).
+- **T-RT6t9-11 — Revisão independente (subagente fable, só leitura): nada sério.** Aplicados: o pop do contador é zerado
+  ao esconder/mostrar o HUD (não fica congelado entre fases), o HUD confere as peças do número flutuante, operando
+  negativo não escreve lixo no rótulo, o número some pelo `CanvasRenderer` (sem refazer a malha do TMP a cada quadro), a
+  rampa das capturas de edição é liberada, e saíram duas sobras de código.

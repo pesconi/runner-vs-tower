@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ac78253a88d857d4abb7b08896063549
+guid: 28a03f9a198bcb546b2bda5db1704942
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Roboto
+  - Baloo 2
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

@@ -1,5 +1,6 @@
 using System;
 using JungleDegree.StudioKit.Swarm;
+using TMPro;
 using UnityEngine;
 
 namespace Claybreak
@@ -30,10 +31,13 @@ namespace Claybreak
         [SerializeField] private SweeperDefense sweeper;
         [SerializeField] private ShieldDefense shield;
         [SerializeField] private Transform[] gateVisuals = new Transform[ClaybreakLevel.LaneCount];
-        [SerializeField] private TextMesh[] gateLabels = new TextMesh[ClaybreakLevel.LaneCount];
+        [SerializeField] private TMP_Text[] gateLabels = new TMP_Text[ClaybreakLevel.LaneCount];
         [SerializeField] private Renderer[] gatePanels = new Renderer[ClaybreakLevel.LaneCount];
         [SerializeField] private Material goodGateMaterial;
         [SerializeField] private Material badGateMaterial;
+        [SerializeField] private Material goodLabelMaterial;
+        [SerializeField] private Material badLabelMaterial;
+        private readonly char[] labelBuffer = new char[GateSpec.MaximumLabelLength];
 
         private ClaybreakLevel level;
         private readonly float[] laneX = new float[ClaybreakLevel.LaneCount];
@@ -97,6 +101,7 @@ namespace Claybreak
             if (flyers == null || !flyers.isActiveAndEnabled || tower == null || wall == null || sweeper == null || shield == null
                 || gateVisuals == null || gateVisuals.Length != ClaybreakLevel.LaneCount || gateLabels.Length != ClaybreakLevel.LaneCount
                 || gatePanels.Length != ClaybreakLevel.LaneCount || goodGateMaterial == null || badGateMaterial == null
+                || goodLabelMaterial == null || badLabelMaterial == null
                 || track == null || theme == null)
             {
                 Debug.LogError("AssaultField needs its running unit renderer, tower, wall, sweeper, shield, one gate per lane, the track and the theme.", this);
@@ -545,7 +550,8 @@ namespace Claybreak
             for (int i = 0; i < ClaybreakLevel.LaneCount; i++)
             {
                 GateSpec gate = GateIn(i);
-                gateLabels[i].text = gate.Label;
+                gateLabels[i].SetCharArray(labelBuffer, 0, gate.WriteLabel(labelBuffer));
+                gateLabels[i].fontSharedMaterial = gate.IsGood ? goodLabelMaterial : badLabelMaterial;
                 gatePanels[i].sharedMaterial = gate.IsGood ? goodGateMaterial : badGateMaterial;
             }
         }
