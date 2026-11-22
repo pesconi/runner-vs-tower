@@ -1265,7 +1265,7 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   unidade; as formas finais têm no máximo 492 (+4%), com a mesma única chamada por multidão, e a GPU do caso mais pesado
   usou 5,5 ms de 11.
 
-## 2026-11-21 — T-RT6t4-1..10 — A multidão instanciada na corrida — técnica (sessão RT-6t.4)
+## 2026-11-21 — T-RT6t4-1..11 — A multidão instanciada na corrida — técnica (sessão RT-6t.4)
 
 - **T-RT6t4-1 — `RunCrowd` (jogo) dirige o `SwarmRenderer` (incubadora).** O exército da corrida é o `Swarm`: nenhum
   objeto por unidade, nenhum líder. A contagem do `Swarm` **é o exército** (antes era exército + líder): `SetArmy`,
@@ -1319,3 +1319,7 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   gate da 6t.1 mostrou que nenhuma das quatro combinações chega perto do teto e que HDR não custa nada no OPPO; MSAA 4×
   custa ~1 ms de GPU com 1000. Sem motivo de desempenho para mudar, fica como está; a decisão visual de serrilhado volta
   com as paletas e o cenário (6t.6/6t.8), olhando capturas do jogo inteiro.
+- **T-RT6t4-11 (2026-11-22) — A sonda de medição é do jogo.** O `--ei fps N` (destrava o fps, `FrameRateGovernor`
+  controlado de fora) e a sonda `DevFrameTimingProbe` (linhas `[DevTiming]`) eram ligados pelo `RunnerCrowd` do kit;
+  sem ele, o `ClaybreakFlow.ApplyMeasurementExtras` faz o mesmo (só desenvolvimento/medição Android; `// load-time:`).
+  Achado na primeira rodada do gate, que saiu sem CPU/GPU.

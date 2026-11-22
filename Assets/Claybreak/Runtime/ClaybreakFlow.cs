@@ -182,6 +182,7 @@ namespace Claybreak
 
         private void Start()
         {
+            ApplyMeasurementExtras();
             deviceGate = PickDeviceGate(out deviceGateWorld, out deviceGateRun);
             if (!Configure(out string error))
             {
@@ -325,6 +326,41 @@ namespace Claybreak
             world = 0;
             run = false;
             return false;
+#endif
+        }
+
+        // Development and measurement builds: `--ei fps N` lifts the frame rate cap and attaches the kit's frame timing
+        // probe ([DevTiming] CPU/GPU per window); `--ei profileAt S [--ei profileSeconds N]` records a profiler log. The
+        // kit's per-unit crowd did this until RT-6t.4; the game owns it now. Release builds compile it to nothing.
+        private void ApplyMeasurementExtras()
+        {
+#if (DEVELOPMENT_BUILD || RELEASE_MEASUREMENT) && UNITY_ANDROID && !UNITY_EDITOR
+            try
+            {
+                using AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                using AndroidJavaObject intent = activity.Call<AndroidJavaObject>("getIntent");
+                int frameRate = intent.Call<int>("getIntExtra", "fps", 0);
+                if (frameRate <= 0)
+                {
+                    return;
+                }
+
+                FrameRateGovernor.ExternallyControlled = true;
+                Application.targetFrameRate = frameRate;
+                DevFrameTimingProbe probe = gameObject.AddComponent<DevFrameTimingProbe>(); // load-time: measurement probe, once per scene (rule 2.2.1)
+                int profileAt = intent.Call<int>("getIntExtra", "profileAt", -1);
+                if (profileAt >= 0)
+                {
+                    probe.ConfigureProfileCapture(profileAt, Mathf.Max(1, intent.Call<int>("getIntExtra", "profileSeconds", 5)));
+                }
+
+                Debug.Log($"[Claybreak] Measurement: target frame rate {frameRate}, frame timing probe on.", this);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[Claybreak] Could not read the measurement extras: " + exception.Message);
+            }
 #endif
         }
 

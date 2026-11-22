@@ -257,9 +257,24 @@ o anel de fora some na hora e a câmera treme (a morte balística é da 6t.5). D
 - Observação para a 6t.7: parada na linha de tiro, a multidão de 300 tem ~5,8 m de profundidade e metade dela fica à
   frente da linha (antes os seguidores ficavam atrás do líder); só visual, o lançamento já sai de `max(z, linha)`.
 
-### Gate 3× na corrida (OPPO CPH2791)
+### Gate 3× na corrida (OPPO CPH2791) — **PASSOU** (2026-11-22)
 
-**PENDENTE** — o OPPO estava conectado mas bloqueado (`isKeyguardShowing=true`) em todas as conferências desta sessão.
-Comando, com o aparelho desbloqueado, no APK de medição desta entrega:
-`Tools/rt2-gate.sh run-w4 60 20 /c/temp/rt6t4/Claybreak-measure.apk run:4` (mundo 4, o mais pesado; critério da
-T-RT6t4-8). Depois, `adb shell am force-stop com.jungledegree.runnervstower`.
+Critério (T-RT6t4-8): CPU principal p95 ≤ 11 ms, GPU p95 ≤ 11 ms, quadro p95 ≤ 16,7 ms a 60 fps, < 5% dos quadros
+> 50 ms, PSS ≤ 450 MB. Caso: corrida do nível de gate do **mundo 4** (o mais pesado), exército no teto (300, Bolinha com
+olhos, skin "frost" da carga máxima), cenário, torre do chefe, escudo e defesas à frente, voltando ao começo 10 m antes
+da torre. Comando: `Tools/rt2-gate.sh run-w4 60 20 /c/temp/rt6t4/Claybreak-measure.apk run:4`. CPU e GPU = pior p95 das
+janelas estáveis (2–5); quadro, > 50 ms e PSS = SurfaceFlinger e `meminfo`.
+
+| Rodada | CPU p95 | GPU p95 | Quadro p95 | > 50 ms | PSS | Alocação | Resultado |
+|---|---|---|---|---|---|---|---|
+| corrida, mundo 4, 300 | 2,7 ms | 3,0 ms | 16 ms (62,5 fps) | 0,0% | 298 MB | 0 B | **passa** |
+| registro: assalto, mundo 4 (gate de antes) | 9,4 ms | 4,5 ms | 16 ms | 0,2% | 310 MB | 0 B | dentro do gate |
+
+Captura no aparelho durante o gate: [`art/rt6t/corrida-oppo-gate.png`](art/rt6t/corrida-oppo-gate.png) (multidão
+desenhada pelo `ToonLit`, sem shader de erro).
+
+**Regressão achada e corrigida no gate.** A primeira rodada (mesmo APK da validação) deu quadro 16 ms e PSS 279 MB, mas
+sem as linhas `[DevTiming]`: a sonda de CPU/GPU e o `--ei fps` eram ligados pelo `RunnerCrowd` do kit, que saiu da
+cena. Agora o `ClaybreakFlow` faz isso (`ApplyMeasurementExtras`, só em builds de desenvolvimento/medição). Rodada
+repetida com o APK novo (tabela acima); o assalto foi medido de novo só para confirmar que a medição dele voltou
+(última janela com CPU 9,4 ms coincide com a coleta de memória do script, como já registrado na RT-5).
