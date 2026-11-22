@@ -127,3 +127,8 @@
   ligado (o validador confere). Gate em GLES com a reserva: `RT2_EXTRA="--ez chunks true -e unity -force-gles"
   Tools/rt2-gate.sh ...` (a linha `[ToonRoute]` do log diz API e rota). Captura comparando as rotas:
   `-testFilter Claybreak.Tests.DrawRouteCaptureTests -routeCaptureDir <pasta>` sem `-nographics`.
+- 2026-11-22 (RT-6t.12): o motor toon/multidão está no pacote (`studiokit` 0.5.0, `Runtime/Toon`, `Runtime/Swarm`,
+  `Shared/Shaders`); não há mais incubadora: mudança nesse código é entrega K no repo `studiokit` (aceitação do Wild Pack
+  depois deste Unity). A linha de base do teste offline de anúncios do Wild Pack é **25/25** desde a 8.6g dele. O `TestProject`
+  do studiokit (lista de isolamento ampla) pega nomes de jogo que a lista de cada jogo não pega: rodar o isolamento lá também.
+  Varredura de órfãos por GUID: script em Python que cruza o `guid:` de cada `.meta` com as referências dos assets de texto.

@@ -12,18 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98561413406eea245b1a4e0316114d62, type: 3}
   m_Name: ClaybreakTheme
   m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakTheme
-  roster:
-    leader:
-      scale: 1
-      builtInColorShade: 0
-      skin: {fileID: 0}
-    defaultCrewMemberId: 
-    crewMembers: []
-    legacyColorMappings: []
-    runAnimation:
-      strideLength: 1.8
-    builtInBody: {fileID: 11400000, guid: 0a489c7d6e4c1854e8648a4df9827262, type: 2}
-    colorSkins: []
   crowdColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
   audio:
     enabled: 1
@@ -196,11 +184,3 @@ MonoBehaviour:
       vibrationMilliseconds: 5
       vibrationAmplitude: 1
       vibrationInterval: 0
-  deathEffect:
-    enabled: 1
-    splatMaterial: {fileID: 2100000, guid: 4d51177fd95a37044815eb12e5f7fae2, type: 2}
-    primaryColor: {r: 0.95, g: 0.55, b: 0.18, a: 1}
-    secondaryColor: {r: 0.6, g: 0.25, b: 0.1, a: 1}
-    splatSize: 1.1
-    lifetime: 8
-    maximumSplats: 48

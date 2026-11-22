@@ -112,7 +112,16 @@ valida dependências); (ii) só então mover para o pacote e abrir o projeto nov
 B só se o usuário preferir velocidade ao custo de manutenção; C não, por quebrar
 a regra do motor.
 
-### 5.3 Fatiamento real: kit v0 (`studiokit` 0.1.0)
+### 5.3 Fatiamento real: kit v0 (`studiokit` 0.1.0) e o que entrou depois (até 0.5.0)
+
+**Atualização 2026-11-22 (RT-6t.12, K.11):** o pacote está em **0.5.0** (tag `v0.5.0`). Entre a 0.1.0 e a 0.5.0
+entraram anúncios e medição (K.7, 0.2.0), sons extras, vibração sem alocação e área segura (K.8, 0.3.0),
+Firebase Analytics opcional (K.9, 0.4.0) e o motor da direção "crowd toon" incubado neste jogo (K.11, 0.5.0:
+`Toon`, `Swarm` e `Shared/Shaders`, tabela abaixo). **Este jogo usa** do kit: `Core`, `Crowd` (só a sonda
+`DevFrameTimingProbe`), `UI`, `Ads`, `Analytics`, `Editor`, `Toon` e `Swarm`. **Não usa mais** `Characters` nem a
+massinha de `Shared/` (`RunnerClay`, `RunnerGroundShadow`, `RunnerSplat`, `ClayRunner*`) nem `RunnerPool`/
+`RunnerCrowd`/`PlayerController`/`CameraFollow`: ficam no kit porque o Wild Pack depende deles; o validador do jogo
+recusa que voltem à cena.
 
 Fonte [F]: `studiokit` na tag `v0.1.0` (`com.jungledegree.studiokit/README.md`,
 `docs/arquitetura.md` seção 2, `docs/decisoes.md` T10–T18) e registro 7.41 do
@@ -132,7 +141,10 @@ Fonte [F]: `studiokit` na tag `v0.1.0` (`com.jungledegree.studiokit/README.md`,
 | `JungleDegree.StudioKit.Ads` | `RewardedAdService` (SDK `com.google.ads.mobile` 11.6.0, do OpenUPM) |
 | `JungleDegree.StudioKit.Editor` | `EngineIsolationValidation` (lê a lista de termos do jogo), `StageOProfileReport` |
 | `Shared/` | shaders `StudioKit/RunnerClay` e `StudioKit/RunnerGroundShadow`, materiais `RunnerClay`, `RunnerGroundShadow`, `RunnerSplat`, corpo `ClayRunner.fbx` + `ClayRunnerFrames.asset`, `ClayAccessories.fbx` |
-| `Tests/Editor` | testes EditMode do kit (pool sem alocação, ordem das fases, `RunPhaseSource`) |
+| `JungleDegree.StudioKit.Toon` (`Runtime/Toon`, **0.5.0**, opcional) | visual toon como dado: `ToonLook`/`ToonLookApplier` (rampa de luz em faixas, ambiente de dois tons), `ToonPalette`/`ToonPaletteApplier` (céu, neblina, chão, pista, multidão, cenário, estruturas), `ToonContrast`, `ToonInstance`, `ToonShaderIds`, `LowPolyMeshBuilder` |
+| `JungleDegree.StudioKit.Swarm` (`Runtime/Swarm`, **0.5.0**, opcional; Burst + Collections) | multidão instanciada: `SwarmSimulation` (formação girassol, arraste, animação procedural, morte balística em jobs Burst), `SwarmRenderer`/`LooseSwarmRenderer` (desenho indireto; reserva em blocos para OpenGL ES por `ToonInstanceDraw`/`ToonInstanceRouting`), `SwarmCameraRig`/`SwarmCameraProfile`/`SwarmCameraShot`, `InstancedProps`/`PropScatter`, `DevFpsOverlay` |
+| `Shared/Shaders` (**0.5.0**) | `StudioKit/ToonLit`, `StudioKit/SkyGradientScreen`, `StudioKit/StripedTrack`, `StudioKit/BlobShadowInstanced`, `ToonInstanceData.hlsl` |
+| `Tests/Editor` | testes EditMode do kit (pool sem alocação, ordem das fases, `RunPhaseSource`, anúncios, medição, sons extras; desde a 0.5.0 também malhas, paletas, formação, movimento, animação, câmera, cenário instanciado e rotas de desenho) |
 | `Tools~` | medição no aparelho (`stage7-measure.sh`, `v4-measure-run.sh`, exigem o application ID do jogo) e `compare-guids.py` |
 
 **Ficou no Wild Pack** (`MultiplierRunner`, assemblies `JungleDegree.WildPack` e

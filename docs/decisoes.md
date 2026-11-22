@@ -1703,3 +1703,32 @@ Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
   da margem zero do bloco e o job sem paralelismo para menos de 256 instâncias. Não aplicados: `multi_compile_vertex`
   (economia de variantes pequena, risco de mudar a seleção de variantes sem ganho medido) e passar `startInstance` em
   vez da fatia (a fatia deixa explícito que o array de tintas do bloco começa em 0).
+
+## 2026-11-22 — T-RT6t12-1..6 — Motor no kit e fechamento da série — técnica (sessão RT-6t.12)
+
+- **T-RT6t12-1 — Layout no pacote igual ao do plano, testes num assembly só.** `Runtime/Toon`, `Runtime/Swarm`,
+  shaders em `Shared/Shaders` (o `BlobShadowInstanced` passa a incluir `ToonInstanceData.hlsl` da mesma pasta) e os
+  testes no `JungleDegree.StudioKit.Tests` que já existia (ganhou as referências `Toon`, `Swarm`, `Unity.Burst`,
+  `Unity.Collections`). Todos os `.meta` movidos junto (GUIDs iguais); só deixaram de existir o asmdef de testes da
+  incubadora e os `.meta` das pastas vazias (`StudioKitIncubator`, `Swarm/Shaders`, `Tests`), que nada referencia.
+- **T-RT6t12-2 — Dependências com as versões que os dois jogos já resolviam.** `com.unity.burst` 2.0.0 e
+  `com.unity.collections` 6.6.0 no `package.json` (o URP 17.6 já as trazia nos dois jogos); `Unity.Mathematics` vem
+  com elas. O `packages-lock.json` dos jogos só ganha as duas linhas na entrada do kit.
+- **T-RT6t12-3 — O validador do jogo segue cobrindo o código do kit que ele desenha.** A regra 2.2.1 (nada de
+  criar/destruir objetos nem física em tempo de jogo) continua sobre `Packages/com.jungledegree.studiokit/Runtime/Toon`
+  e `/Swarm` (`Path.GetFullPath` resolve o caminho do pacote); a pasta da incubadora saiu da lista de isolamento (os
+  asmdefs `JungleDegree.StudioKit.*` são achados pelo próprio validador do kit, agora dentro do pacote).
+- **T-RT6t12-4 — Caminho antigo de massinha fora do jogo.** O tema (`ClaybreakTheme`) perdeu `roster` (corpo
+  `ClayRunnerFrames` do kit) e `deathEffect` (respingo `RunnerSplat`): eram só validados, nada em jogo os usava desde a
+  6t.4/6t.7. Os asmdefs do jogo deixaram de referenciar `JungleDegree.StudioKit.Characters`. O `Crowd` fica (o jogo
+  usa a sonda `DevFrameTimingProbe`), e o validador continua recusando `RunnerPool`/`RunnerUnit`/`RunnerCrowd`/
+  `PlayerController`/`CameraFollow` na cena. Varredura de órfãos por GUID em `Assets/Claybreak`, `Assets/Settings` e
+  `Assets/Editor`: nenhum asset sem referência; `Terracotta.mat` só é citado por código porque é a cor dos estilos de
+  torre alternativos (`ClayRuin`/`ClayTotem`, estilos que o `WorldContent` ainda pode escolher), e fica.
+- **T-RT6t12-5 — Prova visual da multidão pelas capturas PlayMode.** A multidão só existe jogando (simulação e desenho
+  em `Update`/`LateUpdate`); imitar isso no modo de edição exigiria API nova no kit só para ferramenta. As telas de
+  `docs/art/telas` (modo de edição) seguem como prova de layout, HUD, torres e cenário; a multidão, os portões, o
+  assalto e as rotas são provados pelas capturas PlayMode regravadas nesta entrega (`docs/art/rt6t`).
+- **T-RT6t12-6 — Gate final nos dois casos mais pesados do nível de gate.** O nível de gate já cobre corrida (`run:4`,
+  multidão no teto com o cenário do mundo 4) e assalto (`4`, torre do chefe, canhão, varredor, muro, escudo, 300 em voo);
+  o gate final mede os dois em Vulkan, com o pacote 0.5.0. A rota de reserva GLES foi aprovada na 6t.11 e não mudou.

@@ -284,15 +284,24 @@ o usuário reabrir esse escopo**.
 
 ## 9. Direção de arte e áudio
 
-- **Arte [F]:** pipeline clay/low-poly existente: massinha lisa e arredondada,
-  cenário limpo low-poly (kits CC0 tipo Kenney), três planos (pista,
-  props fora da largura jogável, skybox/neblina), sem sombras reais nem
-  pós-processamento [SISTEMA.md 3.1]. Boneco de massinha gerado no Blender por
-  script, 25 poses em malha única [2.6].
-- **Direção adulta [F/I]:** paleta noturna/quente; torres com atitude
-  (fortaleza, forja, fábrica, ruína), não castelo de brinquedo; textos de ação.
-- **Torres e chefes (novo) [I]:** arte própria de massinha e/ou kit CC0 de
-  castelo/ruínas; torre precisa ler bem em 3 faixas e a poucos pixels.
+- **Arte [F] — direção "crowd toon" (aprovada em 2026-11-21; série RT-6t, fechada na RT-6t.12):**
+  a multidão é feita de bonecos low-poly instanciados (formas **Bolinha** e **Pintinho**, escolhidas pelo
+  jogador, 200–500 triângulos cada), com sombra toon de 3 faixas, sombra de disco no chão, quique e
+  achatamento procedurais, nascimento elástico e morte balística (sem esqueleto, sem GameObject por boneco);
+  até 300 bonecos (D27) desenhados em uma chamada por malha. Cada mundo tem uma **paleta** como dado (céu
+  degradê em espaço de tela, neblina, chão, pista listrada, multidão, cenário e cores das estruturas):
+  Pastel, Pôr do sol, Doce e Aurora. Cenário lateral instanciado e reciclado (árvores e pedras), pista com
+  listras procedurais, sem sombras reais nem pós-processamento. Portões semitransparentes verde/vermelho com
+  número em **Baloo 2** (OFL 1.1) com contorno, número flutuante e pop do contador. Detalhes:
+  [`direcao-visual-crowd.md`](direcao-visual-crowd.md) e [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md).
+- **Motor do visual no kit [F]:** shaders toon, paletas, construtor de malhas, simulação instanciada (Burst),
+  câmera, cenário instanciado e a rota de desenho de reserva para OpenGL ES ficam no `studiokit` desde a
+  0.5.0 (K.11), como assemblies opcionais (`JungleDegree.StudioKit.Toon` e `.Swarm`). As receitas das formas,
+  as paletas, os portões e a arte das torres são deste jogo. A massinha antiga (boneco do Blender, respingo)
+  não é mais usada por este jogo; continua no kit para o Wild Pack.
+- **Torres e chefes [F]:** arte toon própria (D28 = A): estruturas em `ToonLit` com a cor das 4 cores de
+  estrutura/defesa da paleta do mundo; uma torre e um chefe por mundo; precisam ler bem em 3 faixas e a
+  poucos pixels.
 - **Áudio [F]:** o Wild Pack já tem SFX e trilhas CC0, gerenciador com vozes
   limitadas, mudo e vibração como pílulas e dados no tema (SISTEMA.md 7.35;
   `docs/audio-licenses.md`). Para este jogo o áudio é **mais central**: impacto

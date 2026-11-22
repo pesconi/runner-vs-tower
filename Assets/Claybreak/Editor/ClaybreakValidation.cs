@@ -25,14 +25,15 @@ namespace Claybreak.Editor
     {
         private const string RuntimeFolder = "Assets/Claybreak/Runtime";
 
-        // Run-time code under rule 2.2.1: the game, its toon lab and the incubated kit code (RT-6t). A line marked
+        // Run-time code under rule 2.2.1: the game, its toon lab and the kit's toon and swarm code this game draws with
+        // (in the package since RT-6t.12; Path.GetFullPath resolves "Packages/..." to the package folder). A line marked
         // "// load-time:" is allowed: it runs once when its owner loads or unloads, never while playing.
         private static readonly string[] RuntimeCodeFolders =
         {
             RuntimeFolder,
             "Assets/Claybreak/Lab/Runtime",
-            "Assets/StudioKitIncubator/Toon",
-            "Assets/StudioKitIncubator/Swarm",
+            "Packages/com.jungledegree.studiokit/Runtime/Toon",
+            "Packages/com.jungledegree.studiokit/Runtime/Swarm",
         };
 
         private const string LoadTimeMarker = "// load-time:";
@@ -531,7 +532,7 @@ namespace Claybreak.Editor
 
         private static void CheckRuntimeCode(string folder, List<string> failures)
         {
-            foreach (string file in Directory.GetFiles(folder, "*.cs", SearchOption.AllDirectories))
+            foreach (string file in Directory.GetFiles(Path.GetFullPath(folder), "*.cs", SearchOption.AllDirectories))
             {
                 string[] lines = File.ReadAllLines(file);
                 for (int i = 0; i < lines.Length; i++)

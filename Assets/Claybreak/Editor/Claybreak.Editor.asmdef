@@ -5,7 +5,6 @@
         "Unity.TextMeshPro",
         "Claybreak.Runtime",
         "JungleDegree.StudioKit.Core",
-        "JungleDegree.StudioKit.Characters",
         "JungleDegree.StudioKit.Crowd",
         "JungleDegree.StudioKit.UI",
         "JungleDegree.StudioKit.Ads",

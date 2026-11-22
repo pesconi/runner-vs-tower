@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using JungleDegree.StudioKit.Ads;
-using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Crowd;
 using JungleDegree.StudioKit.Swarm;
@@ -58,9 +57,6 @@ namespace Claybreak.Editor
         public const string FontPath = GameFonts.TtfPath;
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
-        private const string KitShared = "Packages/com.jungledegree.studiokit/Shared";
-        private const string BodyFramesPath = KitShared + "/ClayRunner/ClayRunnerFrames.asset";
-        private const string SplatMaterialPath = KitShared + "/RunnerSplat.mat";
         public const float TrackWidth = 8f;
         private const float TrackStartZ = -12f;
         /// <summary>The game scene's ground mesh (it spans this scene's track, so it is saved apart from the shared props).</summary>
@@ -105,7 +101,7 @@ namespace Claybreak.Editor
 
         // ---------- theme ----------
 
-        // The theme is builder-owned: body, clips and splat material are regenerated on every build.
+        // The theme is builder-owned: crowd color and clips are regenerated on every build.
         private static void BuildTheme()
         {
             var theme = AssetDatabase.LoadAssetAtPath<ClaybreakTheme>(ThemePath);
@@ -116,15 +112,8 @@ namespace Claybreak.Editor
             }
 
             var so = new SerializedObject(theme);
-            so.FindProperty("roster.builtInBody").objectReferenceValue = Load<RunnerBodyFrames>(BodyFramesPath);
             so.FindProperty("crowdColor").colorValue = Orange;
             ClaybreakAudio.Apply(so.FindProperty("audio"));
-
-            SerializedProperty death = so.FindProperty("deathEffect");
-            death.FindPropertyRelative("enabled").boolValue = true;
-            death.FindPropertyRelative("splatMaterial").objectReferenceValue = Load<Material>(SplatMaterialPath);
-            death.FindPropertyRelative("primaryColor").colorValue = Orange;
-            death.FindPropertyRelative("secondaryColor").colorValue = new Color(0.6f, 0.25f, 0.1f);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(theme);
         }

@@ -1,55 +1,36 @@
-using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using UnityEngine;
 
 namespace Claybreak
 {
     /// <summary>
-    /// The game's theme contract (prototype size): it assembles the kit's data blocks (character
-    /// roster, audio, death effect) with this game's own colors. The crowd shapes are the player's pick since RT-6t.6b
-    /// (<see cref="ClaybreakCatalog.Shapes"/>).
+    /// The game's theme contract: the kit's audio block plus this game's base crowd color. The crowd's look (shapes,
+    /// toon palettes, ballistic deaths) is the kit's toon swarm since RT-6t; the shapes are the player's pick
+    /// (<see cref="ClaybreakCatalog.Shapes"/>). The old clay roster and splat death effect left with RT-6t.12.
     /// </summary>
     [CreateAssetMenu(menuName = "Claybreak/Theme")]
     public sealed class ClaybreakTheme : ScriptableObject
     {
-        public const string CrowdColorId = "crowd";
-
-        [SerializeField] private ThemeCharacterRoster roster = new ThemeCharacterRoster();
         [SerializeField] private Color crowdColor = new Color(0.95f, 0.55f, 0.18f);
         [SerializeField] private ThemeAudio audio = new ThemeAudio();
-        [SerializeField] private ThemeDeathEffect deathEffect = new ThemeDeathEffect();
 
-        public ThemeCharacterRoster Roster => roster;
         public Color CrowdColor => crowdColor;
         public ThemeAudio Audio => audio;
-        public ThemeDeathEffect DeathEffect => deathEffect;
 
         public bool TryValidate(out string error)
         {
-            if (roster == null || roster.BuiltInBody == null)
+            if (audio == null)
             {
-                error = "roster needs the kit's built-in clay body (ClayRunnerFrames).";
+                error = "audio: missing";
                 return false;
             }
 
-            if (!roster.TryValidate(id => id == CrowdColorId, out error))
+            if (!audio.TryValidate(out error))
             {
+                error = "audio: " + error;
                 return false;
             }
 
-            if (audio == null || !audio.TryValidate(out error))
-            {
-                error = "audio: " + (error ?? "missing");
-                return false;
-            }
-
-            if (deathEffect == null || !deathEffect.TryValidate(out error))
-            {
-                error = "deathEffect: " + (error ?? "missing");
-                return false;
-            }
-
-            error = null;
             return true;
         }
     }

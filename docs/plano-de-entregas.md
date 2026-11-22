@@ -30,7 +30,7 @@ lançamento jun/2027.
 | ~~RT-7 Produção — monetização, retenção e analytics~~ — concluída em 2026-11-20 (D21 = A, Firebase; `rt7-monetizacao.md`) | 1,5 | 1,8 | ~~abr~~ |
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
-| RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — **aprovada em 2026-11-21**, em execução (`direcao-visual-crowd.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
+| RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — concluída em 2026-11-22 (motor no `studiokit` 0.5.0; aceite pendente: gate 3× final e jogar os 4 mundos; `rt6t-crowd-toon.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -539,7 +539,14 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** validação padrão completa; isolamento do kit PASS; Wild Pack igual à linha de base (validadores
   1–3, save 87/87, isolamento, anúncios offline 24/24, build Android); gate 3× aprovado; nenhum asset órfão.
 - **Exige o usuário:** OPPO conectado; jogar os 4 mundos (aceite pendente).
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-22, com aceite pendente (gate 3× e o usuário jogar os 4 mundos).** Motor toon e
+  multidão no `studiokit` 0.5.0 (K.11, tag `v0.5.0`, GUIDs preservados, Burst/Collections no `package.json`);
+  incubadora removida; tema sem o corpo de massinha e o respingo; nenhum asset órfão. Validação completa verde
+  (EditMode 229/229), isolamento PASS com o kit no pacote, Wild Pack igual à linha de base (90/0, 117/0, isolamento,
+  áudio 16, save 87/87, anúncios offline 25/25 — linha de base da 8.6g —, APK do Forest), `TestProject` 92/92.
+  Capturas regravadas em `art/rt6t/`. Gate 3× final não rodou: o OPPO estava bloqueado. Detalhes em
+  [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t12-1..6 em `decisoes.md`. Fecha a série RT-6t; próxima:
+  RT-9.
 - **Prompt da sessão:** "Entrega RT-6t.12 do Runner vs Tower: levar o motor ao studiokit e fechar a série. Leia
   `docs/direcao-visual-crowd.md` (seções 2, 4.1 e 6), `docs/rt6t-crowd-toon.md` e
   `../studiokit/docs/consumo-runner-vs-tower.md`. Mova `Assets/StudioKitIncubator/**` para o pacote preservando os

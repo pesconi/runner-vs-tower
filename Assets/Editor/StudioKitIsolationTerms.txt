@@ -18,7 +18,3 @@ term cannon
 term assault
 term battlement
 term projectile
-
-# RT-6t: kit code incubated in this repository until RT-6t.12 moves it to the studiokit package
-# (its asmdefs are JungleDegree.StudioKit.* and are found anyway; listed so the rule is explicit).
-folder Assets/StudioKitIncubator

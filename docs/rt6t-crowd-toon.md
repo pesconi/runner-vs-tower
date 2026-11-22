@@ -2,7 +2,7 @@
 
 Plano e decisões: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) (aprovado em 2026-11-21). Referência visual:
 [`reference/crowd-proto.html`](reference/crowd-proto.html). Decisões técnicas: `decisoes.md` (T-RT6t-1..9,
-T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10, T-RT6t5-1..10, T-RT6t6a-1..10, T-RT6t8-1..11, T-RT6t7-1..10, T-RT6t9-1..11, T-RT6t10-1..8 e T-RT6t11-1..7).
+T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10, T-RT6t5-1..10, T-RT6t6a-1..10, T-RT6t8-1..11, T-RT6t7-1..10, T-RT6t9-1..11, T-RT6t10-1..8, T-RT6t11-1..7 e T-RT6t12-1..6).
 
 ## RT-6t.1 — Portão técnico (2026-11-21)
 
@@ -249,7 +249,7 @@ o anel de fora some na hora e a câmera treme (a morte balística é da 6t.5). D
   no teto (300), arrastada à borda direita, e o assalto —
   [`art/rt6t/corrida-oppo.png`](art/rt6t/corrida-oppo.png). Bolinha com olhos (484 tri), cor da skin, sem shader de erro.
   As capturas de `docs/art/telas/` (modo de edição) não mostram mais a multidão (o `Swarm` só desenha jogando); o
-  `ArtDirectionCapture` é adaptado na 6t.12.
+  `ArtDirectionCapture` é adaptado na 6t.12 (decidido na 6t.12: a prova da multidão fica nas capturas PlayMode, T-RT6t12-5).
 - Revisor independente (subagente fable, só leitura): regras, contagens e save equivalentes; apontou o FOV do assalto
   herdado do rig e um quadro com instâncias velhas quando o fluxo muda a contagem depois do `Swarm` agendar — **corrigidos**
   (`AssaultCamera` com FOV próprio 60° em transição; `ClaybreakFlow` com ordem −40, entre o `RunCrowd` e o `Swarm`) — e
@@ -652,3 +652,44 @@ Leitura: **em OpenGL ES o Mali do OPPO não lê buffer estruturado no vertex sha
 multidão não desenharia nesse modo; a escolha automática já cairia na rota de blocos. A reserva custa ~2,6 ms de GPU a
 mais que o Vulkan com buffer e continua com mais de 3× de folga em CPU e GPU. Captura do aparelho durante o gate
 (desenho certo, sem shader de erro): [`art/rt6t/assalto-oppo-gles.png`](art/rt6t/assalto-oppo-gles.png).
+
+## RT-6t.12 — O motor no kit e o fechamento da série (2026-11-22)
+
+### O que foi feito
+
+- **Motor no `studiokit` 0.5.0 (K.11, tag `v0.5.0`).** `Assets/StudioKitIncubator/**` saiu deste repositório e foi para o
+  pacote com os `.meta` (GUIDs iguais; cenas, materiais e assets do jogo apontam para os mesmos scripts e shaders sem
+  mudança): `Runtime/Toon`, `Runtime/Swarm`, shaders em `Shared/Shaders`, testes no `JungleDegree.StudioKit.Tests` do kit.
+  `package.json` com `com.unity.burst` 2.0.0 e `com.unity.collections` 6.6.0 (as versões que os dois jogos já
+  resolviam). Decisões T-RT6t12-1..6 em `decisoes.md`; T23 no `decisoes.md` do studiokit.
+- **Caminho antigo de massinha fora do jogo.** O tema perdeu `roster` (corpo `ClayRunnerFrames`) e `deathEffect`
+  (respingo `RunnerSplat`), que só eram validados; os asmdefs do jogo não referenciam mais `StudioKit.Characters`.
+  Prefab e pool de corredores já tinham saído na 6t.4/6t.7; a Roboto, na 6t.9. Varredura de órfãos por GUID
+  (`Assets/Claybreak`, `Assets/Settings`, `Assets/Editor`): **nenhum asset sem referência**.
+- **Validador e isolamento.** A regra 2.2.1 do validador do jogo continua sobre o código `Toon`/`Swarm`, agora no
+  caminho do pacote; a lista de isolamento do jogo não cita mais a incubadora.
+- **Capturas regravadas com o pacote** (PlayMode com GPU, 11/11): `art/rt6t/` — mundos, corrida, assalto, chefes, formas,
+  skins, menu, portões, animações, chão sob a multidão e as duas rotas. Desenho igual ao da 6t.11, sem shader de erro.
+  As telas de modo de edição (`art/telas/`) também foram regravadas; nelas a multidão não aparece (só existe jogando,
+  T-RT6t12-5).
+
+### Validação
+
+- `Tools/rt4-check.sh` completo: `scene`, `validate`, `isolation` (PASS com `Toon` e `Swarm` dentro do pacote),
+  `editmode` (**229/229**), `playmode`, `economy`, `capture`, `apk-game`, `apk-measure` (sem `Shader error`), `aab`:
+  **todos PASS**.
+- **Aceitação do studiokit no Wild Pack** (rodada sozinha, depois deste projeto): completude 90/0 com o mesmo aviso,
+  assets 117/0, isolamento PASS, `AudioValidation` 16, save **87/87**, anúncios offline **25/25** (a linha de base
+  passou de 24 para 25 na 8.6g do próprio Wild Pack, `50decda`; o kit não mexeu em anúncios), APK de teste do Forest
+  gerado. Nada foi commitado no Wild Pack: ao abrir o projeto, o Unity acrescenta ao `packages-lock.json` as duas
+  dependências novas na entrada do kit; a próxima sessão do Wild Pack commita essa mudança junto com o trabalho dela.
+- `TestProject` do studiokit: EditMode **92/92**, isolamento com a lista ampla PASS (depois de tirar de um comentário
+  do `MobileAdsGate` o nome de um jogo, que vinha de antes desta entrega).
+
+### Gate 3× final no OPPO CPH2791 — **pendente**
+
+O OPPO estava conectado mas **bloqueado** (tela de senha) durante toda a sessão. Casos e comandos (APK de medição desta
+entrega, `C:\temp\rt612\Claybreak-measure.apk`):
+`Tools/rt2-gate.sh final-run-w4 60 20 /c/temp/rt612/Claybreak-measure.apk run:4` (corrida, multidão no teto e cenário
+do mundo 4) e `Tools/rt2-gate.sh final-assault-w4 60 20 /c/temp/rt612/Claybreak-measure.apk 4` (assalto mais pesado).
+O código de desenho e simulação não mudou desde os gates aprovados da 6t.4/6t.7/6t.11 (só o lugar dos arquivos).
