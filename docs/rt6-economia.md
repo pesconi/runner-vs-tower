@@ -70,65 +70,66 @@ fortes, e a renda futura de anúncio recompensado e recompensa diária (RT-7) n�
 
 ## Fases (dados gerados; vida antes das voltas)
 
-Potencial = exército no melhor caminho dos portões (teto 300) × melhor portão da fileira. Defesas: M muralha,
+Potencial = exército no melhor caminho dos portões (teto 300) × melhor portão da fileira. Maior promessa = maior número que
+um portão da corrida pode mostrar em qualquer caminho, com as caixas (nunca passa de 300, RT-6t.14). Defesas: M muralha,
 C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).
 
 ### WORLD 1 (world1) — paleta Pastel, 144 árvores e 64 pedras, dano esperado x1, abre com 0 estrelas
 
-| Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
-|---|---|---|---|---|---|---|---|
-| LEVEL 1 | Keep | 1 | 110 | 10 | 160 | C3.0s/2 | 40 |
-| LEVEL 2 | Keep | 1 | 250 | 10 | 480 | M60 C2.2s/4 | 50 |
-| LEVEL 3 | Forge | 2 | 300 | 12 | 582 | C2.3s/4 V3.4s | 60 |
-| LEVEL 4 | Keep | 2 | 320 | 12 | 522 | M70 C2.0s/4 | 70 |
-| LEVEL 5 | Forge | 3 | 440 | 14 | 894 | C1.9s/5 V3.0s | 85 |
-| LEVEL 6 | Keep | 3 | 470 | 15 | 735 | M90 C1.8s/5 V3.0s | 100 |
-| LEVEL 7 | Keep | 3 | 480 | 14 | 825 | M90 C1.85s/5 V3.0s | 105 |
-| LEVEL 8 | Keep | 3 | 530 | 15 | 900 | M100 C1.8s/5 V2.9s | 115 |
-| LEVEL 9 | Forge | 3 | 550 | 15 | 900 | M100 C1.7s/6 V2.9s | 125 |
-| BOSS | Boss (ShiftGates) | 4 | 600 | 16 | 900 | M100 C1.6s/6 V2.8s | 200 |
+| Fase | Torre | Andares | Vida | Início | Maior promessa | Potencial | Defesas | Prêmio |
+|---|---|---|---|---|---|---|---|---|
+| LEVEL 1 | Keep | 1 | 110 | 10 | 80 | 160 | C3.0s/2 | 40 |
+| LEVEL 2 | Keep | 1 | 250 | 10 | 160 | 480 | M60 C2.2s/4 | 50 |
+| LEVEL 3 | Forge | 2 | 300 | 12 | 194 | 582 | C2.3s/4 V3.4s | 60 |
+| LEVEL 4 | Keep | 2 | 320 | 12 | 198 | 522 | M70 C2.0s/4 | 70 |
+| LEVEL 5 | Forge | 3 | 420 | 14 | 297 | 852 | C1.9s/5 V3.0s | 85 |
+| LEVEL 6 | Keep | 3 | 470 | 15 | 283 | 735 | M90 C1.8s/5 V3.0s | 100 |
+| LEVEL 7 | Keep | 3 | 480 | 14 | 300 | 762 | M90 C1.85s/5 V3.0s | 105 |
+| LEVEL 8 | Keep | 3 | 490 | 15 | 300 | 801 | M90 C1.8s/5 V2.9s | 115 |
+| LEVEL 9 | Forge | 3 | 500 | 15 | 300 | 780 | M90 C1.7s/6 V2.9s | 125 |
+| BOSS | Boss (ShiftGates) | 4 | 530 | 16 | 298 | 798 | M100 C1.6s/6 V2.8s | 200 |
 
 ### WORLD 2 (world2) — paleta PorDoSol, 116 árvores e 80 pedras, dano esperado x1.3, abre com 10 estrelas
 
-| Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
-|---|---|---|---|---|---|---|---|
-| LEVEL 1 | World2Tower | 1 | 110 | 14 | 164 | M20 C2.2s/4 | 110 |
-| LEVEL 2 | World2Tower | 1 | 220 | 15 | 320 | M40 C2.1s/4 | 115 |
-| LEVEL 3 | World2Tower | 1 | 380 | 15 | 540 | M70 C2.05s/5 E50/45% | 125 |
-| LEVEL 4 | Forge | 2 | 500 | 16 | 684 | C1.95s/5 V3.2s | 130 |
-| LEVEL 5 | World2Tower | 2 | 540 | 17 | 729 | M100 C1.9s/5 V3.1s | 135 |
-| LEVEL 6 | World2Tower | 2 | 550 | 17 | 726 | M100 C1.8s/6 V3.1s E80/50% | 145 |
-| LEVEL 7 | World2Tower | 3 | 650 | 18 | 828 | C1.75s/6 V3.0s E90/55% | 150 |
-| LEVEL 8 | Forge | 3 | 680 | 19 | 855 | M120 C1.65s/6 V2.9s E100/55% | 155 |
-| LEVEL 9 | World2Tower | 3 | 720 | 19 | 888 | M130 C1.6s/7 V2.9s E100/60% | 165 |
-| BOSS | World2Boss (ShieldReturns) | 4 | 800 | 20 | 900 | M140 C1.5s/7 V2.8s E110/60% | 350 |
+| Fase | Torre | Andares | Vida | Início | Maior promessa | Potencial | Defesas | Prêmio |
+|---|---|---|---|---|---|---|---|---|
+| LEVEL 1 | World2Tower | 1 | 110 | 14 | 82 | 164 | M20 C2.2s/4 | 110 |
+| LEVEL 2 | World2Tower | 1 | 220 | 15 | 166 | 320 | M40 C2.1s/4 | 115 |
+| LEVEL 3 | World2Tower | 1 | 380 | 15 | 198 | 540 | M70 C2.05s/5 E50/45% | 125 |
+| LEVEL 4 | Forge | 2 | 500 | 16 | 256 | 684 | C1.95s/5 V3.2s | 130 |
+| LEVEL 5 | World2Tower | 2 | 540 | 17 | 257 | 729 | M100 C1.9s/5 V3.1s | 135 |
+| LEVEL 6 | World2Tower | 2 | 550 | 17 | 275 | 726 | M100 C1.8s/6 V3.1s E80/50% | 145 |
+| LEVEL 7 | World2Tower | 3 | 630 | 18 | 296 | 828 | C1.75s/6 V3.0s E90/55% | 150 |
+| LEVEL 8 | Forge | 3 | 640 | 19 | 300 | 834 | M120 C1.65s/6 V2.9s E90/55% | 155 |
+| LEVEL 9 | World2Tower | 3 | 650 | 19 | 297 | 849 | M110 C1.6s/7 V2.9s E90/60% | 165 |
+| BOSS | World2Boss (ShieldReturns) | 4 | 660 | 20 | 300 | 750 | M120 C1.5s/7 V2.8s E90/60% | 350 |
 
 ### WORLD 3 (world3) — paleta Doce, 173 árvores e 49 pedras, dano esperado x1.5, abre com 25 estrelas
 
-| Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
-|---|---|---|---|---|---|---|---|
-| LEVEL 1 | World3Tower | 1 | 180 | 18 | 228 | M30 C1.9s/5 V3.1s | 170 |
-| LEVEL 2 | World3Tower | 1 | 250 | 19 | 304 | C1.85s/5 | 180 |
-| LEVEL 3 | World3Tower | 1 | 330 | 19 | 387 | M60 C1.75s/6 | 185 |
-| LEVEL 4 | World2Tower | 2 | 400 | 20 | 465 | C1.7s/6 E60/50% | 195 |
-| LEVEL 5 | World3Tower | 2 | 490 | 21 | 546 | M90 C1.65s/6 | 200 |
-| LEVEL 6 | World3Tower | 2 | 750 | 21 | 825 | M140 C1.55s/7 V2.8s E100/55% | 210 |
-| LEVEL 7 | World3Tower | 3 | 840 | 22 | 900 | M150 C1.5s/7 | 215 |
-| LEVEL 8 | World2Tower | 3 | 860 | 23 | 900 | M150 C1.45s/7 | 225 |
-| LEVEL 9 | World3Tower | 3 | 870 | 23 | 900 | M160 C1.35s/8 V2.6s E120/60% | 230 |
-| BOSS | World3Boss (Overheat) | 4 | 940 | 24 | 900 | M170 C1.3s/8 V2.5s E130/60% | 500 |
+| Fase | Torre | Andares | Vida | Início | Maior promessa | Potencial | Defesas | Prêmio |
+|---|---|---|---|---|---|---|---|---|
+| LEVEL 1 | World3Tower | 1 | 180 | 18 | 120 | 228 | M30 C1.9s/5 V3.1s | 170 |
+| LEVEL 2 | World3Tower | 1 | 250 | 19 | 168 | 304 | C1.85s/5 | 180 |
+| LEVEL 3 | World3Tower | 1 | 330 | 19 | 141 | 387 | M60 C1.75s/6 | 185 |
+| LEVEL 4 | World2Tower | 2 | 400 | 20 | 180 | 465 | C1.7s/6 E60/50% | 195 |
+| LEVEL 5 | World3Tower | 2 | 490 | 21 | 202 | 546 | M90 C1.65s/6 | 200 |
+| LEVEL 6 | World3Tower | 2 | 720 | 21 | 300 | 789 | M130 C1.55s/7 V2.8s E100/55% | 210 |
+| LEVEL 7 | World3Tower | 3 | 740 | 22 | 298 | 795 | M130 C1.5s/7 | 215 |
+| LEVEL 8 | World2Tower | 3 | 810 | 23 | 300 | 855 | M150 C1.45s/7 | 225 |
+| LEVEL 9 | World3Tower | 3 | 820 | 23 | 299 | 834 | M150 C1.35s/8 V2.6s E110/60% | 230 |
+| BOSS | World3Boss (Overheat) | 4 | 850 | 24 | 299 | 813 | M150 C1.3s/8 V2.5s E120/60% | 500 |
 
 ### WORLD 4 (world4) — paleta Aurora, 98 árvores e 98 pedras, dano esperado x1.75, abre com 45 estrelas
 
-| Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
-|---|---|---|---|---|---|---|---|
-| LEVEL 1 | World4Tower | 1 | 230 | 22 | 236 | M40 C1.7s/6 V2.9s | 240 |
-| LEVEL 2 | World4Tower | 1 | 310 | 23 | 312 | M60 C1.65s/6 E40/50% | 250 |
-| LEVEL 3 | World4Tower | 1 | 410 | 24 | 399 | C1.6s/7 E60/55% | 260 |
-| LEVEL 4 | World3Tower | 2 | 630 | 25 | 600 | M110 C1.5s/7 V2.7s E90/55% | 265 |
-| LEVEL 5 | World4Tower | 2 | 650 | 26 | 606 | M120 C1.45s/7 V2.6s E90/55% | 275 |
-| LEVEL 6 | World4Tower | 2 | 750 | 26 | 684 | M140 C1.4s/8 V2.6s E100/60% | 285 |
-| LEVEL 7 | World4Tower | 3 | 770 | 27 | 684 | M140 C1.35s/8 V2.5s E110/60% | 295 |
-| LEVEL 8 | World3Tower | 3 | 840 | 28 | 738 | M150 C1.25s/8 V2.4s | 300 |
-| LEVEL 9 | World4Tower | 3 | 890 | 29 | 762 | M160 C1.2s/9 V2.4s | 310 |
-| BOSS | World4Boss (TurnGate) | 4 | 1130 | 30 | 900 | M200 C1.15s/9 V2.3s E160/65% | 700 |
+| Fase | Torre | Andares | Vida | Início | Maior promessa | Potencial | Defesas | Prêmio |
+|---|---|---|---|---|---|---|---|---|
+| LEVEL 1 | World4Tower | 1 | 230 | 22 | 124 | 236 | M40 C1.7s/6 V2.9s | 240 |
+| LEVEL 2 | World4Tower | 1 | 310 | 23 | 160 | 312 | M60 C1.65s/6 E40/50% | 250 |
+| LEVEL 3 | World4Tower | 1 | 410 | 24 | 140 | 399 | C1.6s/7 E60/55% | 260 |
+| LEVEL 4 | World3Tower | 2 | 630 | 25 | 212 | 600 | M110 C1.5s/7 V2.7s E90/55% | 265 |
+| LEVEL 5 | World4Tower | 2 | 650 | 26 | 244 | 606 | M120 C1.45s/7 V2.6s E90/55% | 275 |
+| LEVEL 6 | World4Tower | 2 | 750 | 26 | 261 | 684 | M140 C1.4s/8 V2.6s E100/60% | 285 |
+| LEVEL 7 | World4Tower | 3 | 770 | 27 | 249 | 684 | M140 C1.35s/8 V2.5s E110/60% | 295 |
+| LEVEL 8 | World3Tower | 3 | 840 | 28 | 266 | 738 | M150 C1.25s/8 V2.4s | 300 |
+| LEVEL 9 | World4Tower | 3 | 890 | 29 | 265 | 762 | M160 C1.2s/9 V2.4s | 310 |
+| BOSS | World4Boss (TurnGate) | 4 | 1070 | 30 | 300 | 846 | M190 C1.15s/9 V2.3s E150/65% | 700 |

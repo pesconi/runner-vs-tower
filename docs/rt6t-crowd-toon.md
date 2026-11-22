@@ -795,3 +795,31 @@ T-RT6t13-9..11 em `decisoes.md`.
 
 O usuário jogou a build sem neblina no OPPO (líder da multidão + visual sem neblina) e aprovou: "Aprovo". A RT-6t.13 está
 concluída e aceita.
+
+## RT-6t.14 — Limite configurável da multidão e portões honestos (2026-11-22)
+
+Pedido do usuário (D27 revista): o motor aceita um teto X de bonecos; neste jogo X = 300, na corrida e no ataque; os
+portões nunca passam disso. Decisões T-RT6t14-1..6 em `decisoes.md`. Nada mudou no `studiokit`.
+
+### O que foi feito
+
+- **Fonte única:** `Assets/Claybreak/Runtime/ArmyLimit.cs` (`Units = 300`). O construtor grava o valor como capacidade do
+  enxame da corrida e das unidades em voo (dado da cena; o motor do kit já era parametrizado, padrão 2048); gerador,
+  validador e padrão das fases leem dele. Antes havia 300 solto em `ClaybreakSceneBuilder` (2×), `LevelSpec`,
+  `ClaybreakLevel` e `LevelGenerator.ArmyCap`.
+- **Portões honestos:** `GateMath.HighestPromise` calcula o maior número que um portão da corrida pode mostrar em qualquer
+  caminho, com as caixas; `LevelGenerator.FitToLimit` encolhe só os portões que passariam do limite (×3 → ×2 → "+ sobra";
+  sem sobra, perda pequena). A escolha de layout por fase é a de antes, então defesas e torres não mudaram.
+- **Antes/depois:** 11 das 40 fases tinham portão prometendo acima de 300 (o pior: "+415" com 300 na mão, chefe do mundo
+  4, prometendo 715; "×2" com 199 no chefe do mundo 1, prometendo 398). Agora 0; a maior promessa de cada fase está na
+  tabela de `rt6-economia.md`. A vida da torre caiu na mesma proporção do potencial onde o portão encolheu (dificuldade
+  relativa igual); a simulação de economia deu os mesmos tempos (loja inteira em 53 min).
+- **Fases à mão (mundo 1):** fase 5, quarto par "+30 | ×2" → "−20 | +130" (vida 440 → 420); chefe, quarto par
+  "+30 | ×2" → "÷2 | +75" (vida 600 → 530).
+- **Validação:** o validador e o carregamento do catálogo recusam fase com portão acima do limite; testes EditMode novos
+  em `ArmyLimitTests` (limite 300 em todos os pontos, as 40 fases por força bruta, gerador com limites 40/100/300/1000).
+- **Resíduo aceito:** com upgrades (exército inicial, bônus dos portões de "+") a multidão ainda pode bater no teto antes
+  do que o portão diz; o corte em 300 continua como rede de segurança.
+- **Gate 3×:** não rodado — só dados e contas; render e peso da cena iguais.
+- **Validação:** `Tools/rt4-check.sh` completo verde (EditMode 331/331, PlayMode 24 + capturas, isolamento, economia, APKs e
+  AAB). APK do jogo em `C:\temp\rt6t14\Claybreak.apk`; **não instalado** — o OPPO não estava conectado nesta sessão.

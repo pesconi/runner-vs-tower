@@ -47,7 +47,7 @@ MonoBehaviour:
   - z: 98
     left:
       operation: 0
-      value: 25
+      value: 18
     right:
       operation: 3
       value: 2
@@ -78,7 +78,7 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 1
   towerDistance: 34.5
-  towerHealth: 680
+  towerHealth: 640
   floors: 3
   damagePerUnit: 1
   bossRule: 0
@@ -97,6 +97,6 @@ MonoBehaviour:
   shieldEnabled: 1
   shieldLane: 0
   shieldDistance: 30.5
-  shieldHealth: 100
+  shieldHealth: 90
   shieldBlock: 0.55
   coinReward: 155

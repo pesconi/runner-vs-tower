@@ -32,6 +32,7 @@ lançamento jun/2027.
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
 | RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — concluída em 2026-11-22 (motor no `studiokit` 0.5.0; aceite pendente: jogar os 4 mundos; `rt6t-crowd-toon.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
 | RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22; ajuste "sem neblina nenhuma" pedido pelo usuário feito, validado, gate 3× aprovado e APK instalado no OPPO; **aceite do usuário em 2026-11-22** ("Aprovo") | — | — | antes da RT-9 |
+| RT-6t.14 Limite configurável da multidão (300 neste jogo) e portões que nunca passam dele (D27 revista) — concluída em 2026-11-22; pendente instalar o APK no OPPO | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -584,6 +585,23 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   zero nas 4 paletas com nova proteção contra pop-in no validador, e o líder da multidão (forma do menu, 1,6×, coroa na
   cor de UI, decide portões e caixotes, fica na linha de lançamento no assalto), no pipeline instanciado. Capturas em
   `docs/art/rt6t/`, validação completa, gate 3× no mundo 4 (corrida e assalto) e APK instalado no OPPO."
+
+## RT-6t.14 — Limite configurável da multidão e portões honestos
+
+- **Origem:** D27 revista pelo usuário em 2026-11-22 (`decisoes.md`): o motor aceita um teto X de bonecos; neste jogo
+  X = 300, na corrida e no ataque; as contas dos portões nunca passam disso.
+- **Escopo:** (1) uma única fonte do limite no jogo, entregue ao motor como dado; (2) gerador e fases à mão sem portão que
+  prometa acima do limite, mantendo dificuldade e tempo de fase (D19); (3) testes EditMode; (4) validação completa.
+- **Depende de:** RT-6t.13.
+- **Aceite:** validação padrão completa verde; nenhum portão das 40 fases acima de 300 (teste e coluna "Maior promessa" de
+  `rt6-economia.md`); APK instalado no OPPO com o save. Gate 3× dispensado (só dados e contas; render e cena iguais).
+- **Status: concluída em 2026-11-22.** `ArmyLimit.Units = 300` é a fonte única; o kit não mudou (já recebia a capacidade
+  como dado). O gerador encaixa no limite só os portões que passavam (11 das 40 fases tinham algum; agora 0), com as mesmas
+  defesas e layouts; a vida segue a mesma fração do potencial. Mundo 1: fase 5 e chefe ajustados à mão. Tempos da economia
+  iguais. Detalhes em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md), seção RT-6t.14; decisões T-RT6t14-1..6.
+  Validação completa verde (EditMode 331/331, PlayMode 24 + capturas, APKs e AAB). **Pendente:** instalar o APK no OPPO
+  (o celular não estava conectado): com o OPPO no cabo e desbloqueado, `adb install -r /c/temp/rt6t14/Claybreak.apk`.
+- Histórico: entregue em 2026-11-22 (`Stage RT.6t.14`).
 
 ## RT-9 — Preparação do soft launch
 

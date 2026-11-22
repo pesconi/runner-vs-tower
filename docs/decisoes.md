@@ -1846,3 +1846,39 @@ O usuário jogou no OPPO e pediu dois ajustes (registrados pela sessão RT-6t.13
   ativos em classe 9 (EUIPO 2026, DPMA 2024) — inferência nossa: risco de confusão baixo por ser palavra nova e
   produto diferente; não é parecer jurídico. Antes de registar marca ou comprar domínio (gasto), busca oficial no
   EUIPO e INPI Portugal, com ficha própria de gasto. Finalistas descartados: Peep Siege, Topple Squad, Peepstorm.
+
+## 2026-11-22 — T-RT6t14-1..6 — Limite da multidão configurável (300) e portões honestos — técnica (sessão RT-6t.14)
+
+Entrega da D27 revista ("aceitar um valor X de bonecos no motor; para este jogo, 300; arrumar as contas dos portais").
+
+- **T-RT6t14-1 — Uma fonte de verdade, no jogo.** `Claybreak.ArmyLimit.Units = 300` é o único lugar com o número. Dele
+  saem: a capacidade do enxame da corrida e do renderizador das unidades em voo (o construtor grava como dado na cena;
+  o fluxo lê `crowd.MaximumArmy` e `field.FlightCapacity` da cena), `LevelSpec.DefaultUnitsInFlight`, o padrão do asset
+  de fase, o parâmetro do gerador e a validação. É uma constante do jogo, não um asset, porque o gerador e o construtor
+  precisam dela em tempo de edição; em jogo o valor já é dado da cena. Outro jogo no mesmo motor define o seu.
+- **T-RT6t14-2 — O kit não muda.** O motor da multidão do `studiokit` já recebe a capacidade como dado
+  (`SwarmRenderer.capacity`, padrão 2048; `LooseSwarmRenderer.capacity`) e nunca fixa 300. O gerador de fases passou a
+  receber o limite como parâmetro (`GenerateWorld(recipe, armyCap, ...)`, `Generate`, `BestArmy`, `PotentialHits`); a
+  constante `LevelGenerator.ArmyCap` saiu. Nenhuma mudança no `../studiokit` (sem aceite do Wild Pack).
+- **T-RT6t14-3 — Gerar portões que não passam do limite, em vez de cortar e mostrar.** Escolhido por ser o mais limpo:
+  nenhum rótulo mostra número que não acontece, sem UI nova. Regra: em qualquer caminho (esquerda ou direita em cada par,
+  todas as caixas antes do par pegas), nenhum portão da corrida promete mais que o limite (`GateMath.HighestPromise`; as
+  4 operações nunca diminuem com o exército, então basta o maior exército que chega a cada par). O gerador encaixa só o
+  portão que passaria (`LevelGenerator.FitToLimit`): ×N desce até o maior multiplicador que cabe, depois vira "+ sobra"
+  (múltiplo de 5); sem sobra vira perda pequena (o par vira "menor mal"); dois lados iguais viram "+ metade da sobra" ou
+  ÷2. Portões que cabem não mudam. A variante de layout de cada fase é escolhida como antes (no rascunho sem encaixe), então
+  defesas, torres e caixas ficam iguais; só os portões que passavam e a vida mudam.
+- **T-RT6t14-4 — Dificuldade e tempo (D19).** A vida da torre continua sendo a mesma fração do potencial honesto (a rampa
+  e o chefe no topo valem como antes): onde o portão encolheu, a vida caiu na mesma proporção (ex.: chefe do mundo 4
+  1130 → 1070, mundo 2 800 → 660). Fases à mão do mundo 1: a 5 trocou "+30 | ×2" por "−20 | +130" (vida 440 → 420) e o
+  chefe "+30 | ×2" por "÷2 | +75" (600 → 530), mesma fração. A simulação de economia dá os mesmos tempos (53 min para
+  comprar a loja; mundos 10,9 / 21,3 / 32,2 / 42,5 min). Tabela com a coluna "Maior promessa" em `rt6-economia.md`.
+- **T-RT6t14-5 — Validação.** `ClaybreakLevel.TryValidate(crowdCap, ...)` recusa fase cujo portão prometa acima do
+  limite (validador, catálogo carregado no jogo e testes). Testes EditMode novos (`ArmyLimitTests`): limite = 300 em todos
+  os pontos; nenhum portão das 40 fases passa de 300 (conferido também por força bruta em todos os caminhos); o gerador
+  respeita limites 40/100/300/1000; o encaixe; a recusa no validador.
+- **T-RT6t14-6 — Resíduo aceito e gate.** Upgrades (exército inicial até +46, +10 nos portões de "+"), caixas sem loadout
+  e "continuar" podem levar a multidão ao teto num portão que, sem eles, caberia; nesse caso o corte em 300 continua como
+  rede de segurança (`GateMath.Apply`) e o rótulo não muda. Mostrar "MÁX" no portão nesse caso seria UI nova (fonte,
+  capturas): fica como melhoria possível, não decidida. Gate 3× no OPPO não roda: só dados e contas mudaram; o caminho de
+  render e o peso da cena são os mesmos (capacidades continuam 300).

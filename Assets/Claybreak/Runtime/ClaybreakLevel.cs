@@ -88,7 +88,7 @@ namespace Claybreak
         [Tooltip("Sideways spread of a unit inside its lane, in metres (purely visual).")]
         [SerializeField, Range(0f, 1.2f)] private float laneSpread = 0.7f;
         [Tooltip("Hard cap on units in flight; must fit the runner pool.")]
-        [SerializeField, Min(1)] private int maximumUnitsInFlight = 300;
+        [SerializeField, Min(1)] private int maximumUnitsInFlight = ArmyLimit.Units;
 
         [Header("Assault: gate row (one gate per lane, x or ÷ only)")]
         [SerializeField, Min(1f)] private float assaultGateDistance = 9f;
@@ -245,6 +245,14 @@ namespace Claybreak
                     error = $"crates[{i}] must sit before the firing line, 3 m away from any gate pair, with at least 1 unit.";
                     return false;
                 }
+            }
+
+            // RT-6t.14: no run gate label promises more than the crowd can hold, on any path (crates included).
+            long promise = GateMath.HighestPromise(startCount, runGates, crates, crowdCapacity, out int pair);
+            if (promise > crowdCapacity)
+            {
+                error = $"runGates[{pair}] can promise {promise} units, past the crowd limit {crowdCapacity}.";
+                return false;
             }
 
             if (assaultGates == null || assaultGates.Length != LaneCount)

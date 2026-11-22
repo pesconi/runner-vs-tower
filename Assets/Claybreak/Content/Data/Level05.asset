@@ -39,11 +39,11 @@ MonoBehaviour:
       value: 3
   - z: 80
     left:
-      operation: 0
-      value: 30
+      operation: 1
+      value: 20
     right:
-      operation: 2
-      value: 2
+      operation: 0
+      value: 130
   - z: 94
     left:
       operation: 1
@@ -75,7 +75,7 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 1
   towerDistance: 34
-  towerHealth: 440
+  towerHealth: 420
   floors: 3
   damagePerUnit: 1
   bossRule: 0

@@ -326,7 +326,8 @@ namespace Claybreak.Editor
             text.AppendLine();
             text.AppendLine("## Fases (dados gerados; vida antes das voltas)");
             text.AppendLine();
-            text.AppendLine("Potencial = exército no melhor caminho dos portões (teto 300) × melhor portão da fileira. Defesas: M muralha,");
+            text.AppendLine($"Potencial = exército no melhor caminho dos portões (teto {ArmyLimit.Units}) × melhor portão da fileira. Maior promessa = maior número que");
+            text.AppendLine($"um portão da corrida pode mostrar em qualquer caminho, com as caixas (nunca passa de {ArmyLimit.Units}, RT-6t.14). Defesas: M muralha,");
             text.AppendLine("C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).");
             foreach (WorldEntry entry in catalog.Worlds)
             {
@@ -334,8 +335,8 @@ namespace Claybreak.Editor
                 text.AppendLine();
                 text.AppendLine($"### {world.WorldName} ({world.WorldId}) — paleta {(world.Look.palette == null ? "?" : world.Look.palette.name)}, {world.Look.trees} árvores e {world.Look.rocks} pedras, dano esperado x{world.ExpectedDamage:0.##}, abre com {entry.starsToUnlock} estrelas");
                 text.AppendLine();
-                text.AppendLine("| Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |");
-                text.AppendLine("|---|---|---|---|---|---|---|---|");
+                text.AppendLine("| Fase | Torre | Andares | Vida | Início | Maior promessa | Potencial | Defesas | Prêmio |");
+                text.AppendLine("|---|---|---|---|---|---|---|---|---|");
                 foreach (ClaybreakLevel level in world.Levels)
                 {
                     var spec = new LevelSpec { startCount = level.StartCount, runGates = Copy(level.RunGates), assaultGates = Copy(level.AssaultGates) };
@@ -345,7 +346,8 @@ namespace Claybreak.Editor
                         + (level.ShieldEnabled ? $"E{level.ShieldHealth}/{level.ShieldBlock * 100f:0}% " : "");
                     string boss = level.IsBoss ? $" ({level.BossRule})" : string.Empty;
                     text.AppendLine($"| {level.Title} | {level.Tower}{boss} | {level.Floors} | {level.TowerHealth} | {level.StartCount} | "
-                        + $"{LevelGenerator.PotentialHits(spec)} | {defenses.Trim()} | {level.CoinReward} |");
+                        + $"{GateMath.HighestPromise(level.StartCount, level.RunGates, level.Crates, ArmyLimit.Units, out _)} | "
+                        + $"{LevelGenerator.PotentialHits(spec, ArmyLimit.Units)} | {defenses.Trim()} | {level.CoinReward} |");
                 }
             }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Claybreak
@@ -94,29 +95,82 @@ namespace Claybreak
         /// <summary>Crowd size after a run gate, clamped to [0, maximum]. 0 means the crowd is gone.</summary>
         public static int Apply(GateSpec gate, int count, int maximum)
         {
-            if (count < 0 || maximum < 0 || gate.value < 1)
+            if (maximum < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximum), "The crowd limit is never negative.");
+            }
+
+            return (int)Math.Max(0L, Math.Min(Promise(gate, count), maximum));
+        }
+
+        /// <summary>
+        /// What the gate's label promises for <paramref name="count"/> units, before any limit (may pass the crowd
+        /// limit; <see cref="Apply"/> is what the crowd really gets). Every operation is non-decreasing in the count,
+        /// so the largest promise of a course is the gate applied to the largest army that can reach it.
+        /// </summary>
+        public static long Promise(GateSpec gate, int count)
+        {
+            if (count < 0 || gate.value < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(count), "Counts are never negative and operands are at least 1.");
             }
 
-            long result;
             switch (gate.operation)
             {
                 case GateOperation.Add:
-                    result = (long)count + gate.value;
-                    break;
+                    return (long)count + gate.value;
                 case GateOperation.Subtract:
-                    result = (long)count - gate.value;
-                    break;
+                    return (long)count - gate.value;
                 case GateOperation.Multiply:
-                    result = (long)count * gate.value;
-                    break;
+                    return (long)count * gate.value;
                 default:
-                    result = count / gate.value;
-                    break;
+                    return count / gate.value;
+            }
+        }
+
+        /// <summary>
+        /// The largest army any run gate of a course promises, over every path (left or right at each pair, every
+        /// crate before it picked up), starting with <paramref name="start"/> units under the crowd limit
+        /// <paramref name="maximum"/> (RT-6t.14). <paramref name="gateIndex"/> is the pair that promises it (-1 with
+        /// no gates). A course is honest when this is at most <paramref name="maximum"/>: no label then shows a
+        /// number the crowd cannot reach. Gates are taken in order of distance, crates before the pair past them.
+        /// </summary>
+        public static long HighestPromise(int start, IReadOnlyList<RunGatePair> gates, IReadOnlyList<CratePlacement> crates,
+            int maximum, out int gateIndex)
+        {
+            gateIndex = -1;
+            int army = Math.Max(0, Math.Min(start, maximum));
+            long highest = army;
+            var taken = new bool[crates == null ? 0 : crates.Count];
+            for (int k = 0; gates != null && k < gates.Count; k++)
+            {
+                army = WithCratesBefore(army, gates[k].z, crates, taken, maximum);
+                long promise = Math.Max(Promise(gates[k].left, army), Promise(gates[k].right, army));
+                if (gateIndex < 0 || promise > highest)
+                {
+                    highest = Math.Max(highest, promise);
+                    gateIndex = k;
+                }
+
+                army = (int)Math.Max(0L, Math.Min(promise, maximum));
             }
 
-            return (int)Math.Max(0L, Math.Min(result, maximum));
+            return highest;
+        }
+
+        // The largest army after every crate not yet taken that sits before distance z (capped like the crowd).
+        private static int WithCratesBefore(int army, float z, IReadOnlyList<CratePlacement> crates, bool[] taken, int maximum)
+        {
+            for (int i = 0; i < taken.Length; i++)
+            {
+                if (!taken[i] && crates[i].z < z)
+                {
+                    taken[i] = true;
+                    army = (int)Math.Min((long)army + Math.Max(0, crates[i].units), maximum);
+                }
+            }
+
+            return army;
         }
 
         /// <summary>

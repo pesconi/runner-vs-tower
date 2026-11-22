@@ -138,7 +138,7 @@ namespace Claybreak.Tests
             Assert.IsTrue(flow.enabled, "the flow disabled itself (see the log)");
             Assert.IsTrue(flow.MeasuresRun);
             RunCrowd crowd = flow.Crowd;
-            Assert.AreEqual(300, crowd.MaximumArmy, "the crowd cap is decision D27's 300");
+            Assert.AreEqual(ArmyLimit.Units, crowd.MaximumArmy, "the crowd cap is the game limit (D27 revised: 300)");
             bool looped = false;
             float lastZ = crowd.Position.z;
             float deadline = Time.realtimeSinceStartup + 20f;

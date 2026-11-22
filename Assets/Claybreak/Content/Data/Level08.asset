@@ -33,23 +33,23 @@ MonoBehaviour:
   - z: 58
     left:
       operation: 2
-      value: 3
+      value: 2
     right:
       operation: 1
       value: 20
   - z: 78
     left:
       operation: 0
-      value: 355
+      value: 85
     right:
-      operation: 2
-      value: 2
+      operation: 0
+      value: 43
   - z: 98
     left:
       operation: 0
-      value: 235
+      value: 2
     right:
-      operation: 2
+      operation: 3
       value: 2
   crates:
   - z: 28
@@ -78,14 +78,14 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 0
   towerDistance: 34.5
-  towerHealth: 530
+  towerHealth: 490
   floors: 3
   damagePerUnit: 1
   bossRule: 0
   wallEnabled: 1
   wallLane: 0
   wallDistance: 20
-  wallHealth: 100
+  wallHealth: 90
   cannonEnabled: 1
   cannonInterval: 1.8000001
   projectileFlightTime: 0.8611111

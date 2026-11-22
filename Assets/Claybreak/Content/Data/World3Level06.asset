@@ -32,8 +32,8 @@ MonoBehaviour:
       value: 3
   - z: 58
     left:
-      operation: 2
-      value: 2
+      operation: 0
+      value: 135
     right:
       operation: 1
       value: 25
@@ -71,14 +71,14 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 5
   towerDistance: 33
-  towerHealth: 750
+  towerHealth: 720
   floors: 2
   damagePerUnit: 1
   bossRule: 0
   wallEnabled: 1
   wallLane: 0
   wallDistance: 24
-  wallHealth: 140
+  wallHealth: 130
   cannonEnabled: 1
   cannonInterval: 1.5500001
   projectileFlightTime: 0.8722222

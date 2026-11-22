@@ -33,14 +33,17 @@ namespace Claybreak.Editor
         public const string Root = "Assets/Claybreak/Content";
         public const string ScenePath = Root + "/Claybreak.unity";
         public const string ThemePath = Root + "/Data/ClaybreakTheme.asset";
-        /// <summary>Most units in flight at once in the assault (the instanced renderer's capacity; D27 unanswered: 300).</summary>
-        public const int FlightCapacity = 300;
+        /// <summary>Most units in flight at once in the assault (the instanced renderer's capacity): the game's crowd limit.</summary>
+        public const int FlightCapacity = ArmyLimit.Units;
 
         /// <summary>Most assault units dying at once (the ballistic death ring of the units in flight).</summary>
         public const int FlightDyingCapacity = 512;
 
-        /// <summary>Crowd cap of the run (decision D27, unanswered: 300); the swarm is built for 1000+, the cap is data.</summary>
-        public const int CrowdCapacity = 300;
+        /// <summary>
+        /// Crowd cap of the run (D27 revised, RT-6t.14): the game's crowd limit, written into the swarm's capacity (the
+        /// engine's swarm is built for 2000+; the cap is this game's data, from <see cref="ArmyLimit"/> alone).
+        /// </summary>
+        public const int CrowdCapacity = ArmyLimit.Units;
         public const string CrowdCameraProfilePath = Root + "/Data/SwarmCameraRun.asset";
         /// <summary>The camera rig's fixed shots of the assault (RT-6t.7; the old AssaultCamera values).</summary>
         public const string AssaultShotPath = Root + "/Data/SwarmCameraAssault.asset";

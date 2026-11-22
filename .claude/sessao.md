@@ -138,3 +138,7 @@
   projetos; resolver no jogo em vez de mexer no kit. A neblina mínima é guardada pelo `PropWrapGuard` (validador loga a
   distância do reaparecimento visível mais perto); captura do líder: `-testFilter Claybreak.Tests.LeaderCaptureTests
   -leaderCaptureDir <pasta>` sem `-nographics`. O líder é `RunCrowd.Position`; o centro da formação, `FormationCenter`.
+- 2026-11-22 (RT-6t.14): o limite da multidão é `ArmyLimit.Units` (300), única fonte. Fase à mão ou portão novo precisa caber
+  nele em qualquer caminho, com as caixas: o validador recusa (`GateMath.HighestPromise`; coluna "Maior promessa" em
+  `rt6-economia.md`). O gerador escolhe a variante de layout no rascunho sem encaixe e só depois encaixa os portões, para que
+  mudar o potencial não troque defesas e torres das fases.

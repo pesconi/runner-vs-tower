@@ -10,7 +10,7 @@ namespace Claybreak
     [Serializable]
     public sealed class LevelSpec
     {
-        public const int DefaultUnitsInFlight = 300;
+        public const int DefaultUnitsInFlight = ArmyLimit.Units;
 
         public string title = "LEVEL";
 

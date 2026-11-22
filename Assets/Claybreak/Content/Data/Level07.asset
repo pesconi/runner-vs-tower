@@ -39,8 +39,8 @@ MonoBehaviour:
       value: 3
   - z: 78
     left:
-      operation: 2
-      value: 2
+      operation: 0
+      value: 120
     right:
       operation: 3
       value: 2

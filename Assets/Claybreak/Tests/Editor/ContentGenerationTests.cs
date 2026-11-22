@@ -11,6 +11,8 @@ namespace Claybreak.Tests
     /// </summary>
     public sealed class ContentGenerationTests
     {
+        private const int Cap = 300;
+
         private static WorldRecipe Recipe(int seed = 7, BossRule rule = BossRule.ShieldReturns) => new WorldRecipe
         {
             worldId = "test",
@@ -50,14 +52,14 @@ namespace Claybreak.Tests
         [Test]
         public void TheSameRecipeMakesTheSameLevels()
         {
-            LevelSpec[] a = LevelGenerator.GenerateWorld(Recipe());
-            LevelSpec[] b = LevelGenerator.GenerateWorld(Recipe());
+            LevelSpec[] a = LevelGenerator.GenerateWorld(Recipe(), Cap);
+            LevelSpec[] b = LevelGenerator.GenerateWorld(Recipe(), Cap);
             for (int i = 0; i < a.Length; i++)
             {
                 Assert.AreEqual(JsonUtility.ToJson(a[i]), JsonUtility.ToJson(b[i]), "level " + (i + 1));
             }
 
-            Assert.AreNotEqual(JsonUtility.ToJson(a[4]), JsonUtility.ToJson(LevelGenerator.GenerateWorld(Recipe(8))[4]),
+            Assert.AreNotEqual(JsonUtility.ToJson(a[4]), JsonUtility.ToJson(LevelGenerator.GenerateWorld(Recipe(8), Cap)[4]),
                 "another seed makes another layout");
         }
 
@@ -65,11 +67,11 @@ namespace Claybreak.Tests
         public void EveryGeneratedLevelIsValidAndOnlyTheLastIsTheBoss([Values(1, 2, 3, 42, 99)] int seed,
             [Values(BossRule.ShiftGates, BossRule.ShieldReturns, BossRule.Overheat, BossRule.TurnGate)] BossRule rule)
         {
-            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe(seed, rule));
+            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe(seed, rule), Cap);
             for (int i = 0; i < specs.Length; i++)
             {
                 ClaybreakLevel level = Asset(specs[i]);
-                Assert.IsTrue(level.TryValidate(300, 300, out string error), $"seed {seed} level {i + 1}: {error}");
+                Assert.IsTrue(level.TryValidate(Cap, Cap, out string error), $"seed {seed} level {i + 1}: {error}");
                 Assert.AreEqual(i == specs.Length - 1, level.IsBoss, "level " + (i + 1));
                 Assert.LessOrEqual(specs[i].runGates.Length, RunGateCourse.MaximumPairs);
                 Assert.GreaterOrEqual(specs[i].runGates.Length, 3);
@@ -82,7 +84,7 @@ namespace Claybreak.Tests
         [Test]
         public void HealthRampsUpAndTheBossIsTheToughest([Values(1, 5, 13, 77)] int seed)
         {
-            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe(seed));
+            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe(seed), Cap);
             int boss = specs[specs.Length - 1].towerHealth;
             for (int i = 1; i < specs.Length; i++)
             {
@@ -100,21 +102,21 @@ namespace Claybreak.Tests
         public void TowerHealthFollowsThePotentialHitsAndTheExpectedDamage()
         {
             WorldRecipe recipe = Recipe();
-            LevelSpec level = LevelGenerator.Generate(recipe, 4);
-            float share = (float)level.towerHealth / (LevelGenerator.PotentialHits(level) * recipe.expectedDamage);
+            LevelSpec level = LevelGenerator.Generate(recipe, 4, Cap);
+            float share = (float)level.towerHealth / (LevelGenerator.PotentialHits(level, Cap) * recipe.expectedDamage);
             Assert.That(share, Is.InRange(0.4f, 0.75f));
-            Assert.LessOrEqual(LevelGenerator.BestArmy(level), LevelGenerator.ArmyCap);
+            Assert.LessOrEqual(LevelGenerator.BestArmy(level, Cap), Cap);
         }
 
         [Test]
         public void HandMadeLevelsStayAndGeneratedOnesRampBetweenThem()
         {
             var fixedLevels = new LevelSpec[10];
-            fixedLevels[0] = LevelGenerator.Generate(Recipe(), 0);
+            fixedLevels[0] = LevelGenerator.Generate(Recipe(), 0, Cap);
             fixedLevels[0].towerHealth = 123;
-            fixedLevels[9] = LevelGenerator.Generate(Recipe(), 9);
+            fixedLevels[9] = LevelGenerator.Generate(Recipe(), 9, Cap);
             fixedLevels[9].towerHealth = 600;
-            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe(), fixedLevels);
+            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe(), Cap, fixedLevels);
             Assert.AreSame(fixedLevels[0], specs[0]);
             Assert.AreEqual(123, specs[0].towerHealth);
             Assert.AreEqual(600, specs[9].towerHealth);
@@ -128,7 +130,7 @@ namespace Claybreak.Tests
         [Test]
         public void DefensesComeInByTheProfile()
         {
-            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe());
+            LevelSpec[] specs = LevelGenerator.GenerateWorld(Recipe(), Cap);
             Assert.IsFalse(specs[0].shieldEnabled || specs[1].shieldEnabled, "the shield comes in at level 3");
             Assert.IsFalse(specs[0].wallEnabled, "no wall on the first level");
             Assert.IsTrue(specs[9].shieldEnabled && specs[9].wallEnabled && specs[9].sweeperEnabled, "the boss has every defense");

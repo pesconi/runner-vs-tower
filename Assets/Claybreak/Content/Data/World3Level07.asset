@@ -49,8 +49,8 @@ MonoBehaviour:
       operation: 1
       value: 35
     right:
-      operation: 2
-      value: 2
+      operation: 0
+      value: 55
   crates:
   - z: 28
     right: 0
@@ -78,14 +78,14 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 5
   towerDistance: 34.5
-  towerHealth: 840
+  towerHealth: 740
   floors: 3
   damagePerUnit: 1
   bossRule: 0
   wallEnabled: 1
   wallLane: 2
   wallDistance: 22
-  wallHealth: 150
+  wallHealth: 130
   cannonEnabled: 1
   cannonInterval: 1.5
   projectileFlightTime: 0.8666666
@@ -97,6 +97,6 @@ MonoBehaviour:
   shieldEnabled: 0
   shieldLane: 0
   shieldDistance: 30.5
-  shieldHealth: 120
+  shieldHealth: 100
   shieldBlock: 0.55
   coinReward: 215

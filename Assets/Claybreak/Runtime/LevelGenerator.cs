@@ -70,17 +70,24 @@ namespace Claybreak
     /// </summary>
     public static class LevelGenerator
     {
-        /// <summary>The crowd's ceiling (the runner pool): no path through the gates goes past it.</summary>
-        public const int ArmyCap = LevelSpec.DefaultUnitsInFlight;
         public const int GateStep = 20;
         public const int FirstGateZ = 18;
 
-        /// <summary>The whole world: generated levels with <paramref name="fixedLevels"/> (null entries generate) in place.</summary>
-        public static LevelSpec[] GenerateWorld(WorldRecipe recipe, LevelSpec[] fixedLevels = null)
+        /// <summary>
+        /// The whole world: generated levels with <paramref name="fixedLevels"/> (null entries generate) in place.
+        /// <paramref name="armyCap"/> is the game's crowd limit (<see cref="ArmyLimit"/>): no generated run gate promises
+        /// more units than it, on any path (RT-6t.14).
+        /// </summary>
+        public static LevelSpec[] GenerateWorld(WorldRecipe recipe, int armyCap, LevelSpec[] fixedLevels = null)
         {
             if (recipe == null || recipe.levelCount < 2)
             {
                 throw new ArgumentException("A recipe needs at least two levels (the last is the boss).", nameof(recipe));
+            }
+
+            if (armyCap < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(armyCap), "The crowd limit is at least one unit.");
             }
 
             var specs = new LevelSpec[recipe.levelCount];
@@ -93,16 +100,32 @@ namespace Claybreak
                 specs[i] = fixedSpec;
             }
 
-            specs[boss] ??= StrongestBoss(recipe, boss);
+            // The layouts are picked on drafts whose gates are not yet fitted to the limit (RT-6t.14): fitting lowers the
+            // potential of the levels that near the limit, and picking on fitted levels would swap their layouts and
+            // defenses; the picked layout is then fitted and its health follows its honest potential.
+            var drafts = (LevelSpec[])specs.Clone();
+            var variants = new int[specs.Length];
+            if (generated[boss])
+            {
+                variants[boss] = StrongestVariant(recipe, boss, armyCap);
+                drafts[boss] = Layout(recipe, boss, armyCap, variants[boss], false);
+            }
+
             for (int i = 0; i < boss; i++)
             {
                 if (generated[i])
                 {
-                    int lower = i > 0 ? specs[i - 1].towerHealth + 10 : 0;
-                    int upper = specs[boss].towerHealth - 10 * (boss - i);
-                    int target = Mathf.RoundToInt(specs[boss].towerHealth * Mathf.Lerp(FirstLevelShareOfBoss, LastLevelShareOfBoss, (float)i / boss));
-                    specs[i] = Closest(recipe, i, lower, upper, target);
+                    int lower = i > 0 ? drafts[i - 1].towerHealth + 10 : 0;
+                    int upper = drafts[boss].towerHealth - 10 * (boss - i);
+                    int target = Mathf.RoundToInt(drafts[boss].towerHealth * Mathf.Lerp(FirstLevelShareOfBoss, LastLevelShareOfBoss, (float)i / boss));
+                    variants[i] = ClosestVariant(recipe, i, lower, upper, target, armyCap);
+                    drafts[i] = Layout(recipe, i, armyCap, variants[i], false);
                 }
+            }
+
+            for (int i = 0; i < specs.Length; i++)
+            {
+                specs[i] = generated[i] ? Generate(recipe, i, armyCap, variants[i]) : specs[i];
             }
 
             Ramp(specs, generated);
@@ -117,15 +140,17 @@ namespace Claybreak
         public const float LastLevelShareOfBoss = 0.9f;
 
         // The boss is the world's peak: of its layouts, the one with the most potential hits.
-        private static LevelSpec StrongestBoss(WorldRecipe recipe, int index)
+        private static int StrongestVariant(WorldRecipe recipe, int index, int armyCap)
         {
-            LevelSpec best = null;
+            int best = 0;
+            int bestHits = -1;
             for (int variant = 0; variant < Variants; variant++)
             {
-                LevelSpec candidate = Generate(recipe, index, variant);
-                if (best == null || PotentialHits(candidate) > PotentialHits(best))
+                int hits = PotentialHits(Layout(recipe, index, armyCap, variant, false), armyCap);
+                if (hits > bestHits)
                 {
-                    best = candidate;
+                    best = variant;
+                    bestHits = hits;
                 }
             }
 
@@ -135,19 +160,18 @@ namespace Claybreak
         // The variant whose natural health lands inside [lower, upper] and nearest the target curve (or the
         // nearest to the interval): the ramp then has little to force, and a forced health never strays far
         // from the level's real potential.
-        private static LevelSpec Closest(WorldRecipe recipe, int index, int lower, int upper, int target)
+        private static int ClosestVariant(WorldRecipe recipe, int index, int lower, int upper, int target, int armyCap)
         {
-            LevelSpec best = null;
+            int best = 0;
             long bestScore = long.MaxValue;
             for (int variant = 0; variant < Variants; variant++)
             {
-                LevelSpec candidate = Generate(recipe, index, variant);
-                int health = candidate.towerHealth;
+                int health = Layout(recipe, index, armyCap, variant, false).towerHealth;
                 int outside = health < lower ? lower - health : health > upper ? health - upper : 0;
                 long score = outside * 100000L + Math.Abs(health - target);
                 if (score < bestScore)
                 {
-                    best = candidate;
+                    best = variant;
                     bestScore = score;
                 }
             }
@@ -155,8 +179,15 @@ namespace Claybreak
             return best;
         }
 
-        /// <summary>One level of the recipe (no ramp against its neighbours); <paramref name="variant"/> picks another layout.</summary>
-        public static LevelSpec Generate(WorldRecipe recipe, int index, int variant = 0)
+        /// <summary>
+        /// One level of the recipe (no ramp against its neighbours) under the crowd limit <paramref name="armyCap"/>;
+        /// <paramref name="variant"/> picks another layout.
+        /// </summary>
+        public static LevelSpec Generate(WorldRecipe recipe, int index, int armyCap, int variant = 0) =>
+            Layout(recipe, index, armyCap, variant, true);
+
+        // fitToLimit false: the draft the layout is picked on (gates as rolled, the crowd only clamped at the limit).
+        private static LevelSpec Layout(WorldRecipe recipe, int index, int armyCap, int variant, bool fitToLimit)
         {
             int last = recipe.levelCount - 1;
             float t = last <= 0 ? 1f : Mathf.Clamp01((float)index / last);
@@ -171,11 +202,15 @@ namespace Claybreak
 
             // Run: 3 pairs early, up to 5; the boss runs the longest course.
             int pairs = boss ? 5 : 3 + (t >= 0.25f ? 1 : 0) + (t >= 0.6f ? 1 : 0);
-            spec.runGates = RunGates(recipe, spec.startCount, pairs, t, ref random);
+            spec.runGates = RunGates(recipe, spec.startCount, pairs, t, armyCap, ref random);
             spec.firingLineZ = spec.runGates[pairs - 1].z + 16f;
             int crates = index < recipe.cratesFrom || recipe.cratesFrom < 0 ? 0
                 : boss ? ClaybreakLevel.MaximumCrates : Mathf.Clamp(1 + (index - recipe.cratesFrom) / 2, 1, 3);
             spec.crates = Crates(crates, spec.firingLineZ, ref random);
+            if (fitToLimit)
+            {
+                FitToLimit(spec, armyCap);
+            }
 
             // Gate row: one strong multiplier, one divider, one x2, shuffled (the first level stays gentle).
             int strong = t < 0.15f ? 2 : 3;
@@ -192,7 +227,7 @@ namespace Claybreak
             spec.bossRule = boss ? recipe.bossRule : BossRule.None;
             spec.towerDistance = 30f + spec.floors * 1.5f;
             float share = boss ? recipe.bossShare : Mathf.Lerp(recipe.shareFirst, recipe.shareLast, t);
-            spec.towerHealth = Math.Max(spec.floors * 10, RoundTo(share * PotentialHits(spec) * recipe.expectedDamage, 10));
+            spec.towerHealth = Math.Max(spec.floors * 10, RoundTo(share * PotentialHits(spec, armyCap) * recipe.expectedDamage, 10));
 
             // Defenses, each from its first level on, not on every level (variety), always on the boss.
             spec.cannonEnabled = true;
@@ -222,19 +257,19 @@ namespace Claybreak
         }
 
         /// <summary>Army at the firing line on the best path through the run gates (capped like the crowd).</summary>
-        public static int BestArmy(LevelSpec spec)
+        public static int BestArmy(LevelSpec spec, int armyCap)
         {
             int army = spec.startCount;
             for (int i = 0; i < spec.runGates.Length; i++)
             {
-                army = Math.Max(GateMath.Apply(spec.runGates[i].left, army, ArmyCap), GateMath.Apply(spec.runGates[i].right, army, ArmyCap));
+                army = Math.Max(GateMath.Apply(spec.runGates[i].left, army, armyCap), GateMath.Apply(spec.runGates[i].right, army, armyCap));
             }
 
-            return Math.Min(army, ArmyCap);
+            return Math.Min(army, armyCap);
         }
 
         /// <summary>Hits on the tower if the whole best-path army went through the best gate of the row and none fell.</summary>
-        public static int PotentialHits(LevelSpec spec)
+        public static int PotentialHits(LevelSpec spec, int armyCap)
         {
             int best = 1;
             foreach (GateSpec gate in spec.assaultGates)
@@ -245,7 +280,7 @@ namespace Claybreak
                 }
             }
 
-            return BestArmy(spec) * best;
+            return BestArmy(spec, armyCap) * best;
         }
 
         // Generated levels never get easier than the level before nor reach the boss (health rescales the
@@ -288,7 +323,7 @@ namespace Claybreak
             spec.shieldHealth = Math.Max(10, RoundTo(spec.shieldHealth * scale, 10));
         }
 
-        private static RunGatePair[] RunGates(WorldRecipe recipe, int start, int pairs, float t, ref Random32 random)
+        private static RunGatePair[] RunGates(WorldRecipe recipe, int start, int pairs, float t, int armyCap, ref Random32 random)
         {
             var gates = new RunGatePair[pairs];
             int army = start;
@@ -324,10 +359,75 @@ namespace Claybreak
                     left = swap ? b : a,
                     right = swap ? a : b
                 };
-                army = Math.Max(GateMath.Apply(a, army, ArmyCap), GateMath.Apply(b, army, ArmyCap));
+                army = Math.Max(GateMath.Apply(a, army, armyCap), GateMath.Apply(b, army, armyCap));
             }
 
             return gates;
+        }
+
+        /// <summary>
+        /// RT-6t.14: makes every run gate honest under the crowd limit. Walks the course with the largest army that can
+        /// reach each pair (every operation is non-decreasing, so that army bounds every path; crates before the pair
+        /// are counted as picked up) and shrinks any gate whose label would promise past <paramref name="armyCap"/>:
+        /// ×N steps down to the largest multiplier that fits, then to a "+" of the room left; a "+" shrinks to the room
+        /// left; with no room left the gate becomes a small loss (the pair turns into a lesser-evil choice). Gates that
+        /// already fit are untouched, so levels that never neared the limit keep their exact numbers.
+        /// </summary>
+        public static void FitToLimit(LevelSpec spec, int armyCap)
+        {
+            int army = Math.Min(spec.startCount, armyCap);
+            int crate = 0;
+            for (int k = 0; k < spec.runGates.Length; k++)
+            {
+                for (; crate < spec.crates.Length && spec.crates[crate].z < spec.runGates[k].z; crate++)
+                {
+                    army = Math.Min(army + spec.crates[crate].units, armyCap);
+                }
+
+                GateSpec left = Fit(spec.runGates[k].left, army, armyCap);
+                GateSpec right = Fit(spec.runGates[k].right, army, armyCap);
+                if (Same(left, right))
+                {
+                    // Both sides fitted to the same gate: keep a real choice (half the room, or halving against the loss).
+                    right = left.IsGood ? Fit(Add(Math.Max(2, (armyCap - army) / 2)), army, armyCap) : Div(2);
+                    right = Same(left, right) ? Div(2) : right;
+                }
+
+                spec.runGates[k].left = left;
+                spec.runGates[k].right = right;
+                army = Math.Max(GateMath.Apply(left, army, armyCap), GateMath.Apply(right, army, armyCap));
+            }
+        }
+
+        private static bool Same(GateSpec a, GateSpec b) => a.operation == b.operation && a.value == b.value;
+
+        private static GateSpec Fit(GateSpec gate, int army, int armyCap)
+        {
+            if (GateMath.Promise(gate, army) <= armyCap)
+            {
+                return gate;
+            }
+
+            if (gate.operation == GateOperation.Multiply)
+            {
+                for (int value = gate.value - 1; value >= 2; value--)
+                {
+                    if ((long)army * value <= armyCap)
+                    {
+                        return Mul(value);
+                    }
+                }
+            }
+
+            // A "+" of the room left, on a round step when there is room for one.
+            int room = armyCap - army;
+            if (room >= 2)
+            {
+                int step = room >= 20 ? 5 : 1;
+                return Add(room / step * step);
+            }
+
+            return Sub(Math.Max(2, Math.Min(10, army / 20)));
         }
 
         // Crates sit halfway between gate pairs (10 m from each), alternating sides from a random start.

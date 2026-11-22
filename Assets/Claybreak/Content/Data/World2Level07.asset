@@ -78,7 +78,7 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 3
   towerDistance: 34.5
-  towerHealth: 650
+  towerHealth: 630
   floors: 3
   damagePerUnit: 1
   bossRule: 0

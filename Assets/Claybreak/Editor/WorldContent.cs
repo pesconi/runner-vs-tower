@@ -116,7 +116,7 @@ namespace Claybreak.Editor
             for (int w = 0; w < definitions.Length; w++)
             {
                 WorldDefinition definition = definitions[w];
-                LevelSpec[] specs = LevelGenerator.GenerateWorld(definition.Recipe, definition.FixedLevels);
+                LevelSpec[] specs = LevelGenerator.GenerateWorld(definition.Recipe, ArmyLimit.Units, definition.FixedLevels);
                 var levels = new ClaybreakLevel[specs.Length];
                 for (int i = 0; i < specs.Length; i++)
                 {
@@ -136,7 +136,7 @@ namespace Claybreak.Editor
 
         /// <summary>The generated specs of a world (reports and tests read them without writing assets).</summary>
         public static LevelSpec[] Specs(WorldDefinition definition) =>
-            LevelGenerator.GenerateWorld(definition.Recipe, definition.FixedLevels);
+            LevelGenerator.GenerateWorld(definition.Recipe, ArmyLimit.Units, definition.FixedLevels);
 
         // ---------- world 1: the marches (RT-4 slice, 7 -> 10 levels) ----------
 
@@ -171,15 +171,17 @@ namespace Claybreak.Editor
                 Row(Mul(3), Div(2), Mul(2)), TowerKind.Keep, 320, 2, 32f, 70,
                 s => { Wall(s, true, 0, 20f, 70); Cannon(s, 2f, 0.9f, 1.15f, 4); });
 
-            // 5: forge with three floors, sweeper and a faster cannon.
+            // 5: forge with three floors, sweeper and a faster cannon. RT-6t.14: the fourth pair was "+30 | x2", and x2
+            // promised 314 (crates taken) past the crowd limit; it is now a trap against "+130" (best path 284, not 298),
+            // and the health follows the potential at the same share (440 -> 420).
             fixedLevels[4] = Spec("LEVEL 5", 14, 5.5f, 104f,
                 new[]
                 {
                     Pair(18f, Mul(2), Add(10)), Pair(38f, Add(20), Sub(15)), Pair(58f, Div(2), Mul(3)),
-                    Pair(80f, Add(30), Mul(2)), Pair(94f, Sub(25), Add(10))
+                    Pair(80f, Sub(20), Add(130)), Pair(94f, Sub(25), Add(10))
                 },
                 new[] { Crate(28f, false, 3), Crate(68f, true, 4) },
-                Row(Mul(2), Mul(3), Div(2)), TowerKind.Forge, 440, 3, 34f, 85,
+                Row(Mul(2), Mul(3), Div(2)), TowerKind.Forge, 420, 3, 34f, 85,
                 s => { Wall(s, false, 1, 22f, 60); Cannon(s, 1.9f, 0.85f, 1.15f, 5); Sweeper(s, 17f, 3f); });
 
             // 6: every defense at once before the new levels.
@@ -193,15 +195,17 @@ namespace Claybreak.Editor
                 Row(Mul(2), Div(2), Mul(3)), TowerKind.Keep, 470, 3, 34f, 100,
                 s => { Wall(s, true, 2, 24f, 90); Cannon(s, 1.8f, 0.85f, 1.2f, 5); Sweeper(s, 16f, 3f); });
 
-            // Boss (level 10): four floors; each fallen floor turns the gate row (GDD 4.4).
+            // Boss (level 10): four floors; each fallen floor turns the gate row (GDD 4.4). RT-6t.14: the fourth pair was
+            // "+30 | x2", and x2 promised 398 past the crowd limit; it is now "/2 | +75" (best path 266, was capped at
+            // 300), and the health follows the potential at the same share (600 -> 530).
             fixedLevels[9] = Spec("BOSS", 16, 6f, 112f,
                 new[]
                 {
                     Pair(18f, Mul(2), Add(15)), Pair(38f, Add(25), Sub(10)), Pair(58f, Div(2), Mul(3)),
-                    Pair(80f, Add(30), Mul(2)), Pair(100f, Sub(30), Add(20))
+                    Pair(80f, Div(2), Add(75)), Pair(100f, Sub(30), Add(20))
                 },
                 new[] { Crate(28f, false, 4), Crate(48f, true, 4), Crate(70f, false, 4), Crate(90f, true, 4) },
-                Row(Mul(3), Div(2), Mul(2)), TowerKind.Boss, 600, 4, 36f, 200,
+                Row(Mul(3), Div(2), Mul(2)), TowerKind.Boss, 530, 4, 36f, 200,
                 s =>
                 {
                     s.bossRule = BossRule.ShiftGates;
