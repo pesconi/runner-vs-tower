@@ -161,8 +161,9 @@ namespace Claybreak.Editor
         private static void CheckScenery(WorldScenery scenery, ClaybreakCatalog catalog, List<string> failures)
         {
             InstancedProps props = scenery.Props;
-            // RT-6t.13 (fog near zero): a prop wraps to the far end of the window; every point of it a game camera can see
-            // there must be in full fog, and the fog must be complete before the far clip (the horizon does not cut sharp).
+            // RT-6t.13 (no fog, user 2026-11-22): a prop wraps to the far end of the window; with nothing to hide it there,
+            // no game camera may see that point: the nearest visible wrap must lie past the camera far clip, so props come
+            // in through the far plane at the horizon, never popping in on screen. And the scene has no fog.
             float wrapDepth = NearestVisibleWrapDepth(props, catalog, failures);
             Debug.Log($"[ClaybreakValidation] the nearest prop wrap a game camera sees is {wrapDepth:0.0} m away (window {props.Scatter.Length} m)");
             Camera view = props.Anchor != null ? props.Anchor.GetComponent<Camera>() : null;
@@ -174,22 +175,17 @@ namespace Claybreak.Editor
                     failures.Add($"scenery: {entry.world.name} shows {look.trees} trees and {look.rocks} rocks, more than the scene preallocates");
                 }
 
-                if (look.palette == null)
-                {
-                    continue;
-                }
+            }
 
-                if (look.palette.FogEnd > wrapDepth)
-                {
-                    failures.Add($"scenery: {entry.world.name} fog ends at {look.palette.FogEnd} m, but a camera sees props wrap in at "
-                        + $"{wrapDepth:0.0} m: they would pop in (lengthen the props window or bring the fog in)");
-                }
+            if (view == null || wrapDepth < view.farClipPlane)
+            {
+                failures.Add($"scenery: a game camera sees props wrap in at {wrapDepth:0.0} m, before the camera far clip "
+                    + $"({(view == null ? 0f : view.farClipPlane)} m): with no fog they would pop in (lengthen the props window)");
+            }
 
-                if (view == null || look.palette.FogEnd >= view.farClipPlane)
-                {
-                    failures.Add($"scenery: {entry.world.name} fog ends at {look.palette.FogEnd} m, not before the camera far clip "
-                        + $"({(view == null ? 0f : view.farClipPlane)} m): the horizon would cut sharp");
-                }
+            if (RenderSettings.fog)
+            {
+                failures.Add("scenery: the scene has fog on; the user removed it (RT-6t.13)");
             }
 
             int draws = 1 + props.LayerCount;

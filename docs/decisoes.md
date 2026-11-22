@@ -1788,3 +1788,22 @@ O usuário jogou no OPPO e pediu dois ajustes (registrados pela sessão RT-6t.13
   com a posição da corrida (o desenho do líder é do quadro anterior quando a corrotina retoma); a formação recua 3× mais
   rápido do que avança (depois de um portão de multiplicar o anel novo não passa à frente do líder); o construtor de cena
   copia para o líder os ajustes de pulo e animação do enxame (não desalinham se forem afinados).
+
+## 2026-11-22 — RT-6t.13 (ajuste) — Sem neblina nenhuma — usuário
+
+- **Decisão do usuário (jogou a build da 6t.13 no OPPO):** "Mano, tira essa neblina, ta muito ruim, fica parecendo que tem
+  uma névoa me atrapalhando a ver o jogo." Neblina zero nos 4 mundos, na corrida e no assalto; as cores das paletas
+  continuam as aprovadas.
+- **T-RT6t13-9 — A neblina sai pelo jogo, não pelo kit.** O `ToonPaletteApplier` do kit sempre liga a neblina linear da
+  paleta; o `WorldScenery` (jogo) a desliga logo depois de aplicar cada mundo (`RenderSettings.fog = false`) e o construtor
+  grava a cena sem neblina. Todo shader com neblina (toon, pista listrada, sombras) roda a variante sem neblina — só fica
+  mais barato. O kit não muda (sem aceite do Wild Pack); a cor e a faixa de neblina continuam no dado da paleta porque o
+  kit as exige, mas nada as desenha.
+- **T-RT6t13-10 — Caça a outras fontes de "véu":** sem pós-processamento (a câmera não tem dados adicionais do URP:
+  sem bloom, vinheta, gradação ou tonemapping; gradação do URP em LDR); o céu é um gradiente em tela desenhado atrás de
+  tudo (não mistura com o chão); camadas translúcidas são só os painéis dos portões (feedback aprovado na 6t.13);
+  nenhuma cor de paleta foi clareada ou dessaturada. A única fonte de véu era a neblina.
+- **T-RT6t13-11 — Sem neblina para esconder, as árvores entram pelo plano de corte.** A janela de reciclagem passa de 180
+  para 200 m (árvores e pedras de cada mundo × 200/90 das de referência, mesma densidade) e o validador troca a regra:
+  o ponto mais perto onde uma árvore reaparece à vista de qualquer câmera do jogo tem de ficar além do plano de corte
+  (170 m). Medido: 172,5 m. O teste EditMode prova que a janela antiga (90 m) faria árvores surgirem na tela.

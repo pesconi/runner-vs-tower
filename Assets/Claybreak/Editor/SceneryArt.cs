@@ -46,12 +46,12 @@ namespace Claybreak.Editor
         public const float PropHeight = 2.9f * 1.5f;
 
         /// <summary>
-        /// Length of the props' window along Z (m; the reference: 90). RT-6t.13: with the fog near zero a prop must not pop
-        /// in where it wraps, so the window reaches past what the camera sees clear: the validator checks that any wrap point
-        /// still on screen is in full fog (<see cref="PropWrapGuard"/>). The worlds' tree and rock counts are per window,
-        /// doubled with it so the density stays the reference's.
+        /// Length of the props' window along Z (m; the reference: 90). RT-6t.13: with no fog a prop must not pop in where
+        /// it wraps, so the window reaches past the camera far clip from every game camera (<see cref="PropWrapGuard"/>,
+        /// checked by the validator). The worlds' tree and rock counts are per window, scaled with it (200/90 of the
+        /// reference's) so the density stays the same.
         /// </summary>
-        public const float PropWindowLength = 180f;
+        public const float PropWindowLength = 200f;
 
         // One-hot slot weights (alpha 0: the instance tint is not used).
         private static readonly Color32 Slot0 = new Color32(255, 0, 0, 0);

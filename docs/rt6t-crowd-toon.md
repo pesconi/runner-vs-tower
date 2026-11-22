@@ -760,3 +760,28 @@ e de 2,2× em GPU sobre o limite de 11 ms, quadro sempre a 60 fps, nenhuma aloca
 
 Depois do gate: `adb shell am force-stop com.jungledegree.runnervstower` e `adb install -r /c/temp/rt6t13/Claybreak.apk`
 (save preservado; instalado em 2026-11-22 20:41). Falta só o usuário jogar e aprovar o líder e a neblina.
+
+### Ajuste — sem neblina nenhuma (2026-11-22)
+
+O usuário jogou a build da 6t.13 e reprovou a neblina: "tira essa neblina, ta muito ruim". Decisões: usuário e
+T-RT6t13-9..11 em `decisoes.md`.
+
+- **Neblina desligada em tudo.** O `WorldScenery` desliga a neblina do render depois de aplicar a paleta de cada mundo
+  (o kit sempre a liga); a cena é gravada sem neblina. Vale para os 4 mundos, corrida e assalto, e para todos os shaders
+  com neblina (toon, pista, sombras), que passam a rodar a variante sem neblina. O kit não mudou.
+- **Outras fontes de véu procuradas:** não há pós-processamento na câmera, o céu é um gradiente desenhado atrás de tudo,
+  as únicas camadas translúcidas são os painéis dos portões e nenhuma cor de paleta mudou. A neblina era a única fonte.
+- **Árvores sem "surgir do nada":** janela do cenário de 180 → 200 m (contagens × 200/90 da referência); o validador exige
+  que o ponto mais perto onde uma árvore reaparece à vista de qualquer câmera fique além do plano de corte (170 m):
+  **172,5 m**.
+- **Validação:** `Tools/rt4-check.sh /c/temp/rt6t13b` completo, todos **PASS** (EditMode 305/305, PlayMode 24 + 13 capturas
+  ignoradas sem GPU, APKs e AAB). Telas do jogo (`art/telas/`) regravadas sem neblina.
+- **Capturas do OPPO** em `art/rt6t/neblina/`: `antes-*.png` (build da 6t.13, mundos 1 e 4, corrida e assalto) tiradas no
+  aparelho. **Pendente:** as `depois-*.png`, o gate 3× e a instalação — o OPPO bloqueou antes (passos abaixo).
+- **Gate 3×:** a variante sem neblina só tira conta dos shaders, mas troca a variante desenhada; decidido rodar de novo
+  corrida e assalto do mundo 4 com o APK novo.
+
+Passos pendentes (APKs em `/c/temp/rt6t13b/`), com o OPPO desbloqueado:
+`Tools/rt2-gate.sh rt6t13b-run-w4 60 20 /c/temp/rt6t13b/Claybreak-measure.apk run:4`,
+`Tools/rt2-gate.sh rt6t13b-assault-w4 60 20 /c/temp/rt6t13b/Claybreak-measure.apk 4`, capturas de depois com o mesmo APK,
+`adb shell am force-stop com.jungledegree.runnervstower` e `adb install -r /c/temp/rt6t13b/Claybreak.apk` (preserva o save).

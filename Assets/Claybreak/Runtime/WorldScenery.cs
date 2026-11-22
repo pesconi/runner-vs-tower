@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Claybreak
 {
     /// <summary>
-    /// Dresses the one scene for a world (RT-6t.8): the world's toon palette on screen (sky gradient and fog), on the
+    /// Dresses the one scene for a world (RT-6t.8): the world's toon palette on screen (sky gradient; no fog since RT-6t.13), on the
     /// striped track (track and stripe colors), on the ground and rails (ground and stripe colors) and on the recycled side
     /// props (trees: trunk and two foliage tones; rocks: rock and light foliage), the world's tree and rock density, and its
     /// sun and ambient light. The scenery itself is the same preallocated set in every world: applying is a few property
@@ -24,7 +24,7 @@ namespace Claybreak
         [Tooltip("Trees (layer 0) and rocks (layer 1) along the road.")]
         [SerializeField] private InstancedProps props;
         [SerializeField] private Light sun;
-        [Tooltip("Puts the world's palette on screen (sky and fog).")]
+        [Tooltip("Puts the world's palette on screen (the sky; the game keeps the fog off).")]
         [SerializeField] private ToonPaletteApplier palette;
 
         private MaterialPropertyBlock trackBlock;
@@ -95,6 +95,11 @@ namespace Claybreak
             {
                 return;
             }
+
+            // RT-6t.13 (user, 2026-11-22: "take this fog out"): no fog in any world, run or assault. The kit's applier
+            // always turns the palette's linear fog on, so the game turns it off right after; every fogged shader then runs
+            // its no-fog variant. The props wrap past the camera far clip instead (ClaybreakValidation, PropWrapGuard).
+            RenderSettings.fog = false;
 
             trackBlock ??= new MaterialPropertyBlock();
             groundBlock ??= new MaterialPropertyBlock();

@@ -27,8 +27,8 @@ namespace Claybreak.Editor
     /// exact values (docs/direcao-visual-crowd.md section 1.1); world 4 is the provisional "Aurora" of section 5.1. The
     /// tower and defense colors are ours, provisional [P]: on screen since RT-6t.10 (towers, bosses, defenses, projectiles,
     /// crates, through ArtPalette's structure weights), Pastel's tower light/dark darkened there so the towers read against
-    /// its pink sky. Fog (RT-6t.13, user 2026-11-22: "remove it or leave it near zero"): 110–150 m in every world, clear
-    /// over everything the player looks at and complete before the camera far clip, so the horizon does not cut sharp.
+    /// its pink sky. Fog: none on screen (RT-6t.13, user 2026-11-22: "take this fog out"; WorldScenery turns it off). The
+    /// kit's palette still requires a fog color and range; they are kept (110–150 m) but nothing draws them.
     /// </summary>
     public static class PaletteContent
     {

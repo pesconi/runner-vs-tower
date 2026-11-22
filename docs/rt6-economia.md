@@ -73,7 +73,7 @@ fortes, e a renda futura de anúncio recompensado e recompensa diária (RT-7) n�
 Potencial = exército no melhor caminho dos portões (teto 300) × melhor portão da fileira. Defesas: M muralha,
 C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).
 
-### WORLD 1 (world1) — paleta Pastel, 130 árvores e 58 pedras, dano esperado x1, abre com 0 estrelas
+### WORLD 1 (world1) — paleta Pastel, 144 árvores e 64 pedras, dano esperado x1, abre com 0 estrelas
 
 | Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
 |---|---|---|---|---|---|---|---|
@@ -88,7 +88,7 @@ C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).
 | LEVEL 9 | Forge | 3 | 550 | 15 | 900 | M100 C1.7s/6 V2.9s | 125 |
 | BOSS | Boss (ShiftGates) | 4 | 600 | 16 | 900 | M100 C1.6s/6 V2.8s | 200 |
 
-### WORLD 2 (world2) — paleta PorDoSol, 104 árvores e 72 pedras, dano esperado x1.3, abre com 10 estrelas
+### WORLD 2 (world2) — paleta PorDoSol, 116 árvores e 80 pedras, dano esperado x1.3, abre com 10 estrelas
 
 | Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
 |---|---|---|---|---|---|---|---|
@@ -103,7 +103,7 @@ C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).
 | LEVEL 9 | World2Tower | 3 | 720 | 19 | 888 | M130 C1.6s/7 V2.9s E100/60% | 165 |
 | BOSS | World2Boss (ShieldReturns) | 4 | 800 | 20 | 900 | M140 C1.5s/7 V2.8s E110/60% | 350 |
 
-### WORLD 3 (world3) — paleta Doce, 156 árvores e 44 pedras, dano esperado x1.5, abre com 25 estrelas
+### WORLD 3 (world3) — paleta Doce, 173 árvores e 49 pedras, dano esperado x1.5, abre com 25 estrelas
 
 | Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
 |---|---|---|---|---|---|---|---|
@@ -118,7 +118,7 @@ C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).
 | LEVEL 9 | World3Tower | 3 | 870 | 23 | 900 | M160 C1.35s/8 V2.6s E120/60% | 230 |
 | BOSS | World3Boss (Overheat) | 4 | 940 | 24 | 900 | M170 C1.3s/8 V2.5s E130/60% | 500 |
 
-### WORLD 4 (world4) — paleta Aurora, 88 árvores e 88 pedras, dano esperado x1.75, abre com 45 estrelas
+### WORLD 4 (world4) — paleta Aurora, 98 árvores e 98 pedras, dano esperado x1.75, abre com 45 estrelas
 
 | Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |
 |---|---|---|---|---|---|---|---|

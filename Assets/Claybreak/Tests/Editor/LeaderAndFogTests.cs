@@ -7,7 +7,8 @@ namespace Claybreak.Tests
 {
     /// <summary>
     /// RT-6t.13: the guard that replaced "the fog ends before the props' window" (it finds where a game camera sees props
-    /// wrap in), the shipped numbers against it, and the leader's crown mesh.
+    /// wrap in), the shipped numbers against it (no fog: the wraps must lie past the camera far clip), and the leader's
+    /// crown mesh.
     /// </summary>
     public sealed class LeaderAndFogTests
     {
@@ -32,25 +33,20 @@ namespace Claybreak.Tests
         }
 
         [Test]
-        public void TheReferenceWindowWouldPopPropsInClearOfTheNewFog()
+        public void TheReferenceWindowWouldPopPropsInWithoutFog()
         {
-            // Up to RT-6t.12 the 90 m window hid its wraps in a fog ending at 75 m; the near-zero fog starts at 110 m.
+            // Up to RT-6t.12 the 90 m window hid its wraps in a fog ending at 75 m; with no fog they would be seen.
             float nearest = Nearest(PropScatterSettings.Default.Length);
-            Assert.Less(nearest, 110f);
+            Assert.Less(nearest, ClaybreakSceneBuilder.CameraFarClip);
             Assert.Greater(nearest, 75f, "the old rule held for the old fog");
         }
 
         [Test]
-        public void TheShippedWindowWrapsPropsInFullFogBeforeTheFarClip()
+        public void TheShippedWindowWrapsPropsPastTheFarClip()
         {
-            PaletteDefinition[] palettes = PaletteContent.Palettes;
+            // No fog (RT-6t.13): a prop comes in through the far plane at the horizon, never where the camera sees clear.
             float nearest = Nearest(SceneryArt.PropWindowLength);
-            foreach (PaletteDefinition palette in palettes)
-            {
-                Assert.LessOrEqual(palette.FogEnd, nearest, palette.Name);
-                Assert.Less(palette.FogEnd, ClaybreakSceneBuilder.CameraFarClip, palette.Name);
-                Assert.Less(palette.FogStart, palette.FogEnd, palette.Name);
-            }
+            Assert.GreaterOrEqual(nearest, ClaybreakSceneBuilder.CameraFarClip);
         }
 
         [Test]

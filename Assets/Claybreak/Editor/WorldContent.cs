@@ -222,9 +222,9 @@ namespace Claybreak.Editor
                 LookNames = new[] { "dusk marches (RT-4)" },
                 Look = new WorldLook
                 {
-                    // Trees and rocks per props window (RT-6t.13: doubled with the 180 m window, same density as before).
-                    trees = 130,
-                    rocks = 58,
+                    // Trees and rocks per props window (RT-6t.13: scaled with the 200 m window, 200/90 of the reference's, same density).
+                    trees = 144,
+                    rocks = 64,
                     ambient = new Color(0.42f, 0.36f, 0.34f),
                     sun = new Color(1f, 0.86f, 0.7f),
                     sunIntensity = 1.2f,
@@ -279,16 +279,16 @@ namespace Claybreak.Editor
                 {
                     new WorldLook
                     {
-                        trees = 104,
-                        rocks = 72,
+                        trees = 116,
+                        rocks = 80,
                         ambient = new Color(0.3f, 0.38f, 0.36f),
                         sun = new Color(0.72f, 0.88f, 0.82f),
                         sunIntensity = 1.05f,
                     },
                     new WorldLook
                     {
-                        trees = 104,
-                        rocks = 72,
+                        trees = 116,
+                        rocks = 80,
                         ambient = new Color(0.44f, 0.36f, 0.26f),
                         sun = new Color(1f, 0.78f, 0.5f),
                         sunIntensity = 1.15f,
@@ -348,16 +348,16 @@ namespace Claybreak.Editor
                 {
                     new WorldLook
                     {
-                        trees = 156,
-                        rocks = 44,
+                        trees = 173,
+                        rocks = 49,
                         ambient = new Color(0.4f, 0.3f, 0.28f),
                         sun = new Color(1f, 0.62f, 0.42f),
                         sunIntensity = 1.15f,
                     },
                     new WorldLook
                     {
-                        trees = 156,
-                        rocks = 44,
+                        trees = 173,
+                        rocks = 49,
                         ambient = new Color(0.46f, 0.46f, 0.38f),
                         sun = new Color(0.95f, 0.95f, 0.8f),
                         sunIntensity = 1f,
@@ -421,16 +421,16 @@ namespace Claybreak.Editor
                 {
                     new WorldLook
                     {
-                        trees = 88,
-                        rocks = 88,
+                        trees = 98,
+                        rocks = 98,
                         ambient = new Color(0.4f, 0.45f, 0.56f),
                         sun = new Color(0.78f, 0.86f, 1f),
                         sunIntensity = 1f,
                     },
                     new WorldLook
                     {
-                        trees = 88,
-                        rocks = 88,
+                        trees = 98,
+                        rocks = 98,
                         ambient = new Color(0.38f, 0.32f, 0.42f),
                         sun = new Color(1f, 0.78f, 0.9f),
                         sunIntensity = 1.05f,

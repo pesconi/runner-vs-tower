@@ -59,7 +59,7 @@ namespace Claybreak.Editor
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
         public const float TrackWidth = 8f;
 
-        /// <summary>Far clip of the game camera (m): the fog of every world is complete before it (RT-6t.13).</summary>
+        /// <summary>Far clip of the game camera (m): the props wrap past it, so none pops in on screen (RT-6t.13, no fog).</summary>
         public const float CameraFarClip = 170f;
         private const float TrackStartZ = -12f;
         /// <summary>The game scene's ground mesh (it spans this scene's track, so it is saved apart from the shared props).</summary>
@@ -262,14 +262,12 @@ namespace Claybreak.Editor
                 + $"{RunGateCourse.MaximumPairs} gate pairs, {ClaybreakLevel.MaximumCrates} crates, track to z={trackEnd:0}.");
         }
 
-        /// <summary>Lighting and fog; the track and the scenery come with <see cref="CreateWorldScenery"/>.</summary>
+        /// <summary>Lighting (no fog: RT-6t.13); the track and the scenery come with <see cref="CreateWorldScenery"/>.</summary>
         public static Light CreateEnvironment()
         {
             RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.fog = true;
-            RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogStartDistance = 50f;
-            RenderSettings.fogEndDistance = 130f;
+            // RT-6t.13: no fog (the user's call); WorldScenery keeps it off when a world is shown.
+            RenderSettings.fog = false;
             var sun = new GameObject("Sun", typeof(Light));
             Light light = sun.GetComponent<Light>();
             light.type = LightType.Directional;
