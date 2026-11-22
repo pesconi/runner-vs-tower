@@ -60,6 +60,8 @@ namespace Claybreak.Editor
         private const string SplatMaterialPath = KitShared + "/RunnerSplat.mat";
         public const float TrackWidth = 8f;
         private const float TrackStartZ = -12f;
+        /// <summary>The game scene's ground mesh (it spans this scene's track, so it is saved apart from the shared props).</summary>
+        public const string GroundMeshPath = SceneryArt.Folder + "/GroundAndRails.asset";
         // The reference drag moves 16 m per screen width on a 6 m half-width track; the same feel on this track.
         private const float ReferenceDragMeters = 16f;
         private const float ReferenceTrackHalfWidth = 6f;
@@ -198,7 +200,7 @@ namespace Claybreak.Editor
                 }
             }
 
-            Renderer track = CreateEnvironment(palette, trackEnd, out Light sun);
+            Light sun = CreateEnvironment();
             sun.gameObject.AddComponent<ToonLookApplier>();
             SetRef(sun.GetComponent<ToonLookApplier>(), "look", Load<ToonLook>(CrowdLookPath));
             ClaybreakLevel first = catalog.Worlds[0].world.Levels[0];
@@ -223,7 +225,8 @@ namespace Claybreak.Editor
             cameraObject.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
             RunCrowd crowd = CreateCrowd(cameraObject, theme);
             var assaultCamera = cameraObject.AddComponent<AssaultCamera>();
-            WorldScenery scenery = CreateScenery(catalog, palette, trackEnd, track, sun, camera);
+            WorldScenery scenery = CreateScenery(catalog, trackEnd, sun, camera);
+            Renderer track = scenery.Track;
 
             RunGateCourse gates = CreateRunGates(palette);
             Transform firingLine = Prim.Box(null, "FiringLine", new Vector3(0f, 0.01f, first.FiringLineZ),
@@ -271,8 +274,8 @@ namespace Claybreak.Editor
                 + $"{RunGateCourse.MaximumPairs} gate pairs, {ClaybreakLevel.MaximumCrates} crates, track to z={trackEnd:0}.");
         }
 
-        /// <summary>Lighting, fog and the track (no collider: nothing stands on it by physics); world sets come apart.</summary>
-        public static Renderer CreateEnvironment(ArtPalette palette, float trackEnd, out Light light)
+        /// <summary>Lighting and fog; the track and the scenery come with <see cref="CreateWorldScenery"/>.</summary>
+        public static Light CreateEnvironment()
         {
             RenderSettings.ambientMode = AmbientMode.Flat;
             RenderSettings.fog = true;
@@ -280,17 +283,13 @@ namespace Claybreak.Editor
             RenderSettings.fogStartDistance = 50f;
             RenderSettings.fogEndDistance = 130f;
             var sun = new GameObject("Sun", typeof(Light));
-            light = sun.GetComponent<Light>();
+            Light light = sun.GetComponent<Light>();
             light.type = LightType.Directional;
             light.shadows = LightShadows.None;
             sun.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             // Explicit: a scene made in batchmode (art captures) does not pick its sun by itself.
             RenderSettings.sun = light;
-
-            float middle = (TrackStartZ + trackEnd) * 0.5f;
-            float length = trackEnd - TrackStartZ;
-            Renderer track = Prim.Box(null, "Track", new Vector3(0f, -0.1f, middle), new Vector3(TrackWidth, 0.2f, length), palette.Ground);
-            return track;
+            return light;
         }
 
         // RT-6t.4: the run crowd, instanced (one draw for the bodies, one for the shadows), kept on the track, in the
@@ -339,70 +338,67 @@ namespace Claybreak.Editor
             return controller;
         }
 
-        /// <summary>One world's set dressing and look on a scene made by <see cref="CreateEnvironment"/> (captures).</summary>
-        public static GameObject DressWorld(string worldId, WorldLook look, ArtPalette palette, float trackEnd, Renderer track,
-            Light sun, Camera camera)
+        /// <summary>
+        /// The toon scenery (RT-6t.8) of a scene made by <see cref="CreateEnvironment"/>: the striped track up to
+        /// <paramref name="trackEnd"/>, the ground with its rails, the recycled side props following
+        /// <paramref name="anchor"/> (room for <paramref name="trees"/> trees and <paramref name="rocks"/> rocks) and the
+        /// palette applier, wired into a <see cref="WorldScenery"/>. No world is applied yet.
+        /// </summary>
+        public static WorldScenery CreateWorldScenery(float trackEnd, Light sun, Transform anchor, int trees, int rocks, string groundMeshPath)
         {
-            WorldMaterials materials = WorldMaterials.For(worldId, look);
-            GameObject set = WorldSceneryArt.Build(look.scenery, "Scenery_" + worldId, materials, palette, TrackStartZ, trackEnd);
-            track.sharedMaterial = materials.Ground;
+            var root = new GameObject("Scenery");
+            SceneryParts parts = SceneryArt.Create(root.transform, TrackWidth * 0.5f, TrackStartZ, trackEnd, anchor, trees, rocks, groundMeshPath);
+            ToonPaletteApplier applier = root.AddComponent<ToonPaletteApplier>();
+            SetRef(applier, "skyMaterial", Load<Material>(SkyMaterialPath));
+            WorldScenery scenery = root.AddComponent<WorldScenery>();
+            SetRef(scenery, "track", parts.Track);
+            SetRef(scenery, "ground", parts.Ground);
+            SetRef(scenery, "props", parts.Props);
+            SetRef(scenery, "sun", sun);
+            SetRef(scenery, "palette", applier);
+            return scenery;
+        }
+
+        /// <summary>
+        /// One world's scenery and look on a throwaway scene made by <see cref="CreateEnvironment"/> (captures): the props
+        /// follow <paramref name="camera"/>; a capture draws them with <see cref="InstancedProps.Render"/> before rendering.
+        /// </summary>
+        public static WorldScenery DressWorld(string worldId, WorldLook look, float trackEnd, Light sun, Camera camera)
+        {
             // The caller may have taken the look before opening this scene, which unloads assets nothing references (the
             // palette among them): the world's palette is loaded again here, by the world id.
             look.palette = WorldContent.PaletteOf(worldId);
-            ApplyLook(look, sun, camera);
-            return set;
-        }
-
-        // The world's palette (sky gradient as the skybox, fog), ambient and sun, as WorldScenery.Apply does at run time.
-        private static void ApplyLook(WorldLook look, Light sun, Camera camera)
-        {
             string error = look.palette == null ? "no palette (rebuild the scene)" : look.palette.Validate();
             if (error != null)
             {
                 throw new System.InvalidOperationException("world look: " + error);
             }
 
-            ToonPaletteApplier.ApplyGlobally(look.palette, Load<Material>(SkyMaterialPath));
-            RenderSettings.ambientLight = look.ambient;
-            sun.color = look.sun;
-            sun.intensity = look.sunIntensity;
-            if (camera != null)
-            {
-                camera.clearFlags = CameraClearFlags.Skybox;
-            }
+            WorldScenery scenery = CreateWorldScenery(trackEnd, sun, camera.transform, look.trees, look.rocks, null);
+            scenery.Apply(0, look);
+            camera.clearFlags = CameraClearFlags.Skybox;
+            return scenery;
         }
 
-        // One preallocated set per world (only the first shown), its track material, and the switch.
-        private static WorldScenery CreateScenery(ClaybreakCatalog catalog, ArtPalette palette, float trackEnd, Renderer track,
-            Light sun, Camera camera)
+        // The one scenery set of the game, with room for the densest world, showing the first world (the flow applies the
+        // world of each level).
+        private static WorldScenery CreateScenery(ClaybreakCatalog catalog, float trackEnd, Light sun, Camera camera)
         {
-            var root = new GameObject("Scenery");
-            WorldScenery scenery = root.AddComponent<WorldScenery>();
-            int count = catalog.Worlds.Count;
-            var sets = new UnityEngine.Object[count];
-            var grounds = new UnityEngine.Object[count];
-            for (int w = 0; w < count; w++)
+            int trees = 0;
+            int rocks = 0;
+            foreach (WorldEntry entry in catalog.Worlds)
             {
-                ClaybreakWorld world = catalog.Worlds[w].world;
-                WorldMaterials materials = WorldMaterials.For(world.WorldId, world.Look);
-                GameObject set = WorldSceneryArt.Build(world.Look.scenery, "Scenery_" + world.WorldId, materials, palette,
-                    TrackStartZ, trackEnd);
-                set.transform.SetParent(root.transform, false);
-                set.SetActive(w == 0);
-                sets[w] = set;
-                grounds[w] = materials.Ground;
+                trees = Mathf.Max(trees, entry.world.Look.trees);
+                rocks = Mathf.Max(rocks, entry.world.Look.rocks);
             }
 
-            track.sharedMaterial = (Material)grounds[0];
-            ApplyLook(catalog.Worlds[0].world.Look, sun, camera);
-            ToonPaletteApplier applier = root.AddComponent<ToonPaletteApplier>();
-            SetRef(applier, "palette", catalog.Worlds[0].world.Look.palette);
-            SetRef(applier, "skyMaterial", Load<Material>(SkyMaterialPath));
-            SetArray(scenery, "sets", sets);
-            SetArray(scenery, "trackMaterials", grounds);
-            SetRef(scenery, "track", track);
-            SetRef(scenery, "sun", sun);
-            SetRef(scenery, "palette", applier);
+            WorldScenery scenery = CreateWorldScenery(trackEnd, sun, camera.transform, trees, rocks, GroundMeshPath);
+            WorldLook first = catalog.Worlds[0].world.Look;
+            scenery.Apply(0, first);
+            SetRef(scenery.GetComponent<ToonPaletteApplier>(), "palette", first.palette);
+            // Apply wrote the first world's density and prop colors into the serialized layers; the track and ground colors are
+            // property blocks (not saved): the flow applies the world of each level, menu included, before anything shows.
+            EditorUtility.SetDirty(scenery.Props);
             return scenery;
         }
 

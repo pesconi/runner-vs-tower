@@ -21,6 +21,20 @@ namespace JungleDegree.StudioKit.Tests
             Assert.AreEqual(12, new LowPolyMeshBuilder().AddDisc(unit, 12, Red).TriangleCount);
             Assert.AreEqual(12, new LowPolyMeshBuilder().AddBox(unit, Red).TriangleCount);
             Assert.AreEqual(20, new LowPolyMeshBuilder().AddIcosahedron(unit, Red).TriangleCount);
+            Assert.AreEqual(80, new LowPolyMeshBuilder().AddIcosahedron(unit, Red, 1).TriangleCount);
+            Assert.AreEqual(180, new LowPolyMeshBuilder().AddIcosahedron(unit, Red, 2).TriangleCount);
+        }
+
+        [Test]
+        public void SplitIcosahedronStaysOnTheUnitSphere()
+        {
+            Mesh mesh = new LowPolyMeshBuilder().AddIcosahedron(Matrix4x4.identity, Red, 2).ToMesh("icosphere");
+            foreach (Vector3 vertex in mesh.vertices)
+            {
+                Assert.AreEqual(1f, vertex.magnitude, 1e-4f);
+            }
+
+            Object.DestroyImmediate(mesh);
         }
 
         [Test]
@@ -40,7 +54,8 @@ namespace JungleDegree.StudioKit.Tests
                     .AddCylinder(placement, 6, Red)
                     .AddDisc(placement, 9, Red)
                     .AddBox(placement, Red)
-                    .AddIcosahedron(placement, Red);
+                    .AddIcosahedron(placement, Red)
+                    .AddIcosahedron(placement, Red, 1);
                 AssertFacesOutward(builder.ToMesh("test"));
             }
         }

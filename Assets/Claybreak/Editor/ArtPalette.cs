@@ -13,8 +13,6 @@ namespace Claybreak.Editor
     {
         public const string MaterialFolder = ClaybreakSceneBuilder.Root + "/Materials";
 
-        public readonly Material Ground = Solid("Ground", new Color(0.34f, 0.27f, 0.24f));
-        public readonly Material Field = Solid("Field", new Color(0.2f, 0.17f, 0.17f));
         public readonly Material Stone = Solid("Stone", new Color(0.46f, 0.42f, 0.42f));
         public readonly Material StoneDark = Solid("StoneDark", new Color(0.24f, 0.21f, 0.22f));
         public readonly Material StoneLight = Solid("StoneLight", new Color(0.72f, 0.69f, 0.64f));
@@ -52,12 +50,6 @@ namespace Claybreak.Editor
         public readonly Material Ice = Unlit("Ice", new Color(0.5f, 0.9f, 1f));
         public readonly Material ShieldDome = Clear("ShieldDome", new Color(0.35f, 0.85f, 0.95f, 0.22f));
         public readonly Material ShieldCore = Unlit("ShieldCore", new Color(0.45f, 0.95f, 1f));
-
-        /// <summary>A lit material of one world's look or one tower style, in Materials/&lt;folder&gt;/ (RT-6).</summary>
-        public static Material SolidIn(string folder, string name, Color color) => Solid(folder + "/" + name, color);
-
-        /// <summary>An unlit (glowing) material in Materials/&lt;folder&gt;/.</summary>
-        public static Material UnlitIn(string folder, string name, Color color) => Unlit(folder + "/" + name, color);
 
         private static Material Solid(string name, Color color)
         {

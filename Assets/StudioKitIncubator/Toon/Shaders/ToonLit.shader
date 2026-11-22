@@ -4,11 +4,16 @@
 // instance tint in the instanced variant), 0 = keeps its own color (eyes, leaves...). No shadows, no PBR.
 // Keyword STUDIOKIT_TOON_INSTANCES: the transform and tint come from _ToonInstances[SV_InstanceID]
 // (Graphics.RenderMeshPrimitives, one draw for any count). Global values come from ToonLookApplier.
+// Keyword STUDIOKIT_TOON_SLOTS: the vertex color RGB are weights of three palette slots (_ToonSlot0..2, linear)
+// instead of a color, so one mesh takes any palette (props: trunk / foliage / foliage light).
 Shader "StudioKit/ToonLit"
 {
     Properties
     {
         _TintColor ("Tint (where vertex alpha = 1)", Color) = (1, 1, 1, 1)
+        [HideInInspector] _ToonSlot0 ("Slot 0 (vertex red)", Color) = (1, 1, 1, 1)
+        [HideInInspector] _ToonSlot1 ("Slot 1 (vertex green)", Color) = (1, 1, 1, 1)
+        [HideInInspector] _ToonSlot2 ("Slot 2 (vertex blue)", Color) = (1, 1, 1, 1)
     }
 
     SubShader
@@ -28,6 +33,7 @@ Shader "StudioKit/ToonLit"
             #pragma fragment Frag
             #pragma multi_compile_fog
             #pragma multi_compile_local _ STUDIOKIT_TOON_INSTANCES
+            #pragma multi_compile_local _ STUDIOKIT_TOON_SLOTS
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
@@ -36,6 +42,9 @@ Shader "StudioKit/ToonLit"
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _TintColor;
+                half4 _ToonSlot0;
+                half4 _ToonSlot1;
+                half4 _ToonSlot2;
             CBUFFER_END
 
             TEXTURE2D(_StudioKitToonRamp);
@@ -77,9 +86,13 @@ Shader "StudioKit/ToonLit"
                 normalWS = TransformObjectToWorldNormal(input.normalOS);
                 tint = _TintColor.rgb;
             #endif
+            #if defined(STUDIOKIT_TOON_SLOTS)
+                half3 vertexColor = input.color.r * _ToonSlot0.rgb + input.color.g * _ToonSlot1.rgb + input.color.b * _ToonSlot2.rgb;
+            #else
                 half3 vertexColor = input.color.rgb;
             #if !defined(UNITY_COLORSPACE_GAMMA)
                 vertexColor = SRGBToLinear(vertexColor);
+            #endif
             #endif
                 output.positionCS = TransformWorldToHClip(positionWS);
                 output.normalWS = normalWS;

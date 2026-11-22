@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using JungleDegree.StudioKit.Swarm;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -99,7 +100,7 @@ namespace Claybreak.Editor
             var palette = new ArtPalette();
             const float line = 8f;
             const float towerZ = line + 34f;
-            Renderer track = ClaybreakSceneBuilder.CreateEnvironment(palette, towerZ + 30f, out Light sun);
+            Light sun = ClaybreakSceneBuilder.CreateEnvironment();
             var root = new GameObject("Tower").transform;
             root.position = new Vector3(0f, 0f, towerZ);
             TowerArt.Build(style, root, palette);
@@ -116,7 +117,7 @@ namespace Claybreak.Editor
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.fieldOfView = 60f;
             camera.farClipPlane = 170f;
-            ClaybreakSceneBuilder.DressWorld(worldId, look, palette, towerZ + 30f, track, sun, camera);
+            ClaybreakSceneBuilder.DressWorld(worldId, look, towerZ + 30f, sun, camera);
             float height = boss ? 20f : 17f;
             Vector3 from = new Vector3(0f, 0f, line);
             camera.transform.position = from + new Vector3(0f, height, height - 31f);
@@ -177,7 +178,7 @@ namespace Claybreak.Editor
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var palette = new ArtPalette();
-            Renderer track = ClaybreakSceneBuilder.CreateEnvironment(palette, 60f, out Light sun);
+            Light sun = ClaybreakSceneBuilder.CreateEnvironment();
             var root = new GameObject("Tower").transform;
             root.position = new Vector3(0f, 0f, 40f);
             TowerParts parts = TowerArt.Build(style, root, palette);
@@ -185,7 +186,7 @@ namespace Claybreak.Editor
             Camera camera = cameraObject.GetComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
             WorldDefinition world1 = WorldContent.Worlds[0];
-            ClaybreakSceneBuilder.DressWorld(world1.Id, world1.Look, palette, 60f, track, sun, camera);
+            ClaybreakSceneBuilder.DressWorld(world1.Id, world1.Look, 60f, sun, camera);
             camera.fieldOfView = 50f;
             Vector3 focus = new Vector3(0f, parts.BarHeight * 0.42f, 43f);
             cameraObject.transform.position = focus + new Vector3(-10f, 3f + parts.BarHeight * 0.15f, -19f);
@@ -296,7 +297,25 @@ namespace Claybreak.Editor
             var target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
             camera.targetTexture = target;
             camera.aspect = (float)width / height;
-            camera.Render();
+            // Edit mode runs no LateUpdate: the instanced side props are drawn for this render only (RT-6t.8).
+            InstancedProps[] props = UnityEngine.Object.FindObjectsByType<InstancedProps>(FindObjectsSortMode.None);
+            foreach (InstancedProps each in props)
+            {
+                each.Render(camera);
+            }
+
+            try
+            {
+                camera.Render();
+            }
+            finally
+            {
+                foreach (InstancedProps each in props)
+                {
+                    each.Release();
+                }
+            }
+
             RenderTexture previous = RenderTexture.active;
             RenderTexture.active = target;
             var texture = new Texture2D(width, height, TextureFormat.RGB24, false);

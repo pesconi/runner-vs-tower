@@ -222,15 +222,11 @@ namespace Claybreak.Editor
                 LookNames = new[] { "dusk marches (RT-4)" },
                 Look = new WorldLook
                 {
-                    scenery = SceneryStyle.Marches,
+                    trees = 65,
+                    rocks = 29,
                     ambient = new Color(0.42f, 0.36f, 0.34f),
                     sun = new Color(1f, 0.86f, 0.7f),
                     sunIntensity = 1.2f,
-                    ground = new Color(0.34f, 0.27f, 0.24f),
-                    field = new Color(0.2f, 0.17f, 0.17f),
-                    prop = new Color(0.46f, 0.42f, 0.42f),
-                    propDark = new Color(0.24f, 0.21f, 0.22f),
-                    accent = new Color(1f, 0.55f, 0.15f)
                 },
                 Recipe = new WorldRecipe
                 {
@@ -282,27 +278,19 @@ namespace Claybreak.Editor
                 {
                     new WorldLook
                     {
-                        scenery = SceneryStyle.Mire,
+                        trees = 52,
+                        rocks = 36,
                         ambient = new Color(0.3f, 0.38f, 0.36f),
                         sun = new Color(0.72f, 0.88f, 0.82f),
                         sunIntensity = 1.05f,
-                        ground = new Color(0.29f, 0.26f, 0.18f),
-                        field = new Color(0.11f, 0.17f, 0.14f),
-                        prop = new Color(0.36f, 0.4f, 0.26f),
-                        propDark = new Color(0.08f, 0.12f, 0.11f),
-                        accent = new Color(0.72f, 0.95f, 0.38f)
                     },
                     new WorldLook
                     {
-                        scenery = SceneryStyle.Mire,
+                        trees = 52,
+                        rocks = 36,
                         ambient = new Color(0.44f, 0.36f, 0.26f),
                         sun = new Color(1f, 0.78f, 0.5f),
                         sunIntensity = 1.15f,
-                        ground = new Color(0.4f, 0.31f, 0.18f),
-                        field = new Color(0.25f, 0.2f, 0.1f),
-                        prop = new Color(0.52f, 0.44f, 0.24f),
-                        propDark = new Color(0.17f, 0.12f, 0.07f),
-                        accent = new Color(1f, 0.6f, 0.2f)
                     }
                 },
                 TowerOptions = new[] { TowerStyle.StiltFort, TowerStyle.ClayRuin },
@@ -359,27 +347,19 @@ namespace Claybreak.Editor
                 {
                     new WorldLook
                     {
-                        scenery = SceneryStyle.Foundry,
+                        trees = 78,
+                        rocks = 22,
                         ambient = new Color(0.4f, 0.3f, 0.28f),
                         sun = new Color(1f, 0.62f, 0.42f),
                         sunIntensity = 1.15f,
-                        ground = new Color(0.22f, 0.2f, 0.2f),
-                        field = new Color(0.1f, 0.09f, 0.09f),
-                        prop = new Color(0.36f, 0.3f, 0.27f),
-                        propDark = new Color(0.07f, 0.06f, 0.06f),
-                        accent = new Color(1f, 0.45f, 0.1f)
                     },
                     new WorldLook
                     {
-                        scenery = SceneryStyle.Foundry,
+                        trees = 78,
+                        rocks = 22,
                         ambient = new Color(0.46f, 0.46f, 0.38f),
                         sun = new Color(0.95f, 0.95f, 0.8f),
                         sunIntensity = 1f,
-                        ground = new Color(0.33f, 0.32f, 0.28f),
-                        field = new Color(0.2f, 0.2f, 0.16f),
-                        prop = new Color(0.45f, 0.42f, 0.34f),
-                        propDark = new Color(0.16f, 0.16f, 0.13f),
-                        accent = new Color(0.75f, 0.92f, 1f)
                     }
                 },
                 // Palette B in use: A (soot and ember) repeats world 1's brown and orange (second opinion, D20).
@@ -440,27 +420,19 @@ namespace Claybreak.Editor
                 {
                     new WorldLook
                     {
-                        scenery = SceneryStyle.Peaks,
+                        trees = 44,
+                        rocks = 44,
                         ambient = new Color(0.4f, 0.45f, 0.56f),
                         sun = new Color(0.78f, 0.86f, 1f),
                         sunIntensity = 1f,
-                        ground = new Color(0.34f, 0.38f, 0.47f),
-                        field = new Color(0.3f, 0.34f, 0.42f),
-                        prop = new Color(0.78f, 0.82f, 0.9f),
-                        propDark = new Color(0.12f, 0.14f, 0.22f),
-                        accent = new Color(0.5f, 0.9f, 1f)
                     },
                     new WorldLook
                     {
-                        scenery = SceneryStyle.Peaks,
+                        trees = 44,
+                        rocks = 44,
                         ambient = new Color(0.38f, 0.32f, 0.42f),
                         sun = new Color(1f, 0.78f, 0.9f),
                         sunIntensity = 1.05f,
-                        ground = new Color(0.25f, 0.22f, 0.27f),
-                        field = new Color(0.14f, 0.11f, 0.16f),
-                        prop = new Color(0.42f, 0.38f, 0.46f),
-                        propDark = new Color(0.07f, 0.05f, 0.09f),
-                        accent = new Color(1f, 0.35f, 0.75f)
                     }
                 },
                 TowerOptions = new[] { TowerStyle.FrostSpire, TowerStyle.BoneBastion },

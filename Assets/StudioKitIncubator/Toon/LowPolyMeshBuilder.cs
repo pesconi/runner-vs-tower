@@ -184,9 +184,14 @@ namespace JungleDegree.StudioKit.Toon
             return this;
         }
 
-        /// <summary>Flat-shaded icosahedron of radius 1. Triangles: 20.</summary>
-        public LowPolyMeshBuilder AddIcosahedron(Matrix4x4 placement, Color32 color)
+        /// <summary>
+        /// Flat-shaded icosahedron of radius 1; <paramref name="detail"/> splits every edge into detail + 1 parts with the
+        /// new corners pushed onto the sphere (like three.js <c>IcosahedronGeometry(r, detail)</c>), each small face
+        /// flat. Triangles: 20 × (detail + 1)².
+        /// </summary>
+        public LowPolyMeshBuilder AddIcosahedron(Matrix4x4 placement, Color32 color, int detail = 0)
         {
+            Require(detail >= 0 && detail <= 8, "an icosahedron detail goes from 0 to 8");
             bool mirrored = placement.determinant < 0f;
             float t = (1f + Mathf.Sqrt(5f)) / 2f;
             Vector3[] v =
@@ -200,22 +205,47 @@ namespace JungleDegree.StudioKit.Toon
                 0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11, 1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
                 3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9, 4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1,
             };
+            int parts = detail + 1;
             for (int f = 0; f < faces.Length; f += 3)
             {
                 Vector3 a = v[faces[f]].normalized;
                 Vector3 b = v[faces[f + 1]].normalized;
                 Vector3 c = v[faces[f + 2]].normalized;
-                Vector3 n = (a + b + c).normalized;
-                // Order the corners clockwise seen from outside (Unity front face).
-                if (Vector3.Dot(Vector3.Cross(b - a, c - a), n) < 0f)
+                // Row i, column j of the split face: a + (b − a)·i/parts + (c − a)·j/parts, on the sphere.
+                for (int i = 0; i < parts; i++)
                 {
-                    (b, c) = (c, b);
+                    for (int j = 0; i + j < parts; j++)
+                    {
+                        Vector3 p00 = OnFace(a, b, c, i, j, parts);
+                        Vector3 p10 = OnFace(a, b, c, i + 1, j, parts);
+                        Vector3 p01 = OnFace(a, b, c, i, j + 1, parts);
+                        FlatTriangle(placement, p00, p10, p01, color, mirrored);
+                        if (i + j + 1 < parts)
+                        {
+                            FlatTriangle(placement, p10, OnFace(a, b, c, i + 1, j + 1, parts), p01, color, mirrored);
+                        }
+                    }
                 }
-
-                Triangle(Vertex(placement, a, n, color), Vertex(placement, b, n, color), Vertex(placement, c, n, color), mirrored);
             }
 
             return this;
+        }
+
+        private static Vector3 OnFace(Vector3 a, Vector3 b, Vector3 c, int i, int j, int parts)
+        {
+            return (a + (b - a) * ((float)i / parts) + (c - a) * ((float)j / parts)).normalized;
+        }
+
+        private void FlatTriangle(Matrix4x4 placement, Vector3 a, Vector3 b, Vector3 c, Color32 color, bool mirrored)
+        {
+            Vector3 n = (a + b + c).normalized;
+            // Order the corners clockwise seen from outside (Unity front face).
+            if (Vector3.Dot(Vector3.Cross(b - a, c - a), n) < 0f)
+            {
+                (b, c) = (c, b);
+            }
+
+            Triangle(Vertex(placement, a, n, color), Vertex(placement, b, n, color), Vertex(placement, c, n, color), mirrored);
         }
 
         /// <summary>The merged mesh (16-bit indices), with bounds. Throws past 65535 vertices.</summary>

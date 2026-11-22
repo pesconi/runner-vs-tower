@@ -332,7 +332,7 @@ namespace Claybreak.Editor
             {
                 ClaybreakWorld world = entry.world;
                 text.AppendLine();
-                text.AppendLine($"### {world.WorldName} ({world.WorldId}) — cenário {world.Look.scenery}, dano esperado x{world.ExpectedDamage:0.##}, abre com {entry.starsToUnlock} estrelas");
+                text.AppendLine($"### {world.WorldName} ({world.WorldId}) — paleta {(world.Look.palette == null ? "?" : world.Look.palette.name)}, {world.Look.trees} árvores e {world.Look.rocks} pedras, dano esperado x{world.ExpectedDamage:0.##}, abre com {entry.starsToUnlock} estrelas");
                 text.AppendLine();
                 text.AppendLine("| Fase | Torre | Andares | Vida | Início | Potencial | Defesas | Prêmio |");
                 text.AppendLine("|---|---|---|---|---|---|---|---|");

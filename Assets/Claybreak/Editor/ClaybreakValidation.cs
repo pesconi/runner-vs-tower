@@ -12,7 +12,7 @@ namespace Claybreak.Editor
 {
     /// <summary>
     /// The game's validator (the theme completeness check of the plan): the meta catalog (RT-5) and every
-    /// world and level against the crowd cap of the run and the assault pool (RT-6t.4); per world (RT-6) its look, its own scenery and towers (no obvious
+    /// world and level against the crowd cap of the run and the assault pool (RT-6t.4); per world (RT-6) its look (own palette, tree and rock density) and its own towers (no obvious
     /// visual repetition between worlds), a boss with a rule, a level ramp that never gets easier, and its
     /// device-gate level (the world's heaviest tower, every defense at its limit); the theme, the save validator over
     /// the fixture saves (every version a phone may hold must migrate and pass <see cref="SaveValidator"/>),
@@ -122,6 +122,48 @@ namespace Claybreak.Editor
             return warnings;
         }
 
+        /// <summary>Most draw calls of the side scenery (ground with rails, trees, rocks): direction item 14, RT-6t.8.</summary>
+        public const int MaximumSideSceneryDraws = 3;
+
+        // RT-6t.8: one scenery set for every world, room for the densest world's trees and rocks, the side scenery in at most
+        // three draws, the props off the track and out of the towers' reach, and nothing left of the per-world prop sets.
+        private static void CheckScenery(WorldScenery scenery, ClaybreakCatalog catalog, List<string> failures)
+        {
+            InstancedProps props = scenery.Props;
+            foreach (WorldEntry entry in catalog.Worlds)
+            {
+                WorldLook look = entry.world.Look;
+                if (look.trees > props.Layer(WorldScenery.TreeLayer).Capacity || look.rocks > props.Layer(WorldScenery.RockLayer).Capacity)
+                {
+                    failures.Add($"scenery: {entry.world.name} shows {look.trees} trees and {look.rocks} rocks, more than the scene preallocates");
+                }
+
+                // A prop wraps to the far end of the window: there it must already be lost in the fog.
+                float farEnd = props.Scatter.Length - props.Scatter.Behind;
+                if (look.palette != null && look.palette.FogEnd > farEnd)
+                {
+                    failures.Add($"scenery: {entry.world.name} fog ends at {look.palette.FogEnd} m, past the props' far end ({farEnd} m): they would pop in");
+                }
+            }
+
+            int draws = 1 + props.LayerCount;
+            if (draws > MaximumSideSceneryDraws)
+            {
+                failures.Add($"scenery: the side scenery takes {draws} draws (at most {MaximumSideSceneryDraws})");
+            }
+
+            float trackHalf = scenery.Track.bounds.extents.x;
+            if (props.Scatter.InnerX - SceneryArt.PropScale.y < trackHalf + SceneryArt.RailOffset + SceneryArt.RailSize)
+            {
+                failures.Add("scenery: the widest prop reaches the track or its rails");
+            }
+
+            if (scenery.GetComponentsInChildren<Renderer>(true).Length != 2)
+            {
+                failures.Add("scenery: only the track and the ground draw as renderers (the props are instanced)");
+            }
+        }
+
         private static void WarnIfClose(List<string> warnings, string where, string nameA, Color a, string nameB, Color b)
         {
             float deltaE = ToonContrast.DeltaE(a, b);
@@ -168,13 +210,12 @@ namespace Claybreak.Editor
                 failures.Add($"catalog: {catalog.Worlds.Count} worlds, content defines {WorldContent.Worlds.Length} (rebuild the scene)");
             }
 
-            var sceneries = new HashSet<SceneryStyle>();
             var palettes = new HashSet<ToonPalette>();
             var towersSeen = new Dictionary<TowerKind, string>();
             for (int w = 0; w < catalog.Worlds.Count; w++)
             {
                 ClaybreakWorld world = catalog.Worlds[w].world;
-                CheckWorld(world, w, sceneries, palettes, towersSeen, failures);
+                CheckWorld(world, w, palettes, towersSeen, failures);
                 var stress = AssetDatabase.LoadAssetAtPath<ClaybreakLevel>(WorldContent.StressLevelPath(w));
                 if (stress == null)
                 {
@@ -201,10 +242,10 @@ namespace Claybreak.Editor
             }
         }
 
-        // One world: levels within the menu, a look of its own (scenery style and palette not shared with another
-        // world; the palette is the content's), towers that no earlier world uses for its main tower or boss, 2+ kinds
+        // One world: levels within the menu, a look of its own (a palette not shared with another world, the content's,
+        // and a tree/rock density within the preallocated props), towers that no earlier world uses for its main tower or boss, 2+ kinds
         // plus the boss, health that never drops from one plain level to the next and a boss above them all.
-        private static void CheckWorld(ClaybreakWorld world, int index, HashSet<SceneryStyle> sceneries, HashSet<ToonPalette> palettes,
+        private static void CheckWorld(ClaybreakWorld world, int index, HashSet<ToonPalette> palettes,
             Dictionary<TowerKind, string> towersSeen, List<string> failures)
         {
             if (world.LevelCount > ClaybreakSceneBuilder.LevelDots)
@@ -214,11 +255,11 @@ namespace Claybreak.Editor
 
             if (!world.Look.IsSet)
             {
-                failures.Add($"{world.name}: no look (palette, ground, sun)");
+                failures.Add($"{world.name}: no look (palette, sun, trees and rocks within {WorldLook.MaximumProps})");
             }
-            else if (!sceneries.Add(world.Look.scenery) || !palettes.Add(world.Look.palette))
+            else if (!palettes.Add(world.Look.palette))
             {
-                failures.Add($"{world.name}: scenery {world.Look.scenery} or its palette repeats another world's (no obvious visual repetition)");
+                failures.Add($"{world.name}: its palette repeats another world's (no obvious visual repetition)");
             }
             else
             {
@@ -659,6 +700,10 @@ namespace Claybreak.Editor
             if (scenery == null || worldCatalog == null || !scenery.TryValidate(worldCatalog.Worlds.Count, out sceneryError))
             {
                 failures.Add("scenery: " + sceneryError);
+            }
+            else
+            {
+                CheckScenery(scenery, worldCatalog, failures);
             }
 
             var hud = Object.FindFirstObjectByType<ClaybreakHud>(FindObjectsInactive.Include);

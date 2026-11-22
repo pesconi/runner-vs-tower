@@ -455,7 +455,11 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** RT-6t.6a.
 - **Aceite:** validação padrão; ≤ 3 chamadas para o cenário lateral; capturas dos 4 mundos.
 - **Exige o usuário:** nada.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-22.** Pista listrada procedural (`StudioKit/StripedTrack`), trilhos e chão numa malha,
+  árvores (2 tons + tronco) e pedras instanciadas e recicladas por `InstancedProps` (janela que segue a câmera, sem
+  objetos), cores da `ToonPalette` por slots do `ToonLit`, densidade por mundo; o cenário Simple Lit dos 4 mundos saiu.
+  Cenário lateral em 3 chamadas (validador confere). Validação completa, capturas dos 4 mundos e detalhes em
+  [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t8-1..11 em `decisoes.md`.
 - **Prompt da sessão:** "Entrega RT-6t.8 do Runner vs Tower: cenário instanciado e pista listrada. Leia
   `docs/direcao-visual-crowd.md` (itens 14 e 15, RT-6t.8). Não toque multidão, portões nem HUD."
 

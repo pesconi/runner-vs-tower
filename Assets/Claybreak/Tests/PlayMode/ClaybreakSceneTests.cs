@@ -1,5 +1,6 @@
 using System.Collections;
 using JungleDegree.StudioKit.Core;
+using JungleDegree.StudioKit.Swarm;
 using JungleDegree.StudioKit.Toon;
 using NUnit.Framework;
 using UnityEngine;
@@ -335,7 +336,14 @@ namespace Claybreak.Tests
                 var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
                 Assert.IsTrue(flow.enabled, $"world {world}: the flow disabled itself (see the log)");
                 ClaybreakWorld data = catalog.Worlds[world - 1].world;
-                Assert.AreEqual(world - 1, flow.Scenery.Shown, "the world's scenery set is shown");
+                Assert.AreEqual(world - 1, flow.Scenery.Shown, "the world's scenery is shown");
+                // RT-6t.8: the world's density and palette on the one instanced set, the side scenery in at most 3 draws.
+                InstancedProps props = flow.Scenery.Props;
+                Assert.AreEqual(data.Look.trees, props.Layer(WorldScenery.TreeLayer).Count, $"world {world}: tree density");
+                Assert.AreEqual(data.Look.rocks, props.Layer(WorldScenery.RockLayer).Count, $"world {world}: rock density");
+                Assert.AreEqual(data.Look.palette.FoliageDark, props.Layer(WorldScenery.TreeLayer).Slot1, $"world {world}: foliage color");
+                Assert.AreEqual(data.Look.palette.Rock, props.Layer(WorldScenery.RockLayer).Slot0, $"world {world}: rock color");
+                Assert.LessOrEqual(flow.Scenery.SideDrawCalls, 3, $"world {world}: side scenery draws");
                 Assert.AreEqual(data.Levels[data.LevelCount - 1].Tower, flow.ActiveLevel.Tower, "the gate runs the world's boss tower");
                 // RT-6t.6a: the world's palette is on screen and the default skin wears its crowd color.
                 ToonPalette palette = data.Look.palette;
@@ -362,6 +370,73 @@ namespace Claybreak.Tests
             }
 
             ClaybreakFlow.EditorDeviceGateWorld = 1;
+        }
+
+        // RT-6t.8: the trees and rocks stand beside the track, never on it, in a window that follows the camera; as the army
+        // runs, the props it passes come back at the far end (an endless roadside from a fixed set, nothing created).
+        [UnityTest]
+        public IEnumerator SidePropsFollowTheCameraBesideTheTrack()
+        {
+#if UNITY_EDITOR
+            ClaybreakFlow.EditorStartsWithoutTap = true;
+#endif
+            yield return LoadScene(false);
+            var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
+            Assert.IsTrue(flow.enabled, "the flow disabled itself (see the log)");
+            InstancedProps props = flow.Scenery.Props;
+            Transform anchor = props.Anchor;
+            Assert.AreSame(Camera.main.transform, anchor, "the props follow the main camera");
+            float deadline = Time.realtimeSinceStartup + 20f;
+            while (Time.realtimeSinceStartup < deadline && flow.State != FlowState.Run)
+            {
+                yield return null;
+            }
+
+            // The rig settles (it may back away as it frames the crowd) before the run carries it forward.
+            yield return new WaitForSeconds(1f);
+            float startZ = anchor.position.z;
+            float[] firstZ = PropDepths(props, WorldScenery.TreeLayer);
+            float window = props.Scatter.Length;
+            deadline = Time.realtimeSinceStartup + 30f;
+            while (Time.realtimeSinceStartup < deadline && flow.State == FlowState.Run && anchor.position.z < startZ + 12f)
+            {
+                yield return null;
+            }
+
+            Assert.GreaterOrEqual(anchor.position.z, startZ + 12f, "the camera never moved on");
+            float[] now = PropDepths(props, WorldScenery.TreeLayer);
+            int wrapped = 0;
+            for (int i = 0; i < now.Length; i++)
+            {
+                // A tree the camera passed comes back one whole window further on.
+                wrapped += Mathf.Abs(now[i] - firstZ[i] - window) < 0.01f ? 1 : 0;
+                Assert.IsTrue(Mathf.Abs(now[i] - firstZ[i]) < 0.01f || Mathf.Abs(now[i] - firstZ[i] - window) < 0.01f,
+                    $"tree {i} moved without wrapping");
+            }
+
+            Assert.Greater(wrapped, 0, "no tree passed by the camera came back ahead");
+            float start = anchor.position.z - props.Scatter.Behind;
+            float trackHalf = flow.Scenery.Track.bounds.extents.x;
+            for (int layer = 0; layer < props.LayerCount; layer++)
+            {
+                for (int i = 0; i < props.Layer(layer).Count; i++)
+                {
+                    Vector3 p = props.PropPosition(layer, i);
+                    Assert.That(p.z, Is.InRange(start - 0.01f, start + window + 0.01f), $"prop {layer}/{i} out of the window");
+                    Assert.Greater(Mathf.Abs(p.x) - 1.5f, trackHalf, $"prop {layer}/{i} reaches the track");
+                }
+            }
+        }
+
+        private static float[] PropDepths(InstancedProps props, int layer)
+        {
+            var depths = new float[props.Layer(layer).Count];
+            for (int i = 0; i < depths.Length; i++)
+            {
+                depths[i] = props.PropPosition(layer, i).z;
+            }
+
+            return depths;
         }
 
         internal static IEnumerator LoadScene(bool deviceGate, int world = 1)

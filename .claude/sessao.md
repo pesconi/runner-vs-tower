@@ -96,3 +96,8 @@
   descarrega ScriptableObjects carregados antes (a paleta vira nula) e componentes não rodam `OnEnable`: recarregar e aplicar
   depois de abrir a cena. O kit (incubadora) não pode dizer "tower" (termo do isolamento). O nível de gate veste a skin mais cara
   (carga máxima), não o BARRO. Captura dos 4 mundos: `-testFilter Claybreak.Tests.WorldCaptureTests -worldCaptureDir <pasta>` sem `-nographics`.
+- 2026-11-22 (RT-6t.8): o passo `scene` também regrava `Assets/Claybreak/Lab/ToonLab.unity` (só fileIDs) e
+  `Generated/RunnerUnit.prefab` (1 linha) mesmo sem mudança neles: reverter com `git checkout --`. O cenário é instanciado
+  (`InstancedProps`, sem objetos): nas capturas de modo de edição ele só aparece porque o `ArtDirectionCapture` chama
+  `Render(câmera)` antes de cada render; ferramenta nova de captura em modo de edição precisa fazer o mesmo. Nos testes
+  PlayMode, a câmera recua um pouco no começo da corrida (o rig enquadra a multidão): medir movimento depois de ~1 s.

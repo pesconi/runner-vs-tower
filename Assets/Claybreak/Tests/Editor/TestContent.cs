@@ -88,8 +88,7 @@ namespace Claybreak.Tests
             palette.EditorAssign(colors, 22f, 75f);
             var look = new WorldLook
             {
-                scenery = SceneryStyle.Marches, palette = palette, ambient = Color.gray, sun = Color.white, sunIntensity = 1f,
-                ground = Color.gray, field = Color.gray, prop = Color.gray, propDark = Color.black, accent = Color.yellow
+                palette = palette, trees = 10, rocks = 5, ambient = Color.gray, sun = Color.white, sunIntensity = 1f
             };
             world.EditorAssign(id, id.ToUpperInvariant(), levels, look, ExpectedDamage, 0.25f, 0.25f);
             return world;

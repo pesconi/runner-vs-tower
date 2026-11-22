@@ -1429,3 +1429,47 @@ outra entrega e entra quando a D26 for respondida. Plano, tabela da direção vi
 - **T-RT6t6a-9 — Neblina 22–75 já vale para tudo; sem gate.** A neblina do protótipo cobre também o cenário antigo:
   silhuetas distantes somem até a 6t.8 trocar o cenário. Sem gate no OPPO: o aceite não pede, e o custo novo é 1 desenho
   de céu de tela cheia no lugar da limpeza em cor sólida (a 6t.12 faz o gate final de tudo).
+
+## 2026-11-22 — T-RT6t8-1..11 — Cenário instanciado e pista listrada — técnica (sessão RT-6t.8)
+
+- **T-RT6t8-1 — Cores do cenário por "slot", uma malha para os 4 mundos.** Variante nova do `StudioKit/ToonLit`
+  (palavra-chave local `STUDIOKIT_TOON_SLOTS`): o RGB da cor de vértice deixa de ser cor e vira peso de três cores
+  (`_ToonSlot0..2`, lineares). Árvore = tronco (R), folhagem escura (G), folhagem clara (B); pedra = pedra (R), folhagem
+  clara (G, o "musgo" do protótipo); chão + trilhos = chão (R), faixa (G). O `WorldScenery.Apply` escreve as cores da
+  paleta em blocos de propriedade (nada de material por mundo; trocar de mundo = poucas escritas). Descartado: assar a
+  paleta em 8 malhas por mundo (troca de paleta exigiria reconstruir a cena).
+- **T-RT6t8-2 — Reciclagem sem estado (`PropScatter`).** Cada objeto tem uma fase fixa ao longo da janela; a posição é
+  função da âncora (câmera): a volta em que ele cai na janela sorteia lado, distância, escala (0,7–1,5) e giro por hash
+  de (semente, camada, índice, volta). Igual à reciclagem do protótipo ("volta para o fundo em outro lugar"), mas
+  determinística e válida também quando a câmera volta ao início (recomeço, gate que repete a corrida). Recalcula só nos
+  quadros em que a câmera andou; sem alocação por quadro; testada sem GPU (`PropScatterTests`).
+- **T-RT6t8-3 — Janela de 90 m em vez de 125.** 4 m atrás da câmera e 86 à frente: a neblina termina a 75 m, o resto do
+  protótipo era invisível. Densidade igual à do protótipo: 90 árvores e 40 pedras em 125 m → 65 e 29 em 90 m.
+- **T-RT6t8-4 — Densidade por mundo [P].** `WorldLook.trees/rocks` (substitui o `SceneryStyle`): Pastel 65/29 (a do
+  protótipo), Pôr do sol 52/36, Doce 78/22, Aurora 44/44. A cena pré-aloca a maior de cada tipo; o validador confere.
+- **T-RT6t8-5 — Faixa dos objetos 3,5 m depois da borda da pista** (o protótipo usa 2,5 m numa pista de 12 m; a nossa tem
+  8 m e as torres chegam a 5,7 m do centro): de 7,5 m a 29,5 m do centro; a árvore mais larga (raio 1,5) fica a 6 m.
+- **T-RT6t8-6 — Pista `StudioKit/StripedTrack` sem luz, como o protótipo** (lá é `MeshBasicMaterial`): listras pelo Z do
+  mundo (`frac(z/4) < 0,5`, 2 m de cada cor, igual à textura repetida do protótipo), borda suavizada por `fwidth` (sem
+  cintilar ao longe), neblina linear. Como a multidão anda para a frente, as listras "rolam" sozinhas, sem offset por
+  quadro. A pista continua com 8 m e topo em y = 0 (portões e assalto leem os limites dela).
+- **T-RT6t8-7 — Orçamento de desenho.** Cenário lateral = 3 chamadas: chão + 2 trilhos numa malha estática (1),
+  árvores (1), pedras (1). A pista é 1 a mais (chão de jogo, não lateral). O validador reprova acima de 3 e se o cenário
+  tiver qualquer outro `Renderer`.
+- **T-RT6t8-8 — Retirado o cenário da RT-6.** `WorldSceneryArt`, `SceneryStyle`, as cores antigas do `WorldLook`
+  (ground/field/prop/propDark/accent), os materiais `Materials/world1..4`, `Ground`/`Field` do `ArtPalette` e as
+  silhuetas distantes (a neblina 22–75 já as apagava). Sol e ambiente continuam no `WorldLook` (a luz principal do
+  toon). As `LookOptions` da RT-6 ficam como registro da D20 (agora só diferem em sol/ambiente).
+- **T-RT6t8-9 — Pedra do protótipo com icosaedro subdividido.** `LowPolyMeshBuilder.AddIcosahedron(…, detail)` divide
+  cada aresta em detail + 1 (como `IcosahedronGeometry(r, detail)` do three); a pedra usa detail 1 (160 triângulos);
+  a árvore tem 50.
+- **T-RT6t8-10 — Capturas de modo de edição desenham o cenário.** Sem `LateUpdate` no modo de edição, o
+  `ArtDirectionCapture` chama `InstancedProps.Render(câmera)` antes de cada render manual e `Release` depois.
+- **T-RT6t8-11 — Revisão independente (subagente fable, só leitura): nada sério no caminho de jogo.** Aplicados: o
+  validador agora exige que a neblina de cada paleta termine antes do fundo da janela dos objetos (senão eles
+  "apareceriam" do nada); teste novo do `InstancedProps` (limite da capacidade, uma chamada por camada mostrada,
+  posição = função pura) e teste de giro/escala no lugar de um teste que não podia falhar; conversão de cor para o
+  shader num lugar só (`ToonShaderIds.ShaderColor`); malha de chão das capturas marcada `DontSave`; `Release` das
+  capturas em `finally`. Aceitos: pista e chão guardam a cor em bloco de propriedade (não salvo na cena; o fluxo aplica
+  o mundo antes de qualquer tela); a pista só tem passo de forward, como o `ToonLit` (sem pré-passo de profundidade no
+  URP do projeto).

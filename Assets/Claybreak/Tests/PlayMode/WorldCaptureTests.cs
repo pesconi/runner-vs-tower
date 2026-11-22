@@ -11,8 +11,8 @@ namespace Claybreak.Tests
     /// RT-6t.6a record: the four worlds with their palettes (sky gradient, fog, the default skin wearing the world's crowd
     /// color), on the OPPO CPH2791 screen shape (1080×2354, half size). Each panel is the world's device-gate run (the crowd
     /// at its cap) a moment after the start; the gate's loadout wears the dearest skin, so the capture puts the default skin
-    /// back on and the crowd takes the color the rule gives it (the menu test covers the flow's own wiring). The scenery and the track are still the
-    /// RT-6 art (RT-6t.8 replaces them). Runs only when asked and with a GPU (batchmode without -nographics):
+    /// back on and the crowd takes the color the rule gives it (the menu test covers the flow's own wiring). RT-6t.8: the toon scenery (striped track,
+    /// rails, ground, the world's trees and rocks in its palette and density). Runs only when asked and with a GPU (batchmode without -nographics):
     /// <c>-runTests -testPlatform PlayMode -testFilter WorldCaptureTests -worldCaptureDir &lt;folder&gt;</c>.
     /// </summary>
     public sealed class WorldCaptureTests

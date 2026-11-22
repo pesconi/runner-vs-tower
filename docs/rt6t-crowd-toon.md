@@ -2,7 +2,7 @@
 
 Plano e decisões: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) (aprovado em 2026-11-21). Referência visual:
 [`reference/crowd-proto.html`](reference/crowd-proto.html). Decisões técnicas: `decisoes.md` (T-RT6t-1..9,
-T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10 e T-RT6t5-1..10).
+T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10, T-RT6t5-1..10, T-RT6t6a-1..10 e T-RT6t8-1..11).
 
 ## RT-6t.1 — Portão técnico (2026-11-21)
 
@@ -395,3 +395,45 @@ Decisões T-RT6t6a-1..10 em `decisoes.md`.
   ainda são a arte da RT-6 (escura), até a 6t.8.
 - `art/telas/` regravadas com as paletas (menu, loja, assalto e os 4 mundos). Observação para a 6t.10: com a neblina
   22–75 a torre fica lavada na cor da neblina (no Pastel quase some contra o céu).
+
+## RT-6t.8 — Cenário instanciado e pista listrada (2026-11-22)
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| `ToonLit` variante de slots | incubadora, `Toon` | Palavra-chave `STUDIOKIT_TOON_SLOTS`: o RGB da cor de vértice pesa três cores (`_ToonSlot0..2`); uma malha veste qualquer paleta. |
+| `StudioKit/StripedTrack` | incubadora, `Toon` | Pista sem luz (como o protótipo), listras procedurais pelo Z do mundo (2 m + 2 m), borda filtrada por `fwidth`, neblina. Sem textura, sem offset por quadro. |
+| `PropScatter` + `InstancedProps` | incubadora, `Swarm` | Janela de 90 m que segue a câmera (4 m atrás); posição de cada objeto é função da câmera (fase fixa + volta sorteada por hash): recicla para o fundo em outro lugar, inclusive ao voltar ao início. 1 `GraphicsBuffer` e **1 chamada por camada**; alocado na carga, recalculado só quando a câmera anda. |
+| `AddIcosahedron(…, detail)` | incubadora, `LowPolyMeshBuilder` | Icosaedro subdividido (como o three.js) para a pedra. |
+| `SceneryArt` | jogo, Editor | Receitas do protótipo: árvore (tronco + 2 cones, 50 triângulos), pedra (2 icosaedros detail 1, 160), chão 300 m + 2 trilhos numa malha só; materiais e montagem. |
+| `WorldScenery` | jogo | Aplica a paleta (pista, faixa, chão, trilhos, árvores, pedras, céu, neblina), a densidade do mundo e a luz. Um conjunto só para os 4 mundos. |
+| `WorldLook.trees/rocks` | jogo | Densidade por mundo [P]: Pastel 65/29 (a do protótipo), Pôr do sol 52/36, Doce 78/22, Aurora 44/44. |
+| Validador | `ClaybreakValidation` | Densidade ≤ pré-alocado, **≤ 3 chamadas no cenário lateral**, objetos longe da pista e dos trilhos, nenhum outro `Renderer` no cenário. |
+
+Retirados: `WorldSceneryArt` (cenário Simple Lit por mundo, silhuetas distantes), `SceneryStyle`, as cores antigas do
+`WorldLook` e os materiais `Materials/world1..4`, `Ground` e `Field`. Decisões T-RT6t8-1..11 em `decisoes.md`.
+
+### Chamadas de desenho
+
+Cenário lateral: **3** (chão + trilhos, árvores, pedras) — antes eram dezenas de objetos por mundo com batching
+estático. A pista é 1 chamada. Nenhum objeto por árvore/pedra; nada é criado nem destruído em jogo.
+
+### Testes e validação
+
+- EditMode **203/203** (novos: `PropScatterTests` — janela, faixa lateral, escala, giro só em Y com escala igual,
+  reciclagem uma janela à frente em outro lugar, distribuição nos dois lados e ao longo da janela, camadas/sementes
+  diferentes, configuração inválida; `InstancedPropsTests` — limite da capacidade, uma chamada por camada mostrada,
+  posição igual à função pura, material sem as palavras-chave; icosaedro subdividido: contagem e esfera unitária).
+- PlayMode: `EveryWorldDeviceGateRunsItsSceneryBossAndShield` confere densidade, cores e ≤ 3 desenhos em cada mundo;
+  novo `SidePropsFollowTheCameraBesideTheTrack` (as árvores que a câmera passa voltam uma janela à frente; nenhum objeto
+  sai da janela nem encosta na pista).
+- Sem gate no OPPO: o aceite não pede (fica para a 6t.12).
+
+### Capturas
+
+- [`art/rt6t/cenario-oppo.png`](art/rt6t/cenario-oppo.png) (Unity com GPU, formato do OPPO, metade do tamanho): os 4
+  mundos na corrida do gate com 300 — pista listrada, trilhos na cor da faixa, chão, árvores de 2 tons com tronco e
+  pedras com "musgo", tudo nas cores de cada paleta e sumindo na neblina. O registro da 6t.6a
+  ([`mundos-oppo.png`](art/rt6t/mundos-oppo.png)) fica com o cenário antigo.
+- `art/telas/` regravadas com o cenário novo.

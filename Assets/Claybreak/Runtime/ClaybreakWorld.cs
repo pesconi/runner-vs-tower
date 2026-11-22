@@ -5,46 +5,30 @@ using UnityEngine;
 
 namespace Claybreak
 {
-    /// <summary>The set dressing a world is built with (props, far silhouettes); stable values, new ones at the end.</summary>
-    public enum SceneryStyle
-    {
-        /// <summary>World 1: rocks, pillars, dead trees and braziers under a dusk ridge.</summary>
-        Marches,
-        /// <summary>World 2: reeds, stilt huts, mossy dead trees, lantern poles and dark pools; far gnarled trees.</summary>
-        Mire,
-        /// <summary>World 3: barrels, chimneys, pipe arches and crucibles; a far factory skyline with lit windows.</summary>
-        Foundry,
-        /// <summary>World 4: ice shards, snow drifts, bone pikes and cairns; far jagged peaks with snow caps.</summary>
-        Peaks
-    }
-
     /// <summary>
-    /// How a world looks (RT-6, RT-6t.6a): the scenery it is dressed with, its toon palette (sky, fog, the crowd's default
-    /// color and the colors the toon art reads) and the colors of the older scenery art. The scene builder bakes the
-    /// scenery and the ground colors into one preallocated set per world; at run time <see cref="WorldScenery"/> shows the
-    /// world's set, applies its palette and the ambient and sun colors.
+    /// How a world looks (RT-6, RT-6t.6a, RT-6t.8): its toon palette (sky, fog, ground, striped track, the props' colors and
+    /// the crowd's default color), how many trees and rocks line the road, and the sun and ambient light. The scenery is
+    /// the same instanced set in every world; at run time <see cref="WorldScenery"/> applies the palette, the density and
+    /// the light.
     /// </summary>
     [Serializable]
     public struct WorldLook
     {
-        public SceneryStyle scenery;
-        [Tooltip("The world's toon palette: sky gradient, fog, the crowd's default color (RT-6t.6a).")]
+        /// <summary>Most trees or rocks a world can show (the scene preallocates the largest density of its worlds).</summary>
+        public const int MaximumProps = 256;
+
+        [Tooltip("The world's toon palette: sky gradient, fog, ground, track, props, the crowd's default color.")]
         public ToonPalette palette;
+        [Tooltip("Trees standing along the road at once (recycled as the camera moves on).")]
+        [Range(0, MaximumProps)] public int trees;
+        [Tooltip("Rocks standing along the road at once.")]
+        [Range(0, MaximumProps)] public int rocks;
         public Color ambient;
         public Color sun;
         [Range(0.2f, 2f)] public float sunIntensity;
-        [Tooltip("The track the army runs on.")]
-        public Color ground;
-        [Tooltip("The fields on both sides of the track.")]
-        public Color field;
-        [Tooltip("Main prop color (rocks, trunks, pillars).")]
-        public Color prop;
-        [Tooltip("Second prop color (caps, far ridge).")]
-        public Color propDark;
-        [Tooltip("Light sources of the scenery (braziers, lamps, crystals).")]
-        public Color accent;
 
-        public bool IsSet => sunIntensity > 0f && palette != null && ground.a > 0f;
+        public bool IsSet => sunIntensity > 0f && palette != null && trees >= 0 && rocks >= 0 && trees + rocks > 0
+            && trees <= MaximumProps && rocks <= MaximumProps;
     }
 
     /// <summary>
