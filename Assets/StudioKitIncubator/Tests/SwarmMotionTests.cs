@@ -31,8 +31,9 @@ namespace JungleDegree.StudioKit.Tests
             Assert.AreEqual(128, simulation.Count, "the count is clamped to the capacity");
             simulation.SetCount(100);
             SwarmMotionSettings motion = SwarmMotionSettings.Default;
-            // Zero step: the units stay in their slots (no lane), only the hop is written.
-            simulation.Schedule(0f, 0.37f, motion, new float3(1f, 0.5f, 0.25f));
+            // Zero step: the units stay in their slots (no lane), only the hop is written; at 1.37 s every unit born at
+            // 0 has finished its pop (delay up to 0.25 s + 0.45 s).
+            simulation.Schedule(0f, 1.37f, motion, new float3(1f, 0.5f, 0.25f));
             simulation.Complete();
             for (int i = 0; i < simulation.Count; i++)
             {
@@ -40,9 +41,9 @@ namespace JungleDegree.StudioKit.Tests
                 float2 ground = new float2(1f, 2f) + SunflowerFormation.Offset(i, 0.25f, 1.35f);
                 Assert.AreEqual(ground.x, instance.Row0.w, 1e-5f);
                 Assert.AreEqual(ground.y, instance.Row2.w, 1e-5f);
-                float bounce = instance.Tint.w;
-                Assert.That(bounce, Is.InRange(0f, 1f));
-                Assert.AreEqual(bounce * motion.HopHeight, instance.Row1.w, 1e-5f);
+                float bounce = instance.Row1.w / motion.HopHeight;
+                Assert.That(bounce, Is.InRange(0f, 1f + 1e-5f));
+                Assert.AreEqual(1f - SwarmAnimationSettings.Default.ShadowShrink * bounce, instance.Tint.w, 1e-5f, "shadow scale");
                 Assert.AreEqual(1f, instance.Tint.x, 1e-6f);
                 float sy = math.length(new float3(instance.Row0.y, instance.Row1.y, instance.Row2.y));
                 Assert.AreEqual(SwarmMotion.SquashY(bounce, motion), sy, 1e-3f);

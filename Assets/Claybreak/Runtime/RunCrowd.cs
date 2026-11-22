@@ -103,8 +103,9 @@ namespace Claybreak
             Speed = 0f;
             Steering = false;
             PlaceAtStart();
-            swarm.SetCount(0);
-            SetArmy(army);
+            int next = Mathf.Clamp(army, 0, MaximumArmy);
+            swarm.ResetCount(next);
+            ArmyChanged?.Invoke(next);
             cameraRig.Snap();
         }
 
@@ -113,13 +114,15 @@ namespace Claybreak
         {
             int army = Army;
             PlaceAtStart();
-            swarm.SetCount(0);
-            swarm.SetCount(army);
+            swarm.ResetCount(army);
             cameraRig.Snap();
         }
 
-        /// <summary>Sets the army (clamped to 0..<see cref="MaximumArmy"/>); new units appear in their slots, removed ones are the outer ring.</summary>
-        public void SetArmy(int army)
+        /// <summary>
+        /// Sets the army (clamped to 0..<see cref="MaximumArmy"/>); new units pop in their slots, removed ones are the outer
+        /// ring and vanish or, with <see cref="SwarmRemoval.Die"/> (a bad gate), fly out in the ballistic death.
+        /// </summary>
+        public void SetArmy(int army, SwarmRemoval removal = SwarmRemoval.Vanish)
         {
             int next = Mathf.Clamp(army, 0, MaximumArmy);
             if (next == swarm.Count)
@@ -127,7 +130,7 @@ namespace Claybreak
                 return;
             }
 
-            swarm.SetCount(next);
+            swarm.SetCount(next, removal);
             ArmyChanged?.Invoke(next);
         }
 

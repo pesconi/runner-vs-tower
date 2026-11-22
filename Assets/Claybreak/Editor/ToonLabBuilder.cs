@@ -72,7 +72,6 @@ namespace Claybreak.Editor
             SaveMaterial(ShadowMaterialPath, Find("StudioKit/BlobShadowInstanced"), material =>
             {
                 material.SetColor("_ShadowColor", new Color(0x2b / 255f, 0x22 / 255f, 0x33 / 255f, 0.18f));
-                material.SetFloat("_LiftShrink", 0.35f);
             });
             if (AssetDatabase.LoadAssetAtPath<ToonLook>(LookPath) == null)
             {
@@ -213,8 +212,8 @@ namespace Claybreak.Editor
             EditorSceneManager.SaveScene(scene, ToonLab.ScenePath);
         }
 
-        // Test panel at the bottom of the screen (the prototype drawer), two rows: +100, 1000!, restart at 10, shake (RT-6t.3);
-        // Bolinha, Pintinho, with eyes, without eyes (RT-6t.2).
+        // Test panel at the bottom of the screen (the prototype drawer), three rows: +100, 1000!, restart at 10, shake (RT-6t.3);
+        // Bolinha, Pintinho, with eyes, without eyes (RT-6t.2); ÷2, a bad gate with the ballistic death (RT-6t.5).
         private static RectTransform TestPanel(Transform canvas, ToonLab lab)
         {
             var panelObject = new GameObject("TestPanel", typeof(RectTransform));
@@ -224,7 +223,7 @@ namespace Claybreak.Editor
             rect.anchorMax = new Vector2(0.5f, 0f);
             rect.pivot = new Vector2(0.5f, 0f);
             rect.anchoredPosition = new Vector2(0f, 36f);
-            rect.sizeDelta = new Vector2(1000f, 264f);
+            rect.sizeDelta = new Vector2(1000f, 385f);
             var background = panelObject.AddComponent<Image>();
             background.color = new Color(1f, 1f, 1f, 0.82f);
             var layout = panelObject.AddComponent<GridLayoutGroup>();
@@ -242,6 +241,7 @@ namespace Claybreak.Editor
             UnityEventTools.AddIntPersistentListener(PanelButton(rect, "ShapePintinho", ShapeLabels[1], false).onClick, lab.SelectShape, 1);
             UnityEventTools.AddBoolPersistentListener(PanelButton(rect, "EyesOn", "Com olhos", false).onClick, lab.SetEyes, true);
             UnityEventTools.AddBoolPersistentListener(PanelButton(rect, "EyesOff", "Sem olhos", false).onClick, lab.SetEyes, false);
+            UnityEventTools.AddVoidPersistentListener(PanelButton(rect, "Halve", "÷2", false).onClick, lab.HalveCrowd);
             return rect;
         }
 

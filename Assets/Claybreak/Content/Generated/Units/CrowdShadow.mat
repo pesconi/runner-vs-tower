@@ -26,7 +26,6 @@ Material:
     m_Ints: []
     m_Floats:
     - _GroundHeight: 0.01
-    - _LiftShrink: 0.35
     m_Colors:
     - _ShadowColor: {r: 0.16862746, g: 0.13333334, b: 0.2, a: 0.18}
   m_BuildTextureStacks: []

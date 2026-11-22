@@ -13,7 +13,9 @@ namespace Claybreak.Tests
     /// Plays the toon lab in the Editor. RT-6t.1: the swarm comes up with its 1000 units, the toon look and the draws run
     /// for a few frames, and any error logged (missing keyword, device without structured buffers in the vertex shader,
     /// shader failure) fails the test. RT-6t.3: the panel changes the count, steering keeps the crowd on the track, the
-    /// camera backs away as the crowd grows and shakes on demand. Performance is judged only by the device gate.
+    /// camera backs away as the crowd grows and shakes on demand. RT-6t.5: going down kills the outer ring in the
+    /// ballistic death, ÷2 halves the crowd like a bad gate, and the churn keeps the ring of dying units full with the
+    /// live count unchanged. Performance is judged only by the device gate.
     /// </summary>
     public sealed class ToonLabSceneTests
     {
@@ -101,6 +103,52 @@ namespace Claybreak.Tests
             Assert.Greater(rig.ShakeLeft, 0f);
             yield return new WaitForSeconds(0.6f);
             Assert.AreEqual(0f, rig.ShakeLeft, "the shake is over after its length");
+        }
+
+        [UnityTest]
+        public IEnumerator PanelKillsTheOuterRingInTheBallisticDeath()
+        {
+            yield return LoadLab();
+            var lab = Object.FindAnyObjectByType<ToonLab>();
+            SwarmRenderer swarm = lab.Swarm;
+            Assert.AreEqual(1000, swarm.Count);
+            Assert.AreEqual(512, swarm.DyingCapacity);
+
+            Press("Halve");
+            Assert.AreEqual(500, swarm.Count, "÷2");
+            Assert.AreEqual(500, swarm.DyingCount, "the outer half is on its way out");
+            Assert.Greater(lab.CameraRig.ShakeLeft, 0f, "a bad gate shakes the camera");
+            yield return new WaitForSeconds(0.5f);
+            Assert.AreEqual(500, swarm.DyingCount, "still flying");
+            yield return new WaitForSeconds(0.8f);
+            Assert.AreEqual(0, swarm.DyingCount, "gone after their lifetime");
+
+            Press("Set1000");
+            Assert.AreEqual(0, swarm.DyingCount, "growing kills nobody");
+            yield return new WaitForSeconds(0.2f);
+            Press("Restart");
+            Assert.AreEqual(10, swarm.Count);
+            Assert.AreEqual(512, swarm.DyingCount, "990 thrown out; the ring keeps the newest 512");
+            yield return new WaitForSeconds(1.3f);
+            Assert.AreEqual(0, swarm.DyingCount);
+        }
+
+        [UnityTest]
+        public IEnumerator ChurnKeepsTheLiveCountWithTheDyingRingFull()
+        {
+            yield return LoadLab();
+            var lab = Object.FindAnyObjectByType<ToonLab>();
+            SwarmRenderer swarm = lab.Swarm;
+            lab.Churn(512);
+            yield return new WaitForSeconds(1.6f);
+            for (int frame = 0; frame < 30; frame++)
+            {
+                Assert.AreEqual(1000, swarm.Count, "the churn keeps the live count");
+                Assert.GreaterOrEqual(swarm.DyingCount, 490, $"the ring stays (almost) full, frame {frame}");
+                yield return null;
+            }
+
+            lab.Churn(0);
         }
 
         internal static IEnumerator LoadLab()

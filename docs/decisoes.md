@@ -1323,3 +1323,48 @@ os anúncios fora da Europa, antes de publicar o jogo fora da Europa.
   controlado de fora) e a sonda `DevFrameTimingProbe` (linhas `[DevTiming]`) eram ligados pelo `RunnerCrowd` do kit;
   sem ele, o `ClaybreakFlow.ApplyMeasurementExtras` faz o mesmo (só desenvolvimento/medição Android; `// load-time:`).
   Achado na primeira rodada do gate, que saiu sem CPU/GPU.
+
+## 2026-11-22 — T-RT6t5-1..9 — Animações procedurais da multidão toon — técnica (sessão RT-6t.5)
+
+- **T-RT6t5-1 — Fórmulas puras, testadas contra o protótipo traduzido ao pé da letra.** `SwarmAnimation` (inclinação
+  `clamp(−vx·0,06, ±0,5)`, nascimento elástico `1 − 2^(−10a)·cos(3,3πa)` com `a = idade/0,45`, sombra `(1 − 0,35h)·s`,
+  composição `T·Rx(inclinação à frente)·Rz(inclinação lateral)·S`) e `SwarmDying` (lançamento, passo balístico, escala,
+  giro, alcance) são estáticas e Burst. Os testes EditMode reescrevem as expressões do `crowd-proto.html` (three.js) e
+  comparam valor a valor e quadro a quadro; a matriz é conferida contra `Matrix4x4.TRS` com o Euler do three espelhado.
+  Convenção: a frente aqui é +Z (no protótipo −Z), então a inclinação à frente e o giro em X trocam de sinal; os offsets
+  do girassol não foram espelhados na 6t.3, e o empurrão da morte usa o offset da vaga, como o protótipo.
+- **T-RT6t5-2 — Morte idêntica ao protótipo, inclusive no que ele tem de "por quadro".** Passo de Euler (gravidade 22
+  primeiro, depois o movimento; altura nunca abaixo do chão), escala `max(0, 1 − idade/1,1)`, expira quando `idade ≥ 1,1`
+  antes do passo, giro `(r·t, 0, 0,7·r·t)` pelo relógio (não pela idade), sorteios na mesma ordem (lado, cima, frente,
+  giro). Ficar igual ao protótipo aprovado vale mais que independência da taxa de quadros (a 60 fps a diferença some).
+- **T-RT6t5-3 — Anel de capacidade fixa.** `SwarmSimulation` tem um `NativeArray<SwarmDyingUnit>` alocado na carga
+  (`SwarmRenderer.dyingCapacity`, 512 por padrão); entram em ordem de vaga (como o `push` do protótipo), cheio = sai o
+  mais antigo (o `splice` dele); como todos vivem 1,1 s, os vencidos estão sempre na cabeça. Um `IJob` Burst encadeado
+  depois da animação escreve os morrendo logo após os vivos no mesmo buffer: **1 chamada para vivos + morrendo**,
+  sombras só para os vivos (como o protótipo). Nada de `Instantiate`/`Destroy`.
+- **T-RT6t5-4 — Quem morre voa junto com a multidão.** A posição dos morrendo é guardada relativa ao centro (Z), como no
+  protótipo, em que o mundo é que anda; sem isso, na corrida eles ficariam para trás a 8–11 m/s.
+- **T-RT6t5-5 — A sombra lê a escala pronta.** `tint.w` da instância passou de "quique" para "escala da sombra" (já com o
+  nascimento); o `StudioKit/BlobShadowInstanced` perdeu o `_LiftShrink` (o encolhimento virou dado em
+  `SwarmAnimationSettings.ShadowShrink`). Morrendo = 0 (sem sombra).
+- **T-RT6t5-6 — Remoção explícita.** `SwarmRemoval.Vanish` (recomeço, unidade tirada para o assalto) e `Die` (portão
+  ruim; na `ToonLab`, baixar a contagem, como o "Recomeçar" do protótipo). Remove sempre o anel de fora (maior índice do
+  girassol). Nascimentos sempre com o "pop" (início, caixote, continuar), como o protótipo. `ResetRun`/`RestartRun`
+  limpam o anel (`ClearDying`). A cor de quem morre é a da hora da morte.
+- **T-RT6t5-7 — Gate "1000 vivos + 512 morrendo" na `ToonLab`.** A corrida tem teto 300 (D27), então o caso pedido roda no
+  laboratório: modo de rotação (`--ei dying D`, `Tools/rt2-gate.sh ... toonlab:1000:4:1:512`) que joga o anel de fora
+  e o faz nascer de novo a 1,15·D/1,1 s por segundo, mantendo 1000 vivos (com nascimentos animados) e o anel cheio. O
+  log `[DevFps]` ganhou `dying=D`. MSAA 4× e HDR ligado (o caso mais pesado da 6t.1).
+- **T-RT6t5-8 — `SwarmRenderer.DrawBodies`.** Desligado desenha só as sombras: ferramenta para a captura do chão sob a
+  multidão (R-T7c), sem afetar o jogo.
+- **T-RT6t5-9 — Bounds da multidão crescem com os morrendo** pelo alcance balístico (`SwarmDying.Reach`), para o
+  descarte por câmera nunca cortar quem voa.
+- **T-RT6t5-10 — Correções da revisão independente (subagente fable, só leitura; nenhum bug sério).** (a) O desenho usa
+  as contagens **escritas pelo último quadro** (`DrawCount`, `WrittenCount`), não as atuais: contagem mudada depois do
+  agendamento (painel, rotação da `ToonLab`, testes) aparece no quadro seguinte, sem instância velha por um quadro.
+  (b) Os limites de desenho cobrem a caixa de onde cada morrendo saiu (não só o raio da formação nova): de 1000 para 10,
+  quem estava no anel de fora (até ~10 m) continua dentro. (c) Recomeço sem "pop": `ResetCount`/`SwarmSimulation.Reset`
+  põem a multidão inteira na hora (`ResetRun`/`RestartRun` da corrida e o laço do gate). (d) A rotação da `ToonLab` joga
+  unidades que ainda não apareceram (renascem e morrem antes do atraso do pop); a carga medida é a mesma (N + D
+  instâncias), só o visual da rotação difere — aceito, é modo de medição. (e) O teste do nascimento confere o valor do
+  protótipo pelo tempo de nascimento de cada unidade (`BirthTime`).

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using JungleDegree.StudioKit.Swarm;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -9,8 +10,8 @@ namespace Claybreak.Tests
 {
     /// <summary>
     /// RT-6t.4 record: the game run drawn with the instanced crowd, on the OPPO CPH2791 screen shape (1080×2354, half
-    /// size): level 1 just after the start, the crowd grown to its cap (300), the crowd steered to the right edge, and
-    /// the assault shot at the firing line. Proves the crowd draws in the game scene (toon shader compiled, look applied,
+    /// size): level 1 just after the start, the crowd grown to its cap (300), the crowd steered to the right edge, a bad
+    /// gate throwing half of it out in the ballistic death (RT-6t.5), and the assault shot at the firing line. Proves the crowd draws in the game scene (toon shader compiled, look applied,
     /// world fog) and the camera handover. Runs only when asked and with a GPU (batchmode without -nographics):
     /// <c>-runTests -testPlatform PlayMode -testFilter RunCaptureTests -runCaptureDir &lt;folder&gt;</c>.
     /// </summary>
@@ -19,7 +20,7 @@ namespace Claybreak.Tests
         private const string FolderArgument = "-runCaptureDir";
         private const int Width = 540;
         private const int Height = 1177;
-        private const int Shots = 4;
+        private const int Shots = 5;
 
         [TearDown]
         public void TearDown()
@@ -75,11 +76,18 @@ namespace Claybreak.Tests
             yield return new WaitForSeconds(1.5f);
             Shot(2, "right", flow, view, target, panel, sheet);
 
+            // What a ÷2 gate does (ClaybreakFlow.OnGateCrossed): the outer half dies, the camera shakes.
             flow.Crowd.Swarm.SteerTo(0f);
+            flow.Crowd.SetArmy(flow.Crowd.Army / 2, SwarmRemoval.Die);
+            flow.Crowd.Shake();
+            Assert.Greater(flow.Crowd.Swarm.DyingCount, 0, "the bad gate threw nobody out");
+            yield return new WaitForSeconds(0.3f);
+            Shot(3, "bad-gate", flow, view, target, panel, sheet);
+
             yield return WaitFor(() => flow.State == FlowState.Assault, 40f);
             Assert.AreEqual(FlowState.Assault, flow.State, "the run never reached the firing line");
             yield return new WaitForSeconds(1.2f);
-            Shot(3, "assault", flow, view, target, panel, sheet);
+            Shot(4, "assault", flow, view, target, panel, sheet);
 
             sheet.Apply();
             File.WriteAllBytes(Path.Combine(folder, "corrida-oppo.png"), sheet.EncodeToPNG());
@@ -111,7 +119,7 @@ namespace Claybreak.Tests
             RenderTexture.active = previous;
             sheet.SetPixels(index * (Width + 8), 0, Width, Height, panel.GetPixels());
             Vector3 center = flow.Crowd.Position;
-            Debug.Log($"[RunCapture] {label} state={flow.State} army={flow.Crowd.Army} center=({center.x:0.0}, {center.z:0.0}) "
+            Debug.Log($"[RunCapture] {label} state={flow.State} army={flow.Crowd.Army} dying={flow.Crowd.Swarm.DyingCount} center=({center.x:0.0}, {center.z:0.0}) "
                 + $"fov={view.fieldOfView:0.#} camera={view.transform.position} tris/unit={flow.Crowd.Swarm.UnitTriangles} "
                 + $"shape={flow.Crowd.Swarm.UnitMesh.name} tint={flow.Crowd.Swarm.Tint}");
         }

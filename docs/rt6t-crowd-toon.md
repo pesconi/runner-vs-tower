@@ -2,7 +2,7 @@
 
 Plano e decisões: [`direcao-visual-crowd.md`](direcao-visual-crowd.md) (aprovado em 2026-11-21). Referência visual:
 [`reference/crowd-proto.html`](reference/crowd-proto.html). Decisões técnicas: `decisoes.md` (T-RT6t-1..9,
-T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8 e T-RT6t4-1..10).
+T-RT6t1-1..9, T-RT6t2-1..7, T-RT6t3-1..8, T-RT6t4-1..10 e T-RT6t5-1..10).
 
 ## RT-6t.1 — Portão técnico (2026-11-21)
 
@@ -278,3 +278,58 @@ sem as linhas `[DevTiming]`: a sonda de CPU/GPU e o `--ei fps` eram ligados pelo
 cena. Agora o `ClaybreakFlow` faz isso (`ApplyMeasurementExtras`, só em builds de desenvolvimento/medição). Rodada
 repetida com o APK novo (tabela acima); o assalto foi medido de novo só para confirmar que a medição dele voltou
 (última janela com CPU 9,4 ms coincide com a coleta de memória do script, como já registrado na RT-5).
+
+## RT-6t.5 — Animações procedurais (2026-11-22)
+
+### O que foi feito
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| `SwarmAnimation` + `SwarmAnimationSettings` | incubadora, `Swarm` | Fórmulas do protótipo, puras e Burst: inclinação lateral `clamp(−vx·0,06, ±0,5)` (vx = velocidade lateral do quadro, escrita pelo `SwarmFollowJob`), nascimento elástico `1 − 2^(−10a)·cos(3,3πa)` em 0,45 s com atraso 0–0,25 s, sombra `(1 − 0,35h)·s`, composição `T·Rx(0,12)·Rz(inclinação)·S`. |
+| `SwarmDying` + `SwarmDeathSettings` + `SwarmDyingJob` | incubadora, `Swarm` | Morte balística: empurrão para fora pela vaga (3 m/s de lado, 2 m/s na frente, ± sorteio), 4–8 m/s para cima, gravidade 22, giro `(r·t, 0,7·r·t)`, encolhe até sumir em 1,1 s. Anel de capacidade fixa (512 por padrão), o mais antigo sai quando enche; 1 `IJob` Burst depois da animação escreve os morrendo logo após os vivos. |
+| `SwarmSimulation` / `SwarmRenderer` | incubadora | `SetCount(n, SwarmRemoval.Vanish|Die)`: remove sempre o anel de fora; `Die` lança no anel. `ResetCount` (recomeço: todos de pé na hora, sem pop nem morte). **1 chamada para vivos + morrendo**, sombras só para os vivos (como o protótipo); desenho com as contagens escritas pelo último quadro; limites crescem pelo alcance de quem morre. `DrawBodies` (ferramenta: só as sombras). |
+| `StudioKit/BlobShadowInstanced` | incubadora | Lê a escala pronta da sombra em `tint.w` (encolhe com o pulo e nasce com o pop); `_LiftShrink` saiu (virou dado). |
+| `ToonLab` | jogo, laboratório | Baixar a contagem mata o anel de fora (como o "Recomeçar" do protótipo); botão **÷2** (portão ruim: metade morre e a câmera treme); modo de rotação `--ei dying D` (mantém N vivos e D morrendo o tempo todo) para o gate. Log `[ToonLab] ... dying=D` e `[DevFps] ... dying=D`. |
+| Corrida | `ClaybreakFlow.OnGateCrossed`, `RunCrowd` | Portão que diminui o exército = anel de fora em morte balística + tremor. Unidade tirada para o assalto continua sumindo (vai voar para a torre). Recomeço/reinício sem pop. |
+| Gate | `Tools/rt2-gate.sh` | 5º campo do modo `toonlab`: `toonlab:1000:4:1:512` = 1000 vivos, MSAA 4×, HDR ligado, 512 morrendo. |
+
+Decisões T-RT6t5-1..10 em `decisoes.md`.
+
+### Testes e validação
+
+- EditMode **184/184** (novos em `SwarmAnimationTests`: inclinação, nascimento, sombra, composição, lançamento, voo e
+  encolhimento quadro a quadro, giro, ordem de remoção, anel cheio, morrendo desenhados depois dos vivos com a mesma
+  matriz do protótipo, vivos com pop + inclinação + sombra iguais ao protótipo, limites com quem saiu do anel de fora,
+  recomeço sem pop). O protótipo é reescrito ao pé da letra nos testes (expressões do `crowd-proto.html`) e a matriz é
+  comparada com `Matrix4x4.TRS` do Euler do three espelhado.
+- PlayMode **19/19** com `-nographics` (+4 capturas que só rodam com GPU): `ToonLab` (÷2 mata 500, todos somem depois de
+  1,1 s, "Recomeçar" de 1000 para 10 enche o anel com os 512 mais novos; rotação mantém 1000 vivos e o anel ≥ 490), e
+  `RunKeepsTheCrowdOnTheTrackUntilTheFiringLine` agora confere que **cada portão que diminui o exército lança a morte**.
+- `Tools/rt4-check.sh`: `scene`, `validate`, `isolation`, `editmode`, `playmode`, `economy`, `capture`, `apk-game`,
+  `apk-measure`, `aab`: **todos PASS** (o primeiro `apk-game` caiu num erro interno do Bee ao renomear cache; passou
+  na repetição). Nenhum `Shader error` no log do APK de medição.
+- Revisor independente (subagente fable, só leitura): nenhum bug sério; cinco pontos menores — quatro corrigidos
+  (instâncias de um quadro antes, limites, recomeço com pop, teste do nascimento fraco), um aceito (a rotação do
+  laboratório joga unidades que ainda não apareceram; a carga medida é a mesma).
+
+### Capturas (Unity com GPU, formato do OPPO, metade do tamanho)
+
+- [`art/rt6t/animacoes-oppo.png`](art/rt6t/animacoes-oppo.png): 1000 parados; ÷2 aos 0,12 s, 0,4 s e 0,8 s (os 500 do
+  anel de fora voam para fora e para cima, giram e encolhem); 500 → 1000 aparecendo com o pop enquanto a multidão é
+  puxada para a direita (inclinação lateral).
+- [`art/rt6t/corrida-oppo.png`](art/rt6t/corrida-oppo.png): agora com 5 quadros; o 4º é o portão ruim na corrida (300 →
+  150, 150 morrendo).
+- **Chão sob a multidão (R-T7c)** — [`art/rt6t/chao-sob-multidao.png`](art/rt6t/chao-sob-multidao.png): 1000 parados,
+  enquadramento do laboratório e de perto, com e sem os corpos. Luminância da imagem só com sombras: de perto, mínimo
+  0,913 = p1 (uma sombra só; mediana 0,994) — **os discos quase não se sobrepõem no meio da multidão**, não há mancha.
+  No enquadramento do laboratório o mínimo cai a 0,72 só **nas bordas da pista**, onde as vagas presas na largura da
+  pista empilham unidades (linhas escuras visíveis só sem os corpos; com os corpos, cobertas). Fica como observação para
+  a 6t.6 (opacidade por paleta) — sem stencil por enquanto.
+
+### Gate 3× no OPPO (1000 vivos + 512 morrendo) — **pendente**
+
+O OPPO estava conectado mas **bloqueado** (`isKeyguardShowing=true`) durante toda a sessão. APK de medição pronto em
+`/c/temp/rt6t5/Claybreak-measure.apk`. Com o celular desbloqueado:
+`Tools/rt2-gate.sh toon1000-d512 60 20 /c/temp/rt6t5/Claybreak-measure.apk toonlab:1000:4:1:512` (critério da 6t.1:
+CPU principal p95 ≤ 11 ms, GPU p95 ≤ 11 ms, quadro p95 ≤ 16,7 ms, < 5% > 50 ms, PSS ≤ 450 MB; conferir `dying=512`
+nas linhas `[DevFps]` e a captura do aparelho).

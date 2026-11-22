@@ -5,7 +5,7 @@ namespace JungleDegree.StudioKit.Swarm
 {
     /// <summary>
     /// Debug readout of the presented frame rate and the swarm size: a uGUI label refreshed every half second and a
-    /// log line per window that measurement scripts read (<c>[DevFps] window=N fps=F units=U</c>). Active only in the
+    /// log line per window that measurement scripts read (<c>[DevFps] window=N fps=F units=U dying=D</c>). Active only in the
     /// Editor, development players and measurement players (RELEASE_MEASUREMENT); release players hide it.
     /// The label text is picked from strings built once, so refreshing it does not allocate.
     /// </summary>
@@ -84,7 +84,7 @@ namespace JungleDegree.StudioKit.Swarm
             if (logTime >= LogSeconds)
             {
                 window++;
-                Debug.Log($"[DevFps] window={window} fps={logFrames / logTime:F1} units={units}");
+                Debug.Log($"[DevFps] window={window} fps={logFrames / logTime:F1} units={units} dying={(swarm == null ? 0 : swarm.DyingCount)}");
                 logTime = 0f;
                 logFrames = 0;
             }

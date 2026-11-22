@@ -7,9 +7,11 @@
 # Usage (Git Bash, from the repository root, phone connected with USB debugging):
 #   Tools/rt2-gate.sh <label> [fps=60] [seconds=20] [apk=/c/temp/rt2/Claybreak-measure.apk] [world=1]
 # (RT-6: world N runs that world's device-gate level: its heaviest tower, its defenses and its scenery.)
-# RT-6t.1: world "toonlab:N[:msaa[:hdr]]" runs the toon lab instead: N instanced units of the crowd toon look;
+# RT-6t.1: world "toonlab:N[:msaa[:hdr[:dying]]]" runs the toon lab instead: N instanced units of the crowd toon look;
 # msaa 1|2|4 and hdr 0|1 override the pipeline asset (left out = project settings). Example:
 #   Tools/rt2-gate.sh toon1000-m4-h1 60 20 /c/temp/rt4/Claybreak-measure.apk toonlab:1000:4:1
+# RT-6t.5: a 5th field keeps D units dying at all times (the outer ring thrown out and popped back), e.g. the death gate
+#   Tools/rt2-gate.sh toon1000-d512 60 20 /c/temp/rt6t5/Claybreak-measure.apk toonlab:1000:4:1:512
 # The toon lab gate also needs frame p95 <= 16.7 ms at 60 fps; [DevFps] lines give the presented rate.
 # RT-6t.4: world "run:N" measures the RUN of world N's device-gate level instead of its assault: the instanced crowd at
 # its cap (D27: 300) running on the track with the world's scenery, looping back before the tower. Same gate as the toon lab
@@ -34,8 +36,9 @@ adb shell am force-stop "$PKG"
 adb logcat -c
 ACTIVITY=$(adb shell cmd package resolve-activity --brief "$PKG" | tr -d '\r' | tail -n 1)
 if [[ "$WORLD" == toonlab:* ]]; then
-  IFS=: read -r _ UNITS MSAA HDR <<<"$WORLD"
+  IFS=: read -r _ UNITS MSAA HDR DYING <<<"$WORLD"
   EXTRAS=(--ez toonlab true --ei units "${UNITS:-1000}")
+  if [ -n "${DYING:-}" ]; then EXTRAS+=(--ei dying "$DYING"); fi
   if [ -n "${MSAA:-}" ]; then EXTRAS+=(--ei msaa "$MSAA"); fi
   if [ -n "${HDR:-}" ]; then
     if [ "$HDR" = 1 ]; then EXTRAS+=(--ez hdr true); else EXTRAS+=(--ez hdr false); fi

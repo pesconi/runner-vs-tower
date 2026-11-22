@@ -86,3 +86,8 @@
 - 2026-11-21 (RT-6t.4): a corrida é o `Swarm` (`RunCrowd`); as capturas do `ArtDirectionCapture` (modo de edição) não
   desenham a multidão. Prova visual da corrida: `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.RunCaptureTests
   -runCaptureDir <pasta>` sem `-nographics`. Gate da corrida: `Tools/rt2-gate.sh <rótulo> 60 20 <apk> run:N` (mundo 4).
+- 2026-11-22 (RT-6t.5): parar a tarefa de fundo do `rt4-check` não mata o script nem o Unity: ele segue para o próximo passo.
+  Encerrar com PowerShell (`Get-CimInstance Win32_Process` filtrando `rt4-check`/`batchmode`, `Stop-Process`) e conferir que não
+  sobrou `Unity.exe`. "Tundra build failed due to an internal error" (renomear cache do Bee) é transitório: repetir o passo.
+  Captura das animações e do chão sob a multidão: `-testFilter Claybreak.Tests.AnimationCaptureTests -animationCaptureDir <pasta>`
+  sem `-nographics`; gate das mortes: `toonlab:1000:4:1:512` (5º campo = morrendo).

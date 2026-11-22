@@ -382,7 +382,13 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** testes das fórmulas contra o protótipo; capturas/vídeo; **gate 3× com 1000 vivos + 512 morrendo**;
   captura do chão sob a multidão (sombras somadas).
 - **Exige o usuário:** OPPO conectado.
-- **Status: aprovada em 2026-11-21.**
+- **Status: concluída em 2026-11-22; gate 3× (1000 vivos + 512 morrendo) pendente: o OPPO estava bloqueado.**
+  Inclinação lateral, nascimento elástico, morte balística num anel fixo de 512, sombra que encolhe e remoção do anel
+  de fora, no `Swarm` (Burst, 1 chamada para vivos + morrendo, sombras só dos vivos); `ToonLab` (baixar a contagem e
+  "÷2" matam, modo de rotação `--ei dying 512` para o gate) e corrida (portão ruim = morte + tremor; recomeço sem pop).
+  Testes EditMode contra o protótipo traduzido, validação completa verde, capturas e chão sob a multidão (R-T7c: as
+  sombras quase não se somam) em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md); decisões T-RT6t5-1..10 em `decisoes.md`.
+  Gate: `Tools/rt2-gate.sh toon1000-d512 60 20 /c/temp/rt6t5/Claybreak-measure.apk toonlab:1000:4:1:512`. Próxima: 6t.6.
 - **Prompt da sessão:** "Entrega RT-6t.5 do Runner vs Tower: animações procedurais. Leia
   `docs/direcao-visual-crowd.md` (itens 7 e 8, RT-6t.5) e o protótipo. Burst na incubadora, com testes; ligue a
   morte no portão ruim da corrida; gate 3× no OPPO com 1000 vivos + 512 morrendo."

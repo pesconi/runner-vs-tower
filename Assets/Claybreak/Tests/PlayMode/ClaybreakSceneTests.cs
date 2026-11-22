@@ -30,7 +30,8 @@ namespace Claybreak.Tests
 
         // RT-2 device bug: the track had no collider and the crowd fell through the floor while the run kept going.
         // RT-6t.4: the crowd is the instanced swarm (no physics): every unit stays on the track, on the ground, from the
-        // start to the firing line, and the army that arrives is the one the gates made.
+        // start to the firing line, and the army that arrives is the one the gates made. RT-6t.5: every gate that shrinks
+        // the army throws the removed outer ring out in the ballistic death.
         [UnityTest]
         public IEnumerator RunKeepsTheCrowdOnTheTrackUntilTheFiringLine()
         {
@@ -51,12 +52,24 @@ namespace Claybreak.Tests
             float runStart = -1f;
             float widest = 0f;
             float deadline = Time.realtimeSinceStartup + 60f;
+            int lastArmy = crowd.Army;
+            int deathsSeen = 0;
             while (Time.realtimeSinceStartup < deadline && flow.State != FlowState.Assault)
             {
                 if (flow.State == FlowState.Run && runStart < 0f)
                 {
                     runStart = Time.time;
                 }
+
+                int army = crowd.Army;
+                if (army < lastArmy && flow.State == FlowState.Run)
+                {
+                    Assert.GreaterOrEqual(crowd.Swarm.DyingCount, Mathf.Min(lastArmy - army, crowd.Swarm.DyingCapacity),
+                        "a bad gate did not throw the outer ring out");
+                    deathsSeen++;
+                }
+
+                lastArmy = army;
 
                 for (int i = 0; i < crowd.Army; i++)
                 {
@@ -77,10 +90,15 @@ namespace Claybreak.Tests
 
             // Level 1 untouched (no drag): the crowd runs down the middle, so it takes every right-hand gate.
             int expected = flow.ActiveLevel.StartCount;
+            int badGates = 0;
             foreach (RunGatePair pair in flow.ActiveLevel.RunGates)
             {
-                expected = GateMath.Apply(pair.right, expected, crowd.MaximumArmy);
+                int next = GateMath.Apply(pair.right, expected, crowd.MaximumArmy);
+                badGates += next < expected ? 1 : 0;
+                expected = next;
             }
+
+            Assert.AreEqual(badGates, deathsSeen, "deaths seen at the shrinking gates");
 
             Assert.AreEqual(expected, crowd.Army, "the gates did not make the army");
             Assert.AreEqual(expected, flow.Crowd.Swarm.Count);

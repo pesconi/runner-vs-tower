@@ -3,6 +3,7 @@ using JungleDegree.StudioKit.Analytics;
 using JungleDegree.StudioKit.Characters;
 using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Crowd;
+using JungleDegree.StudioKit.Swarm;
 using UnityEngine;
 
 namespace Claybreak
@@ -887,10 +888,10 @@ namespace Claybreak
         {
             int before = crowd.Army;
             int army = GateMath.Apply(gate, before, crowd.MaximumArmy);
-            crowd.SetArmy(army);
+            // A bad gate throws the outer ring out in the ballistic death and shakes the camera.
+            crowd.SetArmy(army, SwarmRemoval.Die);
             if (army < before)
             {
-                // Simple removal for now (the outer ring goes); the ballistic death comes with RT-6t.5.
                 crowd.Shake();
             }
 

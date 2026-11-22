@@ -8,17 +8,20 @@ namespace JungleDegree.StudioKit.Swarm
 {
     /// <summary>
     /// Writes the drawn transform of every live unit for this frame: ground position (world x, z relative to
-    /// <see cref="CenterZ"/>), hop lift, squash with the
-    /// volume kept and the forward lean (rotation about X, top toward +Z). Tint alpha carries the bounce (0..1)
-    /// for the blob shadows.
+    /// <see cref="CenterZ"/>), hop lift, squash with the volume kept, the forward lean (top toward +Z), the sideways lean
+    /// into its across speed and the elastic pop of its birth. Tint alpha carries the blob shadow scale (the shadow
+    /// shrinks as the unit goes up and pops with it).
     /// </summary>
     [BurstCompile(FloatMode = FloatMode.Fast)]
     public struct SwarmAnimateJob : IJobParallelFor
     {
         [ReadOnly] public NativeArray<float2> Positions;
+        [ReadOnly] public NativeArray<float> AcrossSpeeds;
         [ReadOnly] public NativeArray<float> Phases;
+        [ReadOnly] public NativeArray<float> BornAt;
         [WriteOnly] public NativeArray<ToonInstance> Instances;
         public SwarmMotionSettings Motion;
+        public SwarmAnimationSettings Animation;
         public float3 Tint;
         public float Time;
         public float CenterZ;
@@ -28,16 +31,16 @@ namespace JungleDegree.StudioKit.Swarm
             float bounce = SwarmMotion.Bounce(Time, Phases[index], Motion.Frequency);
             float sy = SwarmMotion.SquashY(bounce, Motion);
             float sxz = SwarmMotion.SquashXZ(sy);
-            math.sincos(Motion.ForwardLean, out float sin, out float cos);
+            float birth = SwarmAnimation.BirthScale(Time, BornAt[index], Animation.BirthDuration);
+            float tilt = SwarmAnimation.Tilt(AcrossSpeeds[index], Animation);
             float2 ground = Positions[index];
-            // M = T · Rx(lean) · S(sxz, sy, sxz); rows of the 3×4 part, translation in w.
-            Instances[index] = new ToonInstance
+            var instance = new ToonInstance
             {
-                Row0 = new float4(sxz, 0f, 0f, ground.x),
-                Row1 = new float4(0f, cos * sy, -sin * sxz, bounce * Motion.HopHeight),
-                Row2 = new float4(0f, sin * sy, cos * sxz, CenterZ + ground.y),
-                Tint = new float4(Tint, bounce),
+                Tint = new float4(Tint, SwarmAnimation.ShadowScale(bounce, birth, Animation)),
             };
+            SwarmAnimation.Compose(ref instance, new float3(ground.x, bounce * Motion.HopHeight, CenterZ + ground.y),
+                Motion.ForwardLean, tilt, sxz * birth, sy * birth);
+            Instances[index] = instance;
         }
     }
 }

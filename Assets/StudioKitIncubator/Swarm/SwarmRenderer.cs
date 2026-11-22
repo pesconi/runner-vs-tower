@@ -9,7 +9,9 @@ namespace JungleDegree.StudioKit.Swarm
     /// Draws a swarm with no per-unit object: a <see cref="SwarmSimulation"/> animated by Burst every frame, uploaded
     /// to one structured buffer and drawn in one call for the bodies (<c>StudioKit/ToonLit</c> with
     /// <see cref="ToonShaderIds.InstancesKeyword"/>) plus one for the blob shadows (<c>StudioKit/BlobShadowInstanced</c>),
-    /// both reading the same buffer. Everything is allocated when enabled (scene load) and released when disabled.
+    /// both reading the same buffer. Units removed with <see cref="SwarmRemoval.Die"/> fly out in the ballistic death,
+    /// drawn in the same body call after the live ones (a ring of fixed capacity; no shadows). Everything is allocated
+    /// when enabled (scene load) and released when disabled.
     /// </summary>
     public sealed class SwarmRenderer : MonoBehaviour
     {
@@ -20,6 +22,8 @@ namespace JungleDegree.StudioKit.Swarm
         [Tooltip("StudioKit/BlobShadowInstanced (optional: no shadows without it).")]
         [SerializeField] private Material shadowMaterial;
         [Min(1)] [SerializeField] private int capacity = 2048;
+        [Tooltip("Most units on their way out at once (ballistic death); when full, the oldest goes first.")]
+        [Min(0)] [SerializeField] private int dyingCapacity = 512;
         [Min(0)] [SerializeField] private int initialCount = 100;
         [SerializeField] private SwarmFormationSettings formation = SwarmFormationSettings.Default;
         [Tooltip("Half width of the lane the formation is kept in, centered on this object across (0 = no lane).")]
@@ -28,6 +32,8 @@ namespace JungleDegree.StudioKit.Swarm
         [Min(0.001f)] [SerializeField] private float maxDeltaTime = 0.05f;
         [SerializeField] private Color tint = Color.white;
         [SerializeField] private SwarmMotionSettings motion = SwarmMotionSettings.Default;
+        [SerializeField] private SwarmAnimationSettings unitAnimation = SwarmAnimationSettings.Default;
+        [SerializeField] private SwarmDeathSettings death = SwarmDeathSettings.Default;
         [SerializeField] private uint seed = 1;
 
         private SwarmSimulation simulation;
@@ -38,6 +44,13 @@ namespace JungleDegree.StudioKit.Swarm
         private bool headless;
 
         public int Capacity => capacity;
+        public int DyingCapacity => dyingCapacity;
+
+        /// <summary>How removed units fly out (ballistic death).</summary>
+        public SwarmDeathSettings Death => death;
+
+        /// <summary>Units on their way out now.</summary>
+        public int DyingCount => simulation == null ? 0 : simulation.DyingCount;
         public SwarmFormationSettings Formation => formation;
         public float LaneHalfWidth => laneHalfWidth;
         public int Count => simulation == null ? 0 : simulation.Count;
@@ -54,15 +67,43 @@ namespace JungleDegree.StudioKit.Swarm
         public int UnitTriangles => unitMesh == null ? 0 : (int)(unitMesh.GetIndexCount(0) / 3);
         public bool DrawsShadows => shadowMaterial != null && shadowMesh != null;
 
+        /// <summary>
+        /// Draws the bodies (default). Off, only the blob shadows are drawn: tools and captures use it to see the ground
+        /// under the crowd (the summed shadows).
+        /// </summary>
+        public bool DrawBodies { get; set; } = true;
+
         /// <summary>True without a graphics device (batchmode -nographics): the swarm simulates but draws nothing.</summary>
         public bool Headless => headless;
 
-        /// <summary>Sets the live count (clamped to the capacity); new units appear in their slot of the formation.</summary>
-        public void SetCount(int count)
+        /// <summary>
+        /// Sets the live count (clamped to the capacity); new units pop in their slot of the formation, removed ones (the
+        /// outer ring) vanish or die as <paramref name="removal"/> says.
+        /// </summary>
+        public void SetCount(int count, SwarmRemoval removal = SwarmRemoval.Vanish)
         {
             if (simulation != null)
             {
-                simulation.SetCount(count);
+                simulation.SetCount(count, Time.time, removal);
+            }
+            else
+            {
+                initialCount = Mathf.Max(0, count);
+            }
+        }
+
+        /// <summary>Removes the units on their way out at once (a restart).</summary>
+        public void ClearDying()
+        {
+            simulation?.ClearDying();
+        }
+
+        /// <summary>A restart: no one dying and <paramref name="count"/> units standing in their slots, full size at once.</summary>
+        public void ResetCount(int count)
+        {
+            if (simulation != null)
+            {
+                simulation.Reset(count);
             }
             else
             {
@@ -121,7 +162,11 @@ namespace JungleDegree.StudioKit.Swarm
             }
 
             Vector3 origin = transform.position;
-            simulation = new SwarmSimulation(capacity, formation, seed);
+            simulation = new SwarmSimulation(capacity, dyingCapacity, formation, seed)
+            {
+                Animation = unitAnimation,
+                Death = death,
+            };
             simulation.SetLane(origin.x, laneHalfWidth > 0f ? laneHalfWidth : SwarmSimulation.NoLane);
             simulation.PlaceCenter(origin.x);
             simulation.CenterZ = origin.z;
@@ -133,7 +178,7 @@ namespace JungleDegree.StudioKit.Swarm
                 return;
             }
 
-            buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, capacity, ToonInstance.Stride);
+            buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, capacity + dyingCapacity, ToonInstance.Stride);
             unitParams = new RenderParams(unitMaterial)
             {
                 matProps = new MaterialPropertyBlock(),
@@ -175,23 +220,23 @@ namespace JungleDegree.StudioKit.Swarm
 
         private void LateUpdate()
         {
-            int count = simulation.Count;
-            if (count == 0)
-            {
-                return;
-            }
-
             simulation.Complete();
-            if (headless)
+            int count = simulation.WrittenCount;
+            int drawn = simulation.DrawCount;
+            if (drawn == 0 || headless)
             {
                 return;
             }
 
-            buffer.SetData(simulation.Instances, 0, 0, count);
+            buffer.SetData(simulation.Instances, 0, 0, drawn);
             Bounds bounds = simulation.GroundBounds(1.5f);
             unitParams.worldBounds = bounds;
-            Graphics.RenderMeshPrimitives(unitParams, unitMesh, 0, count);
-            if (drawShadows)
+            if (DrawBodies)
+            {
+                Graphics.RenderMeshPrimitives(unitParams, unitMesh, 0, drawn);
+            }
+
+            if (drawShadows && count > 0)
             {
                 shadowParams.worldBounds = bounds;
                 Graphics.RenderMeshPrimitives(shadowParams, shadowMesh, 0, count);

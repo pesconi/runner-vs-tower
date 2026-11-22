@@ -13,7 +13,9 @@ namespace Claybreak.Lab
     /// the track, the camera rig backs away as it grows and keeps the track on the portrait screen, and a test panel
     /// adds units (+100), jumps to 1000, restarts at 10 and shakes the camera. RT-6t.2: the panel also picks the crowd
     /// shape (Bolinha, Pintinho) and the eyes (with, without: decision D25 is open, the eyed shapes are the provisional
-    /// default). In measurement players the launch extras set the count, shape, eyes, MSAA, HDR and frame rate
+    /// default). RT-6t.5: lowering the count throws the outer ring out in the ballistic death (as the prototype does), a
+    /// "÷2" button halves the crowd like a bad gate, and a churn mode keeps N units live while D are always dying (the
+    /// death gate: the outer ring is thrown out and pops back in, frame after frame). In measurement players the launch extras set the count, shape, eyes, MSAA, HDR and frame rate
     /// (<see cref="ToonLabSettings"/>), the panel is hidden and the kit's frame timing probe logs CPU/GPU per window; in
     /// the Editor the serialized values are used.
     /// </summary>
@@ -27,6 +29,8 @@ namespace Claybreak.Lab
         [Tooltip("Test panel (its screen rectangle does not start drags); hidden in measurement launches.")]
         [SerializeField] private RectTransform panel;
         [Min(0)] [SerializeField] private int editorUnits = 1000;
+        [Tooltip("Units kept dying at all times in the Editor (churn of the outer ring; 0 = off). Players read --ei dying.")]
+        [Min(0)] [SerializeField] private int editorDying;
         [SerializeField] private SwarmDragSettings drag = SwarmDragSettings.Default;
         [Tooltip("Push the fog away as far as the portrait fit pushes the camera (the reference fog is tuned for the "
             + "reference framing; without this the crowd sits inside the fog on portrait screens).")]
@@ -44,6 +48,9 @@ namespace Claybreak.Lab
         private float fogEnd;
         private float fogScale;
         private ToonLabSettings settings;
+        private int churnUnits;
+        private float churnRate;
+        private float churnDebt;
 
         public SwarmRenderer Swarm => swarm;
         public SwarmCameraRig CameraRig => cameraRig;
@@ -95,10 +102,36 @@ namespace Claybreak.Lab
             swarm.SetCount(swarm.Count + units);
         }
 
-        /// <summary>Panel: sets the crowd to <paramref name="units"/> (1000!, restart at 10).</summary>
+        /// <summary>
+        /// Panel: sets the crowd to <paramref name="units"/> (1000!, restart at 10). As in the prototype, going down clears
+        /// the units still flying and throws the removed outer ring out in the ballistic death.
+        /// </summary>
         public void SetUnits(int units)
         {
-            swarm.SetCount(units);
+            if (units < swarm.Count)
+            {
+                swarm.ClearDying();
+            }
+
+            swarm.SetCount(units, SwarmRemoval.Die);
+        }
+
+        /// <summary>Panel: a bad gate (÷2, rounded up as the prototype does): the outer half dies and the camera shakes.</summary>
+        public void HalveCrowd()
+        {
+            swarm.SetCount((swarm.Count + 1) / 2, SwarmRemoval.Die);
+            cameraRig.Shake();
+        }
+
+        /// <summary>
+        /// Keeps <paramref name="dying"/> units dying at all times around the current live count (0 = off): the outer ring
+        /// is thrown out and popped back in at the rate that fills the ring of dying units within their lifetime.
+        /// </summary>
+        public void Churn(int dying)
+        {
+            churnUnits = Mathf.Clamp(dying, 0, swarm.DyingCapacity);
+            churnRate = churnUnits == 0 ? 0f : ChurnOverfill * churnUnits / swarm.Death.Lifetime;
+            churnDebt = 0f;
         }
 
         /// <summary>Panel: shakes the camera as a bad gate will.</summary>
@@ -148,6 +181,7 @@ namespace Claybreak.Lab
             ApplyShape();
 
             swarm.SetCount(Mathf.Clamp(settings.Units, 0, swarm.Capacity));
+            Churn(fromLaunch ? settings.Dying : editorDying);
             ApplyRendering(settings);
             AttachTimingProbe(settings);
             fogStart = RenderSettings.fogStartDistance;
@@ -169,6 +203,31 @@ namespace Claybreak.Lab
         {
             ReadDrag();
             ReadKeys();
+            UpdateChurn();
+        }
+
+        // A little more than the ring holds per lifetime, so it stays full (the oldest makes room) instead of thinning out
+        // between frames. Units die from the outer ring and pop back in at once: the live count never changes.
+        private const float ChurnOverfill = 1.15f;
+
+        private void UpdateChurn()
+        {
+            if (churnUnits == 0 || swarm.Count == 0)
+            {
+                return;
+            }
+
+            churnDebt += churnRate * Time.deltaTime;
+            int thrown = Mathf.Min((int)churnDebt, swarm.Count);
+            if (thrown == 0)
+            {
+                return;
+            }
+
+            churnDebt -= thrown;
+            int live = swarm.Count;
+            swarm.SetCount(live - thrown, SwarmRemoval.Die);
+            swarm.SetCount(live);
         }
 
         // Logged once the rig has framed the crowd (its field of view is set in LateUpdate).
@@ -299,7 +358,7 @@ namespace Claybreak.Lab
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             string pipeline = urp == null ? "none" : $"msaa={urp.msaaSampleCount} hdr={(urp.supportsHDR ? "on" : "off")} renderScale={urp.renderScale:0.##}";
             Camera view = cameraRig.GetComponent<Camera>();
-            Debug.Log($"[ToonLab] units={units} shape=\"{ShapeLabel}\" {pipeline} fps={Application.targetFrameRate} "
+            Debug.Log($"[ToonLab] units={units} dying={churnUnits} shape=\"{ShapeLabel}\" {pipeline} fps={Application.targetFrameRate} "
                 + $"tris/unit={swarm.UnitTriangles} draws=1+{(swarm.DrawsShadows ? 1 : 0)} "
                 + $"api={SystemInfo.graphicsDeviceType} gpu={SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsDeviceVersion}) "
                 + $"cpu={SystemInfo.processorType} x{SystemInfo.processorCount} screen={Screen.width}x{Screen.height} "

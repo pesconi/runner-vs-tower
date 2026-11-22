@@ -1,13 +1,12 @@
 // Blob shadows of an instanced toon draw (studio kit): a flat disc under every instance of _ToonInstances,
 // drawn as one second call that reads the same buffer as the bodies. The disc keeps the instance ground
-// position (x, z), lies at _GroundHeight and shrinks by _LiftShrink * lift, where lift (0..1) is the owner data
-// in tint.w. Transparent, no depth write.
+// position (x, z), lies at _GroundHeight and is scaled by the owner data in tint.w (the swarm writes the shadow
+// scale there: it shrinks as the unit goes up and pops with its birth; 0 = no shadow). Transparent, no depth write.
 Shader "StudioKit/BlobShadowInstanced"
 {
     Properties
     {
         _ShadowColor ("Color (alpha = opacity)", Color) = (0.169, 0.133, 0.2, 0.18)
-        _LiftShrink ("Shrink at full lift", Range(0, 1)) = 0.35
         _GroundHeight ("Ground height", Float) = 0.01
     }
 
@@ -34,7 +33,6 @@ Shader "StudioKit/BlobShadowInstanced"
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _ShadowColor;
-                half _LiftShrink;
                 float _GroundHeight;
             CBUFFER_END
 
@@ -54,7 +52,7 @@ Shader "StudioKit/BlobShadowInstanced"
             {
                 Varyings output;
                 ToonInstanceData instance = _ToonInstances[input.instanceID];
-                float scale = 1.0 - _LiftShrink * saturate(instance.tint.w);
+                float scale = max(instance.tint.w, 0.0);
                 float3 positionWS = float3(instance.row0.w + input.positionOS.x * scale, _GroundHeight,
                     instance.row2.w + input.positionOS.z * scale);
                 output.positionCS = TransformWorldToHClip(positionWS);

@@ -9,7 +9,7 @@ namespace JungleDegree.StudioKit.Toon
     /// <see cref="ToonShaderIds.Instances"/> by <c>SV_InstanceID</c>. Mirrors <c>ToonInstanceData.hlsl</c>.
     /// Rows 0–2 are the object-to-world transform (3×4, translation in <c>w</c>). <see cref="Tint"/>.rgb is the
     /// tint in linear color (applied where the vertex color alpha is 1); <see cref="Tint"/>.w is free for the
-    /// owner (the swarm stores the hop lift there, which its blob shadows read).
+    /// owner (the swarm stores the blob shadow scale there, which its shadows read).
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct ToonInstance
