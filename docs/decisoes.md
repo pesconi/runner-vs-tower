@@ -1824,3 +1824,10 @@ O usuário jogou no OPPO e pediu dois ajustes (registrados pela sessão RT-6t.13
   título do menu, ícone, política de privacidade e domínio; o id do pacote `com.jungledegree.runnervstower`, o save e os
   nomes internos (`Claybreak`) não mudam; os sons "de argila" (D22) continuam. Correção: a checagem de marca é EUIPO +
   INPI Portugal + TMview (empresa portuguesa), não INPI Brasil/USPTO como em notas antigas.
+- **2026-11-22 — D27 revista pelo usuário: teto 300 no jogo, teto configurável no motor.** Substitui o "A" acima.
+  Palavras do usuário: "300 já ta ficando com um zoom out absurdo pra dar pra ver tudo, se formos exibir 1000 teremos
+  que rever o layout do jogo completo, sendo assim, 300 ta ótimo, reajuste para aceitar um valor X de bonecos no motor,
+  e esse valor para o jogo específico é 300. Arrumar as contas dos portais pra não passar disso." Texto aprovado: o
+  motor da multidão aceita um teto configurável por jogo (dado, não código); neste jogo o teto é 300 na corrida e no
+  ataque; as contas dos portões são ajustadas para o exército nunca passar de 300. Sem valor fracionado por boneco e
+  sem entrega de reequilíbrio para 1000.
