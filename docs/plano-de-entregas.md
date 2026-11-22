@@ -31,7 +31,7 @@ lançamento jun/2027.
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
 | RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — concluída em 2026-11-22 (motor no `studiokit` 0.5.0; aceite pendente: jogar os 4 mundos; `rt6t-crowd-toon.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
-| RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22; ajuste "sem neblina nenhuma" pedido pelo usuário feito e validado (pendente: capturas de depois, gate 3× e instalação no OPPO, que bloqueou; jogar e aprovar) | — | — | antes da RT-9 |
+| RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22; ajuste "sem neblina nenhuma" pedido pelo usuário feito, validado, gate 3× aprovado e APK instalado no OPPO (pendente: jogar e aprovar) | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -577,8 +577,9 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   **aprovado** (corrida e assalto do mundo 4: CPU p95 ≤ 2,5 ms, GPU p95 ≤ 4,9 ms, 60 fps, 0 B alocados) e APK do jogo
   instalado com o save; números em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md), seção RT-6t.13. Depois de jogar, o usuário
   pediu **sem neblina nenhuma**: desligada pelo jogo nos 4 mundos, árvores entrando pelo plano de corte (janela 200 m),
-  validação completa verde (seção RT-6t.13, "Ajuste"). **Pendente:** OPPO desbloqueado para as capturas de depois, o gate
-  3× e instalar o APK; depois jogar e aprovar o líder e o visual sem neblina. Decisões: usuário e T-RT6t13-1..8 em `decisoes.md`.
+  validação completa verde (seção RT-6t.13, "Ajuste"). Capturas antes/depois no OPPO em
+  `art/rt6t/neblina-antes-depois-oppo.png`, gate 3× de novo aprovado (CPU p95 ≤ 2,8 ms, GPU p95 ≤ 4,9 ms) e APK instalado.
+  **Pendente:** jogar e aprovar o líder e o visual sem neblina. Decisões: usuário e T-RT6t13-1..8 em `decisoes.md`.
 - **Prompt da sessão:** "Entrega RT-6t.13 do Runner vs Tower (ajustes pós-teste do usuário, 2026-11-22): neblina quase
   zero nas 4 paletas com nova proteção contra pop-in no validador, e o líder da multidão (forma do menu, 1,6×, coroa na
   cor de UI, decide portões e caixotes, fica na linha de lançamento no assalto), no pipeline instanciado. Capturas em

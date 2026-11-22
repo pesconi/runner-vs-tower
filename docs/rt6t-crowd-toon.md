@@ -776,12 +776,17 @@ T-RT6t13-9..11 em `decisoes.md`.
   **172,5 m**.
 - **Validação:** `Tools/rt4-check.sh /c/temp/rt6t13b` completo, todos **PASS** (EditMode 305/305, PlayMode 24 + 13 capturas
   ignoradas sem GPU, APKs e AAB). Telas do jogo (`art/telas/`) regravadas sem neblina.
-- **Capturas do OPPO** em `art/rt6t/neblina/`: `antes-*.png` (build da 6t.13, mundos 1 e 4, corrida e assalto) tiradas no
-  aparelho. **Pendente:** as `depois-*.png`, o gate 3× e a instalação — o OPPO bloqueou antes (passos abaixo).
-- **Gate 3×:** a variante sem neblina só tira conta dos shaders, mas troca a variante desenhada; decidido rodar de novo
-  corrida e assalto do mundo 4 com o APK novo.
+- **Capturas no OPPO, antes e depois:** `art/rt6t/neblina-antes-depois-oppo.png` (APK de medição da 6t.13 × o novo,
+  mundos 1 e 4, corrida e assalto, tiradas no aparelho com `adb exec-out screencap`). Antes há uma faixa esbranquiçada sobre o
+  chão e as árvores do fundo; depois o horizonte fica limpo e com cor até o fim.
+- **Gate 3× de novo** (os shaders passam a rodar a variante sem neblina), APK `/c/temp/rt6t13b/Claybreak-measure.apk`,
+  Vulkan, rota de buffer; CPU e GPU = pior p95 das janelas 1–5:
 
-Passos pendentes (APKs em `/c/temp/rt6t13b/`), com o OPPO desbloqueado:
-`Tools/rt2-gate.sh rt6t13b-run-w4 60 20 /c/temp/rt6t13b/Claybreak-measure.apk run:4`,
-`Tools/rt2-gate.sh rt6t13b-assault-w4 60 20 /c/temp/rt6t13b/Claybreak-measure.apk 4`, capturas de depois com o mesmo APK,
-`adb shell am force-stop com.jungledegree.runnervstower` e `adb install -r /c/temp/rt6t13b/Claybreak.apk` (preserva o save).
+| Caso | Comando | CPU p95 | GPU p95 | Quadro p95 | > 50 ms | PSS | Alocação | Resultado |
+|---|---|---|---|---|---|---|---|---|
+| corrida do mundo 4, sem neblina | `Tools/rt2-gate.sh rt6t13b-run-w4 60 20 /c/temp/rt6t13b/Claybreak-measure.apk run:4` | 2,0 ms | 4,9 ms | 16 ms (62,5 fps) | 0,0% | 304 MB | 0 B | **passa** |
+| assalto do mundo 4, sem neblina | `Tools/rt2-gate.sh rt6t13b-assault-w4 60 20 /c/temp/rt6t13b/Claybreak-measure.apk 4` | 2,8 ms | 4,8 ms | 16 ms (62,5 fps) | 0,0% | 305 MB | 0 B | **passa** |
+
+  Nas janelas estáveis (2–5) a GPU fica em 2,9–3,2 ms, igual a antes; folga de 3,9× em CPU e 2,2× em GPU sobre 11 ms.
+- **Instalado:** `adb install -r /c/temp/rt6t13b/Claybreak.apk` (save preservado, 2026-11-22 21:29) e `force-stop`. Falta só o usuário jogar e
+  aprovar o líder e o visual sem neblina.
