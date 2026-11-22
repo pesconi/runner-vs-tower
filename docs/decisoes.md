@@ -1838,3 +1838,11 @@ O usuário jogou no OPPO e pediu dois ajustes (registrados pela sessão RT-6t.13
   e por colisão no Google Play e na App Store; o usuário escolhe. O nome escolhido substitui "Clay Siege" no jogo
   (`productName`, título do menu, ícone, política de privacidade, domínio) antes da RT-9; id do pacote, save e nomes
   internos não mudam.
+- **2026-11-22 — D29 nome escolhido: Stampeep — usuário.** Texto aprovado: "Stampeep" (stampede + peep) vira o nome de
+  trabalho do jogo e substitui "Clay Siege" no jogo (`productName`, título do menu, ícone, política de privacidade,
+  domínio) antes da RT-9; id do pacote `com.jungledegree.runnervstower`, save e nomes internos não mudam. Triagem
+  gratuita feita em 2026-11-22 pelo maestro: TMview sem marca ativa "STAMPEEP"; sem jogo homônimo encontrado na web
+  (Play/App Store por busca); `stampeep.com` livre na consulta RDAP da Verisign. Risco anotado: "PEEPS" tem registos
+  ativos em classe 9 (EUIPO 2026, DPMA 2024) — inferência nossa: risco de confusão baixo por ser palavra nova e
+  produto diferente; não é parecer jurídico. Antes de registar marca ou comprar domínio (gasto), busca oficial no
+  EUIPO e INPI Portugal, com ficha própria de gasto. Finalistas descartados: Peep Siege, Topple Squad, Peepstorm.
