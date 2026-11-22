@@ -686,10 +686,17 @@ mais que o Vulkan com buffer e continua com mais de 3× de folga em CPU e GPU. C
 - `TestProject` do studiokit: EditMode **92/92**, isolamento com a lista ampla PASS (depois de tirar de um comentário
   do `MobileAdsGate` o nome de um jogo, que vinha de antes desta entrega).
 
-### Gate 3× final no OPPO CPH2791 — **pendente**
+### Gate 3× final no OPPO CPH2791 — **PASSOU** (2026-11-22)
 
-O OPPO estava conectado mas **bloqueado** (tela de senha) durante toda a sessão. Casos e comandos (APK de medição desta
-entrega, `C:\temp\rt612\Claybreak-measure.apk`):
-`Tools/rt2-gate.sh final-run-w4 60 20 /c/temp/rt612/Claybreak-measure.apk run:4` (corrida, multidão no teto e cenário
-do mundo 4) e `Tools/rt2-gate.sh final-assault-w4 60 20 /c/temp/rt612/Claybreak-measure.apk 4` (assalto mais pesado).
-O código de desenho e simulação não mudou desde os gates aprovados da 6t.4/6t.7/6t.11 (só o lugar dos arquivos).
+APK de medição desta entrega (pacote 0.5.0), Vulkan, rota de buffer (`[ToonRoute] route=Buffer api=Vulkan gpu="Mali-G1-Ultra
+MC12"`). CPU e GPU = pior p95 das janelas 1–5 (a 6ª coincide com a coleta de memória do script). O OPPO ficou bloqueado
+durante a sessão e foi desbloqueado no fim; o gate rodou depois do commit da entrega.
+
+| Caso | Comando | CPU p95 | GPU p95 | Quadro p95 | > 50 ms | PSS | Alocação | Resultado |
+|---|---|---|---|---|---|---|---|---|
+| corrida do mundo 4, 300 no teto + cenário | `Tools/rt2-gate.sh final-run-w4 60 20 /c/temp/rt612/Claybreak-measure.apk run:4` | 1,8 ms | 4,4 ms | 16 ms (62,5 fps) | 0,0% | 305 MB | 0 B | **passa** |
+| assalto do mundo 4: chefe, canhão 12/12, varredor, muro, escudo, 300 em voo (100 elites, 14–59 morrendo) | `Tools/rt2-gate.sh final-assault-w4 60 20 /c/temp/rt612/Claybreak-measure.apk 4` | 2,3 ms | 4,4 ms | 16 ms (62,5 fps) | 0,0% | 313 MB | 0 B | **passa** |
+| antes: assalto do mundo 4 (6t.7, kit incubado) | — | 2,6 ms | 4,3 ms | 16 ms | 0,0% | 292 MB | 0 B | passa |
+
+Leitura: mudar o motor de lugar não mudou o custo (mesmos números da 6t.4/6t.7); folga de mais de 4× em CPU e 2,5× em GPU
+sobre o limite de 11 ms, quadro sempre a 60 fps.
