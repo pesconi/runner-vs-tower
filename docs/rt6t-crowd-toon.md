@@ -790,3 +790,8 @@ T-RT6t13-9..11 em `decisoes.md`.
   Nas janelas estáveis (2–5) a GPU fica em 2,9–3,2 ms, igual a antes; folga de 3,9× em CPU e 2,2× em GPU sobre 11 ms.
 - **Instalado:** `adb install -r /c/temp/rt6t13b/Claybreak.apk` (save preservado, 2026-11-22 21:29) e `force-stop`. Falta só o usuário jogar e
   aprovar o líder e o visual sem neblina.
+
+### Aceite do usuário — **APROVADO** (2026-11-22)
+
+O usuário jogou a build sem neblina no OPPO (líder da multidão + visual sem neblina) e aprovou: "Aprovo". A RT-6t.13 está
+concluída e aceita.
