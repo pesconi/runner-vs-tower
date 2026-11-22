@@ -34,8 +34,8 @@ namespace Claybreak.Tests
                     Assert.AreEqual(Approved[w][i], hex[i], $"{palettes[w].Name} {ToonPalette.ColorNames[i]}");
                 }
 
-                Assert.AreEqual(22f, palettes[w].FogStart);
-                Assert.AreEqual(75f, palettes[w].FogEnd);
+                Assert.AreEqual(110f, palettes[w].FogStart);
+                Assert.AreEqual(150f, palettes[w].FogEnd);
             }
         }
 

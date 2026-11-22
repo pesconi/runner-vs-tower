@@ -15,8 +15,8 @@ MonoBehaviour:
   skyTop: {r: 0.56078434, g: 0.827451, b: 1, a: 1}
   skyBottom: {r: 0.93333334, g: 0.9764706, b: 1, a: 1}
   fog: {r: 0.8745098, g: 0.9490196, b: 1, a: 1}
-  fogStart: 22
-  fogEnd: 75
+  fogStart: 110
+  fogEnd: 150
   ground: {r: 0.5764706, g: 0.8509804, b: 0.6039216, a: 1}
   track: {r: 1, g: 0.98039216, b: 0.9019608, a: 1}
   trackStripe: {r: 1, g: 0.92941177, b: 0.6901961, a: 1}

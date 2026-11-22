@@ -58,6 +58,9 @@ namespace Claybreak.Editor
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
         public const float TrackWidth = 8f;
+
+        /// <summary>Far clip of the game camera (m): the fog of every world is complete before it (RT-6t.13).</summary>
+        public const float CameraFarClip = 170f;
         private const float TrackStartZ = -12f;
         /// <summary>The game scene's ground mesh (it spans this scene's track, so it is saved apart from the shared props).</summary>
         public const string GroundMeshPath = SceneryArt.Folder + "/GroundAndRails.asset";
@@ -87,6 +90,7 @@ namespace Claybreak.Editor
             BuildTheme();
             new ArtPalette();
             GateArt.BuildAssets();
+            LeaderArt.BuildAssets();
             CreatePillSprite();
             CreateStarSprite();
             AssetDatabase.SaveAssets();
@@ -204,7 +208,7 @@ namespace Claybreak.Editor
             cameraObject.tag = "MainCamera";
             Camera camera = cameraObject.GetComponent<Camera>();
             camera.clearFlags = CameraClearFlags.Skybox;
-            camera.farClipPlane = 170f;
+            camera.farClipPlane = ClaybreakSceneBuilder.CameraFarClip;
             camera.fieldOfView = 60f;
             cameraObject.transform.position = new Vector3(0f, 9f, -8f);
             cameraObject.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
@@ -299,10 +303,27 @@ namespace Claybreak.Editor
             SetRef(rig, "profile", Load<SwarmCameraProfile>(CrowdCameraProfilePath));
             SetRef(rig, "swarm", swarm);
 
+            // RT-6t.13: the leader at the front, drawn instanced with the crowd's material and shadow plus its crown.
+            var leaderObject = new GameObject("Leader");
+            leaderObject.transform.SetParent(crowdObject.transform, false);
+            CrowdLeader leader = leaderObject.AddComponent<CrowdLeader>();
+            var leaderSo = new SerializedObject(leader);
+            leaderSo.FindProperty("swarm").objectReferenceValue = swarm;
+            leaderSo.FindProperty("bodyMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.SwarmMaterialPath);
+            leaderSo.FindProperty("shadowMesh").objectReferenceValue = Load<Mesh>(ToonLabBuilder.ShadowDiscPath);
+            leaderSo.FindProperty("shadowMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.ShadowMaterialPath);
+            leaderSo.FindProperty("crownMesh").objectReferenceValue = Load<Mesh>(LeaderArt.CrownMeshPath);
+            leaderSo.FindProperty("crownMaterial").objectReferenceValue = Load<Material>(LeaderArt.CrownMaterialPath);
+            // It bounces and leans like the crowd: the swarm's own motion and animation settings, copied.
+            leaderSo.CopyFromSerializedProperty(so.FindProperty("motion"));
+            leaderSo.CopyFromSerializedProperty(so.FindProperty("unitAnimation"));
+            leaderSo.ApplyModifiedPropertiesWithoutUndo();
+
             var crowd = crowdObject.AddComponent<RunCrowd>();
             var crowdSo = new SerializedObject(crowd);
             crowdSo.FindProperty("swarm").objectReferenceValue = swarm;
             crowdSo.FindProperty("cameraRig").objectReferenceValue = rig;
+            crowdSo.FindProperty("leader").objectReferenceValue = leader;
             crowdSo.FindProperty("drag.MetersPerScreenWidth").floatValue = ReferenceDragMeters * TrackWidth * 0.5f / ReferenceTrackHalfWidth;
             crowdSo.FindProperty("startZ").floatValue = 0f;
             crowdSo.ApplyModifiedPropertiesWithoutUndo();
@@ -444,6 +465,9 @@ namespace Claybreak.Editor
             SetArray(course, "crateLabels", crateLabels);
             SetRef(course, "goodMaterial", palette.GateGood);
             SetRef(course, "badMaterial", palette.GateBad);
+            SetRef(course, "goodLitMaterial", palette.GateGoodLit);
+            SetRef(course, "badLitMaterial", palette.GateBadLit);
+            SetRef(course, "offMaterial", palette.GateOff);
             SetRef(course, "goodLabelMaterial", GameFonts.Preset(GameFonts.GateGoodPath));
             SetRef(course, "badLabelMaterial", GameFonts.Preset(GameFonts.GateBadPath));
             return course;

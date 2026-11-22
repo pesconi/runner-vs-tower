@@ -161,6 +161,11 @@ namespace Claybreak.Editor
         private static void CheckScenery(WorldScenery scenery, ClaybreakCatalog catalog, List<string> failures)
         {
             InstancedProps props = scenery.Props;
+            // RT-6t.13 (fog near zero): a prop wraps to the far end of the window; every point of it a game camera can see
+            // there must be in full fog, and the fog must be complete before the far clip (the horizon does not cut sharp).
+            float wrapDepth = NearestVisibleWrapDepth(props, catalog, failures);
+            Debug.Log($"[ClaybreakValidation] the nearest prop wrap a game camera sees is {wrapDepth:0.0} m away (window {props.Scatter.Length} m)");
+            Camera view = props.Anchor != null ? props.Anchor.GetComponent<Camera>() : null;
             foreach (WorldEntry entry in catalog.Worlds)
             {
                 WorldLook look = entry.world.Look;
@@ -169,11 +174,21 @@ namespace Claybreak.Editor
                     failures.Add($"scenery: {entry.world.name} shows {look.trees} trees and {look.rocks} rocks, more than the scene preallocates");
                 }
 
-                // A prop wraps to the far end of the window: there it must already be lost in the fog.
-                float farEnd = props.Scatter.Length - props.Scatter.Behind;
-                if (look.palette != null && look.palette.FogEnd > farEnd)
+                if (look.palette == null)
                 {
-                    failures.Add($"scenery: {entry.world.name} fog ends at {look.palette.FogEnd} m, past the props' far end ({farEnd} m): they would pop in");
+                    continue;
+                }
+
+                if (look.palette.FogEnd > wrapDepth)
+                {
+                    failures.Add($"scenery: {entry.world.name} fog ends at {look.palette.FogEnd} m, but a camera sees props wrap in at "
+                        + $"{wrapDepth:0.0} m: they would pop in (lengthen the props window or bring the fog in)");
+                }
+
+                if (view == null || look.palette.FogEnd >= view.farClipPlane)
+                {
+                    failures.Add($"scenery: {entry.world.name} fog ends at {look.palette.FogEnd} m, not before the camera far clip "
+                        + $"({(view == null ? 0f : view.farClipPlane)} m): the horizon would cut sharp");
                 }
             }
 
@@ -193,6 +208,43 @@ namespace Claybreak.Editor
             {
                 failures.Add("scenery: only the track and the ground draw as renderers (the props are instanced)");
             }
+        }
+
+        // The run rig's profile at the crowd cap and both assault shots, over the levels' tower distances.
+        private static float NearestVisibleWrapDepth(InstancedProps props, ClaybreakCatalog catalog, List<string> failures)
+        {
+            SwarmCameraRig rig = props.Anchor != null ? props.Anchor.GetComponent<SwarmCameraRig>() : null;
+            var crowd = Object.FindFirstObjectByType<RunCrowd>(FindObjectsInactive.Include);
+            var assault = AssetDatabase.LoadAssetAtPath<SwarmCameraShot>(ClaybreakSceneBuilder.AssaultShotPath);
+            var boss = AssetDatabase.LoadAssetAtPath<SwarmCameraShot>(ClaybreakSceneBuilder.BossAssaultShotPath);
+            if (rig == null || rig.Profile == null || crowd == null || crowd.Swarm == null || assault == null || boss == null)
+            {
+                failures.Add("scenery: the props must follow the run camera (with its rig), and the crowd and assault shots must exist");
+                return 0f;
+            }
+
+            float nearGap = float.MaxValue;
+            float farGap = 0f;
+            foreach (WorldEntry entry in catalog.Worlds)
+            {
+                foreach (ClaybreakLevel level in entry.world.Levels)
+                {
+                    nearGap = Mathf.Min(nearGap, level.TowerZ - level.FiringLineZ);
+                    farGap = Mathf.Max(farGap, level.TowerZ - level.FiringLineZ);
+                }
+            }
+
+            var shots = new List<PropWrapGuard.Shot>();
+            foreach (SwarmCameraShot shot in new[] { assault, boss })
+            {
+                foreach (float gap in new[] { nearGap, farGap })
+                {
+                    shots.Add(new PropWrapGuard.Shot { Offset = shot.Offset, Focus = shot.Focus, VerticalFov = shot.VerticalFov, TargetAhead = gap });
+                }
+            }
+
+            return PropWrapGuard.NearestVisibleWrapDepth(rig.Profile.Settings, crowd.Swarm.Capacity, crowd.Swarm.LaneHalfWidth,
+                props.Scatter, SceneryArt.PropHeight, shots);
         }
 
         private static void WarnIfClose(List<string> warnings, string where, string nameA, Color a, string nameB, Color b)
@@ -650,6 +702,20 @@ namespace Claybreak.Editor
             {
                 failures.Add("the run crowd needs its swarm and camera rig");
                 return;
+            }
+
+            // RT-6t.13: the leader, drawn instanced (no renderer of its own) with the crowd's material and shadow plus a crown.
+            var leader = crowdSo.FindProperty("leader").objectReferenceValue as CrowdLeader;
+            string leaderError = leader == null ? "missing" : leader.Validate();
+            if (leaderError != null)
+            {
+                failures.Add("the run crowd's leader: " + leaderError);
+            }
+            else if (leader.GetComponentInChildren<Renderer>(true) != null
+                || new SerializedObject(leader).FindProperty("bodyMaterial").objectReferenceValue
+                != new SerializedObject(swarm).FindProperty("unitMaterial").objectReferenceValue)
+            {
+                failures.Add("the leader is drawn instanced with the crowd's own material (no renderer of its own)");
             }
 
             if (swarm.Capacity != ClaybreakSceneBuilder.CrowdCapacity)

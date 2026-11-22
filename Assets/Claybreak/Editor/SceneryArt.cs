@@ -45,6 +45,14 @@ namespace Claybreak.Editor
         /// <summary>Tallest prop at its largest scale (the tree's top cone ends at 2.9 m).</summary>
         public const float PropHeight = 2.9f * 1.5f;
 
+        /// <summary>
+        /// Length of the props' window along Z (m; the reference: 90). RT-6t.13: with the fog near zero a prop must not pop
+        /// in where it wraps, so the window reaches past what the camera sees clear: the validator checks that any wrap point
+        /// still on screen is in full fog (<see cref="PropWrapGuard"/>). The worlds' tree and rock counts are per window,
+        /// doubled with it so the density stays the reference's.
+        /// </summary>
+        public const float PropWindowLength = 180f;
+
         // One-hot slot weights (alpha 0: the instance tint is not used).
         private static readonly Color32 Slot0 = new Color32(255, 0, 0, 0);
         private static readonly Color32 Slot1 = new Color32(0, 255, 0, 0);
@@ -163,7 +171,7 @@ namespace Claybreak.Editor
             so.FindProperty("boundsHeight").floatValue = PropHeight + 1f;
             SerializedProperty scatter = so.FindProperty("scatter");
             scatter.FindPropertyRelative("Behind").floatValue = PropScatterSettings.Default.Behind;
-            scatter.FindPropertyRelative("Length").floatValue = PropScatterSettings.Default.Length;
+            scatter.FindPropertyRelative("Length").floatValue = PropWindowLength;
             scatter.FindPropertyRelative("CenterX").floatValue = 0f;
             scatter.FindPropertyRelative("InnerX").floatValue = trackHalfWidth + PropMarginFromTrack;
             scatter.FindPropertyRelative("BandWidth").floatValue = PropScatterSettings.Default.BandWidth;

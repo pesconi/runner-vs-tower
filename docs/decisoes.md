@@ -1732,3 +1732,59 @@ Destrava a RT-6t.6b. Ficha: `direcao-visual-crowd.md` seção 5.
 - **T-RT6t12-6 — Gate final nos dois casos mais pesados do nível de gate.** O nível de gate já cobre corrida (`run:4`,
   multidão no teto com o cenário do mundo 4) e assalto (`4`, torre do chefe, canhão, varredor, muro, escudo, 300 em voo);
   o gate final mede os dois em Vulkan, com o pacote 0.5.0. A rota de reserva GLES foi aprovada na 6t.11 e não mudou.
+
+## 2026-11-22 — RT-6t.13 — Neblina quase zero e líder da multidão — usuário
+
+O usuário jogou no OPPO e pediu dois ajustes (registrados pela sessão RT-6t.13):
+
+- **Neblina:** "muito intensa"; remover ou deixar próximo de zero. Só o suficiente para o horizonte não cortar seco.
+- **Líder da multidão — aprovado "como proposto":** um boneco da mesma forma escolhida no menu (Bolinha/Pintinho),
+  ~1,6× maior, sempre na ponta da frente da multidão, com um destaque fixo (coroinha ou anel na cor de UI da paleta do
+  mundo). É ele que o dedo controla; a multidão segue atrás (a formação girassol fica atrás do líder, não em volta). O
+  portão que o líder atravessa é o que vale (substitui a regra do centro invisível); ao passar, o portão escolhido acende e
+  o outro apaga. O líder não conta no número da multidão e não morre nos portões ruins; multidão em zero encerra a fase
+  como antes.
+
+## 2026-11-22 — T-RT6t13-1..7 — Neblina mínima e líder da multidão — técnica (sessão RT-6t.13)
+
+- **T-RT6t13-1 — Neblina de 110 a 150 m nos 4 mundos (dado, `PaletteContent`).** Tudo o que o jogador olha (multidão,
+  portões, torre a menos de ~110 m) fica sem neblina; ela só fecha o chão longe e termina antes do plano de corte da
+  câmera (170 m, agora a constante `ClaybreakSceneBuilder.CameraFarClip`), então o horizonte não corta seco. As cores de
+  neblina das paletas ficaram como estavam.
+- **T-RT6t13-2 — Nova proteção contra árvore "aparecendo do nada": a janela do cenário passa do que a câmera vê limpo.**
+  A regra da 6t.8 (neblina termina antes do fundo da janela de 90 m) deixou de valer. Escolhida a opção sem mudar o kit:
+  janela de reciclagem de 180 m (`SceneryArt.PropWindowLength`), com a quantidade de árvores e pedras de cada mundo
+  dobrada (mesma densidade). Descartadas: fade de escala/alpha na entrada (exige mudar `PropScatter` no studiokit, que
+  outra sessão estava editando — K.13 — e mexeria no Wild Pack) e baixar o plano de corte (encurta o horizonte, que é o
+  que a neblina menor quer mostrar). Custo: até 156 árvores + 88 pedras instanciadas em vez de 78 + 44, mesmas 2 chamadas
+  de desenho; medido no gate.
+- **T-RT6t13-3 — O validador pergunta o que importa: de alguma câmera do jogo dá para ver uma árvore surgir fora da
+  neblina?** `PropWrapGuard` (editor, puro) calcula a menor profundidade de visão de um ponto onde uma árvore reaparece que
+  ainda cai dentro do campo de visão — câmera da corrida em vários tamanhos de multidão (até o teto), à esquerda/centro/
+  direita, ajustada ao retrato como o jogo faz (21:9, 19,5:9 e 16:9), e os dois enquadramentos do assalto nas distâncias
+  de torre dos níveis — e o validador exige neblina completa antes dela e antes do plano de corte. Com 180 m o ponto mais
+  perto visível fica a ~156 m (neblina termina em 150); a janela antiga de 90 m daria ~80 m (o teste EditMode prova que ela
+  falharia com a neblina nova).
+- **T-RT6t13-4 — Líder desenhado no mesmo pipeline instanciado, no jogo, sem mudar o kit.** `CrowdLeader` usa duas
+  `ToonInstanceDraw` de 1 instância (corpo com a sombra em bolha; coroa) com o material da multidão e um material da
+  coroa (`ToonLit` instanciado, emissão 0,5). Pula, achata e inclina com as mesmas fórmulas públicas do kit
+  (`SwarmMotion`, `SwarmAnimation`); veste a forma e a cor da multidão; a coroa é um anel com 5 pontas
+  (`LeaderArt`, ~200 triângulos) na cor `UiAccent` da paleta do mundo, com joias brancas. Sem GameObject por unidade, sem
+  renderer próprio, nada criado em jogo (buffers alocados no `OnEnable`). +3 chamadas de desenho.
+- **T-RT6t13-5 — A formação segue atrás do líder.** O `RunCrowd` passou a guardar a posição do líder (é ela que corre na
+  velocidade da fase); o centro da formação girassol fica atrás dele pela profundidade do disco
+  (`DepthStretch × raio(n)`) mais 0,9 m, suavizado quando a multidão cresce ou encolhe. O dedo continua mexendo o centro do
+  enxame (o líder anda no X dele); a câmera continua seguindo a formação. `RunCrowd.Position` passou a ser o líder (portões,
+  caixotes, linha de lançamento, faixa do assalto); `FormationCenter` dá o centro.
+- **T-RT6t13-6 — Portões, caixotes e linha de lançamento pela posição do líder; feedback de acender/apagar.** A dupla de
+  portões não some mais ao ser cruzada: o lado escolhido troca para um painel quase opaco da sua cor (`GateGoodLit`/
+  `GateBadLit`) e o outro para um cinza apagado (`GateOff`) com o número a 30%; o resto da multidão atravessa o portão que o
+  líder escolheu. Caixotes seguem a mesma lógica (o líder pega pelo lado em que está) — mais coerente com "o líder decide"
+  e sem custo. A fase entra no assalto quando o líder chega à linha (antes, o centro).
+- **T-RT6t13-7 — No assalto o líder fica parado na linha de lançamento comandando.** Ele não é lançado (as unidades saem
+  do anel de fora como antes) e continua andando de lado com o dedo, marcando a faixa escolhida; nenhuma regra de dano
+  mudou. Se a multidão zera, a fase acaba como antes (o líder não conta).
+- **T-RT6t13-8 — Revisão independente (subagente fable, só leitura): nada bloqueante.** Aplicados: o teste do líder compara
+  com a posição da corrida (o desenho do líder é do quadro anterior quando a corrotina retoma); a formação recua 3× mais
+  rápido do que avança (depois de um portão de multiplicar o anel novo não passa à frente do líder); o construtor de cena
+  copia para o líder os ajustes de pulo e animação do enxame (não desalinham se forem afinados).

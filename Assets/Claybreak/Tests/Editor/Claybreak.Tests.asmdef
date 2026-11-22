@@ -8,6 +8,8 @@
         "JungleDegree.StudioKit.Ads",
         "JungleDegree.StudioKit.Analytics",
         "JungleDegree.StudioKit.Toon",
+        "JungleDegree.StudioKit.Swarm",
+        "Unity.Mathematics",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

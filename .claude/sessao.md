@@ -132,3 +132,9 @@
   depois deste Unity). A linha de base do teste offline de anúncios do Wild Pack é **25/25** desde a 8.6g dele. O `TestProject`
   do studiokit (lista de isolamento ampla) pega nomes de jogo que a lista de cada jogo não pega: rodar o isolamento lá também.
   Varredura de órfãos por GUID: script em Python que cruza o `guid:` de cada `.meta` com as referências dos assets de texto.
+- 2026-11-22 (RT-6t.13): outra família de sessões pode estar escrevendo no `studiokit` (K.13 estava com a árvore suja e um
+  Unity em batchmode no `TestProject`): este jogo compila o código não commitado do kit pelo caminho `file:`. Antes de
+  rodar Unity ou adb, conferir `git -C ../studiokit status --short` e os `Unity.exe` (com linha de comando) de outros
+  projetos; resolver no jogo em vez de mexer no kit. A neblina mínima é guardada pelo `PropWrapGuard` (validador loga a
+  distância do reaparecimento visível mais perto); captura do líder: `-testFilter Claybreak.Tests.LeaderCaptureTests
+  -leaderCaptureDir <pasta>` sem `-nographics`. O líder é `RunCrowd.Position`; o centro da formação, `FormationCenter`.

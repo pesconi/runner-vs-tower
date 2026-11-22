@@ -27,8 +27,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f3847f31a2796134eaa0eb2724e98963, type: 2}
   look:
     palette: {fileID: 11400000, guid: 10b299e2714c104439b7b85079577b99, type: 2}
-    trees: 65
-    rocks: 29
+    trees: 130
+    rocks: 58
     ambient: {r: 0.42, g: 0.36, b: 0.34, a: 1}
     sun: {r: 1, g: 0.86, b: 0.7, a: 1}
     sunIntensity: 1.2

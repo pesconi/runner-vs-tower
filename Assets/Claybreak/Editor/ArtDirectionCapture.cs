@@ -117,7 +117,7 @@ namespace Claybreak.Editor
             Camera camera = cameraObject.GetComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.fieldOfView = 60f;
-            camera.farClipPlane = 170f;
+            camera.farClipPlane = ClaybreakSceneBuilder.CameraFarClip;
             ClaybreakSceneBuilder.DressWorld(worldId, look, towerZ + 30f, sun, camera);
             float height = boss ? 20f : 17f;
             Vector3 from = new Vector3(0f, 0f, line);

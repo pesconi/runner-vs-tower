@@ -31,6 +31,7 @@ lançamento jun/2027.
 | ~~RT-8 Produção — polimento, áudio e gate de release~~ — concluída em 2026-11-21 (gate 3× aprovado no release; som aprovado, D22 = A; `rt8-producao.md`) | 1 | 1,2 | ~~fim de abr~~ |
 | ~~RT-8b Firebase Analytics mínimo (D21 = A)~~ — feita em 2026-11-21 (`rt8b-firebase.md`; ver status) | — | — | — |
 | RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — concluída em 2026-11-22 (motor no `studiokit` 0.5.0; aceite pendente: jogar os 4 mundos; `rt6t-crowd-toon.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
+| RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22, com aceite pendente (gate 3× e instalação no OPPO, que não estava conectado; jogar e aprovar) | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -553,6 +554,32 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   `../studiokit/docs/consumo-runner-vs-tower.md`. Mova `Assets/StudioKitIncubator/**` para o pacote preservando os
   GUIDs, registre a K.11 no plano do studiokit, rode a aceitação do studiokit depois do Unity deste projeto,
   remova o que ficou sem uso no jogo (confira referências e GUIDs), regrave capturas e rode o gate 3× final."
+
+## RT-6t.13 — Ajustes pós-teste: neblina quase zero e líder da multidão
+
+- **Origem:** o usuário jogou no OPPO em 2026-11-22 e pediu dois ajustes (decisão registrada em `decisoes.md`,
+  "RT-6t.13 — Neblina quase zero e líder da multidão — usuário"): neblina quase imperceptível e um líder visível que
+  decide o portão (desenho aprovado "como proposto").
+- **Escopo:** (1) neblina mínima nas 4 `ToonPalette` (dado) e uma nova proteção contra cenário "aparecendo do nada" no
+  lugar da regra da 6t.8, com o validador ajustado; (2) líder da multidão: mesma forma do menu, ~1,6×, sempre na frente,
+  coroa na cor de UI do mundo, controlado pelo dedo, multidão atrás dele; o portão (e o caixote) que ele atravessa é o que
+  vale, com o portão escolhido aceso e o outro apagado; não conta no número e não morre; no assalto fica na linha de
+  lançamento. Desenhado no pipeline instanciado, sem Instantiate/Destroy em jogo.
+- **Depende de:** RT-6t.12.
+- **Aceite:** validação padrão completa; capturas (líder passando num portão, os 4 mundos com a neblina nova) em
+  `art/rt6t/`; gate 3× no OPPO na corrida e no assalto do mundo 4; APK do jogo instalado no OPPO preservando o save.
+- **Exige o usuário:** OPPO conectado e desbloqueado; jogar e aprovar o líder e a neblina (aceite pendente).
+- **Status: concluída em 2026-11-22, com aceite pendente.** Neblina 110–150 m nos 4 mundos; janela do cenário de
+  180 m (densidade igual) e validador novo (`PropWrapGuard`: árvore que reaparece à vista a 155,8 m, depois da neblina);
+  líder (`CrowdLeader`, instanciado, coroa na cor de UI) decide portões e caixotes, portão escolhido aceso e o outro
+  apagado, parado na linha no assalto. Validação completa verde (EditMode 305/305, PlayMode 24 + capturas), revisão
+  independente sem bloqueio (3 ajustes aplicados). Capturas `art/rt6t/lider-oppo.png` e `mundos-oppo.png`. **Pendente:**
+  o OPPO não apareceu no adb — falta o gate 3× (corrida e assalto do mundo 4) e instalar o APK do jogo; passos em
+  [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md), seção RT-6t.13. Decisões: usuário e T-RT6t13-1..8 em `decisoes.md`.
+- **Prompt da sessão:** "Entrega RT-6t.13 do Runner vs Tower (ajustes pós-teste do usuário, 2026-11-22): neblina quase
+  zero nas 4 paletas com nova proteção contra pop-in no validador, e o líder da multidão (forma do menu, 1,6×, coroa na
+  cor de UI, decide portões e caixotes, fica na linha de lançamento no assalto), no pipeline instanciado. Capturas em
+  `docs/art/rt6t/`, validação completa, gate 3× no mundo 4 (corrida e assalto) e APK instalado no OPPO."
 
 ## RT-9 — Preparação do soft launch
 

@@ -11,8 +11,8 @@ namespace Claybreak.Editor
         public string SkyTop, SkyBottom, Fog, Ground, Track, TrackStripe, Crowd, FoliageDark, FoliageLight, Trunk, Rock,
             UiAccent, UiInk, TowerLight, TowerDark, TowerDetail, Defense;
         // Tower* fill the palette's structure colors (the towers are this game's structures).
-        public float FogStart = 22f;
-        public float FogEnd = 75f;
+        public float FogStart = 110f;
+        public float FogEnd = 150f;
 
         public string[] Hex => new[]
         {
@@ -27,7 +27,8 @@ namespace Claybreak.Editor
     /// exact values (docs/direcao-visual-crowd.md section 1.1); world 4 is the provisional "Aurora" of section 5.1. The
     /// tower and defense colors are ours, provisional [P]: on screen since RT-6t.10 (towers, bosses, defenses, projectiles,
     /// crates, through ArtPalette's structure weights), Pastel's tower light/dark darkened there so the towers read against
-    /// its pink sky; fog 22–75 is the reference's.
+    /// its pink sky. Fog (RT-6t.13, user 2026-11-22: "remove it or leave it near zero"): 110–150 m in every world, clear
+    /// over everything the player looks at and complete before the camera far clip, so the horizon does not cut sharp.
     /// </summary>
     public static class PaletteContent
     {

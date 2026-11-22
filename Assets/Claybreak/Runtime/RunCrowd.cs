@@ -5,11 +5,13 @@ using UnityEngine;
 namespace Claybreak
 {
     /// <summary>
-    /// The army on the track (RT-6t.4): an instanced <see cref="SwarmRenderer"/> (no object per unit) whose formation
-    /// center is the old leader. It runs forward at the course speed, a finger drag steers the center across the track
-    /// (the reference drag: target at the press plus the drag in screen widths, kept inside the track), and the camera
-    /// rig follows it. The count is the army itself (there is no leader unit any more). The gates and crates read
-    /// <see cref="Position"/>; the assault takes its units from the outer ring (<see cref="TryTakeOuterUnit"/>).
+    /// The army on the track (RT-6t.4): an instanced <see cref="SwarmRenderer"/> (no object per unit) led by a
+    /// <see cref="CrowdLeader"/> (RT-6t.13). The leader runs forward at the course speed and a finger drag steers it across
+    /// the track (the reference drag: target at the press plus the drag in screen widths, kept inside the track); the
+    /// sunflower formation follows behind it (its center kept the disc's depth plus a clearance behind the leader, eased
+    /// as the army grows or shrinks) and the camera rig follows the formation. The count is the army itself: the leader is
+    /// not a unit, never dies at a gate and is never launched. The gates and crates read <see cref="Position"/> (the
+    /// leader); the assault takes its units from the outer ring (<see cref="TryTakeOuterUnit"/>).
     /// Runs before the flow and the swarm each frame (the flow runs before the swarm too), so the swarm draws where the
     /// crowd is and how many it holds this frame. No allocation while playing.
     /// </summary>
@@ -18,6 +20,11 @@ namespace Claybreak
     {
         [SerializeField] private SwarmRenderer swarm;
         [SerializeField] private SwarmCameraRig cameraRig;
+        [SerializeField] private CrowdLeader leader;
+        [Tooltip("Gap between the front of the formation and the leader (m).")]
+        [Min(0f)] [SerializeField] private float leaderClearance = 0.9f;
+        [Tooltip("How fast the formation's distance behind the leader follows the army's size (1/s).")]
+        [Min(0.1f)] [SerializeField] private float formationSharpness = 4f;
         [SerializeField] private SwarmDragSettings drag = SwarmDragSettings.Default;
         [Tooltip("Where the run starts along the track (m).")]
         [SerializeField] private float startZ;
@@ -26,12 +33,15 @@ namespace Claybreak
         private bool dragging;
         private float pressX;
         private float targetAtPress;
+        private float leaderZ;
+        private float behind;
 
         /// <summary>Raised with the new army when it changes.</summary>
         public event Action<int> ArmyChanged;
 
         public SwarmRenderer Swarm => swarm;
         public SwarmCameraRig CameraRig => cameraRig;
+        public CrowdLeader Leader => leader;
 
         /// <summary>Units in the army now.</summary>
         public int Army => swarm.Count;
@@ -53,14 +63,27 @@ namespace Claybreak
             }
         }
 
-        /// <summary>The formation center on the ground: across where it is now, along where the crowd runs.</summary>
-        public Vector3 Position
+        /// <summary>
+        /// The leader on the ground (RT-6t.13): across where the steering has it now, along where the run is. The gates,
+        /// the crates, the firing line and the assault lane read it.
+        /// </summary>
+        public Vector3 Position => new Vector3(swarm.CenterX, swarm.transform.position.y, leaderZ);
+
+        /// <summary>The formation center on the ground (behind the leader).</summary>
+        public Vector3 FormationCenter
         {
             get
             {
                 Vector3 origin = swarm.transform.position;
                 return new Vector3(swarm.CenterX, origin.y, origin.z);
             }
+        }
+
+        /// <summary>How far the formation center stands behind the leader for <paramref name="army"/> units (settled).</summary>
+        public float FormationBehind(int army)
+        {
+            SwarmFormationSettings formation = swarm.Formation;
+            return formation.DepthStretch * SunflowerFormation.Radius(army, formation.Spacing) + leaderClearance;
         }
 
         /// <summary>Center of the track across (the swarm keeps its units inside it).</summary>
@@ -72,15 +95,21 @@ namespace Claybreak
         /// <summary>Checks the wiring (the flow calls it once at start).</summary>
         public bool TryValidate(out string error)
         {
-            if (swarm == null || cameraRig == null)
+            if (swarm == null || cameraRig == null || leader == null)
             {
-                error = "RunCrowd needs its swarm and camera rig.";
+                error = "RunCrowd needs its swarm, camera rig and leader.";
                 return false;
             }
 
             if (!swarm.isActiveAndEnabled)
             {
                 error = "the crowd swarm did not start (see the log above).";
+                return false;
+            }
+
+            if (!leader.isActiveAndEnabled)
+            {
+                error = "the crowd leader did not start (see the log above).";
                 return false;
             }
 
@@ -105,6 +134,7 @@ namespace Claybreak
             PlaceAtStart();
             int next = Mathf.Clamp(army, 0, MaximumArmy);
             swarm.ResetCount(next);
+            SnapFormation();
             ArmyChanged?.Invoke(next);
             cameraRig.Snap();
         }
@@ -115,6 +145,7 @@ namespace Claybreak
             int army = Army;
             PlaceAtStart();
             swarm.ResetCount(army);
+            SnapFormation();
             cameraRig.Snap();
         }
 
@@ -155,7 +186,13 @@ namespace Claybreak
             swarm.SetTint(color);
         }
 
-        /// <summary>The unit shape the crowd is drawn with (one of the generated crowd shapes).</summary>
+        /// <summary>The leader's crown color (the world's UI accent).</summary>
+        public void CrownLeader(Color color)
+        {
+            leader.WearCrown(color);
+        }
+
+        /// <summary>The unit shape the crowd (and its leader) is drawn with (one of the generated crowd shapes).</summary>
         public void UseShape(Mesh shape)
         {
             swarm.SetUnitMesh(shape);
@@ -184,11 +221,24 @@ namespace Claybreak
 
         private void PlaceAtStart()
         {
+            leaderZ = startZ;
+            swarm.PlaceCenter(swarm.transform.position.x);
+            dragging = false;
+        }
+
+        // The formation settled behind the leader for the army now (start, restart): no easing.
+        private void SnapFormation()
+        {
+            behind = FormationBehind(Army);
+            PlaceFormation();
+            leader.Place(Position, true);
+        }
+
+        private void PlaceFormation()
+        {
             Transform swarmTransform = swarm.transform;
             Vector3 origin = swarmTransform.position;
-            swarmTransform.position = new Vector3(origin.x, origin.y, startZ);
-            swarm.PlaceCenter(origin.x);
-            dragging = false;
+            swarmTransform.position = new Vector3(origin.x, origin.y, leaderZ - behind);
         }
 
         private void Update()
@@ -198,12 +248,18 @@ namespace Claybreak
                 ReadDrag();
             }
 
-            if (Speed != 0f)
-            {
-                Transform swarmTransform = swarm.transform;
-                Vector3 origin = swarmTransform.position;
-                swarmTransform.position = new Vector3(origin.x, origin.y, origin.z + Speed * Time.deltaTime);
-            }
+            leaderZ += Speed * Time.deltaTime;
+            // A multiplying gate grows the disc at once: the formation backs off three times faster than it closes up, so
+            // the new outer ring does not pass the leader.
+            float target = FormationBehind(Army);
+            behind = SwarmCameraMath.Smooth(behind, target, target > behind ? formationSharpness * 3f : formationSharpness, Time.deltaTime);
+            PlaceFormation();
+        }
+
+        // The leader is drawn where the steering has it this frame (the swarm moved its center in its Update).
+        private void LateUpdate()
+        {
+            leader.Place(Position);
         }
 
         private void ReadDrag()

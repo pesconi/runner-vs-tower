@@ -47,6 +47,11 @@ namespace Claybreak.Editor
         // RT-6t.9: the prototype's gate panels, #5ad1a0 (good) and #ff6b81 (bad) at 0.45, no depth write.
         public readonly Material GateGood = Clear("GateGood", new Color(0x5a / 255f, 0xd1 / 255f, 0xa0 / 255f, 0.45f));
         public readonly Material GateBad = Clear("GateBad", new Color(1f, 0x6b / 255f, 0x81 / 255f, 0.45f));
+        // RT-6t.13: once the leader crosses, the side taken lights (same color, nearly opaque) and the other goes out
+        // (a faint grey).
+        public readonly Material GateGoodLit = Clear("GateGoodLit", new Color(0x5a / 255f, 0xd1 / 255f, 0xa0 / 255f, 0.82f));
+        public readonly Material GateBadLit = Clear("GateBadLit", new Color(1f, 0x6b / 255f, 0x81 / 255f, 0.82f));
+        public readonly Material GateOff = Clear("GateOff", new Color(0.62f, 0.6f, 0.66f, 0.16f));
         public readonly Material Marker = Clear("LaneMarker", new Color(1f, 0.8f, 0.25f, 0.35f));
         // The projectile's landing shadow in the art direction's shadow color (#2b2233), darker than the crowd's 0.18:
         // it warns where the stone falls.

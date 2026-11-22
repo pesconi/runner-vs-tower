@@ -700,3 +700,52 @@ durante a sessão e foi desbloqueado no fim; o gate rodou depois do commit da en
 
 Leitura: mudar o motor de lugar não mudou o custo (mesmos números da 6t.4/6t.7); folga de mais de 4× em CPU e 2,5× em GPU
 sobre o limite de 11 ms, quadro sempre a 60 fps.
+
+## RT-6t.13 — Ajustes pós-teste: neblina quase zero e líder da multidão (2026-11-22)
+
+O usuário jogou no OPPO e pediu: neblina "próxima de zero" e um líder visível que decide o portão (desenho aprovado
+"como proposto"). Decisões: usuário e T-RT6t13-1..8 em `decisoes.md`. Nada mudou no `studiokit` (resolvido no jogo).
+
+### O que foi feito
+
+- **Neblina 110–150 m nos 4 mundos** (`PaletteContent`, dado). Multidão, portões e a torre próxima ficam sem neblina; ela só
+  fecha o chão longe e termina antes do plano de corte (170 m), então o horizonte não corta seco.
+- **Nova proteção contra árvore "aparecendo do nada".** Janela de reciclagem do cenário de 90 → 180 m, com árvores e pedras
+  de cada mundo dobradas (mesma densidade). O validador troca a regra antiga por `PropWrapGuard`: de todas as câmeras do jogo
+  (corrida em vários tamanhos de multidão e posições, ajustada a 21:9/19,5:9/16:9, e os dois enquadramentos do assalto), o
+  ponto mais perto onde uma árvore reaparece à vista fica a **155,8 m** — depois do fim da neblina (150 m). Com a janela
+  antiga seria ~80 m (teste EditMode prova que falharia).
+- **Líder da multidão** (`CrowdLeader`): mesma forma e cor da multidão, 1,6×, coroa de 5 pontas na cor de UI do mundo
+  (joias brancas, emissão 0,5), pulando e inclinando como as unidades. Desenhado no pipeline instanciado
+  (`ToonInstanceDraw`, 1 instância de corpo + sombra, 1 de coroa: +3 chamadas), sem renderer nem objeto criado em jogo.
+- **A multidão segue atrás.** `RunCrowd.Position` é o líder (corre na velocidade da fase; o dedo o move de lado); o centro
+  da formação girassol fica atrás dele pela profundidade do disco + 0,9 m, suavizado (recua 3× mais rápido que avança).
+- **O líder decide:** portão e caixote pelo lado em que ele está; a fase entra no assalto quando ele chega à linha. A dupla
+  cruzada fica de pé: o lado escolhido acende (painel quase opaco da cor) e o outro apaga (cinza, número a 30%).
+- **Assalto:** o líder fica parado na linha de lançamento, andando de lado com o dedo para marcar a faixa; não é lançado nem
+  conta no número; regras de dano iguais.
+
+### Testes e validação
+
+- `Tools/rt4-check.sh` completo: `scene`, `validate`, `isolation`, `editmode` (**305/305**), `playmode` (24 passam, 13 capturas
+  ignoradas sem GPU), `economy`, `capture`, `apk-game`, `apk-measure`, `aab`: **todos PASS**; rodada de novo depois da
+  revisão (`scene validate editmode playmode apk`): **todos PASS** (EditMode 305/305, PlayMode 24 + 13 ignoradas, sem `Shader error` no APK de medição); capturas PlayMode com GPU 5/5.
+- Novos: EditMode `LeaderAndFogTests` (guarda com a janela antiga e a nova, coroa); PlayMode `CrowdLeaderTests` (líder fora do
+  número, à frente de todas as unidades, portão da esquerda escolhido por ele, acender/apagar, nada criado em jogo; no assalto
+  parado na linha).
+
+### Capturas (Unity com GPU, formato do OPPO, metade do tamanho) — `art/rt6t/`
+
+- `lider-oppo.png`: começo (líder com coroa à frente), líder à esquerda antes do 1º portão, logo depois (o "+10" aceso, o
+  "×2" apagado), multidão no teto atrás do líder, assalto com o líder na linha.
+- `mundos-oppo.png`: os 4 mundos com a neblina nova (regravada). `corrida-oppo.png` e `portoes-oppo.png` regravadas com o
+  líder e o novo feedback.
+
+### Gate 3× no OPPO CPH2791
+
+**Pendente.** O OPPO não apareceu no adb em nenhum momento da sessão (cabo desconectado). Os APKs desta entrega estão em
+`/c/temp/rt6t13/` (`Claybreak.apk`, `Claybreak-measure.apk`). Com o aparelho conectado e desbloqueado:
+`Tools/rt2-gate.sh rt6t13-run-w4 60 20 /c/temp/rt6t13/Claybreak-measure.apk run:4`, depois
+`Tools/rt2-gate.sh rt6t13-assault-w4 60 20 /c/temp/rt6t13/Claybreak-measure.apk 4`, `adb shell am force-stop com.jungledegree.runnervstower`
+e `adb install -r /c/temp/rt6t13/Claybreak.apk` (preserva o save). Custo esperado: +3 chamadas de desenho do líder e
+o dobro de árvores e pedras instanciadas (mesmas 2 chamadas), sobre a folga de >4× em CPU e 2,5× em GPU da 6t.12.

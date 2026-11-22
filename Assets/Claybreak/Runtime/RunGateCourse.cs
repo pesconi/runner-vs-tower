@@ -8,11 +8,13 @@ namespace Claybreak
     /// <summary>
     /// The short run's math gates and special-unit crates (from level data). The scene builder
     /// preallocates <see cref="MaximumPairs"/> pair visuals and <see cref="ClaybreakLevel.MaximumCrates"/>
-    /// crates; each level places and labels the ones it uses. A pair is crossed when the crowd center passes its
-    /// distance; the side is the half of the track the center is on. A crate is taken when the center
-    /// passes it on its side. No colliders: distance checks only (no physics queries per frame).
+    /// crates; each level places and labels the ones it uses. RT-6t.13: the crowd's leader decides: a pair is crossed when
+    /// the leader passes its distance and the side is the half of the track the leader is on; a crate is taken when the
+    /// leader passes it on its side. No colliders: distance checks only (no physics queries per frame).
     /// RT-6t.9: each side is a translucent panel half the track wide (good / bad material) with a TextMeshPro label in
     /// Baloo 2 whose outline preset follows the side (dark green / wine); labels are written without allocating.
+    /// RT-6t.13: a crossed pair stays up: the side taken lights (an opaquer panel of its color) and the other goes out (a
+    /// faint grey panel, its label faded), so the crowd runs through the gate its leader chose.
     /// </summary>
     public sealed class RunGateCourse : MonoBehaviour
     {
@@ -27,6 +29,11 @@ namespace Claybreak
         [SerializeField] private TMP_Text[] crateLabels = new TMP_Text[0];
         [SerializeField] private Material goodMaterial;
         [SerializeField] private Material badMaterial;
+        [SerializeField] private Material goodLitMaterial;
+        [SerializeField] private Material badLitMaterial;
+        [SerializeField] private Material offMaterial;
+        [Tooltip("Alpha of the label on the side not taken.")]
+        [Range(0f, 1f)] [SerializeField] private float offLabelAlpha = 0.3f;
         [SerializeField] private Material goodLabelMaterial;
         [SerializeField] private Material badLabelMaterial;
 
@@ -40,10 +47,10 @@ namespace Claybreak
         private int next;
         private int nextCrate;
 
-        /// <summary>Raised when the crowd crosses a gate: the gate taken.</summary>
+        /// <summary>Raised when the leader crosses a gate: the gate taken.</summary>
         public event Action<GateSpec> GateCrossed;
 
-        /// <summary>Raised when the crowd takes a crate: its index in the level and the special units it holds.</summary>
+        /// <summary>Raised when the leader takes a crate: its index in the level and the special units it holds.</summary>
         public event Action<int, int> CratePicked;
 
         public int Capacity => pairRoots == null ? 0 : pairRoots.Length;
@@ -54,6 +61,7 @@ namespace Claybreak
         {
             int capacity = Capacity;
             if (levelData == null || track == null || goodMaterial == null || badMaterial == null
+                || goodLitMaterial == null || badLitMaterial == null || offMaterial == null
                 || goodLabelMaterial == null || badLabelMaterial == null
                 || leftLabels.Length != capacity || rightLabels.Length != capacity
                 || leftPanels.Length != capacity || rightPanels.Length != capacity
@@ -75,8 +83,6 @@ namespace Claybreak
                 RunGatePair pair = level.RunGates[i];
                 Vector3 position = pairRoots[i].position;
                 pairRoots[i].position = new Vector3(position.x, position.y, pair.z);
-                Dress(leftLabels[i], leftPanels[i], pair.left);
-                Dress(rightLabels[i], rightPanels[i], pair.right);
             }
 
             for (int i = 0; i < level.Crates.Count; i++)
@@ -100,7 +106,14 @@ namespace Claybreak
             nextCrate = 0;
             for (int i = 0; i < Capacity; i++)
             {
-                pairRoots[i].gameObject.SetActive(level != null && i < level.RunGates.Count);
+                bool used = level != null && i < level.RunGates.Count;
+                pairRoots[i].gameObject.SetActive(used);
+                if (used)
+                {
+                    RunGatePair pair = level.RunGates[i];
+                    Dress(leftLabels[i], leftPanels[i], pair.left);
+                    Dress(rightLabels[i], rightPanels[i], pair.right);
+                }
             }
 
             for (int i = 0; i < CrateCapacity; i++)
@@ -109,23 +122,24 @@ namespace Claybreak
             }
         }
 
-        /// <summary>Called by the flow during the run with the crowd's position (its formation center).</summary>
-        public void Track(Vector3 crowd)
+        /// <summary>Called by the flow during the run with the leader's position (<see cref="RunCrowd.Position"/>).</summary>
+        public void Track(Vector3 leader)
         {
-            while (level != null && next < level.RunGates.Count && crowd.z >= level.RunGates[next].z)
+            while (level != null && next < level.RunGates.Count && leader.z >= level.RunGates[next].z)
             {
                 RunGatePair pair = level.RunGates[next];
-                GateSpec taken = Boost(crowd.x < trackCenterX ? pair.left : pair.right);
-                pairRoots[next].gameObject.SetActive(false);
+                bool right = leader.x >= trackCenterX;
+                GateSpec taken = Boost(right ? pair.right : pair.left);
+                Light(next, right, taken.IsGood);
                 next++;
                 GameAudio.Play(taken.IsGood ? GameSound.GateGood : GameSound.GateBad);
                 GateCrossed?.Invoke(taken);
             }
 
-            while (cratesShown && level != null && nextCrate < level.Crates.Count && crowd.z >= level.Crates[nextCrate].z)
+            while (cratesShown && level != null && nextCrate < level.Crates.Count && leader.z >= level.Crates[nextCrate].z)
             {
                 CratePlacement crate = level.Crates[nextCrate];
-                bool onRight = crowd.x >= trackCenterX;
+                bool onRight = leader.x >= trackCenterX;
                 if (onRight == crate.right)
                 {
                     crateRoots[nextCrate].gameObject.SetActive(false);
@@ -148,8 +162,30 @@ namespace Claybreak
             GateSpec gate = Boost(spec);
             label.SetCharArray(labelBuffer, 0, gate.WriteLabel(labelBuffer));
             label.fontSharedMaterial = gate.IsGood ? goodLabelMaterial : badLabelMaterial;
+            label.alpha = 1f;
             panel.sharedMaterial = gate.IsGood ? goodMaterial : badMaterial;
         }
+
+        // The side taken lights up in its color, the other goes out (grey panel, faded label).
+        private void Light(int pair, bool right, bool good)
+        {
+            Renderer taken = right ? rightPanels[pair] : leftPanels[pair];
+            Renderer other = right ? leftPanels[pair] : rightPanels[pair];
+            taken.sharedMaterial = good ? goodLitMaterial : badLitMaterial;
+            other.sharedMaterial = offMaterial;
+            (right ? leftLabels[pair] : rightLabels[pair]).alpha = offLabelAlpha;
+        }
+
+        /// <summary>The panel of one side of a placed pair (tests and captures).</summary>
+        public Renderer PanelOf(int pair, bool right)
+        {
+            return right ? rightPanels[pair] : leftPanels[pair];
+        }
+
+        /// <summary>The material a side shows once taken (lit) or passed by (off).</summary>
+        public Material LitMaterial(bool good) => good ? goodLitMaterial : badLitMaterial;
+
+        public Material OffMaterial => offMaterial;
 
         /// <summary>The label shown on one side of a placed pair (tests and captures).</summary>
         public TMP_Text LabelOf(int pair, bool right)

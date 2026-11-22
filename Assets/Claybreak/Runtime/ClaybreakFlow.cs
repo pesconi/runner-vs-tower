@@ -2,6 +2,7 @@ using System;
 using JungleDegree.StudioKit.Analytics;
 using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Swarm;
+using JungleDegree.StudioKit.Toon;
 using UnityEngine;
 
 namespace Claybreak
@@ -651,11 +652,17 @@ namespace Claybreak
 
         // The army's color in the world shown (RT-6t.6a: the default skin wears the world's palette color, any other skin
         // its own): the run crowd wears it as its tint and the assault's plain units as theirs (RT-6t.7, per instance).
+        // The leader wears the crowd's color and a crown in the world's UI accent (RT-6t.13).
         private void DressArmy(int world)
         {
             Color color = progression.CrowdColorIn(world);
             crowd.Wear(color);
             field.Wear(color);
+            ToonPalette palette = catalog.Worlds[world].world.Look.palette;
+            if (palette != null)
+            {
+                crowd.CrownLeader(palette.UiAccent);
+            }
         }
 
         // The crowd shape picked in the menu (RT-6t.6b), in the run and in the assault alike (RT-6t.7).
@@ -1056,7 +1063,7 @@ namespace Claybreak
             armyAtLine = crowd.Army;
             Vector3 center = crowd.Position;
             Debug.Log($"[Claybreak] Run reached the firing line in {levelTime:0.0} s: army {armyAtLine} ({Specials} specials), "
-                + $"crowd center x={center.x:0.00} z={center.z:0.0} (track top {track.bounds.max.y:0.00}).", this);
+                + $"leader x={center.x:0.00} z={center.z:0.0} (track top {track.bounds.max.y:0.00}).", this);
             crowd.Speed = 0f;
             launchCredit = 0f;
             holdTime = 0f;
