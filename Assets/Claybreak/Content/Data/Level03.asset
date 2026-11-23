@@ -45,8 +45,13 @@ MonoBehaviour:
       operation: 1
       value: 20
   crates: []
-  obstacles: []
-  firingLineZ: 98
+  obstacles:
+  - kind: 0
+    z: 93.5
+    across: 0
+    period: 4.15
+    phase: 0
+  firingLineZ: 99.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -63,14 +68,14 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 1
   towerDistance: 32
-  towerHealth: 300
+  towerHealth: 270
   floors: 2
   damagePerUnit: 1
   bossRule: 0
   wallEnabled: 0
   wallLane: 0
   wallDistance: 22
-  wallHealth: 60
+  wallHealth: 50
   cannonEnabled: 1
   cannonInterval: 2.3
   projectileFlightTime: 0.9
@@ -82,6 +87,6 @@ MonoBehaviour:
   shieldEnabled: 0
   shieldLane: 0
   shieldDistance: 26
-  shieldHealth: 60
+  shieldHealth: 50
   shieldBlock: 0.5
   coinReward: 60

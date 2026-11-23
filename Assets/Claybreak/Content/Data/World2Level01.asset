@@ -38,8 +38,13 @@ MonoBehaviour:
       operation: 3
       value: 2
   crates: []
-  obstacles: []
-  firingLineZ: 74
+  obstacles:
+  - kind: 0
+    z: 71.5
+    across: 0
+    period: 3.7
+    phase: 0.1
+  firingLineZ: 77.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -56,7 +61,7 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 3
   towerDistance: 31.5
-  towerHealth: 110
+  towerHealth: 100
   floors: 1
   damagePerUnit: 1
   bossRule: 0
@@ -75,6 +80,6 @@ MonoBehaviour:
   shieldEnabled: 0
   shieldLane: 2
   shieldDistance: 27.5
-  shieldHealth: 20
+  shieldHealth: 10
   shieldBlock: 0.4
   coinReward: 110

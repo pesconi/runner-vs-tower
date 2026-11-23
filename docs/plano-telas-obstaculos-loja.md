@@ -298,6 +298,8 @@ Unity em batchmode dos dois lados não podem rodar ao mesmo tempo (aprendizado d
   (fora disso vira ficha); gate 3× só se a fase mais pesada tiver mais obstáculos que a medida na 6t.18; APK no OPPO.
 - **Olhar humano:** sim, o usuário joga os 4 mundos e diz se a dificuldade está boa.
 
+- **Status (2026-11-23):** entregue (`Stage RT.6t.19`); detalhes e pendências em `plano-de-entregas.md`, seção RT-6t.19.
+
 ### RT-6t.20 — Formas compradas na loja
 
 - **Escopo:** conforme D31 e D32: 3 formas novas no construtor de malhas, com silhueta distinta e quique próprio por

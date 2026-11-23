@@ -18,51 +18,61 @@ MonoBehaviour:
   runGates:
   - z: 18
     left:
+      operation: 0
+      value: 30
+    right:
+      operation: 2
+      value: 2
+  - z: 38
+    left:
       operation: 2
       value: 2
     right:
       operation: 0
-      value: 30
-  - z: 38
-    left:
-      operation: 1
-      value: 17
-    right:
-      operation: 3
-      value: 2
+      value: 40
   - z: 58
     left:
       operation: 0
-      value: 35
+      value: 30
     right:
       operation: 1
-      value: 40
-  - z: 78
+      value: 25
+  - z: 89
     left:
-      operation: 2
-      value: 3
-    right:
       operation: 3
       value: 2
-  - z: 98
-    left:
+    right:
       operation: 1
       value: 35
+  - z: 109
+    left:
+      operation: 3
+      value: 2
     right:
-      operation: 0
-      value: 55
+      operation: 2
+      value: 2
   crates:
   - z: 28
-    right: 0
+    right: 1
     units: 3
   - z: 48
-    right: 1
-    units: 4
-  - z: 68
     right: 0
     units: 4
-  obstacles: []
-  firingLineZ: 114
+  - z: 65
+    right: 1
+    units: 3
+  obstacles:
+  - kind: 3
+    z: 73.5
+    across: -0.3
+    period: 0
+    phase: 0.55
+  - kind: 1
+    z: 123.5
+    across: 0
+    period: 2.75
+    phase: 0.35
+  firingLineZ: 128.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -70,34 +80,34 @@ MonoBehaviour:
   assaultGateDistance: 9
   assaultGates:
   - operation: 2
-    value: 3
-  - operation: 3
     value: 2
   - operation: 2
+    value: 3
+  - operation: 3
     value: 2
   autoLaunch: 0
   recycleUnits: 0
   tower: 5
   towerDistance: 34.5
-  towerHealth: 740
+  towerHealth: 490
   floors: 3
   damagePerUnit: 1
   bossRule: 0
-  wallEnabled: 1
+  wallEnabled: 0
   wallLane: 2
   wallDistance: 22
-  wallHealth: 130
+  wallHealth: 90
   cannonEnabled: 1
   cannonInterval: 1.5
   projectileFlightTime: 0.8666666
   blastRadius: 1.2
   maximumProjectiles: 7
-  sweeperEnabled: 0
-  sweeperDistance: 15
+  sweeperEnabled: 1
+  sweeperDistance: 16
   sweeperPeriod: 2.7
-  shieldEnabled: 0
+  shieldEnabled: 1
   shieldLane: 0
   shieldDistance: 30.5
-  shieldHealth: 100
+  shieldHealth: 70
   shieldBlock: 0.55
   coinReward: 215

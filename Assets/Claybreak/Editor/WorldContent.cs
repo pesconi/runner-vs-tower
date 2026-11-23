@@ -166,23 +166,29 @@ namespace Claybreak.Editor
                 Row(Mul(2), Div(2), Mul(3)), TowerKind.Keep, 250, 1, 32f, 50,
                 s => { Wall(s, true, 2, 20f, 60); Cannon(s, 2.2f, 0.9f, 1.1f, 4); });
 
+            // RT-6t.19: world 1 teaches the run obstacles one at a time (levels 1 and 2 have none, so the first win comes on
+            // the first try, GDD 3): a slow swinging log on levels 3 and 4, a slow hammer alone on level 5, both from level 6
+            // on. Each level's health then follows the army the obstacles are expected to leave (LevelGenerator.RetuneForLosses).
+
             // 3: the forge and the sweeper (third defense). Its first win unlocks the Brute.
-            fixedLevels[2] = Spec("LEVEL 3", 12, 5.5f, 98f,
+            fixedLevels[2] = WithObstacles(Spec("LEVEL 3", 12, 5.5f, 98f,
                 new[] { Pair(18f, Mul(2), Add(8)), Pair(38f, Sub(10), Mul(3)), Pair(58f, Add(25), Div(2)), Pair(80f, Mul(2), Sub(20)) }, null,
                 Row(Div(2), Mul(3), Mul(2)), TowerKind.Forge, 300, 2, 32f, 60,
-                s => { Wall(s, false, 0, 22f, 60); Cannon(s, 2.3f, 0.9f, 1.1f, 4); Sweeper(s, 16f, 3.4f); });
+                s => { Wall(s, false, 0, 22f, 60); Cannon(s, 2.3f, 0.9f, 1.1f, 4); Sweeper(s, 16f, 3.4f); }),
+                Beat(ObstacleKind.SwingingLog, 3, LevelGenerator.IntroSlowdown));
 
             // 4: first crates; the wall now sits on the left x3 lane.
-            fixedLevels[3] = Spec("LEVEL 4", 12, 5.5f, 100f,
+            fixedLevels[3] = WithObstacles(Spec("LEVEL 4", 12, 5.5f, 100f,
                 new[] { Pair(18f, Add(12), Sub(5)), Pair(38f, Mul(2), Mul(3)), Pair(60f, Sub(20), Add(15)), Pair(82f, Mul(2), Div(2)) },
                 new[] { Crate(28f, true, 3), Crate(70f, false, 3) },
                 Row(Mul(3), Div(2), Mul(2)), TowerKind.Keep, 320, 2, 32f, 70,
-                s => { Wall(s, true, 0, 20f, 70); Cannon(s, 2f, 0.9f, 1.15f, 4); });
+                s => { Wall(s, true, 0, 20f, 70); Cannon(s, 2f, 0.9f, 1.15f, 4); }),
+                Beat(ObstacleKind.SwingingLog, 1, 1.15f, 0f, 0.25f));
 
             // 5: forge with three floors, sweeper and a faster cannon. RT-6t.14: the fourth pair was "+30 | x2", and x2
             // promised 314 (crates taken) past the crowd limit; it is now a trap against "+130" (best path 284, not 298),
             // and the health follows the potential at the same share (440 -> 420).
-            fixedLevels[4] = Spec("LEVEL 5", 14, 5.5f, 104f,
+            fixedLevels[4] = WithObstacles(Spec("LEVEL 5", 14, 5.5f, 104f,
                 new[]
                 {
                     Pair(18f, Mul(2), Add(10)), Pair(38f, Add(20), Sub(15)), Pair(58f, Div(2), Mul(3)),
@@ -190,10 +196,11 @@ namespace Claybreak.Editor
                 },
                 new[] { Crate(28f, false, 3), Crate(68f, true, 4) },
                 Row(Mul(2), Mul(3), Div(2)), TowerKind.Forge, 420, 3, 34f, 85,
-                s => { Wall(s, false, 1, 22f, 60); Cannon(s, 1.9f, 0.85f, 1.15f, 5); Sweeper(s, 17f, 3f); });
+                s => { Wall(s, false, 1, 22f, 60); Cannon(s, 1.9f, 0.85f, 1.15f, 5); Sweeper(s, 17f, 3f); }),
+                Beat(ObstacleKind.Hammer, 4, LevelGenerator.IntroSlowdown, -1f));
 
             // 6: every defense at once before the new levels.
-            fixedLevels[5] = Spec("LEVEL 6", 15, 6f, 108f,
+            fixedLevels[5] = WithObstacles(Spec("LEVEL 6", 15, 6f, 108f,
                 new[]
                 {
                     Pair(18f, Add(15), Mul(2)), Pair(38f, Mul(3), Div(2)), Pair(58f, Sub(30), Add(20)),
@@ -201,12 +208,13 @@ namespace Claybreak.Editor
                 },
                 new[] { Crate(28f, true, 4), Crate(48f, false, 3), Crate(70f, true, 4) },
                 Row(Mul(2), Div(2), Mul(3)), TowerKind.Keep, 470, 3, 34f, 100,
-                s => { Wall(s, true, 2, 24f, 90); Cannon(s, 1.8f, 0.85f, 1.2f, 5); Sweeper(s, 16f, 3f); });
+                s => { Wall(s, true, 2, 24f, 90); Cannon(s, 1.8f, 0.85f, 1.2f, 5); Sweeper(s, 16f, 3f); }),
+                Beat(ObstacleKind.Hammer, 4, 1.15f, 1f), Beat(ObstacleKind.SwingingLog, 2, 1.1f, 0f, 0.5f));
 
             // Boss (level 10): four floors; each fallen floor turns the gate row (GDD 4.4). RT-6t.14: the fourth pair was
             // "+30 | x2", and x2 promised 398 past the crowd limit; it is now "/2 | +75" (best path 266, was capped at
             // 300), and the health follows the potential at the same share (600 -> 530).
-            fixedLevels[9] = Spec("BOSS", 16, 6f, 112f,
+            fixedLevels[9] = WithObstacles(Spec("BOSS", 16, 6f, 112f,
                 new[]
                 {
                     Pair(18f, Mul(2), Add(15)), Pair(38f, Add(25), Sub(10)), Pair(58f, Div(2), Mul(3)),
@@ -220,7 +228,8 @@ namespace Claybreak.Editor
                     Wall(s, true, 1, 24f, 100);
                     Cannon(s, 1.6f, 0.85f, 1.2f, 6);
                     Sweeper(s, 17f, 2.8f);
-                });
+                }),
+                Beat(ObstacleKind.Hammer, 4, 1f, -1f), Beat(ObstacleKind.SwingingLog, 2, 1f, 0f, 0.4f));
 
             return new WorldDefinition
             {
@@ -271,7 +280,14 @@ namespace Claybreak.Editor
                     projectilesLast = 6,
                     rewardFirst = 40,
                     rewardLast = 135,
-                    bossReward = 200
+                    bossReward = 200,
+                    // Levels 7-9 (generated) run the two kinds the hand-made levels taught.
+                    obstacleKinds = new[] { ObstacleKind.SwingingLog, ObstacleKind.Hammer },
+                    obstaclesFrom = 2,
+                    obstaclesFirst = 1,
+                    obstaclesLast = 2,
+                    obstacleSlowFirst = 1.2f,
+                    obstacleSlowLast = 1.1f
                 }
             };
         }
@@ -340,7 +356,16 @@ namespace Claybreak.Editor
                     shieldBlockLast = 0.6f,
                     rewardFirst = 110,
                     rewardLast = 170,
-                    bossReward = 350
+                    bossReward = 350,
+                    // The saw is world 2's new obstacle (alone and slow on level 2).
+                    obstacleKinds = new[] { ObstacleKind.SwingingLog, ObstacleKind.Hammer, ObstacleKind.Saw },
+                    newObstacleAt = 1,
+                    obstaclesFrom = 0,
+                    obstaclesFirst = 1,
+                    obstaclesLast = 2,
+                    bossObstacles = new[] { ObstacleKind.Saw, ObstacleKind.Hammer },
+                    obstacleSlowFirst = 1.15f,
+                    obstacleSlowLast = 1f
                 }
             }.WithChosenLook();
         }
@@ -413,7 +438,16 @@ namespace Claybreak.Editor
                     shieldBlockLast = 0.6f,
                     rewardFirst = 170,
                     rewardLast = 240,
-                    bossReward = 500
+                    bossReward = 500,
+                    // The hole is world 3's new obstacle (alone and slow on level 2).
+                    obstacleKinds = new[] { ObstacleKind.SwingingLog, ObstacleKind.Hammer, ObstacleKind.Saw, ObstacleKind.Hole },
+                    newObstacleAt = 1,
+                    obstaclesFrom = 0,
+                    obstaclesFirst = 1,
+                    obstaclesLast = 2,
+                    bossObstacles = new[] { ObstacleKind.Hole, ObstacleKind.Saw, ObstacleKind.SwingingLog },
+                    obstacleSlowFirst = 1.1f,
+                    obstacleSlowLast = 0.95f
                 }
             }.WithChosenLook();
         }
@@ -484,7 +518,19 @@ namespace Claybreak.Editor
                     shieldBlockLast = 0.65f,
                     rewardFirst = 240,
                     rewardLast = 320,
-                    bossReward = 700
+                    bossReward = 700,
+                    // The roller is world 4's new obstacle (alone and slow on level 2); 2 to 3 per level by the end.
+                    obstacleKinds = new[]
+                    {
+                        ObstacleKind.SwingingLog, ObstacleKind.Hammer, ObstacleKind.Saw, ObstacleKind.Hole, ObstacleKind.Roller
+                    },
+                    newObstacleAt = 1,
+                    obstaclesFrom = 0,
+                    obstaclesFirst = 2,
+                    obstaclesLast = 3,
+                    bossObstacles = new[] { ObstacleKind.Roller, ObstacleKind.Saw, ObstacleKind.SwingingLog },
+                    obstacleSlowFirst = 1.05f,
+                    obstacleSlowLast = 0.85f
                 }
             }.WithChosenLook();
         }
@@ -753,6 +799,21 @@ namespace Claybreak.Editor
             };
             defenses(spec);
             return spec;
+        }
+
+        // RT-6t.19: a hand-made level's obstacles, placed by the generator's rule, and its health after the expected losses.
+        private static LevelSpec WithObstacles(LevelSpec spec, params ObstacleBeat[] beats)
+        {
+            LevelGenerator.PlaceObstacles(spec, beats);
+            LevelGenerator.RetuneForLosses(spec, ArmyLimit.Units);
+            return spec;
+        }
+
+        // An obstacle after run gate pair afterPair, its cycle slow times the kind's own.
+        private static ObstacleBeat Beat(ObstacleKind kind, int afterPair, float slow = 1f, float across = 0f, float phase = 0f)
+        {
+            float period = ObstacleMotion.Moves(kind) ? Mathf.Round(ObstacleMotion.DefaultPeriod(kind) * slow * 20f) / 20f : 0f;
+            return new ObstacleBeat(new ObstaclePlacement(kind, 0f, across, period, phase), afterPair);
         }
 
         private static void Wall(LevelSpec s, bool enabled, int lane, float distance, int health)

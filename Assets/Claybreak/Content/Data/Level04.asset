@@ -30,14 +30,14 @@ MonoBehaviour:
     right:
       operation: 2
       value: 3
-  - z: 60
+  - z: 65
     left:
       operation: 1
       value: 20
     right:
       operation: 0
       value: 15
-  - z: 82
+  - z: 87
     left:
       operation: 2
       value: 2
@@ -48,11 +48,16 @@ MonoBehaviour:
   - z: 28
     right: 1
     units: 3
-  - z: 70
+  - z: 75
     right: 0
     units: 3
-  obstacles: []
-  firingLineZ: 100
+  obstacles:
+  - kind: 0
+    z: 51.5
+    across: 0
+    period: 3.7
+    phase: 0.25
+  firingLineZ: 105
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -69,7 +74,7 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 0
   towerDistance: 32
-  towerHealth: 320
+  towerHealth: 300
   floors: 2
   damagePerUnit: 1
   bossRule: 0

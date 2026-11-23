@@ -18,33 +18,26 @@ MonoBehaviour:
   runGates:
   - z: 18
     left:
-      operation: 0
-      value: 20
-    right:
       operation: 2
       value: 2
+    right:
+      operation: 0
+      value: 30
   - z: 38
     left:
-      operation: 0
-      value: 45
-    right:
-      operation: 1
-      value: 45
-  - z: 58
-    left:
-      operation: 1
-      value: 55
-    right:
       operation: 2
-      value: 2
-  - z: 78
-    left:
-      operation: 0
-      value: 95
+      value: 3
     right:
+      operation: 3
+      value: 2
+  - z: 69
+    left:
       operation: 1
-      value: 30
-  - z: 98
+      value: 50
+    right:
+      operation: 0
+      value: 120
+  - z: 89
     left:
       operation: 1
       value: 10
@@ -54,18 +47,33 @@ MonoBehaviour:
   crates:
   - z: 28
     right: 0
-    units: 3
-  - z: 48
-    right: 1
     units: 4
-  - z: 68
+  - z: 45
+    right: 1
+    units: 3
+  - z: 79
     right: 0
     units: 4
-  - z: 88
+  - z: 96
     right: 1
     units: 3
-  obstacles: []
-  firingLineZ: 114
+  obstacles:
+  - kind: 1
+    z: 53.5
+    across: 0
+    period: 2.65
+    phase: 0.75
+  - kind: 3
+    z: 105.5
+    across: 0.4
+    period: 0
+    phase: 0.35
+  - kind: 0
+    z: 115.5
+    across: 0
+    period: 3.05
+    phase: 0.75
+  firingLineZ: 121.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -73,34 +81,34 @@ MonoBehaviour:
   assaultGateDistance: 9
   assaultGates:
   - operation: 3
-    value: 3
-  - operation: 2
     value: 2
   - operation: 2
     value: 3
+  - operation: 2
+    value: 2
   autoLaunch: 0
   recycleUnits: 0
   tower: 6
   towerDistance: 36
-  towerHealth: 850
+  towerHealth: 650
   floors: 4
   damagePerUnit: 1
   bossRule: 3
   wallEnabled: 1
-  wallLane: 2
-  wallDistance: 20
-  wallHealth: 150
+  wallLane: 1
+  wallDistance: 22
+  wallHealth: 120
   cannonEnabled: 1
   cannonInterval: 1.3000001
   projectileFlightTime: 0.84999996
   blastRadius: 1.25
   maximumProjectiles: 8
   sweeperEnabled: 1
-  sweeperDistance: 15
+  sweeperDistance: 16
   sweeperPeriod: 2.5
   shieldEnabled: 1
   shieldLane: 0
   shieldDistance: 32
-  shieldHealth: 120
+  shieldHealth: 90
   shieldBlock: 0.6
   coinReward: 500

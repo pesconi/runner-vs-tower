@@ -18,31 +18,36 @@ MonoBehaviour:
   runGates:
   - z: 18
     left:
-      operation: 0
-      value: 24
-    right:
       operation: 2
       value: 2
+    right:
+      operation: 0
+      value: 17
   - z: 38
     left:
       operation: 0
-      value: 15
+      value: 10
     right:
-      operation: 1
-      value: 15
+      operation: 3
+      value: 2
   - z: 58
     left:
       operation: 0
-      value: 40
+      value: 45
     right:
       operation: 2
       value: 2
   crates:
   - z: 28
-    right: 1
+    right: 0
     units: 3
-  obstacles: []
-  firingLineZ: 74
+  obstacles:
+  - kind: 0
+    z: 72.5
+    across: 0
+    period: 3.5
+    phase: 0.8
+  firingLineZ: 78.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -59,7 +64,7 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 5
   towerDistance: 31.5
-  towerHealth: 180
+  towerHealth: 140
   floors: 1
   damagePerUnit: 1
   bossRule: 0
@@ -73,11 +78,11 @@ MonoBehaviour:
   blastRadius: 1.0500001
   maximumProjectiles: 5
   sweeperEnabled: 1
-  sweeperDistance: 15
+  sweeperDistance: 14
   sweeperPeriod: 3.1000001
   shieldEnabled: 0
   shieldLane: 2
   shieldDistance: 27.5
-  shieldHealth: 30
+  shieldHealth: 20
   shieldBlock: 0.45000002
   coinReward: 170

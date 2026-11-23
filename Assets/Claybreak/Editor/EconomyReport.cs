@@ -34,7 +34,7 @@ namespace Claybreak.Editor
             {
                 // Up to RT-6t.14 a win was 55 s and a loss 35 s in all, run included; the runs then averaged ~16 s
                 // (course over speed), so the rest is kept: the run time now follows each level's speed (RT-6t.15).
-                secondsAfterRunWin = 39f,
+                secondsAfterRunWin = LevelGenerator.SecondsAfterRun,
                 secondsAfterRunLoss = 19f,
                 winRate = 0.8f,
                 armyAtLine = 60,
@@ -347,18 +347,25 @@ namespace Claybreak.Editor
             text.AppendLine();
             text.AppendLine($"Potencial = exército no melhor caminho dos portões (teto {ArmyLimit.Units}) × melhor portão da fileira. Maior promessa = maior número que");
             text.AppendLine($"um portão da corrida pode mostrar em qualquer caminho, com as caixas (nunca passa de {ArmyLimit.Units}, RT-6t.14). Defesas: M muralha,");
-            text.AppendLine("C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura).");
+            text.AppendLine("C canhão (intervalo, pedras), V varredor, E escudo (parte do dano que segura). Obstáculos (RT-6t.19): T tronco, S serra,");
+            text.AppendLine("Ma martelo, B buraco, R rolo, com o ciclo em segundos. Perda esperada = parte do exército do melhor caminho que os obstáculos");
+            text.AppendLine("matam até a linha de tiro (estimativa `ObstacleLoss` [I]: quem desvia lê o obstáculo e acerta o momento em ±0,3 s; quem");
+            text.AppendLine("não desvia corre reto pelo meio); a vida da torre é calibrada sobre o exército de quem desvia.");
             foreach (WorldEntry entry in catalog.Worlds)
             {
                 ClaybreakWorld world = entry.world;
                 text.AppendLine();
                 text.AppendLine($"### {world.WorldName} ({world.WorldId}) — paleta {(world.Look.palette == null ? "?" : world.Look.palette.name)}, {world.Look.trees} árvores e {world.Look.rocks} pedras, dano esperado x{world.ExpectedDamage:0.##}, abre com {entry.starsToUnlock} estrelas");
                 text.AppendLine();
-                text.AppendLine("| Fase | Torre | Andares | Vida | Início | Corrida | Maior promessa | Potencial | Defesas | Prêmio |");
-                text.AppendLine("|---|---|---|---|---|---|---|---|---|---|");
+                text.AppendLine("| Fase | Torre | Andares | Vida | Início | Corrida | Maior promessa | Potencial | Obstáculos | Perda esperada (desvia / reto) | Defesas | Prêmio |");
+                text.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|---|");
                 foreach (ClaybreakLevel level in world.Levels)
                 {
-                    var spec = new LevelSpec { startCount = level.StartCount, runGates = Copy(level.RunGates), assaultGates = Copy(level.AssaultGates) };
+                    var spec = new LevelSpec
+                    {
+                        startCount = level.StartCount, runGates = Copy(level.RunGates), assaultGates = Copy(level.AssaultGates),
+                        obstacles = Copy(level.Obstacles)
+                    };
                     string defenses = (level.WallEnabled ? $"M{level.WallHealth} " : "")
                         + (level.CannonEnabled ? $"C{level.CannonInterval:0.0#}s/{level.MaximumProjectiles} " : "")
                         + (level.SweeperEnabled ? $"V{level.SweeperPeriod:0.0}s " : "")
@@ -368,11 +375,54 @@ namespace Claybreak.Editor
                     text.AppendLine($"| {level.Title} | {level.Tower}{boss} | {level.Floors} | {level.TowerHealth} | {level.StartCount} | "
                         + $"{level.RunSpeed.ToString("0.##", pt)} m/s, {run.ToString("0.0", pt)} s | "
                         + $"{GateMath.HighestPromise(level.StartCount, level.RunGates, level.Crates, ArmyLimit.Units, out _)} | "
-                        + $"{LevelGenerator.PotentialHits(spec, ArmyLimit.Units)} | {defenses.Trim()} | {level.CoinReward} |");
+                        + $"{LevelGenerator.PotentialHits(spec, ArmyLimit.Units)} | {Obstacles(level, pt)} | {Loss(spec, level.RunSpeed, pt)} | "
+                        + $"{defenses.Trim()} | {level.CoinReward} |");
                 }
             }
 
             return text.ToString();
+        }
+
+        // RT-6t.19: the level's obstacles in run order, each with its cycle.
+        private static string Obstacles(ClaybreakLevel level, CultureInfo pt)
+        {
+            if (level.Obstacles.Count == 0)
+            {
+                return "—";
+            }
+
+            var parts = new List<string>();
+            foreach (ObstaclePlacement obstacle in level.Obstacles)
+            {
+                string name = obstacle.kind switch
+                {
+                    ObstacleKind.SwingingLog => "T",
+                    ObstacleKind.Saw => "S",
+                    ObstacleKind.Hammer => "Ma",
+                    ObstacleKind.Hole => "B",
+                    _ => "R"
+                };
+                parts.Add(ObstacleMotion.Moves(obstacle.kind) ? $"{name}{ObstacleMotion.Period(obstacle).ToString("0.0#", pt)}" : name);
+            }
+
+            return string.Join(" ", parts);
+        }
+
+        /// <summary>RT-6t.19: share of the best-path army the obstacles kill, for the player who dodges and the one who does not.</summary>
+        public static float ExpectedLoss(LevelSpec spec, float runSpeed, bool dodging)
+        {
+            int best = LevelGenerator.BestArmy(spec, ArmyLimit.Units);
+            return best <= 0 ? 0f : 1f - (float)LevelGenerator.ExpectedArmy(spec, ArmyLimit.Units, runSpeed, dodging) / best;
+        }
+
+        private static string Loss(LevelSpec spec, float runSpeed, CultureInfo pt)
+        {
+            if (spec.obstacles.Length == 0)
+            {
+                return "—";
+            }
+
+            return $"{(ExpectedLoss(spec, runSpeed, true) * 100f).ToString("0", pt)}% / {(ExpectedLoss(spec, runSpeed, false) * 100f).ToString("0", pt)}%";
         }
 
         private static T[] Copy<T>(IReadOnlyList<T> list)

@@ -30,14 +30,14 @@ MonoBehaviour:
     right:
       operation: 1
       value: 30
-  - z: 58
+  - z: 67
     left:
       operation: 2
       value: 2
     right:
       operation: 3
       value: 2
-  - z: 78
+  - z: 87
     left:
       operation: 0
       value: 20
@@ -48,14 +48,24 @@ MonoBehaviour:
   - z: 28
     right: 0
     units: 4
-  - z: 48
+  - z: 44
     right: 1
     units: 3
-  - z: 68
+  - z: 77
     right: 0
     units: 3
-  obstacles: []
-  firingLineZ: 94
+  obstacles:
+  - kind: 0
+    z: 52.5
+    across: 0
+    period: 3.4
+    phase: 0.85
+  - kind: 1
+    z: 100.5
+    across: 0
+    period: 2.95
+    phase: 0.95
+  firingLineZ: 105.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
@@ -72,14 +82,14 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 3
   towerDistance: 33
-  towerHealth: 550
+  towerHealth: 460
   floors: 2
   damagePerUnit: 1
   bossRule: 0
   wallEnabled: 1
   wallLane: 0
   wallDistance: 24
-  wallHealth: 100
+  wallHealth: 80
   cannonEnabled: 1
   cannonInterval: 1.8000001
   projectileFlightTime: 0.8722222
@@ -91,6 +101,6 @@ MonoBehaviour:
   shieldEnabled: 1
   shieldLane: 2
   shieldDistance: 29
-  shieldHealth: 80
+  shieldHealth: 60
   shieldBlock: 0.5
   coinReward: 145

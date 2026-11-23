@@ -2059,3 +2059,33 @@ resposta. Aceite pendente: usuário aprovar o plano e as fichas.
   RT-6t.19).
 - **T-RT6t18-9 — Perda na tela:** as mortes de obstáculo somam num único "−n" vermelho (o mesmo número flutuante dos
   portões) a cada 0,3 s, com o som de portão ruim; sem tremor de câmera (seria contínuo dentro de um buraco).
+
+## 2026-11-23 — T-RT6t19-1..6 — Obstáculos nas 40 fases e economia (RT-6t.19) — técnica (sessão da entrega)
+
+- **T-RT6t19-1 — A curva é dado da receita do mundo.** `WorldRecipe` ganhou os tipos do mundo (o novo por último), a fase
+  em que o novo aparece sozinho e lento (ciclo ×1,3), a primeira fase com obstáculos, a contagem do começo ao fim, a
+  combinação do chefe e a lentidão do começo ao fim. `LevelGenerator.Obstacles` monta a lista de cada fase (tipos em
+  rodízio para fases vizinhas diferirem; lado e fase do ciclo pela semente, num gerador separado do dos portões). Mundo
+  novo = receita nova, sem código. As fases à mão do mundo 1 declaram os seus (`WorldContent.Beat`).
+- **T-RT6t19-2 — Uma regra de encaixe para as fases geradas e à mão.** `LevelGenerator.PlaceObstacles`: cada obstáculo
+  fica depois de um par de portões, a 1,65 s dele na velocidade real da fase (a janela pede 1,6 s; a sobra cobre o
+  arredondamento de meio metro), os seguidos a 0,8 s um do outro; o próximo par (ou a linha de tiro, 4 m adiante) só anda
+  se o grupo precisar, e tudo depois anda junto; a caixa do mesmo vão fica antes do grupo. Com portões a cada 20 m não cabe
+  obstáculo entre pares sem abrir a pista: por isso o encaixe abre só o necessário.
+- **T-RT6t19-3 — O tempo da fase é guardado na geração.** `FitObstacles` mede a pista da fase com e sem os obstáculos;
+  se o tempo (corrida + 39 s do assalto, `LevelGenerator.SecondsAfterRun`, a mesma premissa da economia) mudaria mais de
+  4,8%, os obstáculos tomam o lugar de um par de portões (mínimo 3) e, se ainda não couber, os últimos saem. A escolha é
+  feita antes de sortear os portões, então não mexe no sorteio deles. Teste: as 40 fases contra o tempo da RT-6t.15.
+- **T-RT6t19-4 — Perda esperada pelas regras do jogo, não por tabela.** `ObstacleLoss` passa a formação girassol real
+  (mesmo espaçamento e alongamento do kit, presa à pista) pelo movimento e pela área mortal reais de cada tipo, a 30
+  quadros por segundo, com até 120 bonecos amostrados, e tira a média sobre o momento de chegada. Dois jogadores [I]: o
+  que desvia (melhor lugar, mas só com precisão de ±0,5 m e ±0,3 s) e o que corre reto pelo meio. Deixa de fora o teto
+  de 6 mortes por quadro (erra para mais perda, torre um pouco mais fraca). Resultados em cache; o gerador inteiro
+  continua em poucos segundos.
+- **T-RT6t19-5 — Vida sobre o exército de quem desvia.** O gerador calcula a vida sobre `ExpectedHits` (exército do
+  melhor caminho com as perdas aplicadas onde cada obstáculo está × melhor portão da fileira); as fases à mão do mundo 1
+  são reescaladas por `RetuneForLosses` (vida, muralha e escudo pela parte do exército que sobra). A escolha da variante
+  de layout passa a ver a vida já com as perdas (mudou algumas variantes de fases geradas; os números estão na tabela).
+- **T-RT6t19-6 — Buraco perto do meio.** Na pista de 8 m a multidão espremida contra uma borda passa ao lado de um buraco
+  encostado na outra: o gerador põe o buraco a até 50% do meio e o rolo a 30–80%; ainda assim os dois quase não custam a
+  quem desvia. Registrado para o olhar do usuário (aceite da entrega) em vez de mudar o movimento aceito na RT-6t.18.

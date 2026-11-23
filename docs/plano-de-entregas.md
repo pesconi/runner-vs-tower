@@ -38,7 +38,7 @@ lançamento jun/2027.
 | K.14 (studiokit) Tirar o brilho branco dos botões do kit (`ClayUi.AddGloss`), versão 0.8.0, chamadas mortas do Wild Pack fora — **planejada**; depois da 6t.16, em paralelo com as seguintes | — | — | antes da RT-9 |
 | RT-6t.17 Telas novas no estilo toon pastel (botões vivos, Baloo 2, loja legível de 16:9 a 21:9) — concluída em 2026-11-23 (capturas `telas-*.png` nas 4 proporções em `docs/art/rt6t17/`); gate 3× no OPPO em 2026-11-23 aprovado (mundo 4, chefe, 300 em voo: CPU p95 ≤ 5,5 ms, GPU p95 ≤ 4,3 ms, PSS 288 MB, 0 quadros perdidos); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
 | RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — concluída em 2026-11-23 (motor, 5 tipos, fase de laboratório; capturas em `docs/art/rt6t18/`); APK instalado no OPPO; gate 3× no OPPO em 2026-11-23 aprovado (corrida do mundo 4, 6 obstáculos, 300: CPU p95 ≤ 2,0 ms, GPU p95 ≤ 4,4 ms, PSS 298 MB, 0 quadros perdidos); **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
-| RT-6t.19 Obstáculos nas 40 fases e economia recalculada — **planejada** | — | — | antes da RT-9 |
+| RT-6t.19 Obstáculos nas 40 fases e economia recalculada — concluída em 2026-11-23 (mundo 1 ensina um tipo por vez, um tipo novo por mundo, 2–3 por fase no fim do mundo 4; vida das torres sobre o exército depois das perdas; `rt6-economia.md` com a perda esperada; fases ±5% do tempo da RT-6t.15, loja 49 → 50 min); gate 3× não se aplica (no máximo 3 obstáculos por fase, 6 já medidos); **aceite pendente:** APK no OPPO (celular bloqueado) e o usuário jogar os 4 mundos | — | — | antes da RT-9 |
 | RT-6t.20 Formas compradas na loja (save v5) — **planejada**; espera as fichas D31 e D32 | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
@@ -699,6 +699,42 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   laboratório com `adb shell am start -n com.jungledegree.runnervstower/com.unity3d.player.UnityPlayerGameActivity --ez obstacleLab true`
   e dizer se os obstáculos são legíveis e justos (para voltar ao jogo normal, fechar o app e abrir pelo ícone).
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.18`).
+
+## RT-6t.19 — Obstáculos nas 40 fases e economia
+
+- **Origem:** plano [`plano-telas-obstaculos-loja.md`](plano-telas-obstaculos-loja.md), seções 3.2 e 4 (pedido do usuário
+  de 2026-11-23: desafio na corrida).
+- **Escopo:** distribuição e curva dos 5 obstáculos nas 40 fases (gerador e fases à mão do mundo 1 e chefes); vida das
+  torres recalculada sobre o exército esperado depois das perdas; `rt6-economia.md` com a coluna de perda esperada; janela
+  de reação verde em todas as fases; tempo de fase igual ao da RT-6t.15 (±5%); tempo da loja dentro de ±10% dos 49 min.
+- **Depende de:** RT-6t.18.
+- **Status: concluída em 2026-11-23; aceite pendente (APK no OPPO e o olhar do usuário).**
+  - **Curva:** mundo 1 começa limpo (fases 1 e 2 sem obstáculo) e ensina um tipo por vez: tronco lento sozinho nas fases
+    3 e 4, martelo lento sozinho na 5, os dois juntos da 6 ao chefe. Cada mundo seguinte apresenta um tipo novo, sozinho e
+    lento na fase 2, e o repete logo na fase 3: serra (mundo 2), buraco (mundo 3), rolo (mundo 4). No fim do mundo 4, 3
+    obstáculos por fase; chefes com combinação própria (mundo 1 tronco + martelo; 2 martelo + serra; 3 serra + buraco +
+    tronco; 4 rolo + serra + tronco). Máximo em qualquer fase: 3 (o gate da 6t.18 mediu 6, então não houve gate novo).
+  - **Encaixe e tempo:** o gerador põe cada obstáculo depois de um par de portões, a 1,65 s dele na velocidade da fase
+    (a regra pede 1,6 s), e abre a pista só o necessário; se a fase passaria de 5% do tempo que tinha, os obstáculos ocupam
+    o lugar de um par de portões (nunca abaixo de 3) ou o último fica de fora. As 40 fases ficaram dentro de ±5% do
+    tempo da RT-6t.15 (maior diferença +4,5%; corrida média 12,1 → 13,3 s). Janela: obstáculo visto com pelo menos 3,54 s e a pelo menos
+    1,65 s de um par de portões.
+  - **Perda esperada e vida:** estimada com as regras do jogo (`ObstacleLoss`: a formação real passando pelo movimento
+    real de cada tipo, média sobre o momento de chegada). Quem desvia (acerta o lugar em ±0,5 m e o momento em ±0,3 s)
+    perde 1–14% no mundo 1 (média 8%) e 14–21% nas três últimas fases do mundo 4; quem corre reto pelo meio perde 19–41%
+    no mundo 1 e até 91% no mundo 4. A vida das torres é calibrada sobre o exército de quem desvia, então vitórias e
+    estrelas ficam como antes para quem joga atento. **Fica para o olhar do usuário:** para quem não desvia os obstáculos
+    são bem mais letais que o "até ~2×" do plano [P] (o rolo e o buraco quase não custam a quem desvia e custam muito a quem
+    não desvia).
+  - **Economia:** tempo da loja 49 → **50 min** (+2%, dentro de ±10%); preços iguais (D19). Tabela `rt6-economia.md`
+    regerada com as colunas Obstáculos e Perda esperada (desvia / reto).
+  - Validação completa verde: cena, validador, isolamento, EditMode 657 + 1 pulado (do kit, como antes), PlayMode 28 + 15
+    capturas que só rodam com GPU, economia, capturas, APKs e AAB (kit no último commit, árvore do `studiokit` limpa).
+    Testes novos em `ObstacleCurveTests` (curva, janela, tempo ±5%, perdas, vida, encaixe, estimador). Decisões
+    T-RT6t19-1..6.
+- **Pendente (exige o celular desbloqueado):** `adb install -r C:\temp\rt6t19\Claybreak.apk` com o celular desbloqueado (mantém o save) e o usuário jogar os 4 mundos e dizer se a dificuldade está
+  boa.
+- Histórico: entregue em 2026-11-23 (`Stage RT.6t.19`).
 
 ## RT-6t.16 a RT-6t.20 e K.14 — Telas, obstáculos, formas na loja e mostrador (planejadas)
 

@@ -163,3 +163,8 @@
   laboratório: `Data/ObstacleLab.asset`, aberta no jogo instalado com `--ez obstacleLab true` (não salva). Prova com GPU:
   `-testFilter Claybreak.Tests.ObstacleRunTests.CaptureEachKindKillingOnBothRoutes -obstacleCaptureDir <pasta>` sem
   `-nographics`. Mudança de tamanho da pista (fase mais longa, como o laboratório) regrava `GroundAndRails.asset`.
+- 2026-11-23 (RT-6t.19): a curva de obstáculos é dado da `WorldRecipe` (tipos, fase do tipo novo, contagem, chefe, lentidão);
+  o encaixe na pista é `LevelGenerator.PlaceObstacles` (fases à mão usam `WorldContent.Beat` + `WithObstacles`) e o tempo da
+  fase é guardado por `FitObstacles` (±4,8% de corrida + `SecondsAfterRun`). Perda esperada = `ObstacleLoss` (cache; a vida
+  usa quem desvia). Iterar a curva sem a validação completa: EditMode só com `-testFilter Claybreak.Tests.ObstacleCurveTests`
+  (o teste loga a tabela de perdas por fase), ~3 min; não precisa reconstruir a cena para isso.

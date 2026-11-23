@@ -19,7 +19,7 @@ MonoBehaviour:
   - z: 18
     left:
       operation: 0
-      value: 13
+      value: 14
     right:
       operation: 2
       value: 2
@@ -28,50 +28,60 @@ MonoBehaviour:
       operation: 3
       value: 2
     right:
-      operation: 2
-      value: 3
+      operation: 0
+      value: 20
   - z: 58
     left:
-      operation: 2
-      value: 2
+      operation: 0
+      value: 25
     right:
       operation: 1
-      value: 20
-  - z: 78
+      value: 30
+  - z: 87
+    left:
+      operation: 1
+      value: 30
+    right:
+      operation: 2
+      value: 2
+  - z: 107
     left:
       operation: 0
-      value: 85
+      value: 130
     right:
       operation: 0
-      value: 43
-  - z: 98
-    left:
-      operation: 0
-      value: 2
-    right:
-      operation: 3
-      value: 2
+      value: 66
   crates:
   - z: 28
-    right: 0
-    units: 4
-  - z: 48
     right: 1
     units: 3
-  - z: 68
+  - z: 48
     right: 0
     units: 3
-  obstacles: []
-  firingLineZ: 114
+  - z: 64
+    right: 1
+    units: 3
+  obstacles:
+  - kind: 0
+    z: 72.5
+    across: 0
+    period: 3.55
+    phase: 1
+  - kind: 2
+    z: 121
+    across: -1
+    period: 2.7
+    phase: 0.05
+  firingLineZ: 126.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
   maximumUnitsInFlight: 300
   assaultGateDistance: 9
   assaultGates:
-  - operation: 2
-    value: 3
   - operation: 3
+    value: 3
+  - operation: 2
     value: 3
   - operation: 2
     value: 2
@@ -79,24 +89,24 @@ MonoBehaviour:
   recycleUnits: 0
   tower: 0
   towerDistance: 34.5
-  towerHealth: 490
+  towerHealth: 470
   floors: 3
   damagePerUnit: 1
   bossRule: 0
   wallEnabled: 1
-  wallLane: 0
-  wallDistance: 20
+  wallLane: 1
+  wallDistance: 22
   wallHealth: 90
   cannonEnabled: 1
   cannonInterval: 1.8000001
   projectileFlightTime: 0.8611111
   blastRadius: 1.2
   maximumProjectiles: 5
-  sweeperEnabled: 1
-  sweeperDistance: 14
+  sweeperEnabled: 0
+  sweeperDistance: 16
   sweeperPeriod: 2.9
   shieldEnabled: 0
-  shieldLane: 2
+  shieldLane: 0
   shieldDistance: 30.5
   shieldHealth: 70
   shieldBlock: 0.55

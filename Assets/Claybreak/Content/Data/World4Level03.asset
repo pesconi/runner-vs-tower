@@ -44,8 +44,13 @@ MonoBehaviour:
   - z: 48
     right: 1
     units: 4
-  obstacles: []
-  firingLineZ: 74
+  obstacles:
+  - kind: 4
+    z: 83
+    across: 0.4
+    period: 2.6000001
+    phase: 0.3
+  firingLineZ: 88.5
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7

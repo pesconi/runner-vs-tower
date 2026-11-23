@@ -30,77 +30,85 @@ MonoBehaviour:
     right:
       operation: 2
       value: 3
-  - z: 58
+  - z: 71
     left:
       operation: 3
       value: 2
     right:
       operation: 0
-      value: 105
-  - z: 78
+      value: 100
+  - z: 91
     left:
       operation: 1
       value: 10
     right:
       operation: 3
       value: 2
-  - z: 98
-    left:
-      operation: 0
-      value: 7
-    right:
-      operation: 1
-      value: 50
   crates:
   - z: 28
     right: 0
-    units: 3
-  - z: 48
+    units: 4
+  - z: 46
     right: 1
     units: 4
-  - z: 68
+  - z: 81
     right: 0
     units: 3
-  - z: 88
+  - z: 99
     right: 1
-    units: 3
-  obstacles: []
-  firingLineZ: 114
+    units: 4
+  obstacles:
+  - kind: 1
+    z: 54.5
+    across: 0
+    period: 2.4
+    phase: 0.2
+  - kind: 4
+    z: 118
+    across: 0.8
+    period: 2.2
+    phase: 0.4
+  - kind: 0
+    z: 128
+    across: 0
+    period: 2.7
+    phase: 0.7
+  firingLineZ: 134
   launchRate: 12
   unitSpeed: 9
   laneSpread: 0.7
   maximumUnitsInFlight: 300
   assaultGateDistance: 9
   assaultGates:
+  - operation: 3
+    value: 2
+  - operation: 2
+    value: 3
   - operation: 2
     value: 2
-  - operation: 3
-    value: 3
-  - operation: 2
-    value: 3
   autoLaunch: 0
   recycleUnits: 0
   tower: 8
   towerDistance: 36
-  towerHealth: 1070
+  towerHealth: 830
   floors: 4
   damagePerUnit: 1
   bossRule: 4
   wallEnabled: 1
-  wallLane: 1
+  wallLane: 0
   wallDistance: 20
-  wallHealth: 190
+  wallHealth: 150
   cannonEnabled: 1
   cannonInterval: 1.15
   projectileFlightTime: 0.84999996
   blastRadius: 1.25
   maximumProjectiles: 9
   sweeperEnabled: 1
-  sweeperDistance: 15
+  sweeperDistance: 16
   sweeperPeriod: 2.3
   shieldEnabled: 1
   shieldLane: 2
   shieldDistance: 32
-  shieldHealth: 150
+  shieldHealth: 120
   shieldBlock: 0.65000004
   coinReward: 700
