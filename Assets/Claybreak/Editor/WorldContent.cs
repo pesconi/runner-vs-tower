@@ -116,7 +116,7 @@ namespace Claybreak.Editor
             for (int w = 0; w < definitions.Length; w++)
             {
                 WorldDefinition definition = definitions[w];
-                LevelSpec[] specs = LevelGenerator.GenerateWorld(definition.Recipe, ArmyLimit.Units, definition.FixedLevels);
+                LevelSpec[] specs = Specs(definition);
                 var levels = new ClaybreakLevel[specs.Length];
                 for (int i = 0; i < specs.Length; i++)
                 {
@@ -134,9 +134,13 @@ namespace Claybreak.Editor
             return WriteCatalog(worlds, definitions);
         }
 
-        /// <summary>The generated specs of a world (reports and tests read them without writing assets).</summary>
+        /// <summary>
+        /// The levels of a world as they are written (reports and tests read them without writing assets): generated under
+        /// the crowd limit, then run at the game's pace (<see cref="RunPace"/>, RT-6t.15; the recipes and the hand-made levels
+        /// state the course pace).
+        /// </summary>
         public static LevelSpec[] Specs(WorldDefinition definition) =>
-            LevelGenerator.GenerateWorld(definition.Recipe, ArmyLimit.Units, definition.FixedLevels);
+            RunPace.Apply(LevelGenerator.GenerateWorld(definition.Recipe, ArmyLimit.Units, definition.FixedLevels));
 
         // ---------- world 1: the marches (RT-4 slice, 7 -> 10 levels) ----------
 

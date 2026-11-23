@@ -823,3 +823,24 @@ portões nunca passam disso. Decisões T-RT6t14-1..6 em `decisoes.md`. Nada mudo
 - **Gate 3×:** não rodado — só dados e contas; render e peso da cena iguais.
 - **Validação:** `Tools/rt4-check.sh` completo verde (EditMode 331/331, PlayMode 24 + capturas, isolamento, economia, APKs e
   AAB). APK do jogo em `C:\temp\rt6t14\Claybreak.apk`; **não instalado** — o OPPO não estava conectado nesta sessão.
+
+## RT-6t.15 — Multidão mais rápida na corrida (2026-11-23)
+
+Pedido do usuário depois de jogar a RT-6t.14 no OPPO: "A crowd está lenta, aumentar cerca de 30% de velocidade, ou fazer
+uma aceleração durante a fase." Escolha: +30% constante em todos os mundos, sem aceleração. Decisões T-RT6t15-1..5 em
+`decisoes.md`. Nada mudou no `studiokit`.
+
+### O que foi feito
+
+- **Fonte única:** `Assets/Claybreak/Runtime/RunPace.cs` (`Factor = 1.3`, passos de 0,25 m/s). As receitas e as fases à
+  mão continuam com o ritmo do percurso; `WorldContent.Specs` aplica o fator ao gravar as fases. Velocidades novas:
+  mundo 1 6,5 → 7,75 m/s; mundo 2 7,25 → 8,5; mundo 3 7,75 → 9; mundo 4 8,5 → 9,75 (antes 5 → 7,5 no total).
+- **Coerência:** câmera, líder e movimento lateral seguem a multidão (sem velocidade própria); o assalto não mudou; a fase
+  do gate de aparelho segue em 12 m/s.
+- **Janela de reação:** `Assets/Claybreak/Editor/ReactionWindow.cs` calcula, com a câmera real da corrida, até onde o
+  número do portão é legível (maiúsculas ≥ 1% da altura da tela): 34,5 m. Pior fase (mundo 4, 9,75 m/s): 3,54 s de
+  leitura e 1,85 s entre pares (limites 3 s e 1,6 s). O validador loga e recusa fase abaixo; teste `RunPaceTests`.
+- **Economia:** a simulação usa o tempo real de corrida de cada fase. Corrida média 15,2 → 11,7 s; loja inteira 53 → 49
+  min; mundos terminam em 10,5 / 20,1 / 30,0 / 39,2 min (antes 11,4 / 21,8 / 32,4 / 42,2 no mesmo modelo). Coluna
+  "Corrida" (velocidade e segundos) na tabela de fases de `rt6-economia.md`.
+- **Gate 3×:** não rodado — peso da cena igual e o gate da corrida já mede a 12 m/s.

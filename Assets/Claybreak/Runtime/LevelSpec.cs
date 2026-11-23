@@ -16,6 +16,7 @@ namespace Claybreak
 
         // Run
         public int startCount = 10;
+        [UnityEngine.Tooltip("Run speed (m/s). World content states the course pace and RunPace scales it once when the levels are written.")]
         public float runSpeed = 5.5f;
         public RunGatePair[] runGates = new RunGatePair[0];
         public CratePlacement[] crates = new CratePlacement[0];
@@ -70,5 +71,8 @@ namespace Claybreak
         public int coinReward = 40;
 
         public float TowerZ => firingLineZ + towerDistance;
+
+        /// <summary>A copy whose plain numbers can change without touching this spec (the arrays are shared, not copied).</summary>
+        public LevelSpec ShallowCopy() => (LevelSpec)MemberwiseClone();
     }
 }

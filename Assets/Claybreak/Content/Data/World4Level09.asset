@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakLevel
   title: LEVEL 9
   startCount: 29
-  runSpeed: 7.5
+  runSpeed: 9.75
   runGates:
   - z: 18
     left:

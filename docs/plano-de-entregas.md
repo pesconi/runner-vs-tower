@@ -33,6 +33,7 @@ lançamento jun/2027.
 | RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — concluída em 2026-11-22 (motor no `studiokit` 0.5.0; aceite pendente: jogar os 4 mundos; `rt6t-crowd-toon.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
 | RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22; ajuste "sem neblina nenhuma" pedido pelo usuário feito, validado, gate 3× aprovado e APK instalado no OPPO; **aceite do usuário em 2026-11-22** ("Aprovo") | — | — | antes da RT-9 |
 | RT-6t.14 Limite configurável da multidão (300 neste jogo) e portões que nunca passam dele (D27 revista) — concluída em 2026-11-22; pendente instalar o APK no OPPO | — | — | antes da RT-9 |
+| RT-6t.15 Multidão mais rápida na corrida (+30% constante, pedido do usuário em 2026-11-23) — concluída em 2026-11-23 (`RunPace`; janela de reação verificada; loja em 49 min) | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -602,6 +603,23 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   Validação completa verde (EditMode 331/331, PlayMode 24 + capturas, APKs e AAB). **Pendente:** instalar o APK no OPPO
   (o celular não estava conectado): com o OPPO no cabo e desbloqueado, `adb install -r /c/temp/rt6t14/Claybreak.apk`.
 - Histórico: entregue em 2026-11-22 (`Stage RT.6t.14`).
+
+## RT-6t.15 — Multidão mais rápida na corrida
+
+- **Origem:** o usuário jogou a RT-6t.14 no OPPO e pediu em 2026-11-23: "A crowd está lenta, aumentar cerca de 30% de
+  velocidade, ou fazer uma aceleração durante a fase." Escolha do maestro: +30% constante em todos os mundos.
+- **Escopo:** (1) velocidade de avanço da corrida ~30% maior numa fonte única, com lateral, câmera, líder e portões
+  coerentes; (2) janela de reação aos portões verificada (mundo 4 e chefes); (3) tempos da economia (D19) registrados, sem
+  mudar preços; (4) testes e validação completa; (5) APK no OPPO.
+- **Depende de:** RT-6t.14.
+- **Aceite:** validação padrão completa verde; janela de reação dentro dos limites em todas as 40 fases; tempos novos em
+  `rt6-economia.md`; APK instalado no OPPO com o save. Gate 3× dispensado (peso da cena igual; o gate já mede a 12 m/s).
+- **Status: concluída em 2026-11-23.** `RunPace.Factor = 1,3` é a fonte única: as fases correm de 6,5 m/s (mundo 1, fase 1)
+  a 9,75 m/s (fim do mundo 4), antes 5 a 7,5. Sem aceleração: a janela ficou folgada (número do portão legível 3,54 s antes
+  de chegar e 1,85 s entre pares no pior caso; antes 4,6 s e 2,4 s), agora conferida pelo validador. Corrida média 15,2 →
+  11,7 s; loja inteira 53 → 49 min (preços iguais). Detalhes em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md), seção
+  RT-6t.15; decisões T-RT6t15-1..5.
+- Histórico: entregue em 2026-11-23 (`Stage RT.6t.15`).
 
 ## RT-9 — Preparação do soft launch
 

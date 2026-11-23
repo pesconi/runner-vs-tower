@@ -305,6 +305,8 @@ namespace Claybreak.Editor
                 CheckStress(world, stress, failures);
             }
 
+            CheckReactionWindow(catalog, failures);
+
             if (!ClaybreakSfx.Covers(theme.Audio, out string missingCue))
             {
                 failures.Add($"theme: the game's sound cue '{missingCue}' has no extra sound in the theme audio");
@@ -555,6 +557,51 @@ namespace Claybreak.Editor
             {
                 failures.Add("save: a fresh or maximum-loadout save fails the validator: " + string.Join("; ", problems));
             }
+        }
+
+        // RT-6t.15: every level, at the speed it really runs, leaves time to read each gate number and to steer between
+        // pairs (ReactionWindow, from the run camera profile the scene uses). The worst level is logged.
+        private static void CheckReactionWindow(ClaybreakCatalog catalog, List<string> failures)
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<SwarmCameraProfile>(ClaybreakSceneBuilder.CrowdCameraProfilePath);
+            if (profile == null)
+            {
+                failures.Add("reaction window: missing run camera profile " + ClaybreakSceneBuilder.CrowdCameraProfilePath);
+                return;
+            }
+
+            float legible = ReactionWindow.LegibleDistance(profile.Settings, ArmyLimit.Units, ClaybreakSceneBuilder.TrackWidth * 0.5f,
+                GateArt.LabelEm);
+            string worstSight = null, worstGap = null;
+            float sight = float.MaxValue, gap = float.MaxValue;
+            foreach (WorldEntry entry in catalog.Worlds)
+            {
+                foreach (ClaybreakLevel level in entry.world.Levels)
+                {
+                    ReactionWindow.Result result = ReactionWindow.Of(level.RunSpeed, level.RunGates, legible);
+                    if (!result.Passes)
+                    {
+                        failures.Add($"{level.name}: at {level.RunSpeed} m/s the gate numbers read {result.SightSeconds:0.00} s ahead "
+                            + $"(minimum {ReactionWindow.MinimumSightSeconds} s) and the pairs come {result.GapSeconds:0.00} s apart "
+                            + $"(minimum {ReactionWindow.MinimumGapSeconds} s): slow the pace or space the gates");
+                    }
+
+                    if (result.SightSeconds < sight)
+                    {
+                        sight = result.SightSeconds;
+                        worstSight = level.name;
+                    }
+
+                    if (result.GapSeconds < gap)
+                    {
+                        gap = result.GapSeconds;
+                        worstGap = level.name;
+                    }
+                }
+            }
+
+            Debug.Log($"[ClaybreakValidation] Reaction window: gate numbers legible {legible:0.0} m ahead; shortest sight {sight:0.00} s "
+                + $"({worstSight}), shortest gap between pairs {gap:0.00} s ({worstGap}).");
         }
 
         private static void CheckLevel(ClaybreakLevel level, List<string> failures)

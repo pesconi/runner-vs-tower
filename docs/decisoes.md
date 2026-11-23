@@ -1882,3 +1882,34 @@ Entrega da D27 revista ("aceitar um valor X de bonecos no motor; para este jogo,
   rede de segurança (`GateMath.Apply`) e o rótulo não muda. Mostrar "MÁX" no portão nesse caso seria UI nova (fonte,
   capturas): fica como melhoria possível, não decidida. Gate 3× no OPPO não roda: só dados e contas mudaram; o caminho de
   render e o peso da cena são os mesmos (capacidades continuam 300).
+
+## 2026-11-23 — T-RT6t15-1..5 — Multidão mais rápida na corrida (+30%) — técnica (sessão RT-6t.15)
+
+Pedido do usuário em 2026-11-23, depois de jogar a RT-6t.14 no OPPO: "A crowd está lenta, aumentar cerca de 30% de
+velocidade, ou fazer uma aceleração durante a fase." Escolha do maestro, dentro do pedido: +30% constante em todos os
+mundos; aceleração só se o constante deixasse a reação aos portões ruim ou o começo arrastado.
+
+- **T-RT6t15-1 — +30% constante, sem aceleração.** É a opção mais simples e previsível (o jogador aprende um ritmo só) e a
+  verificação abaixo mostrou janela de reação folgada até no mundo 4 e nos chefes; o começo não fica arrastado (a fase 1
+  agora corre a 6,5 m/s, mais rápido que o chefe do mundo 1 de antes). A aceleração (+20% → +40%) fica descartada por
+  enquanto: mudaria a física da corrida no meio da fase sem ganho medido.
+- **T-RT6t15-2 — Fonte única: `Claybreak.RunPace` (fator 1,3).** As receitas dos mundos e as fases à mão do mundo 1
+  continuam dizendo o ritmo do percurso (5 → 7,5 m/s, a rampa de dificuldade); o conteúdo aplica o fator uma vez, ao
+  gravar as fases (`WorldContent.Specs` → `RunPace.Apply`, em cópias, para nunca aplicar duas vezes), arredondado a 0,25
+  m/s. Os assets de fase guardam a velocidade real (6,5 → 9,75 m/s), então corrida, economia e validador leem o mesmo
+  número. Movimento lateral, câmera e líder seguem a multidão e não têm velocidade própria; o assalto não usa a velocidade
+  da corrida e não mudou. A fase do gate de aparelho continua em 12 m/s fixos (acima da fase mais rápida, então o
+  reaproveitamento do cenário medido continua sendo o pior caso).
+- **T-RT6t15-3 — Janela de reação medida e guardada pelo validador.** `ReactionWindow` (editor, puro) usa a fórmula real
+  da câmera da corrida (todos os tamanhos de multidão até 300, multidão nas bordas e no meio, telas 21:9, 19,5:9 e 16:9)
+  e considera o número do portão legível quando a altura das maiúsculas passa de 1% da altura da tela (~23 px no OPPO,
+  como texto de 12 sp). Resultado: legível 34,5 m à frente. Pior fase (mundo 4, 9,75 m/s): 3,54 s entre ficar legível e
+  chegar (antes 4,6 s) e 1,85 s entre pares (antes 2,4 s). Limites: leitura ≥ 3 s, entre pares ≥ 1,6 s; o validador e o
+  teste `RunPaceTests` recusam fase abaixo deles. Câmera e espaçamento dos portões não precisaram mudar.
+- **T-RT6t15-4 — Economia (D19) com tempo de corrida real.** A simulação somava 55 s por vitória e 35 s por derrota,
+  fixos. Agora a corrida é pista ÷ velocidade de cada fase, mais 39 s (vitória) ou 19 s (derrota) de assalto e
+  resultado, o resto dos números antigos (corrida média de ~16 s). Com o fator 1,0 o modelo novo dá os mesmos 53 min de
+  antes. Com +30%: corrida média 15,2 → 11,7 s (−23%); loja inteira 53 → 49 min; fim do mundo 4 42,2 → 39,2 min; 371 →
+  399 moedas por minuto. Preços e moedas por fase não mudaram.
+- **T-RT6t15-5 — Gate 3× não roda.** O peso da cena é o mesmo (mesmas capacidades, mesmo cenário) e o gate da corrida já
+  mede a 12 m/s, acima da fase mais rápida nova (9,75).

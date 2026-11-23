@@ -142,3 +142,8 @@
   nele em qualquer caminho, com as caixas: o validador recusa (`GateMath.HighestPromise`; coluna "Maior promessa" em
   `rt6-economia.md`). O gerador escolhe a variante de layout no rascunho sem encaixe e só depois encaixa os portões, para que
   mudar o potencial não troque defesas e torres das fases.
+- 2026-11-23 (RT-6t.15): a velocidade da corrida é `RunPace.Factor` (1,3) aplicado por `WorldContent.Specs` sobre o ritmo do
+  percurso das receitas e fases à mão: mudar velocidade = mudar o fator (ou a receita) e reconstruir a cena. O validador loga a
+  janela de reação (`ReactionWindow`, leitura ≥ 3 s, entre pares ≥ 1,6 s) e recusa fase abaixo. A economia soma corrida real
+  (pista ÷ velocidade) + 39 s/19 s de assalto e resultado. O `adb install` do OPPO pode encontrar o celular bloqueado: conferir
+  `isKeyguardShowing` e deixar o comando para o usuário se seguir bloqueado.
