@@ -6,7 +6,9 @@
 #   allow <file> <text>    text removed from that file's lines before the search (none)
 # Keep the studiokit TestProject list in step when a term is added here.
 
-# Game names and application ID.
+# Game names and application ID ("Stampeep" is the player-facing name since RT-6t.21, D29).
+term stampeep
+term clay ?siege
 term claybreak
 term runner ?vs ?tower
 term com\.jungledegree\.runnervstower

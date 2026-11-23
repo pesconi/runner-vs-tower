@@ -1,4 +1,4 @@
-# Política de privacidade — Clay Siege (rascunho da RT-7, analytics e RGPD na RT-8b)
+# Política de privacidade — Stampeep (rascunho da RT-7, analytics e RGPD na RT-8b)
 
 Texto para o usuário revisar e publicar numa URL pública na RT-9 (o Play Console pede a URL; nada foi
 publicado nem enviado). Escrito **só** com o que o código faz hoje; cada frase tem a evidência na tabela do
@@ -18,7 +18,7 @@ Campos a preencher pelo usuário antes de publicar: `<denominação legal da emp
 
 ## Português (Portugal)
 
-**Clay Siege** é um jogo da Jungle Degree. Esta política explica o que acontece aos seus dados quando joga.
+**Stampeep** é um jogo da Jungle Degree. Esta política explica o que acontece aos seus dados quando joga.
 
 **Responsável pelo tratamento.** `<denominação legal da empresa>` ("Jungle Degree"), NIPC `<NIPC>`, com sede em
 `<morada>`, Portugal. Contacto para assuntos de privacidade: `<e-mail de contacto>`.
@@ -95,7 +95,7 @@ são pedidos com classificação de conteúdo para público geral e sem marcaç�
 
 ## English
 
-**Clay Siege** is a game by Jungle Degree. This policy explains what happens to your data when you play.
+**Stampeep** is a game by Jungle Degree. This policy explains what happens to your data when you play.
 
 **Controller.** `<company legal name>` ("Jungle Degree"), company number (NIPC) `<NIPC>`, registered at
 `<address>`, Portugal. Privacy contact: `<contact e-mail>`.

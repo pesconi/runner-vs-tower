@@ -2132,3 +2132,74 @@ resposta. Aceite pendente: usuário aprovar o plano e as fichas.
   normalização tolera lista nula. Testes novos para (1) e (2). Áreas sem problema: v4 nunca traz `ownedShapes` confiável,
   ids com maiúscula ou espaço caem para a BOLINHA, moedas presas a 0..99.999.999, compra dupla e vestir sem posse
   recusados, normalização e validador coerentes, migração idempotente com backup v4.
+
+## 2026-11-23 — Busca oficial de marca "STAMPEEP" (D29) — sessão RT-6t.21
+
+Busca gratuita feita pela sessão no navegador, em 2026-11-23, nas bases oficiais. Nada foi pedido, pago ou registado.
+
+- **EUIPO eSearch plus** (marcas da UE e internacionais com efeito na UE), busca básica por palavra:
+  - **STAMPEEP: 0 marcas** — https://euipo.europa.eu/eSearch/#basic/1+1+1+1/100+100+100+100/STAMPEEP
+  - **STAMPEDE: 33 marcas**, todas compostas ou em setores de jogo de azar, salvo a palavra sozinha. Vivas nas classes 9, 28
+    ou 41 (9 = software e jogos para baixar; 28 = brinquedos e jogos; 41 = entretenimento e jogos online):
+    `018941527 STAMPEDE` (9, 41, Sumo Group, registada), `018941410 STAMPEDE RACING ROYALE` (9, 41, Sumo Group),
+    `018959455 STAMPEDE FURY` (9, 41, VGW), `014766323`/`018178524 SAVANNA STAMPEDE` (9, 28, 41), `018429341 MIGHTY
+    STAMPEDE` (Novomatic), `019432019 STAMPEDE BREAKOUT` (Novomatic, pedido publicado), `017877827 JUMBO STAMPEDE`,
+    `018753044 ELEPHANT STAMPEDE`, `018857461 STAMPEDE RUSH`, `018793247 FIRE STAMPEDE`, `018785064 SUPER STAMPEDE DOUBLE
+    UP`, `019406102 STAMPEDE FRENZY` (pedido), `016689663 THUNDER STAMPEDE`, e 5 da Aristocrat (BUFFALO ULTIMATE / MEGA /
+    SERENGETI / DRAGON HORSE MEGA STAMPEDE). Caducadas: `012286043 STAMPEDE RUN` (Zynga), `012270591 ZOMBIE STAMPEDE`
+    (Bandai Namco), `012878146 AMAZING GARDEN STAMPEDE!` (King), `003773512 STAMPEDE` (9, 41). —
+    https://euipo.europa.eu/eSearch/#basic/1+1+1+1/100+100+100+100/STAMPEDE
+  - **STAMPY: 3** — `018932382 STAMPY` (28, Simba Toys, registada), `019245676 Stampy` (35), `013684139 STAMPYT` (caducada).
+    — https://euipo.europa.eu/eSearch/#basic/1+1+1+1/100+100+100+100/STAMPY
+  - **PEEPS: 19 / PEEP: 84.** Vivas em 9, 28 ou 41: `019341866 PEEPS` (9, 38, 42, 45, ChelleStudio), `016791295 PEEPSHOP`
+    (9, 25, 28), `018120029 FORPEEPS PAYMENTS` (9, 36), `019164335 PILLOW PEEPS` e 3 pedidos ZURU PILLOW PEEPS (28),
+    `W01919933 HEEP PEEP` (9, 16, 25, 28, 30, 41), `017941118 LIL PEEP` (9, 16, 25, 41), `018072318 PEEPZ` (9) e
+    `019017156 PEEPZ` (9, 35, 38, 41, 42), `019331015 POCKET PEEPLETS` (28, Square Enix), `019367850 PEEPO` (28),
+    `010519858 LI'L PEEPERS` (28), `017968089 PEEPCASINO` (41), `W01896123 peeple` (9, 41, oposição pendente). —
+    https://euipo.europa.eu/eSearch/#basic/1+1+1+1/100+100+100+100/PEEPS e .../PEEP
+- **INPI Portugal**, pesquisa fonética de marcas (semelhança de nome), https://servicosonline.inpi.pt/pesquisas/main/marcas.jsp?lang=PT
+  → "Pesquisa fonética (para Marcas)":
+  - **STAMPEEP: 41 processos, nenhum acima de 57%**; os mais próximos são STAMP (57%, 3 nacionais e a UE 11477651),
+    FP STAMP (46%), STOMPE, STATMAP, STAMPEN, SETIMEP, ASMPP, STAMPI (43%). Nenhum STAMPEEP nem STAMPEDE no topo.
+  - STAMPEDE: o mais próximo é STAMSPEED (63%, caducada); KORANDO STAMPEDE (54%, caducada), JACKPOT STAMPEDE (54%, recusada).
+  - PEEPS: `504899 PEEPS` nacional (100%, **caducada** por falta de pagamento); PEEPS GANG (55%, registo concedido).
+  - STAMPY: `779500 STAMPI` (100% fonético, pedido com oposição possível), STAMY (caducada).
+- **Domínio:** `stampeep.com` continua livre (RDAP da Verisign respondeu 404 em 2026-11-23).
+
+**Leitura (inferência nossa, não é parecer jurídico):** não há marca igual nem quase igual a STAMPEEP nas duas bases, e
+não há conflito que trave o nome. O ponto de atenção é **STAMPEDE**: há marcas vivas da palavra em jogos (classes 9 e 41;
+a `018941527 STAMPEDE` da Sumo Group é a mais próxima). STAMPEEP partilha as 6 primeiras letras. A favor: a palavra
+"stampede" é comum e já convive com mais de 15 marcas no mesmo setor (isso a torna fraca como marca), o final "-PEEP"
+muda o som e o sentido, e o INPI dá semelhança baixa (STAMPEDE nem aparece no topo para STAMPEEP). PEEPS só tem registos
+vivos em outros produtos ou compostos. **Segunda opinião (revisor fable, só leitura):** concorda que é "risco a
+anotar", não conflito real, mas o risco é **médio**, não baixo: em inglês "stam-PEED" e "stam-PEEP" diferem só na
+última consoante, os produtos são os mesmos, a convivência de outras marcas pesa pouco na EUIPO (quase todas são
+compostas, "X STAMPEDE") e a marca da Sumo parece recente (sem exigência de prova de uso); a busca fonética do INPI segue
+a fonética portuguesa e é indício fraco. Não pesquisados: Reino Unido (a Sumo é britânica e a marca da UE não cobre o
+Reino Unido), EUA e o nome nas lojas (Google Play, App Store). Tudo isso entra na ficha de gasto D33
+(`riscos-e-decisoes.md`), com a opinião de um agente oficial de propriedade industrial antes de pagar marca da UE. A
+RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, e nada é gasto.
+
+## 2026-11-23 — T-RT6t21-1..5 — Rename para Stampeep (RT-6t.21) — técnica (sessão da entrega)
+
+- **T-RT6t21-1 — Nome numa fonte só.** `ProjectConfiguration.GameName = "Stampeep"`: dele saem o `productName` (nome no
+  ícone do celular), o título da home e a linha de créditos (em maiúsculas). Trocar o nome de novo = mudar uma constante e
+  reconstruir a cena. Os nomes internos (`Claybreak`, a chave do save `Claybreak.Save`, o id
+  `com.jungledegree.runnervstower`, as pastas, o script `Tools/audio/clay_siege_audio.py`) não mudam (T-RT4-6).
+- **T-RT6t21-2 — Subtítulo mantido: "STORM THE TOWER".** Stampeep = stampede (estouro de manada) + peep (piar): a manada
+  de bichinhos invadindo a torre é exatamente o que o subtítulo diz. Ele explica o jogo em 3 palavras e não depende do
+  "clay" antigo. Alternativas pensadas e descartadas: "PEEP THE TOWER" (trocadilho que não se lê em português),
+  "STAMPEDE THE TOWER" (repete o nome e encosta na marca STAMPEDE).
+- **T-RT6t21-3 — O validador recusa nome velho.** `ClaybreakValidation.CheckGameName`: o `productName` tem de ser o
+  `GameName` e a cena não pode ter "Clay Siege" em texto nenhum. Os caracteres de "STAMPEEP" já estão no atlas estático
+  (`GameFonts.Characters` = ASCII imprimível + acentos): nada a refazer no atlas.
+- **T-RT6t21-4 — Ícone não muda.** O jogo não tem ícone próprio (`m_BuildTargetIcons: []`, o APK usa o ícone padrão do
+  Unity), então não há texto nem identidade "Clay Siege" a trocar. O ícone 512 da loja é escopo da RT-9 (ficha da loja) e
+  nasce já como Stampeep. Captura do ícone atual (tirado do APK) em `docs/art/rt6t21/`.
+- **T-RT6t21-5 — Isolamento.** `StudioKitIsolationTerms.txt` ganhou `stampeep` e `clay ?siege`: o kit não pode citar o
+  nome do jogo, nem o novo nem o antigo (o kit não tem nenhum dos dois hoje). A lista do `TestProject` do studiokit deveria
+  receber os mesmos termos (o próprio arquivo pede), mas esta entrega não mexe no kit: fica para a próxima entrega K.
+- **Documentos públicos:** `politica-de-privacidade.md` (título e as duas frases de abertura, PT e EN) e
+  `audio-licenses.md` passam a Stampeep. Registros históricos (decisões, seções RT-4 a RT-8b, `rt8b-firebase.md`, que
+  descreve o projeto Firebase já criado como "Clay Siege") não se reescrevem. O nome do projeto e do app no console do
+  Firebase é interno e não aparece ao jogador; trocá-lo fica a critério do usuário na RT-9.

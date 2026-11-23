@@ -175,3 +175,8 @@
   SHAPES sai no `ScreenFitTests` (`telas-loja-formas.png`). Silhueta nova precisa passar em
   `EveryPairOfShapesHasADifferentOutline` (≥ 15% na altura, largura ou proporção). A ferramenta Bash também quebra heredoc
   com apóstrofo em `cat > arquivo <<EOF`: escrever o arquivo com Write.
+- 2026-11-23 (RT-6t.21): o nome visível do jogo é `ProjectConfiguration.GameName` (productName, título e créditos; o
+  validador recusa outro e "Clay Siege" na cena). Busca de marca no navegador: o EUIPO eSearch pela URL
+  `#basic/1+1+1+1/100+100+100+100/<TERMO>` mostra o resultado da busca ANTERIOR ao trocar só o hash: recarregar a página
+  a cada termo. INPI: "Pesquisa fonética (para Marcas)". Nome e ícone do APK: `aapt2 dump badging <apk>` (build-tools do
+  SDK do Unity); o ícone é adaptativo (`mipmap/app_icon`), hoje o padrão do Unity.

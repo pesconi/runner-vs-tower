@@ -40,6 +40,7 @@ lançamento jun/2027.
 | RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — concluída em 2026-11-23 (motor, 5 tipos, fase de laboratório; capturas em `docs/art/rt6t18/`); APK instalado no OPPO; gate 3× no OPPO em 2026-11-23 aprovado (corrida do mundo 4, 6 obstáculos, 300: CPU p95 ≤ 2,0 ms, GPU p95 ≤ 4,4 ms, PSS 298 MB, 0 quadros perdidos); **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
 | RT-6t.19 Obstáculos nas 40 fases e economia recalculada — concluída em 2026-11-23 (mundo 1 ensina um tipo por vez, um tipo novo por mundo, 2–3 por fase no fim do mundo 4; vida das torres sobre o exército depois das perdas; `rt6-economia.md` com a perda esperada; fases ±5% do tempo da RT-6t.15, loja 49 → 50 min); gate 3× não se aplica (no máximo 3 obstáculos por fase, 6 já medidos); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou boa") | — | — | antes da RT-9 |
 | RT-6t.20 Formas compradas na loja (save v5) — concluída em 2026-11-23 (5 formas com silhueta e quique próprios, aba SHAPES, botão SHAPE fora da home, save v5 com migração; loja 24.680 moedas em 58 min; capturas em `docs/art/rt6t20/`); gate 3× não se aplica (forma mais pesada continua 492 triângulos); **aceite do usuário em 2026-11-23** ("Aprovo, instala"); APK instalado no OPPO, save migrado v4 → v5 com a forma BALL mantida | — | — | antes da RT-9 |
+| RT-6t.21 Rename para Stampeep (D29) — concluída em 2026-11-23 (nome no ícone do celular, título da home e créditos; subtítulo "STORM THE TOWER" mantido; política de privacidade e licenças de áudio; validador recusa "Clay Siege"; ícone sem identidade antiga, não muda; busca oficial EUIPO e INPI sem marca igual, risco médio com "STAMPEDE" anotado; ficha de gasto D33 pendente, não bloqueia); gate 3× não se aplica; APK instalado no OPPO com o save mantido | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -768,6 +769,40 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Pendente (olhar humano antes do APK):** o usuário aprovar o visual das formas pelas capturas. Depois:
   `adb install -r C:\temp\rt620\Claybreak.apk` (mantém o save; CHICK ou BALL do usuário continua vestida).
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.20`).
+
+## RT-6t.21 — Rename para Stampeep (D29)
+
+- **Escopo:** pedido do usuário em 2026-11-23 ("Rename Stampeep"), a partir da D29 (2026-11-22: "Stampeep" substitui
+  "Clay Siege" antes da RT-9). Muda tudo que o jogador vê; o id `com.jungledegree.runnervstower`, o save
+  (`Claybreak.Save`), os namespaces e a pasta `Assets/Claybreak` não mudam. Busca oficial de marca gratuita (EUIPO,
+  INPI), sem comprar domínio nem registar marca.
+- **Aceite:** nenhum "Clay Siege" visível ao jogador (ícone do celular, home, créditos, documentos públicos); validação
+  completa verde; capturas da home nas 4 proporções e do ícone em `docs/art/rt6t21/`; APK instalado com `adb install -r`
+  mantendo o save; resultado da busca de marca com data e links em `decisoes.md`; ficha de gasto pendente escrita.
+- **Feito:** nome numa constante só (`ProjectConfiguration.GameName`) que alimenta o `productName`, o título da home e a
+  linha de créditos; subtítulo "STORM THE TOWER" mantido (a manada invade a torre); `ClaybreakValidation.CheckGameName`
+  recusa outro `productName` e "Clay Siege" na cena; lista de isolamento com `stampeep` e `clay ?siege`;
+  `politica-de-privacidade.md` (PT e EN) e `audio-licenses.md` com o nome novo. Ícone: o jogo usa o ícone padrão do
+  Unity, sem texto nem identidade "Clay Siege", então não muda (o ícone 512 da loja é da RT-9). Decisões técnicas
+  T-RT6t21-1..5 em `decisoes.md`.
+- **Busca de marca (2026-11-23):** EUIPO STAMPEEP 0 marcas; INPI fonética: nada acima de 57% (STAMP). Ponto de atenção:
+  marcas "STAMPEDE" vivas em jogos (classes 9 e 41, ex. Sumo Group); revisor independente (fable) classificou como risco
+  médio a anotar, não conflito real. `stampeep.com` livre. Detalhe e links em `decisoes.md`; ficha de gasto **D33** em
+  `riscos-e-decisoes.md` (marca PT ou UE e domínio, com taxas oficiais; vale do SME Fund 2026 até 04/12/2026). Não bloqueia.
+- **Validação (2026-11-23):** `rt4-check` completo verde — cena, validador, isolamento, EditMode 684 (683 passam, 1
+  ignorado), PlayMode 44 (28 passam, 16 capturas ignoradas sem GPU), economia, capturas, APK, APK de medição e AAB.
+  `ScreenFitTests` com GPU 1/1. `aapt2` confirma o nome "Stampeep" no APK.
+- **Gate 3×:** não se aplica (nada muda no desenho em jogo).
+- **Capturas (`docs/art/rt6t21/`):** `home-4-proporcoes.png` (16:9, 19,5:9, 20:9, 21:9), `ajustes-creditos-4-proporcoes.png`
+  (créditos com STAMPEEP), `icone-atual-apk.png` (ícone tirado do APK: o padrão do Unity), `oppo-home.png` (home no OPPO
+  depois da instalação, save mantido: mundo 1, nível 6, 457 moedas).
+- **Instalado:** `adb install -r C:\temp\rt6t21\Claybreak.apk` no OPPO em 2026-11-23 (celular desbloqueado), save
+  mantido.
+- **Para o kit (entrega K futura):** a lista de isolamento do `TestProject` do studiokit deve receber `stampeep` e
+  `clay ?siege` (esta entrega não mexe no kit).
+- **Pendente do usuário (não bloqueia):** ficha D33 (proteger o nome). Firebase: o projeto e o app no console ainda se
+  chamam "Clay Siege" (nome interno, não aparece ao jogador); trocar fica a seu critério na RT-9.
+- Histórico: entregue em 2026-11-23 (`Stage RT.6t.21`).
 
 ## RT-6t.16 a RT-6t.20 e K.14 — Telas, obstáculos, formas na loja e mostrador (planejadas)
 

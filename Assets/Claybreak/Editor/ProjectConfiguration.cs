@@ -15,6 +15,8 @@ namespace Claybreak.Editor
     public static class ProjectConfiguration
     {
         public const string ApplicationId = "com.jungledegree.runnervstower";
+        /// <summary>The name the player sees (launcher, home title, credits): D29.</summary>
+        public const string GameName = "Stampeep";
         private const string AdsSettingsPath = "Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset";
         // Google's public sample AdMob app ID (not an account of the studio). The ads SDK the kit depends on
         // stops the app at launch without an app ID; RT-7 shows Google test ads with it; the real app ID comes with RT-9 (D7).
@@ -23,9 +25,9 @@ namespace Claybreak.Editor
         public static void Apply()
         {
             PlayerSettings.companyName = "Jungle Degree";
-            // Display name only (D18: working name "Clay Siege"). The application ID and the code namespaces stay
-            // as they are, so installs and saves are untouched (T-RT4-6).
-            PlayerSettings.productName = "Clay Siege";
+            // Display name only (D29: "Stampeep", replacing the working name "Clay Siege" of D18). The application ID,
+            // the save key and the code namespaces stay as they are, so installs and saves are untouched (T-RT4-6).
+            PlayerSettings.productName = GameName;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, ApplicationId);
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
             PlayerSettings.Android.minSdkVersion = (AndroidSdkVersions)26;

@@ -868,10 +868,10 @@ namespace Claybreak.Editor
             (Button settingsButton, TMP_Text _) = PillButton("SettingsButton", home, pill, new Vector2(0f, 1f), new Vector2(170f, -110f),
                 new Vector2(290f, 104f), UiColors.Lilac, "SETTINGS", 42);
             TMP_Text homeCoins = Coins(home, pill);
-            // Working name (D18; the new name comes with its own delivery), with the call to action under it.
+            // The game's name (D29), with the call to action under it: a stampede storming the tower (RT-6t.21 kept it).
             TMP_Text title = Caption("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -300f), new Vector2(1000f, 180f), 150,
                 UiColors.Primary, false);
-            title.text = "CLAY SIEGE";
+            title.text = ProjectConfiguration.GameName.ToUpperInvariant();
             TMP_Text tagline = Caption("Tagline", home, new Vector2(0.5f, 1f), new Vector2(0f, -410f), new Vector2(900f, 70f), 44,
                 Color.white, false);
             tagline.text = "STORM THE TOWER";
@@ -921,7 +921,7 @@ namespace Claybreak.Editor
             TMP_Text credits = Caption("Credits", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 280f), new Vector2(960f, 110f), 30,
                 UiColors.WithAlpha(Color.white, 0.85f), false);
             credits.textWrappingMode = TextWrappingModes.Normal;
-            credits.text = "CLAY SIEGE  ·  JUNGLE DEGREE\nMUSIC AND SOUND: JUNGLE DEGREE  ·  FONT: BALOO 2 (SIL OFL 1.1)";
+            credits.text = ProjectConfiguration.GameName.ToUpperInvariant() + "  ·  JUNGLE DEGREE\nMUSIC AND SOUND: JUNGLE DEGREE  ·  FONT: BALOO 2 (SIL OFL 1.1)";
             Button settingsBack = BackButton(settingsRoot, pill);
 
             // Shop: four tabs (RT-6t.20 added SHAPES) in equal parts of the width over one list (rows = the longest catalog list), coins only (D6:

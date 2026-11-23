@@ -69,8 +69,27 @@ namespace Claybreak.Editor
             CheckRuntimeCode(failures);
             CheckScene(failures);
             CheckToonLab(failures);
+            CheckGameName(failures);
             failures.AddRange(MonetizationValidation.Run());
             return failures;
+        }
+
+        // Names the player must no longer see (D29 retired the working names of D1/D18). Internal names (the Claybreak
+        // namespaces, folders and save key) are not player-facing and stay.
+        private static readonly Regex RetiredNames = new Regex(@"clay ?siege", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        /// <summary>RT-6t.21: the launcher name is the game's name (D29) and the scene shows no retired name.</summary>
+        private static void CheckGameName(List<string> failures)
+        {
+            if (PlayerSettings.productName != ProjectConfiguration.GameName)
+            {
+                failures.Add($"name: productName is '{PlayerSettings.productName}', the game is '{ProjectConfiguration.GameName}' (run Claybreak > Build Scene)");
+            }
+
+            if (File.Exists(ClaybreakSceneBuilder.ScenePath) && RetiredNames.IsMatch(File.ReadAllText(ClaybreakSceneBuilder.ScenePath)))
+            {
+                failures.Add("name: the scene still shows a retired name (Clay Siege); rebuild the scene");
+            }
         }
 
         private static void Report(List<string> failures)

@@ -190,6 +190,92 @@ uma antes da entrega indicada.
 | **D29** | **Nome "Clay Siege" sem massinha** | Ícone, loja e domínio; checagem de marca pendente | RT-9 | B: 3 nomes novos checados + "Clay Siege", escolha antes da RT-9 — ficha em `direcao-visual-crowd.md` — **decidido em 2026-11-22: Stampeep** (substitui "Clay Siege" antes da RT-9; busca oficial de marca antes de qualquer gasto) |
 | **D31** | **Forma da multidão como compra na loja** (leitura do pedido do usuário de 2026-11-23; substitui o item 1 da D26) | Loja, save v5, tela inicial | RT-6t.20 (as 6t.16–6t.19 seguem sem ela) | A: formas compradas na loja (bolinha grátis, pintinho e 3 novas pagas; quem usa o pintinho fica com ele), silhuetas distintas na câmera da corrida como aceite — ficha em `plano-telas-obstaculos-loja.md` seção 5 — **decidido em 2026-11-23: A** |
 | **D32** | **Preços das formas** | Economia da loja (D19), tempo para comprar tudo | RT-6t.20 (sem resposta: A provisório) | A: 300 · 1.000 · 1.600 · 2.400 (loja ~55–56 min) — ficha em `plano-telas-obstaculos-loja.md` seção 5 — **decidido em 2026-11-23: A** |
+| **D33** | **Proteger o nome "Stampeep": marca e domínio** (gasto; não bloqueia) | Marca e domínio do nome escolhido na D29 | antes da RT-9; **vale do SME Fund 2026 só até 04/12/2026** | C agora + pedir o vale já; marca PT (9 e 41) e UE só com opinião de agente — ficha abaixo, escrita na RT-6t.21 (2026-11-23) — **pendente** |
+
+### Ficha D33 — Proteger o nome "Stampeep" (gasto pendente, escrita na RT-6t.21; não bloqueia nenhuma entrega)
+
+```text
+DECISÃO D33 — Pagar para proteger o nome "Stampeep"?
+
+O que você está aprovando: a Jungle Degree gasta <valor da opção> para <comprar o domínio
+stampeep.com> e/ou <pedir o registo da marca "STAMPEEP" em <Portugal / UE>, nas classes
+<9 e 41>>. A IA não paga nem pede nada: o pedido e o pagamento são feitos por você nos sites
+oficiais (ou por um agente de propriedade industrial que você contratar).
+
+Por que agora: nada no jogo trava sem isto (o nome já está no jogo desde a RT-6t.21). Mas há
+um prazo que vale dinheiro: o fundo da UE para pequenas empresas (SME Fund 2026) devolve até
+75% das taxas de marca (teto citado: 700 € por empresa), e as candidaturas fecham em
+04/12/2026. O vale tem de estar aprovado ANTES de pedir a marca, a aprovação leva tempo e,
+segundo uma fonte, o vale tem de ser usado em 1 mês (prorrogável por mais 1). É reembolso:
+paga-se a taxa inteira e recebe-se depois. Pedir o vale é grátis e não obriga a registar.
+
+Contexto que você precisa saber:
+- Busca oficial gratuita em 2026-11-23 (EUIPO = marcas da UE; INPI = marcas de Portugal):
+  nenhuma marca "STAMPEEP" nem quase igual. Domínio stampeep.com livre.
+- Ponto de atenção: existe a marca "STAMPEDE" registada para jogos (Sumo Group, britânica,
+  classes 9 e 41, de ~2023) e outras "X STAMPEDE". Em inglês "stam-PEED" e "stam-PEEP" soam
+  quase iguais. Leitura nossa + revisor: não é conflito que impeça usar o nome, mas o risco de
+  o dono se opor a um registo (ou reclamar do uso) é MÉDIO. Não pesquisámos Reino Unido, EUA
+  nem o nome nas lojas (Google Play, App Store). Não é parecer jurídico.
+- Classes: 9 = jogos e software para baixar; 41 = entretenimento e jogos online;
+  28 = brinquedos e jogos físicos (só para merchandising, dispensável agora).
+- Taxas oficiais (sites oficiais, 2026-11-23):
+  - Marca da UE (EUIPO, 27 países, inclui Portugal): 850 € com 1 classe, +50 € a 2ª, +150 €
+    cada uma a partir da 3ª (pedido online). 9+41 = 900 €. Renova a cada 10 anos.
+  - Marca de Portugal (INPI): 145,56 € com 1 classe, +36,90 € por classe a mais, +12,31 € na
+    concessão (online). 9+41 = 194,77 €. Pedido feito em Portugal dá 6 meses de prioridade
+    para estender à UE ou a outros países com a mesma data.
+  - SME Fund 2026: até 75% de volta, teto de 700 € (fontes secundárias; confirmar no site).
+    Com o vale: UE 9+41 ≈ 225 € líquidos; Portugal 9+41 ≈ 49 € líquidos.
+  - Domínio .com: atacado 10,97 US$/ano desde 01/11/2026; registradores cobram em geral
+    11–20 €/ano (estimativa).
+  - Agente oficial de propriedade industrial (opinião sobre o risco STAMPEDE): custo não
+    orçado; inferência nossa: algumas centenas de euros.
+- Já decidido: D29 (2026-11-22) escolheu "Stampeep" e pediu busca oficial antes de gastar.
+
+Opções:
+A) Domínio + vale já + marca da UE (9 e 41) — com o vale aprovado, pede na EUIPO.
+   + protege os 27 países de uma vez; o vale devolve até 675 €.
+   - Riscos: oposição da Sumo (chance: média; impacto: alto — perde a taxa e talvez troque o
+     nome) — mitigar ouvindo um agente antes; vale não sair (média; médio — paga cheio).
+   Custo: ~15 € + 900 € (≈ 225 € com o vale). Volta atrás? domínio sim; a taxa não.
+B) Domínio + vale já + marca de Portugal (9 e 41); estender à UE dentro dos 6 meses de
+   prioridade, depois de ouvir um agente (e depois do soft launch, se houver tração).
+   + barato e rápido; guarda a data para a UE.
+   - Riscos: só Portugal fica protegido até estender (chance de cópia fora: baixa; impacto:
+     médio); a Sumo também pode se opor em Portugal (baixa-média; médio — ~195 € perdidos).
+   Custo: ~15 € + ~195 € (≈ 49 € com o vale). Volta atrás? domínio sim; a taxa não.
+C) Só o domínio agora; marca depois do soft launch (RT-10), se o jogo mostrar tração.
+   + gasta ~15 €; não paga marca de um jogo que pode não vingar.
+   - Riscos: alguém registar STAMPEEP antes (baixa; alto); perde o vale de 2026; o risco
+     STAMPEDE continua sobre o USO do nome, registado ou não (média; alto se publicado).
+   Custo: ~11–20 €/ano. Volta atrás? sim.
+D) Adiar tudo.
+   - Riscos: perder o .com (baixa; médio — usar outro domínio); mesmo risco de uso do C.
+   Custo: zero. Volta atrás? sim.
+E) Rever o nome antes de gastar — pedir a opinião de um agente sobre STAMPEDE primeiro e,
+   se ele achar o risco alto, voltar à D29 (o rename no jogo é uma constante + reconstruir).
+   + evita pagar marca e loja num nome contestável. - Riscos: atrasa; pode perder o vale.
+   Custo: a consulta. Volta atrás? sim.
+
+Recomendação: B, com o domínio e o pedido do vale já (esta semana). É o caminho mais barato
+que guarda a data e deixa a UE para depois da opinião de um agente, dentro dos 6 meses.
+Segunda opinião (fable): concorda em comprar o domínio e pedir o vale já (grátis, não obriga
+a registar); acha o risco STAMPEDE médio, não baixo, e começaria pela marca portuguesa
+(9 e 41, ~195 €), indo para a UE só depois de ouvir um agente, dentro dos 6 meses de prioridade.
+Se você não responder: nada é comprado nem pedido; o jogo segue com o nome; o vale de 2026
+expira em 04/12; a RT-9 traz esta ficha de volta antes de publicar a página da loja.
+
+Responda: A, B, C, D ou E, ou a letra + ajuste (ex.: "B só classe 9"), ou "explica melhor".
+```
+
+Fontes: EUIPO taxas https://www.euipo.europa.eu/en/trade-marks/before-applying/fees-payments · INPI taxas (Declaração
+447/2024) https://justica.gov.pt/en-gb/Registos/Industrial-Property/Trademark/How-much-does-it-cost-to-submit-a-trademark-or-other-signs-application
+· SME Fund 2026 https://intellectual-property-helpdesk.ec.europa.eu/news-events/news/applications-are-open-2026-sme-fund-2026-02-10_en,
+https://inpi.justica.gov.pt/en-gb/SME-Fund/SME-Fund-2026-EU-Fund-for-the-Protection-of-IP-Rights,
+https://ipoi.gov.ie/en/news-events/news-categories-/announcements/sme-fund-2026-continuing-support-for-smes-now-available.html
+· .com https://investor.verisign.com/news-releases/news-release-details/verisign-reports-first-quarter-2026-results ·
+RDAP https://rdap.verisign.com/com/v1/domain/stampeep.com (404 = livre). Busca completa em `decisoes.md` (2026-11-23).
 
 ### Dúvidas abertas registradas pela sessão (sem resposta)
 

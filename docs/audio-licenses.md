@@ -1,4 +1,4 @@
-# Licenças de áudio e fonte — Clay Siege (RT-8)
+# Licenças de áudio e fonte — Stampeep (RT-8; nome trocado na RT-6t.21, D29)
 
 Registro de toda mídia de terceiros ou própria que vai no build. Regra (plano, RT-8): só fontes CC0
 ou feitas por nós, nada pago, cada arquivo listado aqui. O validador do jogo
