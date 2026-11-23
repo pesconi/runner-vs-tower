@@ -153,3 +153,8 @@
   chefe: PlayMode com GPU (sem `-nographics`), `-testFilter ScreenFitTests -screenFitCaptureDir <pasta>` e
   `-testFilter SweeperMotionTests -sweeperCaptureDir <pasta>`. O `adb install -r` pode responder "failed to install" vazio
   e ter instalado: conferir `lastUpdateTime` e o tamanho do `base.apk` antes de repetir.
+- 2026-11-23 (RT-6t.17): os menus são TMP (`Caption` no builder; presets `Baloo2 Ui`/`Baloo2 Ink`); cores em `UiColors`. A Baloo 2
+  não tem "★": estrela e moeda são sprites TMP (`UiIcons.Star`/`Coin`, asset `Fonts/GameIcons`); nunca escrever "★" num rótulo.
+  O `ScreenFitTests` reprova glifo fora do atlas e legenda maior que o botão. Se o `studiokit` de outra sessão não compilar,
+  build com um clone do último commit do kit (manifest temporário para `file:C:/temp/kit-head/...`, depois
+  `git checkout -- Packages/`), sem mexer no repo do kit.

@@ -54,7 +54,7 @@ namespace Claybreak.Editor
 
         public const int ProjectilePoolSize = 32;
         public const int LevelDots = ClaybreakWorld.MaximumLevels;
-        public const float RowStep = 230f;
+        public const float RowStep = 250f;
         /// <summary>The canvas scaler's match (0 = width): RT-6t.16, no side is cut from 16:9 to 21:9.</summary>
         public const float CanvasMatch = 0f;
         /// <summary>The home level meter's share of the safe width at most (RT-6t.16, plan 3.4).</summary>
@@ -64,6 +64,10 @@ namespace Claybreak.Editor
         public const string FontPath = GameFonts.TtfPath;
         private const string PillTexturePath = GeneratedFolder + "/ClayPill.png";
         private const string StarTexturePath = GeneratedFolder + "/Star.png";
+        /// <summary>RT-6t.17: the boss level's mark on the home level meter.</summary>
+        private const string CrownTexturePath = GeneratedFolder + "/Crown.png";
+        /// <summary>RT-6t.17: the fade at the foot of a scroll list (opaque at the bottom, clear at the top).</summary>
+        private const string FadeTexturePath = GeneratedFolder + "/FadeUp.png";
         public const float TrackWidth = 8f;
 
         /// <summary>Far clip of the game camera (m): the props wrap past it, so none pops in on screen (RT-6t.13, no fog).</summary>
@@ -76,7 +80,6 @@ namespace Claybreak.Editor
         private const float ReferenceTrackHalfWidth = 6f;
         private static readonly Color Orange = new Color(0.95f, 0.55f, 0.18f);
         private static readonly Color Gold = new Color(1f, 0.8f, 0.25f);
-        private static readonly Color CardColor = new Color(0.12f, 0.09f, 0.1f, 0.9f);
 
         [MenuItem("Claybreak/Build Scene")]
         public static void Build()
@@ -100,6 +103,8 @@ namespace Claybreak.Editor
             LeaderArt.BuildAssets();
             CreatePillSprite();
             CreateStarSprite();
+            CreateCrownSprite();
+            CreateFadeSprite();
             AssetDatabase.SaveAssets();
             CreateScene();
             AssetDatabase.SaveAssets();
@@ -238,7 +243,7 @@ namespace Claybreak.Editor
             Sprite star = Load<Sprite>(StarTexturePath);
             Transform canvas = CreateCanvas();
             ClaybreakHud hud = CreateHud(canvas, pill);
-            ClaybreakScreens screens = CreateScreens(canvas, pill, star, catalog);
+            ClaybreakScreens screens = CreateScreens(canvas, pill, star, Load<Sprite>(CrownTexturePath), Load<Sprite>(FadeTexturePath), catalog);
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
 
             SetRef(flow, "catalog", catalog);
@@ -810,7 +815,11 @@ namespace Claybreak.Editor
             return text;
         }
 
-        private static ClaybreakScreens CreateScreens(Transform canvas, Sprite pill, Sprite star, ClaybreakCatalog catalog)
+        // RT-6t.17 (plan 3.1): the toon pastel screens. Vivid palette buttons with a dark slab and no gloss, Baloo 2
+        // TextMeshPro labels with the ink outline, light cards with ink text, a lighter veil (the level shows behind).
+        // Buttons keep their RT-8 paths (/Ui/Screens/<Screen>/Safe/...): the PlayMode tests press them by path.
+        private static ClaybreakScreens CreateScreens(Transform canvas, Sprite pill, Sprite star, Sprite crown, Sprite fade,
+            ClaybreakCatalog catalog)
         {
             var screensObject = new GameObject("Screens", typeof(RectTransform));
             RectTransform screensRect = screensObject.GetComponent<RectTransform>();
@@ -819,78 +828,83 @@ namespace Claybreak.Editor
             screensRect.anchorMax = Vector2.one;
             screensRect.sizeDelta = Vector2.zero;
             ClaybreakScreens screens = screensObject.AddComponent<ClaybreakScreens>();
-            Color grey = new Color(0.3f, 0.26f, 0.26f);
 
-            // Home: the level waits behind a dark veil; buttons stack from the bottom (thumb reach). Every page's
-            // veil covers the whole screen; its content sits in the safe area (RT-8).
-            RectTransform home = MenuPage("Home", screensRect, 0.55f, out RectTransform homePage);
-            Text homeCoins = Coins(home, pill);
-            // Working name (D18), with the call to action under it.
-            Text title = Label("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -270f), 120, TextAnchor.MiddleCenter);
+            // Home, top to bottom: settings and coins, the name, the world card (world, level, stars), the compact level
+            // meter; from the bottom (thumb reach): SHOP and WORLDS side by side, the big PLAY, and two small seals over it
+            // (the crowd shape until the shop sells shapes, RT-6t.20; the daily gift when due). The elites line moved to the shop.
+            RectTransform home = MenuPage("Home", screensRect, 0.28f, out RectTransform homePage);
+            (Button settingsButton, TMP_Text _) = PillButton("SettingsButton", home, pill, new Vector2(0f, 1f), new Vector2(170f, -110f),
+                new Vector2(290f, 104f), UiColors.Lilac, "SETTINGS", 42);
+            TMP_Text homeCoins = Coins(home, pill);
+            // Working name (D18; the new name comes with its own delivery), with the call to action under it.
+            TMP_Text title = Caption("Title", home, new Vector2(0.5f, 1f), new Vector2(0f, -300f), new Vector2(1000f, 180f), 150,
+                UiColors.Primary, false);
             title.text = "CLAY SIEGE";
-            title.color = Orange;
-            Text tagline = Label("Tagline", home, new Vector2(0.5f, 1f), new Vector2(0f, -385f), 40, TextAnchor.MiddleCenter);
+            TMP_Text tagline = Caption("Tagline", home, new Vector2(0.5f, 1f), new Vector2(0f, -410f), new Vector2(900f, 70f), 44,
+                Color.white, false);
             tagline.text = "STORM THE TOWER";
-            Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -440f), 46, TextAnchor.MiddleCenter);
-            Text worldStars = Label("Stars", home, new Vector2(0.5f, 1f), new Vector2(0f, -505f), 44, TextAnchor.MiddleCenter);
-            worldStars.color = Gold;
-            (UnityEngine.Object[] dots, Text levelMeterText) = LevelMeter(home, pill);
+            Image worldCard = Card("WorldCard", home, pill, new Vector2(0.5f, 1f), new Vector2(0f, -570f), new Vector2(820f, 190f));
+            TMP_Text world = Caption("World", worldCard.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -55f), new Vector2(760f, 70f),
+                46, UiColors.Ink, true);
+            TMP_Text worldStars = Caption("Stars", worldCard.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 55f), new Vector2(760f, 70f),
+                48, UiColors.Ink, true);
+            (UnityEngine.Object[] dots, TMP_Text levelMeterText) = LevelMeter(home, pill);
 
-            Text loadout = Label("Loadout", home, new Vector2(0.5f, 1f), new Vector2(0f, -720f), 38, TextAnchor.MiddleCenter);
-            loadout.color = new Color(1f, 0.86f, 0.72f);
-            (Button play, Text playLabel) = PillButton("Play", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 420f),
-                new Vector2(640f, 180f), Orange, "PLAY", 84);
-            (Button shop, Text _) = PillButton("ShopButton", home, pill, new Vector2(0.5f, 0f), new Vector2(-235f, 235f),
-                new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "SHOP", 56);
+            (Button play, TMP_Text playLabel) = PillButton("Play", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 420f),
+                new Vector2(700f, 210f), UiColors.Primary, "PLAY", 100);
+            (Button shop, TMP_Text _) = PillButton("ShopButton", home, pill, new Vector2(0.5f, 0f), new Vector2(-235f, 210f),
+                new Vector2(430f, 140f), UiColors.Mint, "SHOP", 60);
             StretchAcross(shop, 0.06f, 0.49f);
-            Image badge = Img("Badge", shop.transform, pill, new Vector2(1f, 1f), new Vector2(-30f, -22f), new Vector2(46f, 46f), Gold);
-            (Button worldsButton, Text _) = PillButton("WorldsButton", home, pill, new Vector2(0.5f, 0f), new Vector2(235f, 235f),
-                new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "WORLDS", 56);
+            Image badge = Img("Badge", shop.transform, pill, new Vector2(1f, 1f), new Vector2(-26f, -18f), new Vector2(54f, 54f), UiColors.Pink);
+            ClayUi.AddSlab(badge, 4f);
+            (Button worldsButton, TMP_Text _) = PillButton("WorldsButton", home, pill, new Vector2(0.5f, 0f), new Vector2(235f, 210f),
+                new Vector2(430f, 140f), UiColors.Sky, "WORLDS", 60);
             StretchAcross(worldsButton, 0.51f, 0.94f);
-            // RT-7: the daily gift over PLAY (shown only when due). RT-8: SETTINGS top left opens the settings page.
-            // RT-6t.6b: the crowd shape picker under the loadout line (free shapes, D26 A); the crowd behind the menu shows it.
-            (Button shapeButton, Text shapeLabel) = PillButton("ShapeButton", home, pill, new Vector2(0.5f, 1f), new Vector2(0f, -830f),
-                new Vector2(520f, 110f), new Color(0.42f, 0.3f, 0.5f), ClaybreakScreens.ShapeLine(catalog.Shapes[0].title), 44);
-            (Button daily, Text dailyLabel) = PillButton("DailyGift", home, pill, new Vector2(0.5f, 0f), new Vector2(0f, 600f),
-                new Vector2(560f, 110f), new Color(0.3f, 0.55f, 0.3f), "DAILY GIFT", 44);
-            (Button settingsButton, Text _) = PillButton("SettingsButton", home, pill, new Vector2(0f, 1f), new Vector2(190f, -150f),
-                new Vector2(300f, 96f), grey, "SETTINGS", 38);
+            (Button shapeButton, TMP_Text shapeLabel) = PillButton("ShapeButton", home, pill, new Vector2(0.5f, 0f), new Vector2(-250f, 605f),
+                new Vector2(360f, 100f), UiColors.Lilac, ClaybreakScreens.ShapeLine(catalog.Shapes[0].title), 40);
+            (Button daily, TMP_Text dailyLabel) = PillButton("DailyGift", home, pill, new Vector2(0.5f, 0f), new Vector2(250f, 605f),
+                new Vector2(360f, 100f), UiColors.Gold, "GIFT", 42, true);
+            // A seal, not a full button: tilted a little over PLAY's corner.
+            daily.transform.localRotation = Quaternion.Euler(0f, 0f, -5f);
             // Scene default shows the usual case (the flow sets it when the home screen opens): a gift due on a first launch.
-            dailyLabel.text = $"DAILY GIFT  +{MonetizationContent.DailyRewards[0]} ¢";
+            dailyLabel.text = ClaybreakScreens.DailyLine(MonetizationContent.DailyRewards[0]);
 
             // Settings (RT-8): the kit's sound, music and vibration switches, the privacy policy link, the privacy
-            // options (only where UMP requires them) and the credits of the game's own audio and font.
-            RectTransform settingsRoot = MenuPage("Settings", screensRect, 0.82f, out RectTransform settingsPage);
+            // options (only where UMP requires them) and the credits of the game's own audio and font, on one light card.
+            RectTransform settingsRoot = MenuPage("Settings", screensRect, 0.5f, out RectTransform settingsPage);
             Heading(settingsRoot, "SETTINGS");
-            (Button sound, Text soundLabel) = PillButton("Sound", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -420f),
-                new Vector2(640f, 120f), grey, "SOUND ON", 52);
-            (Button music, Text musicLabel) = PillButton("Music", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -570f),
-                new Vector2(640f, 120f), grey, "MUSIC ON", 52);
-            (Button vibration, Text vibrationLabel) = PillButton("Vibration", settingsRoot, pill, new Vector2(0.5f, 1f),
-                new Vector2(0f, -720f), new Vector2(640f, 120f), grey, "VIBRATION ON", 52);
-            (Button policy, Text _) = PillButton("PrivacyPolicy", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -900f),
-                new Vector2(640f, 110f), new Color(0.55f, 0.32f, 0.16f), "PRIVACY POLICY", 44);
-            (Button privacy, Text _) = PillButton("PrivacyOptions", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -1040f),
-                new Vector2(640f, 110f), new Color(0.55f, 0.32f, 0.16f), "PRIVACY OPTIONS", 44);
+            Card("Card", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -690f), new Vector2(820f, 820f));
+            (Button sound, TMP_Text soundLabel) = PillButton("Sound", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -400f),
+                new Vector2(640f, 120f), UiColors.Sky, "SOUND ON", 52);
+            (Button music, TMP_Text musicLabel) = PillButton("Music", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -550f),
+                new Vector2(640f, 120f), UiColors.Sky, "MUSIC ON", 52);
+            (Button vibration, TMP_Text vibrationLabel) = PillButton("Vibration", settingsRoot, pill, new Vector2(0.5f, 1f),
+                new Vector2(0f, -700f), new Vector2(640f, 120f), UiColors.Sky, "VIBRATION ON", 52);
+            (Button policy, TMP_Text _) = PillButton("PrivacyPolicy", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -860f),
+                new Vector2(640f, 104f), UiColors.Lilac, "PRIVACY POLICY", 42);
+            (Button privacy, TMP_Text _) = PillButton("PrivacyOptions", settingsRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -990f),
+                new Vector2(640f, 104f), UiColors.Lilac, "PRIVACY OPTIONS", 42);
             privacy.gameObject.SetActive(false);
-            Text settingsNote = Label("Note", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 400f), 36, TextAnchor.MiddleCenter);
-            settingsNote.color = new Color(1f, 0.86f, 0.72f);
-            Text credits = Label("Credits", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 270f), 30, TextAnchor.MiddleCenter);
+            TMP_Text settingsNote = Caption("Note", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 420f), new Vector2(940f, 110f), 36,
+                Color.white, false);
+            settingsNote.textWrappingMode = TextWrappingModes.Normal;
+            TMP_Text credits = Caption("Credits", settingsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 280f), new Vector2(960f, 110f), 30,
+                UiColors.WithAlpha(Color.white, 0.85f), false);
+            credits.textWrappingMode = TextWrappingModes.Normal;
             credits.text = "CLAY SIEGE  ·  JUNGLE DEGREE\nMUSIC AND SOUND: JUNGLE DEGREE  ·  FONT: BALOO 2 (SIL OFL 1.1)";
-            credits.color = new Color(1f, 1f, 1f, 0.6f);
-            (Button settingsBack, Text _) = PillButton("Back", settingsRoot, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
-                new Vector2(420f, 120f), grey, "BACK", 48);
+            Button settingsBack = BackButton(settingsRoot, pill);
 
-            // Shop: three tabs over one list (rows = the longest catalog list), coins only (D6: no real money).
-            RectTransform shopRoot = MenuPage("Shop", screensRect, 0.82f, out RectTransform shopPage);
-            Text shopCoins = Coins(shopRoot, pill);
+            // Shop: three tabs in equal parts of the width over one list (rows = the longest catalog list), coins only (D6:
+            // no real money). Over the list, what the army takes into a run; under it, a fade that says the list goes on.
+            RectTransform shopRoot = MenuPage("Shop", screensRect, 0.5f, out RectTransform shopPage);
+            TMP_Text shopCoins = Coins(shopRoot, pill);
             Heading(shopRoot, "SHOP");
             string[] tabNames = { "UPGRADES", "ELITES", "SKINS" };
             var tabs = new UnityEngine.Object[tabNames.Length];
             for (int i = 0; i < tabNames.Length; i++)
             {
-                (Button tab, Text _) = PillButton("Tab" + tabNames[i], shopRoot, pill, new Vector2(0.5f, 1f),
-                    new Vector2((i - 1) * 330f, -350f), new Vector2(310f, 110f), grey, tabNames[i], 40);
+                (Button tab, TMP_Text _) = PillButton("Tab" + tabNames[i], shopRoot, pill, new Vector2(0.5f, 1f),
+                    new Vector2((i - 1) * 330f, -300f), new Vector2(310f, 110f), UiColors.Lilac, tabNames[i], 46);
                 // RT-6t.16: equal parts of the safe width (6% margins, 1.5% gaps), never a fixed width past the screen.
                 const float margin = 0.06f;
                 const float gap = 0.015f;
@@ -900,64 +914,68 @@ namespace Claybreak.Editor
                 tabs[i] = tab;
             }
 
+            Image loadoutCard = Card("LoadoutCard", shopRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -418f), new Vector2(900f, 80f));
+            TMP_Text loadout = Caption("Loadout", loadoutCard.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(840f, 64f), 36,
+                UiColors.Ink, true);
             int shopCount = Mathf.Max(catalog.Upgrades.Count, Mathf.Max(catalog.Units.Count, catalog.Skins.Count));
-            (RectTransform shopContent, UnityEngine.Object[] shopRows) = List(shopRoot, pill, "ShopList", -430f, 250f, shopCount);
-            (Button shopBack, Text _) = PillButton("Back", shopRoot, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
-                new Vector2(420f, 120f), grey, "BACK", 48);
+            (RectTransform shopContent, UnityEngine.Object[] shopRows, GameObject shopFade) =
+                List(shopRoot, pill, fade, "ShopList", -480f, 240f, shopCount);
+            Button shopBack = BackButton(shopRoot, pill);
 
             // Worlds: one row per catalog world, any number (RT-6 adds them as data).
-            RectTransform worldsRoot = MenuPage("Worlds", screensRect, 0.82f, out RectTransform worldsPage);
+            RectTransform worldsRoot = MenuPage("Worlds", screensRect, 0.5f, out RectTransform worldsPage);
             Heading(worldsRoot, "WORLDS");
-            Text worldsStars = Label("Stars", worldsRoot, new Vector2(0.5f, 1f), new Vector2(0f, -300f), 52, TextAnchor.MiddleCenter);
-            worldsStars.color = Gold;
-            (RectTransform worldsContent, UnityEngine.Object[] worldRows) =
-                List(worldsRoot, pill, "WorldList", -400f, 330f, catalog.Worlds.Count);
-            Text footer = Label("Footer", worldsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 255f), 40, TextAnchor.MiddleCenter);
-            footer.color = new Color(1f, 1f, 1f, 0.6f);
-            (Button worldsBack, Text _) = PillButton("Back", worldsRoot, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
-                new Vector2(420f, 120f), grey, "BACK", 48);
+            TMP_Text worldsStars = Caption("Stars", worldsRoot, new Vector2(0.5f, 1f), new Vector2(0f, -290f), new Vector2(900f, 80f), 56,
+                Color.white, false);
+            (RectTransform worldsContent, UnityEngine.Object[] worldRows, GameObject worldsFade) =
+                List(worldsRoot, pill, fade, "WorldList", -370f, 330f, catalog.Worlds.Count);
+            TMP_Text footer = Caption("Footer", worldsRoot, new Vector2(0.5f, 0f), new Vector2(0f, 260f), new Vector2(940f, 90f), 38,
+                Color.white, false);
+            footer.textWrappingMode = TextWrappingModes.Normal;
+            Button worldsBack = BackButton(worldsRoot, pill);
 
-            // Result: veil, one card, one big button (NEXT / AGAIN) and a small HOME.
-            RectTransform result = MenuPage("Result", screensRect, 0.6f, out RectTransform resultPage);
-            Image card = Img("Card", result, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 1060f), CardColor);
-            ClayUi.MakePill(card, pill, 140f);
+            // Result: veil, one light card, one big button (NEXT / AGAIN) and a small HOME; the rewarded offer under the card.
+            RectTransform result = MenuPage("Result", screensRect, 0.5f, out RectTransform resultPage);
+            Image card = Card("Card", result, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 1060f));
             RectTransform cardRect = card.rectTransform;
-            Text resultTitle = Label("Title", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -130f), 96, TextAnchor.MiddleCenter);
+            TMP_Text resultTitle = Caption("Title", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -130f), new Vector2(820f, 140f), 100,
+                UiColors.Coral, false);
             var stars = new UnityEngine.Object[3];
             for (int i = 0; i < 3; i++)
             {
                 Image starImage = Img("Star" + (i + 1), cardRect, star, new Vector2(0.5f, 1f), new Vector2((i - 1) * 190f, -290f - (i == 1 ? 20f : 0f)),
-                    new Vector2(i == 1 ? 190f : 160f, i == 1 ? 190f : 160f), Gold);
+                    new Vector2(i == 1 ? 190f : 160f, i == 1 ? 190f : 160f), UiColors.Gold);
                 stars[i] = starImage;
             }
 
-            Text resultDetail = Label("Detail", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -450f), 52, TextAnchor.MiddleCenter);
-            Text resultReward = Label("Reward", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -540f), 60, TextAnchor.MiddleCenter);
-            resultReward.color = Gold;
-            Text resultUnlock = Label("Unlock", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -670f), 44, TextAnchor.MiddleCenter);
-            resultUnlock.color = Orange;
-            resultUnlock.rectTransform.sizeDelta = new Vector2(820f, 140f);
-            (Button primary, Text primaryLabel) = PillButton("Primary", cardRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 150f),
-                new Vector2(600f, 170f), Orange, "NEXT", 80);
-            (Button homeButton, Text _) = PillButton("Home", cardRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 30f),
-                new Vector2(340f, 96f), grey, "HOME", 40);
-            // RT-7: the optional rewarded offer under the card, the gain written on it.
-            (Button resultAd, Text resultAdLabel) = PillButton("RewardedOffer", result, pill, new Vector2(0.5f, 0f), new Vector2(0f, 330f),
-                new Vector2(760f, 130f), new Color(0.3f, 0.55f, 0.3f), "WATCH AD", 44);
+            TMP_Text resultDetail = Caption("Detail", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -455f), new Vector2(820f, 80f), 50,
+                UiColors.Ink, true);
+            TMP_Text resultReward = Caption("Reward", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -545f), new Vector2(820f, 90f), 64,
+                UiColors.Ink, true);
+            TMP_Text resultUnlock = Caption("Unlock", cardRect, new Vector2(0.5f, 1f), new Vector2(0f, -675f), new Vector2(820f, 140f), 44,
+                UiColors.Coral, true);
+            resultUnlock.textWrappingMode = TextWrappingModes.Normal;
+            (Button primary, TMP_Text primaryLabel) = PillButton("Primary", cardRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 240f),
+                new Vector2(600f, 170f), UiColors.Primary, "NEXT", 84);
+            (Button homeButton, TMP_Text _) = PillButton("Home", cardRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 82f),
+                new Vector2(340f, 96f), UiColors.Cream, "HOME", 44, true);
+            (Button resultAd, TMP_Text resultAdLabel) = PillButton("RewardedOffer", result, pill, new Vector2(0.5f, 0f), new Vector2(0f, 330f),
+                new Vector2(760f, 130f), UiColors.Mint, "WATCH AD", 52);
 
-            // Continue offer: one card, what the ad gives, and NO THANKS as clear as the offer (GDD 7.1).
-            RectTransform continueRoot = MenuPage("Continue", screensRect, 0.6f, out RectTransform continuePage);
-            Image continueCard = Img("Card", continueRoot, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 760f), CardColor);
-            ClayUi.MakePill(continueCard, pill, 140f);
+            // Continue offer: one light card, what the ad gives, and NO THANKS as clear as the offer (GDD 7.1).
+            RectTransform continueRoot = MenuPage("Continue", screensRect, 0.5f, out RectTransform continuePage);
+            Image continueCard = Card("Card", continueRoot, pill, new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(900f, 760f));
             RectTransform continueRect = continueCard.rectTransform;
-            Text continueTitle = Label("Title", continueRect, new Vector2(0.5f, 1f), new Vector2(0f, -120f), 88, TextAnchor.MiddleCenter);
+            TMP_Text continueTitle = Caption("Title", continueRect, new Vector2(0.5f, 1f), new Vector2(0f, -120f), new Vector2(820f, 130f), 90,
+                UiColors.Coral, false);
             continueTitle.text = "ARMY LOST";
-            Text continueText = Label("Offer", continueRect, new Vector2(0.5f, 1f), new Vector2(0f, -290f), 48, TextAnchor.MiddleCenter);
-            continueText.rectTransform.sizeDelta = new Vector2(820f, 160f);
-            (Button continueAd, Text continueAdLabel) = PillButton("WatchAd", continueRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 230f),
-                new Vector2(640f, 150f), new Color(0.3f, 0.55f, 0.3f), "WATCH AD", 60);
-            (Button continueDecline, Text _) = PillButton("NoThanks", continueRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 80f),
-                new Vector2(480f, 110f), grey, "NO THANKS", 48);
+            TMP_Text continueText = Caption("Offer", continueRect, new Vector2(0.5f, 1f), new Vector2(0f, -290f), new Vector2(820f, 160f), 48,
+                UiColors.Ink, true);
+            continueText.textWrappingMode = TextWrappingModes.Normal;
+            (Button continueAd, TMP_Text continueAdLabel) = PillButton("WatchAd", continueRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 240f),
+                new Vector2(640f, 150f), UiColors.Mint, "WATCH AD", 60);
+            (Button continueDecline, TMP_Text _) = PillButton("NoThanks", continueRect, pill, new Vector2(0.5f, 0f), new Vector2(0f, 90f),
+                new Vector2(480f, 110f), UiColors.Cream, "NO THANKS", 48, true);
 
             foreach (RectTransform screen in new[] { homePage, settingsPage, shopPage, worldsPage, resultPage, continuePage })
             {
@@ -976,6 +994,8 @@ namespace Claybreak.Editor
             SetRef(screens, "loadoutText", loadout);
             SetArray(screens, "levelDots", dots);
             SetRef(screens, "levelMeterText", levelMeterText);
+            SetRef(screens, "dotIcon", pill);
+            SetRef(screens, "bossIcon", crown);
             SetRef(screens, "playButton", play);
             SetRef(screens, "playLabel", playLabel);
             SetRef(screens, "shopButton", shop);
@@ -996,11 +1016,13 @@ namespace Claybreak.Editor
             SetRef(screens, "shopCoins", shopCoins);
             SetArray(screens, "shopTabs", tabs);
             SetRef(screens, "shopContent", shopContent);
+            SetRef(screens, "shopFade", shopFade);
             SetArray(screens, "shopRows", shopRows);
             SetRef(screens, "shopBack", shopBack);
             SetRef(screens, "worlds", worldsPage.gameObject);
             SetRef(screens, "worldsStars", worldsStars);
             SetRef(screens, "worldsContent", worldsContent);
+            SetRef(screens, "worldsFade", worldsFade);
             SetArray(screens, "worldRows", worldRows);
             SetRef(screens, "worldsFooter", footer);
             SetRef(screens, "worldsBack", worldsBack);
@@ -1024,43 +1046,66 @@ namespace Claybreak.Editor
             return screens;
         }
 
-        // A full-screen menu page over a dark veil (the page, shown and hidden as a whole); returns its content
+        // A full-screen menu page over a light ink veil (the page, shown and hidden as a whole); returns its content
         // area, fitted to the phone's safe area (RT-8).
         private static RectTransform MenuPage(string name, RectTransform parent, float veilAlpha, out RectTransform page)
         {
             page = Stretch(name, parent);
             Image veil = page.gameObject.AddComponent<Image>();
-            veil.color = new Color(0.06f, 0.04f, 0.05f, veilAlpha);
+            veil.color = UiColors.WithAlpha(UiColors.Veil, veilAlpha);
             RectTransform content = Stretch("Safe", page);
             content.gameObject.AddComponent<SafeAreaFitter>();
             return content;
         }
 
-        private static Text Coins(RectTransform screen, Sprite pill)
+        // The coins capsule, top right: a light pill with the coin icon and the amount.
+        private static TMP_Text Coins(RectTransform screen, Sprite pill)
         {
-            Image coin = Img("CoinIcon", screen, pill, new Vector2(1f, 1f), new Vector2(-215f, -150f), new Vector2(46f, 46f), Gold);
-            coin.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            Text coins = Label("Coins", screen, new Vector2(1f, 1f), new Vector2(-60f, -150f), 52, TextAnchor.MiddleRight);
-            coins.rectTransform.sizeDelta = new Vector2(170f, 90f);
-            coins.rectTransform.pivot = new Vector2(1f, 0.5f);
+            Image capsule = Card("CoinsCapsule", screen, pill, new Vector2(1f, 1f), new Vector2(-170f, -110f), new Vector2(280f, 96f));
+            TMP_Text coins = Caption("Coins", capsule.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(240f, 80f), 46,
+                UiColors.Ink, true);
+            coins.text = UiIcons.Coins(0);
             return coins;
         }
 
         private static void Heading(RectTransform screen, string caption)
         {
-            Text heading = Label("Heading", screen, new Vector2(0.5f, 1f), new Vector2(0f, -150f), 96, TextAnchor.MiddleCenter);
+            TMP_Text heading = Caption("Heading", screen, new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(560f, 140f), 100,
+                UiColors.Primary, false);
             heading.text = caption;
-            heading.color = Orange;
+        }
+
+        // BACK at the bottom (thumb reach), a light button with ink text (cancel / back, plan 3.1).
+        private static Button BackButton(RectTransform screen, Sprite pill)
+        {
+            (Button back, TMP_Text _) = PillButton("Back", screen, pill, new Vector2(0.5f, 0f), new Vector2(0f, 120f),
+                new Vector2(420f, 120f), UiColors.Cream, "BACK", 50, true);
+            return back;
+        }
+
+        // A light card: cream face, pink border, ink slab.
+        private static Image Card(string name, Transform parent, Sprite pill, Vector2 anchor, Vector2 position, Vector2 size)
+        {
+            Image card = Img(name, parent, pill, anchor, position, size, UiColors.Cream);
+            ClayUi.MakePill(card, pill, Mathf.Min(140f, size.y));
+            // The slab first: ClayUi.AddSlab reuses the first Shadow it finds, and Outline is one.
+            ClayUi.AddSlab(card, 8f);
+            card.GetComponent<Shadow>().effectColor = UiColors.WithAlpha(UiColors.Ink, 0.35f);
+            Outline border = card.gameObject.AddComponent<Outline>();
+            border.effectColor = UiColors.CardBorder;
+            border.effectDistance = new Vector2(5f, -5f);
+            return card;
         }
 
         // A vertical scroll list between <paramref name="top"/> (from the top) and <paramref name="bottom"/>
-        // (from the bottom), with <paramref name="rows"/> preallocated rows at RowStep apart.
-        private static (RectTransform, UnityEngine.Object[]) List(RectTransform screen, Sprite pill, string name, float top,
+        // (from the bottom), with <paramref name="rows"/> preallocated rows at RowStep apart and a fade at its foot (the
+        // screens show it only when the rows overflow the list).
+        private static (RectTransform, UnityEngine.Object[], GameObject) List(RectTransform screen, Sprite pill, Sprite fade, string name, float top,
             float bottom, int rows)
         {
             RectTransform viewport = Stretch(name, screen);
-            viewport.offsetMin = new Vector2(70f, bottom);
-            viewport.offsetMax = new Vector2(-70f, top);
+            viewport.offsetMin = new Vector2(60f, bottom);
+            viewport.offsetMax = new Vector2(-60f, top);
             Image hit = viewport.gameObject.AddComponent<Image>();
             hit.color = new Color(0f, 0f, 0f, 0.001f);
             viewport.gameObject.AddComponent<RectMask2D>();
@@ -1084,34 +1129,37 @@ namespace Claybreak.Editor
                 created[i] = ListRow(content, pill, i);
             }
 
-            return (content, created);
+            // Over the rows, inside the mask, never catching a tap.
+            Image foot = Img("Fade", viewport, fade, new Vector2(0.5f, 0f), Vector2.zero, Vector2.zero, UiColors.WithAlpha(UiColors.Veil, 0.7f));
+            RectTransform footRect = foot.rectTransform;
+            footRect.anchorMin = new Vector2(0f, 0f);
+            footRect.anchorMax = new Vector2(1f, 0f);
+            footRect.pivot = new Vector2(0.5f, 0f);
+            footRect.sizeDelta = new Vector2(0f, 80f);
+            return (content, created, foot.gameObject);
         }
 
         private static ClaybreakListRow ListRow(RectTransform content, Sprite pill, int index)
         {
-            const float height = 210f;
-            Image card = Img("Row" + (index + 1), content, pill, new Vector2(0.5f, 1f),
-                new Vector2(0f, -index * RowStep - height * 0.5f), new Vector2(930f, height), CardColor);
-            ClayUi.MakePill(card, pill, 100f);
-            ClayUi.AddSlab(card, 8f);
+            const float height = 230f;
+            Image card = Card("Row" + (index + 1), content, pill, new Vector2(0.5f, 1f),
+                new Vector2(0f, -index * RowStep - height * 0.5f), new Vector2(940f, height));
             RectTransform rect = card.rectTransform;
-            // RT-6t.16: the row is as wide as the list (no fixed 930 cut by the list's mask on a narrow screen).
+            // RT-6t.16: the row is as wide as the list (no fixed width cut by the list's mask on a narrow screen).
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
-            rect.sizeDelta = new Vector2(0f, height);
-            Text title = Label("Title", rect, new Vector2(0f, 1f), new Vector2(50f, -26f), 44, TextAnchor.UpperLeft);
-            title.color = Orange;
-            Text detail = Label("Detail", rect, new Vector2(0f, 1f), new Vector2(50f, -84f), 30, TextAnchor.UpperLeft);
-            // Between the left edge and the swatch, whatever the row's width.
-            RectTransform detailRect = detail.rectTransform;
-            detailRect.anchorMin = new Vector2(0f, 1f);
-            detailRect.anchorMax = new Vector2(1f, 1f);
-            detailRect.offsetMin = new Vector2(50f, -84f - 120f);
-            detailRect.offsetMax = new Vector2(-350f, -84f);
-            detail.horizontalOverflow = HorizontalWrapMode.Wrap;
-            Image swatch = Img("Swatch", rect, pill, new Vector2(1f, 1f), new Vector2(-310f, -48f), new Vector2(54f, 54f), Color.white);
-            (Button button, Text label) = PillButton("Action", rect, pill, new Vector2(1f, 0.5f), new Vector2(-140f, -10f),
-                new Vector2(220f, 110f), Orange, "BUY", 40);
+            rect.sizeDelta = new Vector2(-10f, height);
+            // Title and detail between the left edge and the swatch, whatever the row's width; the button always inside.
+            TMP_Text title = Caption("Title", rect, new Vector2(0f, 1f), Vector2.zero, Vector2.zero, 44, UiColors.Ink, true);
+            title.alignment = TextAlignmentOptions.Left;
+            Span(title.rectTransform, 44f, -340f, -18f, 64f);
+            TMP_Text detail = Caption("Detail", rect, new Vector2(0f, 1f), Vector2.zero, Vector2.zero, 33, UiColors.WithAlpha(UiColors.Ink, 0.78f), true);
+            detail.alignment = TextAlignmentOptions.TopLeft;
+            detail.textWrappingMode = TextWrappingModes.Normal;
+            Span(detail.rectTransform, 44f, -340f, -84f, 132f);
+            Image swatch = Img("Swatch", rect, pill, new Vector2(1f, 1f), new Vector2(-305f, -52f), new Vector2(56f, 56f), Color.white);
+            (Button button, TMP_Text label) = PillButton("Action", rect, pill, new Vector2(1f, 0.5f), new Vector2(-145f, 0f),
+                new Vector2(240f, 120f), UiColors.Primary, "BUY", 42);
             ClaybreakListRow row = card.gameObject.AddComponent<ClaybreakListRow>();
             SetRef(row, "title", title);
             SetRef(row, "detail", detail);
@@ -1121,8 +1169,22 @@ namespace Claybreak.Editor
             return row;
         }
 
-        private static (Button, Text) PillButton(string name, RectTransform parent, Sprite pill, Vector2 anchor, Vector2 position,
-            Vector2 size, Color color, string caption, int fontSize)
+        // A label spanning its parent's width from <paramref name="left"/> to <paramref name="right"/> (negative = from the
+        // right edge), its top <paramref name="top"/> below the parent's top, <paramref name="height"/> tall.
+        private static void Span(RectTransform rect, float left, float right, float top, float height)
+        {
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.offsetMin = new Vector2(left, top - height);
+            rect.offsetMax = new Vector2(right, top);
+        }
+
+        // A pill button: a vivid face with the kit's slab and press (no gloss, plan 3.1), its label filling the face (it
+        // shrinks to fit a long caption, never past the face). A disabled button keeps its color (the screens color it:
+        // unavailable, owned), so a price stays readable.
+        private static (Button, TMP_Text) PillButton(string name, RectTransform parent, Sprite pill, Vector2 anchor, Vector2 position,
+            Vector2 size, Color color, string caption, int fontSize, bool inkText = false)
         {
             float slab = Mathf.Clamp(size.y * 0.07f, 6f, 12f);
             var buttonObject = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
@@ -1136,10 +1198,33 @@ namespace Claybreak.Editor
             face.color = color;
             ClayUi.MakePill(face, pill, size.y);
             ClayUi.AddSlab(face, slab);
+            if (inkText)
+            {
+                // A light button (cancel, back, the gift seal) gets the card border, so it reads as a button on a light card
+                // too. After the slab: ClayUi finds the slab as the first Shadow.
+                Outline border = buttonObject.AddComponent<Outline>();
+                border.effectColor = UiColors.CardBorder;
+                border.effectDistance = new Vector2(4f, -4f);
+            }
+
             Button button = buttonObject.GetComponent<Button>();
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.white;
+            colors.selectedColor = Color.white;
+            colors.pressedColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+            colors.disabledColor = Color.white;
+            button.colors = colors;
             ClayUi.AddPress(button, slab);
             ClayUi.ExpandTouchTarget(face, size.y, 120f);
-            Text label = Label("Label", rect, new Vector2(0.5f, 0.5f), Vector2.zero, fontSize, TextAnchor.MiddleCenter);
+            TMP_Text label = Caption("Label", rect, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, fontSize,
+                inkText ? UiColors.Ink : Color.white, inkText);
+            RectTransform labelRect = label.rectTransform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            float pad = Mathf.Max(20f, size.y * 0.22f);
+            labelRect.offsetMin = new Vector2(pad, 6f);
+            labelRect.offsetMax = new Vector2(-pad, -6f);
             label.text = caption;
             return (button, label);
         }
@@ -1155,15 +1240,13 @@ namespace Claybreak.Editor
         }
 
         // RT-6t.16 (plan 3.4): the home level meter, a compact capsule at most LevelMeterShare of the safe width, centered,
-        // with "LEVEL x/n" over a row of small dots. The dots sit on anchors spread over the row (ClaybreakScreens spaces
-        // them by the world's level count), so the spacing follows the width, never a fixed step.
-        private static (UnityEngine.Object[], Text) LevelMeter(RectTransform home, Sprite pill)
+        // with "LEVEL x/n" over a row of small dots (RT-6t.17: light, ink text, the boss level a crown). The dots sit on
+        // anchors spread over the row (ClaybreakScreens spaces them by the world's level count), never a fixed step.
+        private static (UnityEngine.Object[], TMP_Text) LevelMeter(RectTransform home, Sprite pill)
         {
-            const float height = 120f;
-            const float top = -600f;
-            Image capsule = Img("LevelMeter", home, pill, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(0f, height),
-                new Color(0.1f, 0.08f, 0.08f, 0.7f));
-            ClayUi.MakePill(capsule, pill, height);
+            const float height = 130f;
+            const float top = -700f;
+            Image capsule = Card("LevelMeter", home, pill, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(0f, height));
             RectTransform rect = capsule.rectTransform;
             float side = (1f - LevelMeterShare) * 0.5f;
             rect.anchorMin = new Vector2(side, 1f);
@@ -1171,22 +1254,49 @@ namespace Claybreak.Editor
             rect.pivot = new Vector2(0.5f, 1f);
             rect.anchoredPosition = new Vector2(0f, top);
             rect.sizeDelta = new Vector2(0f, height);
-            Text label = Label("Label", rect, new Vector2(0.5f, 1f), new Vector2(0f, -12f), 36, TextAnchor.UpperCenter);
-            label.rectTransform.sizeDelta = new Vector2(0f, 50f);
-            label.rectTransform.anchorMin = new Vector2(0f, 1f);
-            label.rectTransform.anchorMax = new Vector2(1f, 1f);
+            TMP_Text label = Caption("Label", rect, new Vector2(0.5f, 1f), Vector2.zero, Vector2.zero, 36, UiColors.Ink, true);
+            Span(label.rectTransform, 40f, -40f, -10f, 50f);
             label.text = ClaybreakScreens.LevelMeterLine(0, LevelDots);
             RectTransform row = Stretch("Dots", rect);
-            row.offsetMin = new Vector2(height * 0.4f, 12f);
-            row.offsetMax = new Vector2(-height * 0.4f, -62f);
+            row.offsetMin = new Vector2(height * 0.4f, 14f);
+            row.offsetMax = new Vector2(-height * 0.4f, -66f);
             var dots = new UnityEngine.Object[LevelDots];
             for (int i = 0; i < LevelDots; i++)
             {
                 float x = (i + 0.5f) / LevelDots;
-                dots[i] = Img("Dot" + (i + 1), row, pill, new Vector2(x, 0.5f), Vector2.zero, new Vector2(24f, 24f), Color.white);
+                dots[i] = Img("Dot" + (i + 1), row, pill, new Vector2(x, 0.5f), Vector2.zero, new Vector2(26f, 26f), Color.white);
             }
 
             return (dots, label);
+        }
+
+        // RT-6t.17: a menu label, TextMeshPro with the static Baloo 2 atlas and the game's inline icons. On a colored face
+        // or the veil: white (or tinted) with the ink outline; on a light card: ink, no outline. It shrinks to fit its box.
+        private static TextMeshProUGUI Caption(string name, Transform parent, Vector2 anchor, Vector2 position, Vector2 size,
+            float fontSize, Color color, bool onCard)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+            var text = go.GetComponent<TextMeshProUGUI>();
+            text.font = GameFonts.Sdf();
+            text.fontSharedMaterial = GameFonts.Preset(onCard ? GameFonts.InkPath : GameFonts.UiPath);
+            text.spriteAsset = GameFonts.Icons();
+            text.fontSize = fontSize;
+            text.enableAutoSizing = true;
+            text.fontSizeMax = fontSize;
+            text.fontSizeMin = Mathf.Max(18f, Mathf.Round(fontSize * 0.55f));
+            text.alignment = TextAlignmentOptions.Center;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.overflowMode = TextOverflowModes.Overflow;
+            text.color = color;
+            text.raycastTarget = false;
+            text.text = string.Empty;
+            return text;
         }
 
         private static RectTransform Stretch(string name, Transform parent)
@@ -1309,6 +1419,42 @@ namespace Claybreak.Editor
                 }
 
                 return inside / 16f;
+            }, Vector4.zero);
+        }
+
+        // A 128 px crown (three points over a band), anti-aliased by 4x4 supersampling; white, tinted by the meter.
+        private static void CreateCrownSprite()
+        {
+            var points = new[]
+            {
+                new Vector2(18f, 22f), new Vector2(110f, 22f), new Vector2(120f, 98f), new Vector2(88f, 64f),
+                new Vector2(64f, 112f), new Vector2(40f, 64f), new Vector2(8f, 98f)
+            };
+            WriteSprite(CrownTexturePath, 128, (x, y, size) =>
+            {
+                int inside = 0;
+                for (int sy = 0; sy < 4; sy++)
+                {
+                    for (int sx = 0; sx < 4; sx++)
+                    {
+                        if (Inside(points, new Vector2(x + (sx + 0.5f) / 4f, y + (sy + 0.5f) / 4f)))
+                        {
+                            inside++;
+                        }
+                    }
+                }
+
+                return inside / 16f;
+            }, Vector4.zero);
+        }
+
+        // A 64 px vertical ramp: opaque at the bottom row, clear at the top (eased, so the fade starts soft).
+        private static void CreateFadeSprite()
+        {
+            WriteSprite(FadeTexturePath, 64, (x, y, size) =>
+            {
+                float t = 1f - (y + 0.5f) / size;
+                return t * t;
             }, Vector4.zero);
         }
 

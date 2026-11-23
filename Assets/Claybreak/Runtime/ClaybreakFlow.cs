@@ -481,7 +481,7 @@ namespace Claybreak
 
             bool offer = !deviceGate && monetization.DoubleCoins && !resultBonusTaken && !leavingResult && lastOutcome.Coins > 0
                 && adGateway.RewardedReady;
-            screens.SetResultAd(offer ? $"WATCH AD:  x2 COINS  +{lastOutcome.Coins} ¢" : null);
+            screens.SetResultAd(offer ? $"WATCH AD:  x2 COINS  +{UiIcons.Coins(lastOutcome.Coins)}" : null);
             if (offer && !resultAdOffered)
             {
                 resultAdOffered = true;
@@ -512,7 +512,7 @@ namespace Claybreak
                 progression.GrantBonusCoins(lastOutcome.Coins);
                 WriteSave();
                 hud.SetCoins(progression.Save.coins);
-                screens.SetResultReward($"+{lastOutcome.Coins * 2} ¢  (x2)");
+                screens.SetResultReward($"+{UiIcons.Coins(lastOutcome.Coins * 2)}  (x2)");
                 GameAudio.Play(GameSound.AdReward);
                 Debug.Log($"[Claybreak] Rewarded: coins doubled (+{lastOutcome.Coins}), total {progression.Save.coins}.", this);
             });

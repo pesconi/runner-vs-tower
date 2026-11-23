@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.TestTools;
@@ -17,6 +18,8 @@ namespace Claybreak.Tests
     /// inside the screen, and a button in a scroll list inside the list's sides (the list's mask cuts the rest). With a GPU
     /// and <c>-screenFitCaptureDir &lt;folder&gt;</c> (batchmode without -nographics) it also saves one sheet per screen
     /// with the four shapes side by side (<c>telas-&lt;screen&gt;.png</c>, half size), plus the run HUD.
+    /// RT-6t.17: every menu label is TextMeshPro drawn from the static atlas (no glyph missing), a button's caption fits
+    /// its face, and the home level meter marks the boss level with the crown.
     /// </summary>
     public sealed class ScreenFitTests
     {
@@ -82,6 +85,11 @@ namespace Claybreak.Tests
                         Canvas.ForceUpdateCanvases();
                         yield return null;
                         CheckButtons(canvasRect, $"{ShapeNames[shape]} {Screens[s]}", problems);
+                        CheckTexts(canvasRect, $"{ShapeNames[shape]} {Screens[s]}", problems);
+                        if (Screens[s] == "home")
+                        {
+                            CheckBossCrown(flow, problems);
+                        }
                         if (capture)
                         {
                             if (!sheets.TryGetValue(Screens[s], out Texture2D sheet))
@@ -148,11 +156,11 @@ namespace Claybreak.Tests
                     screens.ShowWorlds(progress);
                     break;
                 case "resultado-vitoria":
-                    screens.ShowResult(new LevelOutcome(true, 3, 120, null, false, null), "ARMY 240  ·  3 ★", false);
+                    screens.ShowResult(new LevelOutcome(true, 3, 120, null, false, null), "240 left standing", false);
                     screens.SetResultAd("WATCH AD  x2 COINS");
                     break;
                 case "resultado-derrota":
-                    screens.ShowResult(new LevelOutcome(false, 0, 20, null, false, null), "THE TOWER HELD", false);
+                    screens.ShowResult(new LevelOutcome(false, 0, 20, null, false, null), "the tower holds", false);
                     break;
                 case "continuar":
                     screens.ShowContinue(40);
@@ -200,6 +208,59 @@ namespace Claybreak.Tests
                     || box.yMax > screen.yMax + 0.5f)
                 {
                     problems.Add($"{where}: {HierarchyPath(button.transform)} {box} outside the screen {screen}");
+                }
+            }
+        }
+
+        // Every active TMP label: each character drawn from its font (not the missing-glyph box); a button's label inside its face.
+        private static void CheckTexts(RectTransform canvasRect, string where, List<string> problems)
+        {
+            foreach (TMP_Text text in canvasRect.GetComponentsInChildren<TMP_Text>(false))
+            {
+                text.ForceMeshUpdate();
+                TMP_TextInfo info = text.textInfo;
+                for (int i = 0; i < info.characterCount; i++)
+                {
+                    TMP_CharacterInfo character = info.characterInfo[i];
+                    if (character.elementType != TMP_TextElementType.Character || char.IsWhiteSpace(character.character))
+                    {
+                        continue;
+                    }
+
+                    if (!text.font.characterLookupTable.ContainsKey(character.character))
+                    {
+                        problems.Add($"{where}: {HierarchyPath(text.transform)} cannot draw U+{(int)character.character:X4} in \"{text.text}\"");
+                        break;
+                    }
+                }
+
+                Button button = text.GetComponentInParent<Button>();
+                if (button == null || text.transform.parent != button.transform || info.characterCount == 0)
+                {
+                    continue;
+                }
+
+                Rect face = ((RectTransform)button.transform).rect;
+                Bounds drawn = text.textBounds;
+                if (drawn.size.x > face.width + 1f || drawn.size.y > face.height + 1f)
+                {
+                    problems.Add($"{where}: {HierarchyPath(text.transform)} \"{text.text}\" {drawn.size.x:0}x{drawn.size.y:0} past its button {face.width:0}x{face.height:0}");
+                }
+            }
+        }
+
+        // The last level of the shown world is the boss: its meter mark is the crown, and the other used marks are dots.
+        private static void CheckBossCrown(ClaybreakFlow flow, List<string> problems)
+        {
+            int count = flow.Progress.World.LevelCount;
+            Transform dots = GameObject.Find("Ui/Screens/Home/Safe/LevelMeter/Dots").transform;
+            for (int i = 0; i < count && i < dots.childCount; i++)
+            {
+                Sprite sprite = dots.GetChild(i).GetComponent<Image>().sprite;
+                bool crown = sprite != null && sprite.name == "Crown";
+                if (crown != (i == count - 1))
+                {
+                    problems.Add($"home: level mark {i + 1} of {count} is {(sprite == null ? "empty" : sprite.name)}");
                 }
             }
         }

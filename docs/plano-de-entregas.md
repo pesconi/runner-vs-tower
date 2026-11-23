@@ -36,7 +36,7 @@ lançamento jun/2027.
 | RT-6t.15 Multidão mais rápida na corrida (+30% constante, pedido do usuário em 2026-11-23) — concluída em 2026-11-23 (`RunPace`; janela de reação verificada; loja em 49 min); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou boa") | — | — | antes da RT-9 |
 | RT-6t.16 Correções rápidas: tronco de espinhos que anda, mostrador de fase compacto, loja e home sem corte em telas estreitas, jogo sem o brilho branco — concluída em 2026-11-23 (capturas em 4 proporções em `docs/art/rt6t16/`); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
 | K.14 (studiokit) Tirar o brilho branco dos botões do kit (`ClayUi.AddGloss`), versão 0.8.0, chamadas mortas do Wild Pack fora — **planejada**; depois da 6t.16, em paralelo com as seguintes | — | — | antes da RT-9 |
-| RT-6t.17 Telas novas no estilo toon pastel (botões vivos, Baloo 2, loja legível de 16:9 a 21:9) — **planejada** | — | — | antes da RT-9 |
+| RT-6t.17 Telas novas no estilo toon pastel (botões vivos, Baloo 2, loja legível de 16:9 a 21:9) — concluída em 2026-11-23 (capturas `telas-*.png` nas 4 proporções em `docs/art/rt6t17/`); **aceite pendente:** gate 3× no mundo 4 e APK no OPPO (o celular estava desconectado do PC) e o olhar do usuário | — | — | antes da RT-9 |
 | RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — **planejada** | — | — | antes da RT-9 |
 | RT-6t.19 Obstáculos nas 40 fases e economia recalculada — **planejada** | — | — | antes da RT-9 |
 | RT-6t.20 Formas compradas na loja (save v5) — **planejada**; espera as fichas D31 e D32 | — | — | antes da RT-9 |
@@ -644,6 +644,30 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   21:9 (`ScreenFitTests`, que também grava `telas-*.png`). Sem brilho branco nos botões (o validador proíbe `ClayGloss`).
   Testes: EditMode 336/336; PlayMode 40/40 sem falha (26 passam; 14 são capturas que só rodam com GPU, rodadas à parte: 3/3 e 2/2). Decisões T-RT6t16-1..7. A K.14 (kit) fica liberada.
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.16`).
+
+## RT-6t.17 — Telas novas no estilo toon pastel
+
+- **Origem:** pedido do usuário em 2026-11-23 ("layout da home e menus extremamente primitivos, no shopping tudo cortado,
+  botões com cores mais vivas e sem o retângulo branco"); plano em [`plano-telas-obstaculos-loja.md`](plano-telas-obstaculos-loja.md),
+  seções 3.1 e 4.
+- **Escopo:** home, loja (3 abas), mundos, ajustes, resultado (vitória e derrota) e continuar no estilo toon pastel:
+  botões vivos das paletas sem brilho, texto TMP Baloo 2 com contorno, cartões claros, hierarquia da home, loja legível
+  de 16:9 a 21:9, coroa no ponto do chefe do mostrador, caracteres novos no atlas estático. A tela de formas segue como
+  hoje (a compra de formas é a RT-6t.20). Não existe tela de pausa no jogo (T-RT6t17-8).
+- **Depende de:** RT-6t.16.
+- **Aceite:** validação completa verde; capturas de todas as telas nas 4 proporções; teste de botões (e textos) dentro da
+  tela; gate 3× uma vez no fim, no mundo 4; APK no OPPO; olhar do usuário.
+- **Status: concluída em 2026-11-23; aceite pendente.** Botões laranja/menta/céu/lilás com placa escura e sem brilho;
+  todo rótulo de menu em TextMeshPro Baloo 2 (branco com contorno tinta sobre botão, tinta sobre cartão creme); estrela e
+  moeda como ícones dentro do texto (a Baloo 2 não tem "★"). Home: ajustes e moedas no alto, nome, cartão do mundo com
+  estrelas, mostrador com coroa no chefe, e embaixo PLAY grande, SHOP e WORLDS, com forma e presente como selos pequenos.
+  Loja: cartão com elites e bônus sobre a lista, linhas creme com preço e ícone de moeda, indisponível em cinza claro com
+  o preço legível, possuído em menta, degradê no pé só quando a lista rola. `ScreenFitTests` também reprova glifo fora
+  do atlas e legenda maior que o botão. Testes: EditMode 514/514; PlayMode 40/40 sem falha (26 passam, 14 capturas com
+  GPU; `ScreenFitTests` com GPU 1/1). APKs e AAB gerados com o kit no último commit (`465881b`), porque o `studiokit`
+  tinha código não commitado de outra sessão que não compilava (T-RT6t17-9). Gate 3× e instalação no OPPO pendentes: o
+  celular não estava conectado ao PC. Decisões T-RT6t17-1..9.
+- Histórico: entregue em 2026-11-23 (`Stage RT.6t.17`).
 
 ## RT-6t.16 a RT-6t.20 e K.14 — Telas, obstáculos, formas na loja e mostrador (planejadas)
 

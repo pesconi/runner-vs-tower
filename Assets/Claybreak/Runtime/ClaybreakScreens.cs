@@ -1,5 +1,7 @@
 using System;
 using JungleDegree.StudioKit.Core;
+using JungleDegree.StudioKit.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,88 +26,94 @@ namespace Claybreak
     {
         [Header("Home")]
         [SerializeField] private GameObject home;
-        [SerializeField] private Text homeCoins;
-        [SerializeField] private Text worldText;
-        [SerializeField] private Text starsText;
-        [SerializeField] private Text loadoutText;
+        [SerializeField] private TMP_Text homeCoins;
+        [SerializeField] private TMP_Text worldText;
+        [SerializeField] private TMP_Text starsText;
+        [SerializeField] private TMP_Text loadoutText;
         [SerializeField] private Image[] levelDots = new Image[0];
         [Tooltip("RT-6t.16: the level meter's caption (LEVEL x/n) over the dots.")]
-        [SerializeField] private Text levelMeterText;
+        [SerializeField] private TMP_Text levelMeterText;
         [SerializeField] private Button playButton;
-        [SerializeField] private Text playLabel;
+        [SerializeField] private TMP_Text playLabel;
         [SerializeField] private Button shopButton;
         [SerializeField] private GameObject shopBadge;
         [SerializeField] private Button worldsButton;
         [Tooltip("RT-6t.6b: the crowd shape picker (one button that walks through the catalog's shapes).")]
         [SerializeField] private Button shapeButton;
-        [SerializeField] private Text shapeLabel;
+        [SerializeField] private TMP_Text shapeLabel;
         [SerializeField] private Button soundButton;
-        [SerializeField] private Text soundLabel;
+        [SerializeField] private TMP_Text soundLabel;
         [SerializeField] private Button musicButton;
-        [SerializeField] private Text musicLabel;
+        [SerializeField] private TMP_Text musicLabel;
         [SerializeField] private Button vibrationButton;
-        [SerializeField] private Text vibrationLabel;
+        [SerializeField] private TMP_Text vibrationLabel;
         [SerializeField] private Button dailyButton;
-        [SerializeField] private Text dailyLabel;
+        [SerializeField] private TMP_Text dailyLabel;
         [SerializeField] private Button privacyButton;
         [Header("Settings (RT-8)")]
         [SerializeField] private Button settingsButton;
         [SerializeField] private GameObject settings;
         [SerializeField] private Button policyButton;
-        [SerializeField] private Text settingsNote;
+        [SerializeField] private TMP_Text settingsNote;
         [SerializeField] private Button settingsBack;
 
         [Header("Shop")]
         [SerializeField] private GameObject shop;
-        [SerializeField] private Text shopCoins;
+        [SerializeField] private TMP_Text shopCoins;
         [SerializeField] private Button[] shopTabs = new Button[3];
         [SerializeField] private RectTransform shopContent;
+        [Tooltip("RT-6t.17: the fade at the list's foot, shown only when the rows overflow the list.")]
+        [SerializeField] private GameObject shopFade;
         [SerializeField] private ClaybreakListRow[] shopRows = new ClaybreakListRow[0];
         [SerializeField] private Button shopBack;
 
         [Header("Worlds")]
         [SerializeField] private GameObject worlds;
-        [SerializeField] private Text worldsStars;
+        [SerializeField] private TMP_Text worldsStars;
         [SerializeField] private RectTransform worldsContent;
+        [SerializeField] private GameObject worldsFade;
         [SerializeField] private ClaybreakListRow[] worldRows = new ClaybreakListRow[0];
-        [SerializeField] private Text worldsFooter;
+        [SerializeField] private TMP_Text worldsFooter;
         [SerializeField] private Button worldsBack;
 
         [Header("Result")]
         [SerializeField] private GameObject result;
-        [SerializeField] private Text resultTitle;
+        [SerializeField] private TMP_Text resultTitle;
         [SerializeField] private Image[] stars = new Image[3];
-        [SerializeField] private Text resultDetail;
-        [SerializeField] private Text resultReward;
-        [SerializeField] private Text resultUnlock;
+        [SerializeField] private TMP_Text resultDetail;
+        [SerializeField] private TMP_Text resultReward;
+        [SerializeField] private TMP_Text resultUnlock;
         [SerializeField] private Button primaryButton;
-        [SerializeField] private Text primaryLabel;
+        [SerializeField] private TMP_Text primaryLabel;
         [SerializeField] private Button homeButton;
         [Tooltip("Optional rewarded offer under the result card (gain written on it; hidden when no ad is loaded).")]
         [SerializeField] private Button resultAdButton;
-        [SerializeField] private Text resultAdLabel;
+        [SerializeField] private TMP_Text resultAdLabel;
 
         [Header("Continue offer (rewarded, once per level, with a clear NO THANKS)")]
         [SerializeField] private GameObject continueOffer;
-        [SerializeField] private Text continueText;
+        [SerializeField] private TMP_Text continueText;
         [SerializeField] private Button continueAdButton;
-        [SerializeField] private Text continueAdLabel;
+        [SerializeField] private TMP_Text continueAdLabel;
         [SerializeField] private Button continueDecline;
 
         [Header("Layout and colors")]
         [Tooltip("Vertical distance between two list rows (the builder places row i at -i * rowStep).")]
         [SerializeField, Min(1f)] private float rowStep = 230f;
-        [SerializeField] private Color dotDone = new Color(0.95f, 0.55f, 0.18f);
-        [SerializeField] private Color dotNext = Color.white;
-        [SerializeField] private Color dotLocked = new Color(1f, 1f, 1f, 0.22f);
-        [SerializeField] private Color dotBoss = new Color(0.86f, 0.2f, 0.16f);
-        [SerializeField] private Color starOn = new Color(1f, 0.8f, 0.25f);
-        [SerializeField] private Color starOff = new Color(1f, 1f, 1f, 0.18f);
-        [SerializeField] private Color buttonEnabled = new Color(0.95f, 0.55f, 0.18f);
-        [SerializeField] private Color buttonOwned = new Color(0.32f, 0.55f, 0.3f);
-        [SerializeField] private Color buttonDisabled = new Color(0.4f, 0.36f, 0.36f);
-        [SerializeField] private Color tabOn = new Color(0.95f, 0.55f, 0.18f);
-        [SerializeField] private Color tabOff = new Color(0.3f, 0.26f, 0.26f);
+        [SerializeField] private Color dotDone = UiColors.Primary;
+        [SerializeField] private Color dotNext = UiColors.Pink;
+        [SerializeField] private Color dotLocked = UiColors.WithAlpha(UiColors.Ink, 0.2f);
+        [SerializeField] private Color dotBoss = UiColors.Coral;
+        [Tooltip("RT-6t.17: the boss level's mark on the level meter (a crown instead of a dot).")]
+        [SerializeField] private Sprite bossIcon;
+        [SerializeField] private Sprite dotIcon;
+        [SerializeField] private Color starOn = UiColors.Gold;
+        [SerializeField] private Color starOff = UiColors.WithAlpha(UiColors.Ink, 0.15f);
+        [SerializeField] private Color buttonEnabled = UiColors.Primary;
+        [SerializeField] private Color buttonOwned = UiColors.Mint;
+        [SerializeField] private Color buttonDisabled = UiColors.Unavailable;
+        [SerializeField] private Color tabOn = UiColors.Coral;
+        [SerializeField] private Color tabOff = UiColors.Lilac;
 
         private ShopTab tab;
         private Progression shownProgression;
@@ -144,7 +152,7 @@ namespace Claybreak
             && soundButton != null && soundLabel != null
             && musicButton != null && musicLabel != null && vibrationButton != null && vibrationLabel != null
             && shop != null && shopCoins != null && shopTabs != null && shopTabs.Length == 3 && Array.TrueForAll(shopTabs, b => b != null)
-            && shopContent != null && shopRows != null && Array.TrueForAll(shopRows, r => r != null && r.HasParts) && shopBack != null
+            && shopContent != null && shopFade != null && worldsFade != null && shopRows != null && Array.TrueForAll(shopRows, r => r != null && r.HasParts) && shopBack != null
             && worlds != null && worldsStars != null && worldsContent != null && worldRows != null
             && Array.TrueForAll(worldRows, r => r != null && r.HasParts) && worldsFooter != null && worldsBack != null
             && result != null && resultTitle != null && stars != null && stars.Length == 3 && resultDetail != null
@@ -272,10 +280,10 @@ namespace Claybreak
             home.SetActive(true);
             ClaybreakWorld world = progression.World;
             WorldSave save = progression.WorldProgress;
-            homeCoins.text = NumberLabels.Plain(progression.Save.coins);
+            homeCoins.text = UiIcons.Coins(progression.Save.coins);
             string loop = save.loop > 0 ? $"  ·  TOUGHER x{progression.HealthMultiplier:0.##}" : string.Empty;
             worldText.text = $"{world.WorldName}  ·  {progression.CurrentLevel.Title}{loop}";
-            starsText.text = $"★ {progression.WorldStars(progression.WorldIndex)} / {progression.MaximumWorldStars(progression.WorldIndex)}";
+            starsText.text = $"{UiIcons.Star} {progression.WorldStars(progression.WorldIndex)} / {progression.MaximumWorldStars(progression.WorldIndex)}";
             int levelCount = world.LevelCount;
             levelMeterText.text = LevelMeterLine(save.nextLevel, levelCount);
             for (int i = 0; i < levelDots.Length; i++)
@@ -293,17 +301,18 @@ namespace Claybreak
                 dot.anchorMin = new Vector2(x, 0.5f);
                 dot.anchorMax = new Vector2(x, 0.5f);
 
+                // RT-6t.17: the boss level wears a crown (its color still says beaten, next or ahead).
                 bool boss = i == levelCount - 1;
                 Color color = i == save.nextLevel ? dotNext
                     : progression.StarsAt(i) > 0 ? dotDone
                     : boss ? dotBoss : dotLocked;
+                levelDots[i].sprite = boss && bossIcon != null ? bossIcon : dotIcon != null ? dotIcon : levelDots[i].sprite;
                 levelDots[i].color = color;
-                float size = i == save.nextLevel ? 1.3f : boss ? 1.15f : 1f;
+                float size = boss ? 1.7f : i == save.nextLevel ? 1.35f : 1f;
                 levelDots[i].rectTransform.localScale = new Vector3(size, size, 1f);
             }
 
             playLabel.text = progression.CurrentLevel.IsBoss ? "FIGHT BOSS" : "PLAY";
-            loadoutText.text = LoadoutLine(progression);
             shopBadge.SetActive(progression.CanBuyAnything);
             ShowShape(progression);
             RefreshSwitches();
@@ -318,6 +327,9 @@ namespace Claybreak
 
         public static string ShapeLine(string title) => $"SHAPE: {title}";
 
+        /// <summary>The daily gift seal's caption.</summary>
+        public static string DailyLine(int coins) => $"GIFT  +{UiIcons.Coins(coins)}";
+
         /// <summary>The level meter's caption: the level to play now (1-based, capped at the count) of the world's count.</summary>
         public static string LevelMeterLine(int nextLevel, int levelCount)
         {
@@ -329,7 +341,7 @@ namespace Claybreak
         public void SetDaily(int coins)
         {
             dailyButton.gameObject.SetActive(coins > 0);
-            dailyLabel.text = coins > 0 ? $"DAILY GIFT  +{NumberLabels.Plain(coins)} ¢" : string.Empty;
+            dailyLabel.text = coins > 0 ? DailyLine(coins) : string.Empty;
         }
 
         // ---------- settings (RT-8) ----------
@@ -382,7 +394,7 @@ namespace Claybreak
 
             RunLoadout loadout = progression.Loadout;
             return (units.Length > 0 ? "ELITES: " + units : "NO ELITES YET")
-                + $"\nARMY +{loadout.StartingArmy}  ·  DAMAGE +{Mathf.RoundToInt((loadout.DamageMultiplier - 1f) * 100f)}%";
+                + $"  ·  ARMY +{loadout.StartingArmy}  ·  DAMAGE +{Mathf.RoundToInt((loadout.DamageMultiplier - 1f) * 100f)}%";
         }
 
         // ---------- shop ----------
@@ -393,10 +405,18 @@ namespace Claybreak
             HideAll();
             shop.SetActive(true);
             shownProgression = progression;
-            shopCoins.text = NumberLabels.Plain(progression.Save.coins);
+            shopCoins.text = UiIcons.Coins(progression.Save.coins);
+            // RT-6t.17: what the army takes into a run, over the list (it left the home screen).
+            loadoutText.text = LoadoutLine(progression);
             for (int i = 0; i < shopTabs.Length; i++)
             {
-                shopTabs[i].image.color = i == (int)tab ? tabOn : tabOff;
+                Color color = i == (int)tab ? tabOn : tabOff;
+                shopTabs[i].image.color = color;
+                Shadow slab = shopTabs[i].image.GetComponent<Shadow>();
+                if (slab != null)
+                {
+                    slab.effectColor = ClayUi.SlabColor(color);
+                }
             }
 
             ClaybreakCatalog catalog = progression.Catalog;
@@ -423,7 +443,7 @@ namespace Claybreak
                 }
             }
 
-            Fit(shopContent, Mathf.Min(count, shopRows.Length));
+            Fit(shopContent, shopFade, Mathf.Min(count, shopRows.Length));
         }
 
         private void FillUpgrade(ClaybreakListRow row, Progression progression, int track)
@@ -440,7 +460,7 @@ namespace Claybreak
 
             string next = Effect(data.kind, progression.UpgradeValue(track, level + 1));
             bool canBuy = progression.CanBuyUpgrade(track);
-            row.Show($"{data.title}  {level}/{steps}", $"Now {now}\nNext {next}", progression.NextUpgradeCost(track) + " ¢",
+            row.Show($"{data.title}  {level}/{steps}", $"Now {now}\nNext {next}", UiIcons.Coins(progression.NextUpgradeCost(track)),
                 canBuy, canBuy ? buttonEnabled : buttonDisabled);
         }
 
@@ -471,7 +491,7 @@ namespace Claybreak
             {
                 string hint = progression.UnlockHint(unit);
                 bool canBuy = progression.CanBuyUnit(unit);
-                row.Show(data.title, hint == null ? stats : stats + $"\nFree: beat {hint}", data.price + " ¢", canBuy,
+                row.Show(data.title, hint == null ? stats : stats + $"\nFree: beat {hint}", UiIcons.Coins(data.price), canBuy,
                     canBuy ? buttonEnabled : buttonDisabled);
             }
             else
@@ -497,7 +517,7 @@ namespace Claybreak
             else
             {
                 bool canBuy = progression.CanBuySkin(skin);
-                row.Show(data.title, "One color for the army in every world", data.price + " ¢", canBuy, canBuy ? buttonEnabled : buttonDisabled);
+                row.Show(data.title, "One color for the army in every world", UiIcons.Coins(data.price), canBuy, canBuy ? buttonEnabled : buttonDisabled);
             }
 
             // The free default skin has no color of its own (RT-6t.6a): it wears each world's palette color.
@@ -512,7 +532,7 @@ namespace Claybreak
             HideAll();
             worlds.SetActive(true);
             ClaybreakCatalog catalog = progression.Catalog;
-            worldsStars.text = $"★ {progression.TotalStars} / {catalog.LevelCount * 3}";
+            worldsStars.text = $"{UiIcons.Star} {progression.TotalStars} / {catalog.LevelCount * 3}";
             int count = Mathf.Min(catalog.Worlds.Count, worldRows.Length);
             for (int i = 0; i < worldRows.Length; i++)
             {
@@ -525,11 +545,11 @@ namespace Claybreak
                 WorldEntry entry = catalog.Worlds[i];
                 ClaybreakWorld world = entry.world;
                 WorldSave save = progression.Save.worlds[i];
-                string title = $"{world.WorldName}   ★ {progression.WorldStars(i)}/{progression.MaximumWorldStars(i)}";
+                string title = $"{world.WorldName}   {UiIcons.Star} {progression.WorldStars(i)}/{progression.MaximumWorldStars(i)}";
                 if (!progression.IsWorldUnlocked(i))
                 {
                     string boss = catalog.Worlds[i - 1].world.WorldName;
-                    string need = entry.starsToUnlock > 0 ? $" and ★ {entry.starsToUnlock}" : string.Empty;
+                    string need = entry.starsToUnlock > 0 ? $" and {UiIcons.Star} {entry.starsToUnlock}" : string.Empty;
                     worldRows[i].Show(title, $"Locked: beat the {boss} boss{need}", "LOCKED", false, buttonDisabled);
                     continue;
                 }
@@ -542,7 +562,7 @@ namespace Claybreak
 
             worldsFooter.text = catalog.WorldsFooter;
             worldsFooter.gameObject.SetActive(!string.IsNullOrEmpty(catalog.WorldsFooter));
-            Fit(worldsContent, count);
+            Fit(worldsContent, worldsFade, count);
         }
 
         // ---------- result ----------
@@ -559,7 +579,7 @@ namespace Claybreak
             }
 
             resultDetail.text = detail;
-            resultReward.text = "+" + outcome.Coins + " ¢";
+            resultReward.text = "+" + UiIcons.Coins(outcome.Coins);
             string unlock = outcome.UnlockedUnit != null ? $"NEW ELITE: {outcome.UnlockedUnit.title}\nGrab its crates on the run."
                 : outcome.OpenedWorld != null ? $"NEW WORLD: {outcome.OpenedWorld.WorldName}"
                 : outcome.ClearedWorld ? "WORLD CLEARED\nThe towers come back tougher."
@@ -595,10 +615,13 @@ namespace Claybreak
         }
 
         // Rows sit at fixed steps from the top of the scroll content; the content is as tall as the rows shown
-        // (the scroll position is kept, so buying a row low in the list does not jump back to the top).
-        private void Fit(RectTransform content, int rows)
+        // (the scroll position is kept, so buying a row low in the list does not jump back to the top). The fade at the
+        // list's foot says there is more below: shown only when the rows are taller than the list.
+        private void Fit(RectTransform content, GameObject fade, int rows)
         {
             content.sizeDelta = new Vector2(content.sizeDelta.x, rows * rowStep);
+            var viewport = (RectTransform)content.parent;
+            fade.SetActive(rows * rowStep > viewport.rect.height + 1f);
         }
 
         private void RefreshSwitches()

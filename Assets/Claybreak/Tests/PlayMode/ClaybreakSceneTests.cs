@@ -279,7 +279,7 @@ namespace Claybreak.Tests
             Assert.GreaterOrEqual(catalog.Shapes.Count, 2, "Bolinha and Pintinho");
             Assert.AreEqual(catalog.Shapes[0].mesh, crowd.Swarm.UnitMesh, "a fresh save starts with the default shape");
             int coins = flow.Progress.Save.coins;
-            var label = GameObject.Find("/Ui/Screens/Home/Safe/ShapeButton").GetComponentInChildren<UnityEngine.UI.Text>();
+            var label = GameObject.Find("/Ui/Screens/Home/Safe/ShapeButton").GetComponentInChildren<TMPro.TMP_Text>();
             StringAssert.Contains(catalog.Shapes[0].title, label.text);
 
             Press("/Ui/Screens/Home/Safe/ShapeButton");
@@ -316,7 +316,7 @@ namespace Claybreak.Tests
                 Press("/Ui/Screens/Settings/Safe/Vibration");
                 Assert.AreEqual(!vibration, GameHaptics.Enabled, "VIBRATION did not switch");
                 Press("/Ui/Screens/Settings/Safe/PrivacyPolicy");
-                var note = GameObject.Find("/Ui/Screens/Settings/Safe/Note").GetComponent<UnityEngine.UI.Text>();
+                var note = GameObject.Find("/Ui/Screens/Settings/Safe/Note").GetComponent<TMPro.TMP_Text>();
                 Assert.IsNotEmpty(note.text, "the policy link said nothing while its page is not published");
                 Press("/Ui/Screens/Settings/Safe/Back");
                 Assert.IsFalse(flow.Screens.SettingsShown);

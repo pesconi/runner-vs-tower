@@ -272,6 +272,8 @@ Unity em batchmode dos dois lados não podem rodar ao mesmo tempo (aprendizado d
 - **Aceite:** validação completa verde; capturas de todas as telas nas 4 proporções; teste de botões dentro da tela;
   gate 3× **uma vez** no fim (a UI muda o custo de desenho do menu sobre o nível) no mundo 4; APK no OPPO.
 - **Olhar humano:** sim, aceite visual das telas pelo usuário (capturas + jogar no OPPO).
+- **Status: concluída em 2026-11-23** (aceite pendente: gate 3× e APK no OPPO, que estava desconectado, e o olhar do
+  usuário). Capturas `telas-*.png` em `docs/art/rt6t17/`; decisões T-RT6t17-1..9. Sem tela de pausa (não existe no jogo).
 
 ### RT-6t.18 — Obstáculos na corrida (motor e 5 tipos)
 

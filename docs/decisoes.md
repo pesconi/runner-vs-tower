@@ -1981,3 +1981,39 @@ resposta. Aceite pendente: usuário aprovar o plano e as fichas.
   o jogador vê, em dois instantes com o braço a mais de 3 m de distância (`chefe-braco-dois-instantes.png`).
 - **T-RT6t16-7 — Gate 3× dispensado.** Em jogo, a cena só ganhou o movimento do braço (um objeto que já era desenhado
   passa a mudar de posição; mesmas chamadas de desenho); o resto é tela de menu. Decisão prevista no aceite do plano.
+
+## 2026-11-23 — T-RT6t17-1..8 — Telas novas no estilo toon pastel (RT-6t.17) — técnica (sessão da entrega)
+
+- **T-RT6t17-1 — Cores dos menus numa fonte só (`UiColors`, runtime).** Laranja do protótipo (#ff9f43) na ação principal
+  (PLAY, NEXT, comprar), coral (#f26a5a) em títulos e aba escolhida, menta (SHOP, possuído, anúncio), céu (WORLDS,
+  som/música/vibração), lilás (SETTINGS, abas, forma, privacidade), dourado no selo do presente, creme (#fff4ea) com borda
+  rosa (#f4b4c8) nos cartões e nos botões de voltar/cancelar, tinta (#3b2f4a) no texto sobre cartão e no contorno. As
+  cores das paletas foram avivadas o bastante para o texto branco com contorno ser legível. O véu sobre o nível passou de
+  preto 55-82% para tinta 28% (home) e 50% (demais telas).
+- **T-RT6t17-2 — Todo rótulo de menu é TextMeshPro no atlas estático Baloo 2.** Dois presets novos sobre o mesmo atlas:
+  `Baloo2 Ui` (branco com contorno tinta, sobre botão e véu) e `Baloo2 Ink` (sem contorno, cor tinta, sobre cartão). Os
+  rótulos encolhem para caber (auto-size até 55%) e nunca passam do botão. O atlas ganhou "¢" e "▶" (rebake automático).
+  O HUD da corrida segue como estava (fora do escopo; só o contador já era TMP).
+- **T-RT6t17-3 — Estrela e moeda como sprites inline (`GameIcons`, `UiIcons`).** A Baloo 2 não tem "★" (U+2605): com
+  `UI.Text` ela vinha de uma fonte do sistema, com TMP estático viraria um quadrado. O `GameFonts` desenha uma folha com
+  estrela e moeda e monta um sprite asset do TMP (tags `<sprite name="star">`/`"coin">`); os preços e moedas usam a moeda.
+- **T-RT6t17-4 — Hierarquia da home:** ajustes e moedas no alto; nome; cartão claro com mundo/fase e estrelas; mostrador
+  de fase; embaixo (alcance do polegar) PLAY grande, SHOP e WORLDS lado a lado, e dois selos pequenos sobre o PLAY
+  (forma, até a 6t.20; presente diário, inclinado, só quando devido). A linha de elites e bônus saiu da home e virou um
+  cartão sobre a lista da loja.
+- **T-RT6t17-5 — Coroa no ponto do chefe** (pendente da 6t.16): sprite gerado (`Generated/Crown.png`); o
+  `ClaybreakScreens` troca o sprite do último ponto do mundo pela coroa (a cor continua dizendo vencido, próximo ou à
+  frente). O `ScreenFitTests` confere que só o último ponto é coroa.
+- **T-RT6t17-6 — Loja:** linhas de 230 (passo 250) para a descrição de 3-4 linhas não encolher; botão de compra com
+  ícone de moeda; indisponível em cinza claro com o preço legível (o `Button` não esmaece mais ao desligar: a tela pinta
+  o estado); comprado/vestido/equipado em menta; o degradê no pé da lista aparece só quando as linhas passam da altura
+  da lista. O slab dos botões acompanha a cor que a tela aplica (`ClayUi.SlabColor`).
+- **T-RT6t17-7 — `ScreenFitTests` também confere texto:** nenhum caractere de rótulo TMP ativo fora do atlas (pega
+  glifo faltando, como a "★") e nenhuma legenda maior que o próprio botão, nas 10 telas e 4 proporções.
+- **T-RT6t17-8 — Pausa não existe no jogo** (o plano a listou entre as telas): nada a restilizar; criar uma tela de pausa
+  seria escopo novo. O caminho dos botões (`/Ui/Screens/<Tela>/Safe/...`) não mudou, então os testes que apertam por
+  caminho seguem iguais (só dois passaram a ler `TMP_Text`).
+- **T-RT6t17-9 — Build com o kit commitado quando o `studiokit` está quebrado por outra sessão.** Na hora dos APKs, o
+  kit tinha `Runtime/Levels` não commitado com erro de compilação (sessão K em andamento). Sem tocar no repositório do
+  kit: clone do último commit (`465881b`) em `C:\temp\kit-head`, manifest apontado para ele só durante os passos `apk aab`
+  e devolvido em seguida (`git checkout -- Packages/`). Os APKs contêm o kit que está em `main` do `studiokit`.

@@ -76,6 +76,38 @@ namespace Claybreak.Tests
             AssertColor(GameFonts.BadOutline, AssetDatabase.LoadAssetAtPath<Material>(GameFonts.GateBadPath).GetColor(ShaderUtilities.ID_OutlineColor));
         }
 
+        [Test]
+        public void MenuTextHasItsPresetsAndTheInlineIcons()
+        {
+            // RT-6t.17: the menus are TextMeshPro on the same atlas; the font has no star, so star and coin are sprites.
+            TMP_FontAsset sdf = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(GameFonts.SdfPath);
+            Assert.IsNotNull(sdf, "build the scene first");
+            foreach (char c in "¢▶·")
+            {
+                Assert.IsTrue(sdf.characterLookupTable.ContainsKey(c), "missing U+" + ((int)c).ToString("X4"));
+            }
+
+            Material ui = AssetDatabase.LoadAssetAtPath<Material>(GameFonts.UiPath);
+            Material ink = AssetDatabase.LoadAssetAtPath<Material>(GameFonts.InkPath);
+            Assert.IsNotNull(ui);
+            Assert.IsNotNull(ink);
+            Assert.IsTrue(ui.IsKeywordEnabled(ShaderUtilities.Keyword_Outline), "menu text on buttons has no outline");
+            Assert.IsFalse(ink.IsKeywordEnabled(ShaderUtilities.Keyword_Outline), "ink text on cards should not be outlined");
+            Assert.AreEqual(sdf.atlasTexture, ui.GetTexture(ShaderUtilities.ID_MainTex));
+            Assert.AreEqual(sdf.atlasTexture, ink.GetTexture(ShaderUtilities.ID_MainTex));
+            AssertColor(GameFonts.CounterOutline, ui.GetColor(ShaderUtilities.ID_OutlineColor));
+
+            TMP_SpriteAsset icons = AssetDatabase.LoadAssetAtPath<TMP_SpriteAsset>(GameFonts.IconsPath);
+            Assert.IsNotNull(icons, "build the scene first");
+            Assert.AreEqual("1.1.0", icons.version);
+            Assert.IsNotNull(icons.spriteSheet);
+            Assert.IsNotNull(icons.material);
+            foreach (string name in new[] { Claybreak.UiIcons.StarName, Claybreak.UiIcons.CoinName })
+            {
+                Assert.GreaterOrEqual(icons.GetSpriteIndexFromName(name), 0, "no icon named " + name);
+            }
+        }
+
         private static void AssertColor(Color expected, Color actual)
         {
             Assert.AreEqual(expected.r, actual.r, 1e-3f);
