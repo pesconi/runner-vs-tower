@@ -1940,3 +1940,14 @@ resposta. Aceite pendente: usuário aprovar o plano e as fichas.
   o incremental só no `TestProject` (botão de exemplo).
 - **T-6t16-8 — Capturas do diagnóstico:** OPPO desconectado; usadas as do editor (`docs/art/rt6t16/atual-*.png`) e uma
   simulação da faixa visível em 20:9 (`simulado-20x9-*.png`). A 6t.16 cria capturas reais em 16:9, 19,5:9, 20:9 e 21:9.
+
+## 2026-11-23 — Plano RT-6t.16–6t.20 + K.14 aprovado; D31 e D32 (usuário)
+
+- **Plano aprovado** (`plano-telas-obstaculos-loja.md`, commit 2b99031): "Aprovo, D31 A, D32 A".
+- **2026-11-23 — D31 Forma da multidão como compra na loja — A — usuário.** Texto aprovado: as formas passam a ser
+  compradas na loja numa aba SHAPES; a bolinha continua grátis; o pintinho e 3 formas novas (coelhinho, sapinho,
+  pinguim) são pagos; quem já usa o pintinho fica com ele sem pagar; o botão "SHAPE" sai da tela inicial; cada forma
+  tem de ser reconhecível de longe na multidão de 300 durante a corrida (silhueta e quique próprios), critério de
+  aceite. Substitui o item 1 da D26.
+- **2026-11-23 — D32 Preços das formas — A — usuário.** PINTINHO 300 · COELHINHO 1.000 · SAPINHO 1.600 · PINGUIM 2.400
+  (total 5.300); preços de melhorias, elites e cores iguais (D19); a RT-6t.20 registra o tempo real da loja.
