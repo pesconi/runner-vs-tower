@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Claybreak.Tests
 {
@@ -9,7 +10,9 @@ namespace Claybreak.Tests
     /// The versioned save (RT-5): every fixture save of the slice (version 1) migrates to version 2 keeping
     /// coins, stars, the upgrade and the Brute; damaged saves start fresh; normalized saves pass the
     /// validator and survive a write and a read. Also the world list rules (more than one world) and the crowd shape of
-    /// version 4 (RT-6t.6b: older saves get the shape they were drawn with; an unknown shape falls back to the default).
+    /// version 4 (RT-6t.6b: older saves get the shape they were drawn with; an unknown shape falls back to the default) and
+    /// the shapes bought in the shop of version 5 (RT-6t.20, D31 A: a version-4 save owns the free Bolinha and the shape it
+    /// wore when that was on offer then, so a Pintinho player keeps it without paying; nothing else comes for free).
     /// </summary>
     public sealed class SaveMigrationTests
     {
@@ -217,12 +220,13 @@ namespace Claybreak.Tests
             Assert.IsFalse(Fixture("v3-four-worlds.json").Contains("\"shape\""));
             Progression progression = Load("v3-four-worlds.json", out int version);
             Assert.AreEqual(3, version);
-            Assert.AreEqual(4, SaveData.CurrentVersion);
+            Assert.AreEqual(5, SaveData.CurrentVersion);
             Assert.AreEqual(SaveData.CurrentVersion, progression.Save.version);
             Assert.AreEqual(SaveMigration.ShapeBeforeV4, progression.Save.shape);
             Assert.AreEqual(0, progression.ShapeIndex, "the Bolinha older saves were drawn with is the catalog default");
             Assert.AreEqual(4200, progression.Save.coins, "nothing else changes");
             StringAssert.Contains("\"shape\":\"ball\"", SaveStore.Serialize(progression.Save));
+            CollectionAssert.AreEqual(new[] { "ball" }, progression.Save.ownedShapes);
         }
 
         [TestCase("v1-mid-world.json", 1)]
@@ -242,6 +246,97 @@ namespace Claybreak.Tests
             Assert.AreEqual("chick", progression.Save.shape);
             Assert.AreEqual(1, progression.ShapeIndex);
             Assert.AreEqual("chick", progression.Shape.id);
+            Assert.IsTrue(progression.IsShapeOwned(1), "a version-4 Pintinho player keeps it without paying (D31 A)");
+            CollectionAssert.AreEqual(new[] { "ball", "chick" }, progression.Save.ownedShapes);
+            Assert.AreEqual(9800, progression.Save.coins, "nothing is charged");
+        }
+
+        // RT-6t.20 acceptance fixtures: version 4 with the Bolinha, with the Pintinho, without a shape, and a hand edit.
+        [TestCase("v4-ball.json", "ball", new[] { "ball" }, 640)]
+        [TestCase("v4-chick-bubblegum.json", "chick", new[] { "ball", "chick" }, 9800)]
+        [TestCase("v4-no-shape.json", "ball", new[] { "ball" }, 1180)]
+        [TestCase("v4-hand-edited-shapes.json", "ball", new[] { "ball" }, 75)]
+        public void VersionFourSavesMigrateToVersionFiveOwningTheirShape(string name, string worn, string[] owned, int coins)
+        {
+            Progression progression = Load(name, out int version);
+            Assert.AreEqual(4, version);
+            Assert.AreEqual(SaveData.CurrentVersion, progression.Save.version);
+            Assert.AreEqual(worn, progression.Save.shape);
+            CollectionAssert.AreEqual(owned, progression.Save.ownedShapes);
+            Assert.AreEqual(coins, progression.Save.coins, "nothing else changes");
+            StringAssert.Contains("\"ownedShapes\"", SaveStore.Serialize(progression.Save));
+        }
+
+        // Versions 1 to 3 never had a shape: a crafted one is replaced by the Bolinha (save review, RT-6t.20).
+        [TestCase("{\"version\":3,\"shape\":\"chick\",\"ownedShapes\":[\"chick\",\"bunny\"]}")]
+        [TestCase("{\"version\":2,\"shape\":\"chick\"}")]
+        public void OlderVersionsNeverKeepACraftedShape(string json)
+        {
+            Assert.IsTrue(SaveStore.TryDeserialize(json, out SaveData read));
+            var progression = new Progression(content.Catalog, read);
+            Assert.AreEqual(SaveMigration.ShapeBeforeV4, progression.Save.shape);
+            CollectionAssert.AreEqual(new[] { SaveMigration.ShapeBeforeV4 }, progression.Save.ownedShapes);
+        }
+
+        // A save that cannot be read is kept once before the fresh save replaces it (save review, RT-6t.20).
+        [Test]
+        public void AnUnreadableSaveIsKeptBeforeStartingFresh()
+        {
+            string saved = PlayerPrefs.GetString(SaveStore.Key, null);
+            bool hadBackup = PlayerPrefs.HasKey(SaveStore.UnreadableBackupKey);
+            string oldBackup = PlayerPrefs.GetString(SaveStore.UnreadableBackupKey, null);
+            try
+            {
+                PlayerPrefs.DeleteKey(SaveStore.UnreadableBackupKey);
+                PlayerPrefs.SetString(SaveStore.Key, "{\"version\":99,\"coins\":5}");
+                LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("could not be read"));
+                SaveData fresh = SaveStore.Load();
+                Assert.AreEqual(0, fresh.coins);
+                Assert.AreEqual("{\"version\":99,\"coins\":5}", PlayerPrefs.GetString(SaveStore.UnreadableBackupKey));
+            }
+            finally
+            {
+                if (saved == null) PlayerPrefs.DeleteKey(SaveStore.Key); else PlayerPrefs.SetString(SaveStore.Key, saved);
+                if (hadBackup) PlayerPrefs.SetString(SaveStore.UnreadableBackupKey, oldBackup); else PlayerPrefs.DeleteKey(SaveStore.UnreadableBackupKey);
+            }
+        }
+
+        // A hand-edited version-4 save can never get a shape sold since version 5 for free.
+        [Test]
+        public void MigrationNeverGrantsAShapeSoldSinceVersionFive()
+        {
+            SaveData save = new SaveData { shape = "bunny", ownedShapes = new[] { "bunny" } };
+            SaveMigration.AddOwnedShapes(save);
+            CollectionAssert.AreEqual(new[] { SaveMigration.ShapeBeforeV4 }, save.ownedShapes);
+            Assert.IsTrue(SaveStore.TryDeserialize("{\"version\":4,\"shape\":\"bunny\",\"ownedShapes\":[\"bunny\"]}", out SaveData read));
+            var progression = new Progression(content.Catalog, read);
+            Assert.AreEqual(SaveMigration.ShapeBeforeV4, progression.Save.shape);
+            Assert.IsFalse(progression.IsShapeOwned(2));
+        }
+
+        [Test]
+        public void VersionFiveSaveKeepsItsBoughtShapes()
+        {
+            Progression progression = Load("v5-bunny.json", out int version);
+            Assert.AreEqual(5, version);
+            Assert.AreEqual("bunny", progression.Save.shape);
+            CollectionAssert.AreEqual(new[] { "ball", "chick", "bunny" }, progression.Save.ownedShapes);
+        }
+
+        // Version 5: a worn shape that is not owned falls back to the free one; unknown and repeated ids are dropped and the
+        // free shape is always owned.
+        [TestCase("{\"version\":5,\"shape\":\"bunny\",\"ownedShapes\":[\"chick\"]}", "ball", new[] { "ball", "chick" })]
+        [TestCase("{\"version\":5,\"shape\":\"chick\",\"ownedShapes\":[\"dragon\",\"chick\",\"chick\"]}", "chick", new[] { "ball", "chick" })]
+        [TestCase("{\"version\":5,\"shape\":\"bunny\",\"ownedShapes\":null}", "ball", new[] { "ball" })]
+        [TestCase("{\"version\":5}", "ball", new[] { "ball" })]
+        public void VersionFiveIsNormalized(string json, string worn, string[] owned)
+        {
+            Assert.IsTrue(SaveStore.TryDeserialize(json, out SaveData read));
+            var progression = new Progression(content.Catalog, read);
+            Assert.AreEqual(worn, progression.Save.shape);
+            CollectionAssert.AreEqual(owned, progression.Save.ownedShapes);
+            var problems = new List<string>();
+            Assert.IsTrue(SaveValidator.Validate(progression.Save, content.Catalog, problems), string.Join("; ", problems));
         }
 
         [TestCase("{\"version\":4,\"shape\":\"dragon\"}")]
@@ -257,24 +352,51 @@ namespace Claybreak.Tests
             Assert.IsTrue(SaveValidator.Validate(progression.Save, content.Catalog, problems), string.Join("; ", problems));
         }
 
+        // RT-6t.20 (D31 A): a shape is bought once with coins and worn at once; an owned shape is worn again for free.
         [Test]
-        public void ShapePickWalksTheCatalogAndRoundTrips()
+        public void ShapesAreBoughtWornAndRoundTrip()
         {
-            var progression = new Progression(content.Catalog, new SaveData());
+            var progression = new Progression(content.Catalog, new SaveData { coins = 1200 });
             Assert.AreEqual(0, progression.ShapeIndex);
-            Assert.IsFalse(progression.TrySelectShape(0), "already picked");
-            Assert.IsFalse(progression.TrySelectShape(-1));
-            Assert.IsFalse(progression.TrySelectShape(content.Catalog.Shapes.Count));
-            int coins = progression.Save.coins;
-            Assert.IsTrue(progression.TrySelectNextShape());
-            Assert.AreEqual("chick", progression.Save.shape);
-            Assert.AreEqual(coins, progression.Save.coins, "shapes are free (D26 A)");
+            Assert.IsTrue(progression.IsShapeOwned(0), "the free shape");
+            Assert.IsFalse(progression.TryWearShape(0), "already worn");
+            Assert.IsFalse(progression.TryWearShape(1), "not owned");
+            Assert.IsFalse(progression.TryBuyShape(-1));
+            Assert.IsFalse(progression.TryBuyShape(content.Catalog.Shapes.Count));
+            Assert.IsFalse(progression.TryBuyShape(0), "the free shape is not sold");
+            Assert.IsTrue(progression.CanBuyAnything);
+
+            Assert.IsTrue(progression.TryBuyShape(1));
+            Assert.AreEqual(900, progression.Save.coins, "the chick costs 300");
+            Assert.AreEqual("chick", progression.Save.shape, "a bought shape is worn at once");
+            Assert.IsFalse(progression.TryBuyShape(1), "bought only once");
+            Assert.IsFalse(progression.TryBuyShape(2), "900 coins do not buy the bunny (1000)");
+            Assert.IsTrue(progression.TryWearShape(0));
+            Assert.AreEqual(900, progression.Save.coins, "wearing an owned shape is free");
+            Assert.IsTrue(progression.TryWearShape(1));
+
             string written = SaveStore.Serialize(progression.Save);
             Assert.IsTrue(SaveStore.TryDeserialize(written, out SaveData read, out int version));
             Assert.AreEqual(SaveData.CurrentVersion, version);
-            Assert.AreEqual("chick", new Progression(content.Catalog, read).Save.shape);
-            Assert.IsTrue(progression.TrySelectNextShape(), "wraps around");
-            Assert.AreEqual(SaveMigration.ShapeBeforeV4, progression.Save.shape);
+            var again = new Progression(content.Catalog, read);
+            Assert.AreEqual("chick", again.Save.shape);
+            CollectionAssert.AreEqual(new[] { "ball", "chick" }, again.Save.ownedShapes);
+        }
+
+        [Test]
+        public void ValidatorRefusesAWornShapeThatIsNotOwned()
+        {
+            var progression = new Progression(content.Catalog, new SaveData());
+            progression.Save.shape = "bunny";
+            var problems = new List<string>();
+            Assert.IsFalse(SaveValidator.Validate(progression.Save, content.Catalog, problems));
+            StringAssert.Contains("not owned", string.Join("; ", problems));
+
+            problems.Clear();
+            progression.Save.shape = "ball";
+            progression.Save.ownedShapes = new[] { "chick" };
+            Assert.IsFalse(SaveValidator.Validate(progression.Save, content.Catalog, problems));
+            StringAssert.Contains("free crowd shape", string.Join("; ", problems));
         }
 
         [Test]
@@ -292,6 +414,7 @@ namespace Claybreak.Tests
         {
             SaveData gate = Progression.MaximumLoadout(content.Catalog);
             Assert.AreEqual("chick", gate.shape, "the test chick has the most triangles");
+            Assert.AreEqual(content.Catalog.Shapes.Count, gate.ownedShapes.Length, "the gate loadout owns every shape");
 
             // The heaviest shape first: the pick is by triangles, not by position.
             var heavy = new Mesh { name = "heavy", vertices = new[] { Vector3.zero, Vector3.up, Vector3.right }, triangles = new int[30 * 3] };

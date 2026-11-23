@@ -39,7 +39,7 @@ lançamento jun/2027.
 | RT-6t.17 Telas novas no estilo toon pastel (botões vivos, Baloo 2, loja legível de 16:9 a 21:9) — concluída em 2026-11-23 (capturas `telas-*.png` nas 4 proporções em `docs/art/rt6t17/`); gate 3× no OPPO em 2026-11-23 aprovado (mundo 4, chefe, 300 em voo: CPU p95 ≤ 5,5 ms, GPU p95 ≤ 4,3 ms, PSS 288 MB, 0 quadros perdidos); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
 | RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — concluída em 2026-11-23 (motor, 5 tipos, fase de laboratório; capturas em `docs/art/rt6t18/`); APK instalado no OPPO; gate 3× no OPPO em 2026-11-23 aprovado (corrida do mundo 4, 6 obstáculos, 300: CPU p95 ≤ 2,0 ms, GPU p95 ≤ 4,4 ms, PSS 298 MB, 0 quadros perdidos); **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
 | RT-6t.19 Obstáculos nas 40 fases e economia recalculada — concluída em 2026-11-23 (mundo 1 ensina um tipo por vez, um tipo novo por mundo, 2–3 por fase no fim do mundo 4; vida das torres sobre o exército depois das perdas; `rt6-economia.md` com a perda esperada; fases ±5% do tempo da RT-6t.15, loja 49 → 50 min); gate 3× não se aplica (no máximo 3 obstáculos por fase, 6 já medidos); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou boa") | — | — | antes da RT-9 |
-| RT-6t.20 Formas compradas na loja (save v5) — **planejada**; espera as fichas D31 e D32 | — | — | antes da RT-9 |
+| RT-6t.20 Formas compradas na loja (save v5) — concluída em 2026-11-23 (5 formas com silhueta e quique próprios, aba SHAPES, botão SHAPE fora da home, save v5 com migração; loja 24.680 moedas em 58 min; capturas em `docs/art/rt6t20/`); gate 3× não se aplica (forma mais pesada continua 492 triângulos); **aceite pendente: o usuário aprovar as capturas das formas**, depois APK no OPPO | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -736,6 +736,39 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   boa.
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.19`).
 
+## RT-6t.20 — Formas compradas na loja
+
+- **Escopo e aceite:** [`plano-telas-obstaculos-loja.md`](plano-telas-obstaculos-loja.md), RT-6t.20 e seção 3.3; D31 A e
+  D32 A em `decisoes.md`.
+- **Feito:** 3 formas novas no construtor de malhas (`UnitShapeRecipes`): COELHINHO (orelhas longas, 488 triângulos),
+  SAPINHO (achatado e largo, olhos saltados, 488) e PINGUIM (oval alto, barriga branca, nadadeiras, 476); o PINTINHO virou
+  um ovo mais alto, com a crista maior (492, como antes), para não se confundir com a BOLINHA de longe. Cada forma tem o
+  seu quique (coelho alto e lento, sapo achatando, pinguim baixo e rápido, pintinho rápido inclinado) na multidão, no líder
+  e no assalto. Catálogo com preço (BALL 0, CHICK 300, BUNNY 1.000, FROGGY 1.600, PENGUIN 2.400). Aba SHAPES na loja
+  (4 abas) com a figura de cada forma desenhada no editor a partir da malha, pintada com a cor do exército; comprar veste
+  na hora. Botão SHAPE fora da tela inicial. Save v5 (`ownedShapes`), migração v1–v4 → v5 com backup do JSON antigo;
+  quem usava o PINTINHO continua com ele sem pagar. Decisões técnicas T-RT6t20-1..8 em `decisoes.md`.
+- **Validação (2026-11-23):** `rt4-check` completo verde — cena, validador (fixtures v4 BALL, CHICK, sem forma e editada
+  à mão, v5), isolamento, EditMode 684 (683 passam, 1 ignorado), PlayMode 44 (28 passam, 16 capturas ignoradas sem GPU),
+  economia, capturas, APK, APK de medição e AAB. Capturas com GPU 4/4 (`ShapeShopCaptureTests`, `ScreenFitTests`,
+  `ShapeSkinCaptureTests`).
+- **Revisão de segurança do save:** revisor só leitura (fable); sem achado grave; os 3 baixos e a nota corrigidos
+  (T-RT6t20-8).
+- **Economia:** loja inteira 24.680 moedas (+5.300 das formas), comprada em **58 min** de jogo simulado (antes 50; o plano
+  estimava 55–56); preços ×0,75 → 51 min, ×1,5 → 70 min (`rt6-economia.md`). Preços decididos pelo usuário (D32 A).
+- **Gate 3×:** não se aplica: a forma mais pesada à venda continua o PINTINHO com 492 triângulos (teste
+  `NoShapeOnOfferPassesThePintinhosTriangles`); o gate segue vestindo a mais pesada.
+- **Capturas (`docs/art/rt6t20/`):** `formas-corrida.png` (5 formas na câmera da corrida com 300, dois momentos do
+  quique), `formas-assalto.png` (5 formas no assalto mais pesado, 300 em voo), `formas-mundos.png` (5 formas nos 4
+  mundos), `loja-formas-4-proporcoes.png` (aba SHAPES em 16:9, 19,5:9, 20:9 e 21:9), `home-4-proporcoes.png` (home sem o
+  botão SHAPE), `figuras-loja.png` (as figuras da loja de perto).
+- **Para o kit (entrega K futura, registrada aqui):** `SwarmRenderer` e `LooseSwarmRenderer` precisam de um
+  `SetMotion(SwarmMotionSettings)` público. Hoje o jogo troca o quique pelo campo serializado (`SwarmMotionBridge`, com
+  teste que falha se o kit renomear o campo); com o setter, a ponte vira uma chamada.
+- **Pendente (olhar humano antes do APK):** o usuário aprovar o visual das formas pelas capturas. Depois:
+  `adb install -r C:\temp\rt620\Claybreak.apk` (mantém o save; CHICK ou BALL do usuário continua vestida).
+- Histórico: entregue em 2026-11-23 (`Stage RT.6t.20`).
+
 ## RT-6t.16 a RT-6t.20 e K.14 — Telas, obstáculos, formas na loja e mostrador (planejadas)
 
 - **Origem:** o usuário jogou no OPPO e pediu em 2026-11-23 (palavras dele em
@@ -748,8 +781,9 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Entregas:** RT-6t.16 correções rápidas (tronco, mostrador, cortes, brilho no jogo) → RT-6t.17 telas novas →
   RT-6t.18 obstáculos → RT-6t.19 obstáculos nas 40 fases e economia → RT-6t.20 formas na loja. K.14 no `studiokit` (e
   Wild Pack) depois da 6t.16, em paralelo com as seguintes (repos diferentes; Unity em batchmode um de cada vez).
-- **Fichas pendentes:** D31 (leitura do pedido "formato como compra") e D32 (preços das formas); só a RT-6t.20 espera.
-- **Status: planejadas em 2026-11-23; aceite pendente: usuário aprovar o plano e as fichas.**
+- **Fichas:** D31 A e D32 A decididas pelo usuário em 2026-11-23.
+- **Status:** plano aprovado em 2026-11-23; RT-6t.16 a 6t.19 aceitas; RT-6t.20 concluída com aceite pendente (capturas);
+  K.14 no `studiokit`.
 
 ## RT-9 — Preparação do soft launch
 

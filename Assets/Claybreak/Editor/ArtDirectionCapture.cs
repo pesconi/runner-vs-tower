@@ -260,6 +260,8 @@ namespace Claybreak.Editor
             Shot(folder, "jogo-loja-elites", camera);
             PickTab(screens, ShopTab.Skins, progression);
             Shot(folder, "jogo-loja-skins", camera);
+            PickTab(screens, ShopTab.Shapes, progression);
+            Shot(folder, "jogo-loja-formas", camera);
             screens.ShowWorlds(progression);
             Shot(folder, "jogo-mundos", camera);
 

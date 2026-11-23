@@ -66,7 +66,7 @@ namespace Claybreak.Tests
                 Assert.IsFalse(flow.Crowd.Swarm.Headless, "no GPU: nothing to capture");
                 Assert.IsTrue(flow.Progress.TryWearSkin(0));
                 // RT-6t.6b: the gate wears the heaviest shape; this record keeps the default one (ShapeSkinCaptureTests shows both).
-                flow.Crowd.UseShape(catalog.Shapes[0].mesh);
+                flow.Crowd.UseShape(catalog.Shapes[0]);
                 flow.Crowd.Wear(flow.Progress.CrowdColorIn(world - 1));
                 Camera view = flow.Crowd.CameraRig.GetComponent<Camera>();
                 view.targetTexture = target;

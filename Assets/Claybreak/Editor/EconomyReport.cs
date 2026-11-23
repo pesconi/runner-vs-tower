@@ -166,10 +166,18 @@ namespace Claybreak.Editor
                 }
             }
 
+            for (int i = 0; i < catalog.Shapes.Count; i++)
+            {
+                if (!progression.IsShapeOwned(i))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
-        // Upgrades first (they make the game easier), then elites, then skins; the cheapest of each kind.
+        // Upgrades first (they make the game easier), then elites, then skins, then shapes (RT-6t.20); the cheapest of each kind.
         private static bool TryBuyCheapest(Progression progression, out string item, out int price)
         {
             ClaybreakCatalog catalog = progression.Catalog;
@@ -211,6 +219,17 @@ namespace Claybreak.Editor
                 }
             }
 
+            // RT-6t.20 (D32 A): the crowd shapes last, in catalog order (cheapest first).
+            for (int i = 0; i < catalog.Shapes.Count; i++)
+            {
+                if (!progression.IsShapeOwned(i))
+                {
+                    item = "shape " + catalog.Shapes[i].title;
+                    price = catalog.Shapes[i].price;
+                    return progression.TryBuyShape(i);
+                }
+            }
+
             item = null;
             price = 0;
             return false;
@@ -230,7 +249,7 @@ namespace Claybreak.Editor
                 + $"média {averageRun.ToString("0.0", pt)} s por fase jogada); depois dela, assalto + resultado em {a.secondsAfterRunWin:0} s "
                 + $"na vitória e {a.secondsAfterRunLoss:0} s na derrota;");
             text.AppendLine($"- {a.winRate * 100f:0}% de vitórias; {a.armyAtLine} unidades na linha de tiro, {a.survivorShare * 100f:0}% sobrevivem (2 estrelas);");
-            text.AppendLine($"- compra o mais barato que puder, upgrades antes de elites e skins; joga os {catalog.Worlds.Count} mundos em ordem ({catalog.LevelCount} fases)");
+            text.AppendLine($"- compra o mais barato que puder, upgrades antes de elites, skins e formas; joga os {catalog.Worlds.Count} mundos em ordem ({catalog.LevelCount} fases)");
             text.AppendLine("  e, depois do último, fica nas voltas dele (cada volta 25% mais forte e 25% mais rica).");
             text.AppendLine();
             text.AppendLine($"Média: **{coinsPerMinute.ToString("0", pt)} moedas por minuto** de jogo.");
@@ -332,6 +351,11 @@ namespace Claybreak.Editor
             foreach (CrowdSkin skin in catalog.Skins)
             {
                 total += skin.price;
+            }
+
+            foreach (CrowdShapeOption shape in catalog.Shapes)
+            {
+                total += shape.price;
             }
 
             return total;

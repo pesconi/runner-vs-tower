@@ -3,12 +3,12 @@
 Preços e curvas **[P]** do catálogo (`WorldContent.WriteCatalog`), jogados por um jogador simulado com as
 regras reais (`Progression`). Premissas **[I]** (sem analytics ainda, D4):
 
-- corrida = pista até a linha de tiro ÷ velocidade da fase (ritmo x1,3, RT-6t.15; média 13,0 s por fase jogada); depois dela, assalto + resultado em 39 s na vitória e 19 s na derrota;
+- corrida = pista até a linha de tiro ÷ velocidade da fase (ritmo x1,3, RT-6t.15; média 12,8 s por fase jogada); depois dela, assalto + resultado em 39 s na vitória e 19 s na derrota;
 - 80% de vitórias; 60 unidades na linha de tiro, 40% sobrevivem (2 estrelas);
-- compra o mais barato que puder, upgrades antes de elites e skins; joga os 4 mundos em ordem (40 fases)
+- compra o mais barato que puder, upgrades antes de elites, skins e formas; joga os 4 mundos em ordem (40 fases)
   e, depois do último, fica nas voltas dele (cada volta 25% mais forte e 25% mais rica).
 
-Média: **388 moedas por minuto** de jogo.
+Média: **425 moedas por minuto** de jogo.
 
 | Mundo | Primeira passada termina em | Fases jogadas | Moedas ganhas até ali |
 |---|---|---|---|
@@ -53,17 +53,21 @@ Média: **388 moedas por minuto** de jogo.
 | 32 | skin LAGOON | 1500 | 55 | 44,0 | 1 |
 | 33 | skin BERRY | 2000 | 59 | 47,1 | 1 |
 | 34 | skin BUBBLEGUM | 2500 | 63 | 50,3 | 2 |
+| 35 | shape CHICK | 300 | 64 | 51,1 | 2 |
+| 36 | shape BUNNY | 1000 | 66 | 52,4 | 2 |
+| 37 | shape FROGGY | 1600 | 69 | 54,9 | 2 |
+| 38 | shape PENGUIN | 2400 | 73 | 58,1 | 2 |
 
-Total: **19380 moedas**, tudo comprado em **50 minutos** (63 fases).
+Total: **24680 moedas**, tudo comprado em **58 minutos** (73 fases).
 
 ## Sensibilidade
 
-- Primeira passada do world1 (10 fases, sem comprar): **1663 moedas** = 9% da loja (19380).
-- Primeira passada do world2 (10 fases, sem comprar): **2607 moedas** = 13% da loja (19380).
-- Primeira passada do world3 (10 fases, sem comprar): **3703 moedas** = 19% da loja (19380).
-- Primeira passada do world4 (10 fases, sem comprar): **5008 moedas** = 26% da loja (19380).
-- Preços x0,75: tudo comprado em **43 minutos** (54 fases, volta 1).
-- Preços x1,5: tudo comprado em **63 minutos** (79 fases, volta 3).
+- Primeira passada do world1 (10 fases, sem comprar): **1663 moedas** = 7% da loja (24680).
+- Primeira passada do world2 (10 fases, sem comprar): **2607 moedas** = 11% da loja (24680).
+- Primeira passada do world3 (10 fases, sem comprar): **3703 moedas** = 15% da loja (24680).
+- Primeira passada do world4 (10 fases, sem comprar): **5008 moedas** = 20% da loja (24680).
+- Preços x0,75: tudo comprado em **51 minutos** (64 fases, volta 2).
+- Preços x1,5: tudo comprado em **70 minutos** (88 fases, volta 4).
 
 Vieses conhecidos: a taxa de vitória e os sobreviventes não mudam com os upgrades nem com as voltas mais
 fortes, e a renda futura de anúncio recompensado e recompensa diária (RT-7) não entra.

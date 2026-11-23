@@ -14,7 +14,7 @@ namespace Claybreak.Tests
     /// <summary>
     /// RT-6t.16: every menu screen fits from 16:9 to 21:9. The canvas is drawn by the game camera into a texture of each
     /// portrait shape (1080 wide: 1920, 2340, 2400 and 2520 tall), so the canvas scaler sizes it as that phone would; on
-    /// each screen (home, settings, the three shop tabs, worlds, result, continue offer) every active button must lie
+    /// each screen (home, settings, the four shop tabs, worlds, result, continue offer) every active button must lie
     /// inside the screen, and a button in a scroll list inside the list's sides (the list's mask cuts the rest). With a GPU
     /// and <c>-screenFitCaptureDir &lt;folder&gt;</c> (batchmode without -nographics) it also saves one sheet per screen
     /// with the four shapes side by side (<c>telas-&lt;screen&gt;.png</c>, half size), plus the run HUD.
@@ -29,7 +29,7 @@ namespace Claybreak.Tests
         private static readonly string[] ShapeNames = { "16x9", "19.5x9", "20x9", "21x9" };
         private const int Gap = 12;
 
-        private static readonly string[] Screens = { "home", "ajustes", "loja-upgrades", "loja-elites", "loja-skins", "mundos",
+        private static readonly string[] Screens = { "home", "ajustes", "loja-upgrades", "loja-elites", "loja-skins", "loja-formas", "mundos",
             "resultado-vitoria", "resultado-derrota", "continuar", "hud" };
 
         [TearDown]
@@ -151,6 +151,11 @@ namespace Claybreak.Tests
                     break;
                 case "loja-skins":
                     Press("Ui/Screens/Shop/Safe/TabSKINS");
+                    break;
+                case "loja-formas":
+                    // RT-6t.20: the SHAPES tab with one shape bought (BALL owned, CHICK worn, the rest at their price).
+                    progress.TryBuyShape(1);
+                    Press("Ui/Screens/Shop/Safe/TabSHAPES");
                     break;
                 case "mundos":
                     screens.ShowWorlds(progress);

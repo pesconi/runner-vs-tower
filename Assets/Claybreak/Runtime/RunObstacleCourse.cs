@@ -152,11 +152,12 @@ namespace Claybreak
         }
 
         /// <summary>The shape the thrown units are drawn with (the crowd's).</summary>
-        public void UseShape(Mesh unit)
+        public void UseShape(CrowdShapeOption shape)
         {
             if (deaths != null)
             {
-                deaths.SetUnitMesh(unit);
+                deaths.SetUnitMesh(shape.mesh);
+                SwarmMotionBridge.Apply(deaths, shape.motion);
             }
         }
 

@@ -192,10 +192,15 @@ namespace Claybreak
             leader.WearCrown(color);
         }
 
-        /// <summary>The unit shape the crowd (and its leader) is drawn with (one of the generated crowd shapes).</summary>
-        public void UseShape(Mesh shape)
+        /// <summary>
+        /// The unit shape the crowd (and its leader) is drawn with (one of the generated crowd shapes), with its own hop
+        /// (RT-6t.20) and the leader's crown seat.
+        /// </summary>
+        public void UseShape(CrowdShapeOption shape)
         {
-            swarm.SetUnitMesh(shape);
+            swarm.SetUnitMesh(shape.mesh);
+            SwarmMotionBridge.Apply(swarm, shape.motion);
+            leader.UseShape(shape.motion, shape.crownSeat);
         }
 
         /// <summary>Shakes the run camera (a bad gate).</summary>

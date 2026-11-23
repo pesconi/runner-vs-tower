@@ -12,13 +12,15 @@ namespace Claybreak
     {
         Upgrades,
         Units,
-        Skins
+        Skins,
+        /// <summary>RT-6t.20 (D31 A): the crowd shapes, bought and worn here.</summary>
+        Shapes
     }
 
     /// <summary>
     /// The menu screens (RT-5): home (world progress, stars, PLAY, SHOP, WORLDS, SETTINGS), the settings page
     /// (RT-8: the kit's sound / music / vibration switches, privacy policy, privacy options), the shop (upgrades, special units and their loadout,
-    /// crowd skins; coins only, no real money, D6), the world list and the result (stars, coins, what was
+    /// crowd skins, crowd shapes since RT-6t.20; coins only, no real money, D6), the world list and the result (stars, coins, what was
     /// unlocked, one tap to go on: GDD 3, never more than 2 taps to retry). Built by the scene builder with
     /// one list row per catalog entry; this class only fills it. Every text here is set on a tap, never per frame.
     /// </summary>
@@ -38,9 +40,6 @@ namespace Claybreak
         [SerializeField] private Button shopButton;
         [SerializeField] private GameObject shopBadge;
         [SerializeField] private Button worldsButton;
-        [Tooltip("RT-6t.6b: the crowd shape picker (one button that walks through the catalog's shapes).")]
-        [SerializeField] private Button shapeButton;
-        [SerializeField] private TMP_Text shapeLabel;
         [SerializeField] private Button soundButton;
         [SerializeField] private TMP_Text soundLabel;
         [SerializeField] private Button musicButton;
@@ -60,7 +59,7 @@ namespace Claybreak
         [Header("Shop")]
         [SerializeField] private GameObject shop;
         [SerializeField] private TMP_Text shopCoins;
-        [SerializeField] private Button[] shopTabs = new Button[3];
+        [SerializeField] private Button[] shopTabs = new Button[ShopTabCount];
         [SerializeField] private RectTransform shopContent;
         [Tooltip("RT-6t.17: the fade at the list's foot, shown only when the rows overflow the list.")]
         [SerializeField] private GameObject shopFade;
@@ -115,6 +114,9 @@ namespace Claybreak
         [SerializeField] private Color tabOn = UiColors.Coral;
         [SerializeField] private Color tabOff = UiColors.Lilac;
 
+        /// <summary>One tab per <see cref="ShopTab"/>.</summary>
+        public const int ShopTabCount = 4;
+
         private ShopTab tab;
         private Progression shownProgression;
         private string privacyPolicyUrl;
@@ -122,7 +124,6 @@ namespace Claybreak
         public event Action PlayPressed;
         public event Action ShopPressed;
         public event Action WorldsPressed;
-        public event Action ShapePressed;
         public event Action BackPressed;
         public event Action<ShopTab, int> ShopItemPressed;
         public event Action<int> WorldPressed;
@@ -148,10 +149,10 @@ namespace Claybreak
 
         public bool HasParts => home != null && homeCoins != null && worldText != null && starsText != null
             && loadoutText != null && levelDots != null && levelDots.Length > 0 && levelMeterText != null && playButton != null && playLabel != null
-            && shopButton != null && shopBadge != null && worldsButton != null && shapeButton != null && shapeLabel != null
+            && shopButton != null && shopBadge != null && worldsButton != null
             && soundButton != null && soundLabel != null
             && musicButton != null && musicLabel != null && vibrationButton != null && vibrationLabel != null
-            && shop != null && shopCoins != null && shopTabs != null && shopTabs.Length == 3 && Array.TrueForAll(shopTabs, b => b != null)
+            && shop != null && shopCoins != null && shopTabs != null && shopTabs.Length == ShopTabCount && Array.TrueForAll(shopTabs, b => b != null)
             && shopContent != null && shopFade != null && worldsFade != null && shopRows != null && Array.TrueForAll(shopRows, r => r != null && r.HasParts) && shopBack != null
             && worlds != null && worldsStars != null && worldsContent != null && worldRows != null
             && Array.TrueForAll(worldRows, r => r != null && r.HasParts) && worldsFooter != null && worldsBack != null
@@ -174,7 +175,6 @@ namespace Claybreak
             playButton.onClick.AddListener(() => Raise(PlayPressed));
             shopButton.onClick.AddListener(() => Raise(ShopPressed));
             worldsButton.onClick.AddListener(() => Raise(WorldsPressed));
-            shapeButton.onClick.AddListener(() => Raise(ShapePressed));
             shopBack.onClick.AddListener(Back);
             worldsBack.onClick.AddListener(Back);
             primaryButton.onClick.AddListener(() => Raise(PrimaryPressed));
@@ -314,18 +314,8 @@ namespace Claybreak
 
             playLabel.text = progression.CurrentLevel.IsBoss ? "FIGHT BOSS" : "PLAY";
             shopBadge.SetActive(progression.CanBuyAnything);
-            ShowShape(progression);
             RefreshSwitches();
         }
-
-        /// <summary>The shape picker's label: the shape worn now (a tap moves to the next one).</summary>
-        public void ShowShape(Progression progression)
-        {
-            shapeButton.gameObject.SetActive(progression.Catalog.Shapes.Count > 1);
-            shapeLabel.text = ShapeLine(progression.Shape.title);
-        }
-
-        public static string ShapeLine(string title) => $"SHAPE: {title}";
 
         /// <summary>The daily gift seal's caption.</summary>
         public static string DailyLine(int coins) => $"GIFT  +{UiIcons.Coins(coins)}";
@@ -420,7 +410,7 @@ namespace Claybreak
             }
 
             ClaybreakCatalog catalog = progression.Catalog;
-            int count = tab == ShopTab.Upgrades ? catalog.Upgrades.Count : tab == ShopTab.Units ? catalog.Units.Count : catalog.Skins.Count;
+            int count = ShopCount(catalog, tab);
             for (int i = 0; i < shopRows.Length; i++)
             {
                 if (i >= count)
@@ -437,8 +427,11 @@ namespace Claybreak
                     case ShopTab.Units:
                         FillUnit(shopRows[i], progression, i);
                         break;
-                    default:
+                    case ShopTab.Skins:
                         FillSkin(shopRows[i], progression, i);
+                        break;
+                    default:
+                        FillShape(shopRows[i], progression, i);
                         break;
                 }
             }
@@ -522,6 +515,41 @@ namespace Claybreak
 
             // The free default skin has no color of its own (RT-6t.6a): it wears each world's palette color.
             row.ShowSwatch(skin == 0 ? progression.WorldCrowdColor(progression.WorldIndex) : data.color);
+        }
+
+        /// <summary>How many rows the shop shows on <paramref name="list"/>.</summary>
+        public static int ShopCount(ClaybreakCatalog catalog, ShopTab list)
+        {
+            switch (list)
+            {
+                case ShopTab.Upgrades: return catalog.Upgrades.Count;
+                case ShopTab.Units: return catalog.Units.Count;
+                case ShopTab.Skins: return catalog.Skins.Count;
+                default: return catalog.Shapes.Count;
+            }
+        }
+
+        // RT-6t.20 (D31 A): a shape row shows the shape's figure in the army's color of the world shown (the body layer takes
+        // the tint, the eyes, beak and outline keep their own colors), its price, then WEAR / WORN.
+        private void FillShape(ClaybreakListRow row, Progression progression, int shape)
+        {
+            CrowdShapeOption data = progression.Catalog.Shapes[shape];
+            string line = shape == 0 ? "Free  ·  the classic army" : "A new look for the whole army";
+            if (progression.IsShapeWorn(shape))
+            {
+                row.Show(data.title, shape == 0 ? line : "Your army wears it", "WORN", false, buttonOwned);
+            }
+            else if (progression.IsShapeOwned(shape))
+            {
+                row.Show(data.title, shape == 0 ? line : "Owned", "WEAR", true, buttonEnabled);
+            }
+            else
+            {
+                bool canBuy = progression.CanBuyShape(shape);
+                row.Show(data.title, line, UiIcons.Coins(data.price), canBuy, canBuy ? buttonEnabled : buttonDisabled);
+            }
+
+            row.ShowFigure(data.figureBody, data.figureDetail, progression.CrowdColorIn(progression.WorldIndex));
         }
 
         // ---------- worlds ----------

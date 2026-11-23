@@ -267,32 +267,47 @@ namespace Claybreak.Tests
             yield return null;
         }
 
-        // RT-6t.6b (D26 A): the home screen's shape button walks through the free crowd shapes; the crowd behind the menu
-        // and the next run are drawn with the pick, the label names it, nothing is charged, and it comes back around.
+        // RT-6t.20 (D31 A, D32 A): the home screen has no shape button any more; the shop's SHAPES tab sells the shapes. A
+        // purchase charges the price and is worn at once: the crowd behind the menu, the assault and the next run change shape
+        // and hop; an owned shape is worn again for free.
         [UnityTest]
-        public IEnumerator ShapePickerDrawsTheRunWithThePickedShape()
+        public IEnumerator ShapesAreBoughtInTheShopAndDrawTheRun()
         {
             yield return LoadScene(false);
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
             RunCrowd crowd = flow.Crowd;
             ClaybreakCatalog catalog = flow.Progress.Catalog;
-            Assert.GreaterOrEqual(catalog.Shapes.Count, 2, "Bolinha and Pintinho");
+            Assert.AreEqual(5, catalog.Shapes.Count, "BALL, CHICK, BUNNY, FROGGY, PENGUIN");
+            Assert.IsNull(GameObject.Find("/Ui/Screens/Home/Safe/ShapeButton"), "the shape button left the home screen");
             Assert.AreEqual(catalog.Shapes[0].mesh, crowd.Swarm.UnitMesh, "a fresh save starts with the default shape");
-            int coins = flow.Progress.Save.coins;
-            var label = GameObject.Find("/Ui/Screens/Home/Safe/ShapeButton").GetComponentInChildren<TMPro.TMP_Text>();
-            StringAssert.Contains(catalog.Shapes[0].title, label.text);
+            flow.Progress.Save.coins = 1500;
 
-            Press("/Ui/Screens/Home/Safe/ShapeButton");
-            Assert.AreEqual(catalog.Shapes[1].id, flow.Progress.Save.shape);
-            Assert.AreEqual(catalog.Shapes[1].mesh, crowd.Swarm.UnitMesh, "the crowd behind the menu did not change shape");
-            Assert.AreEqual(catalog.Shapes[1].mesh, flow.Field.Flyers.UnitMesh, "the assault is not drawn with the picked shape");
-            StringAssert.Contains(catalog.Shapes[1].title, label.text);
-            Assert.AreEqual(coins, flow.Progress.Save.coins, "shapes are free");
+            Press("/Ui/Screens/Home/Safe/ShopButton");
+            Press("/Ui/Screens/Shop/Safe/TabSHAPES");
+            Assert.AreEqual(ShopTab.Shapes, flow.Screens.Tab);
+            var price = GameObject.Find("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/Action").GetComponentInChildren<TMPro.TMP_Text>();
+            StringAssert.Contains("1000", price.text, "the bunny row shows its price");
+            Assert.IsTrue(GameObject.Find("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/FigureBody").activeSelf, "no figure on the row");
 
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/Action");
+            Assert.AreEqual("bunny", flow.Progress.Save.shape, "the bunny was not bought and worn");
+            Assert.AreEqual(500, flow.Progress.Save.coins, "the bunny costs 1000");
+            Assert.AreEqual(catalog.Shapes[2].mesh, crowd.Swarm.UnitMesh, "the crowd behind the menu did not change shape");
+            Assert.AreEqual(catalog.Shapes[2].mesh, flow.Field.Flyers.UnitMesh, "the assault is not drawn with the bought shape");
+            Assert.AreEqual(catalog.Shapes[2].motion.HopHeight, SwarmMotionBridge.Read(crowd.Swarm).HopHeight, "the crowd does not hop like a bunny");
+            Assert.AreEqual(catalog.Shapes[2].motion.HopHeight, crowd.Leader.Motion.HopHeight, "the leader does not hop like its crowd");
+
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row1/Action");
+            Assert.AreEqual("ball", flow.Progress.Save.shape, "the free shape was not worn again");
+            Assert.AreEqual(500, flow.Progress.Save.coins, "wearing an owned shape is free");
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/Action");
+            Assert.AreEqual(500, flow.Progress.Save.coins);
+
+            Press("/Ui/Screens/Shop/Safe/Back");
             Press("/Ui/Screens/Home/Safe/Play");
             Assert.AreEqual(FlowState.Run, flow.State);
             yield return null;
-            Assert.AreEqual(catalog.Shapes[1].mesh, crowd.Swarm.UnitMesh, "the run is not drawn with the picked shape");
+            Assert.AreEqual(catalog.Shapes[2].mesh, crowd.Swarm.UnitMesh, "the run is not drawn with the bought shape");
         }
 
         // RT-8: SETTINGS opens the settings page; its switches drive the kit's preferences and come back as they

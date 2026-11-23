@@ -50,6 +50,20 @@ namespace Claybreak
         private Mesh measuredMesh;
         private float unitHeight = 1f;
         private float unitWidth = 1f;
+        private float crownSeat;
+
+        /// <summary>The hop the leader draws with now (the worn shape's, RT-6t.20).</summary>
+        public SwarmMotionSettings Motion => motion;
+
+        /// <summary>
+        /// The worn shape's hop and crown seat (RT-6t.20): the leader hops like its crowd; <paramref name="seat"/> is the
+        /// crown's height on the unit (m), 0 = the top of the mesh.
+        /// </summary>
+        public void UseShape(in SwarmMotionSettings hop, float seat)
+        {
+            motion = hop;
+            crownSeat = Mathf.Max(0f, seat);
+        }
 
         /// <summary>Where the leader stands on the ground now.</summary>
         public Vector3 Ground => ground;
@@ -195,7 +209,7 @@ namespace Claybreak
             // Crown = body · T(0, head, 0) · S(width): the body's 3×3 times the crown scale, moved up the body's own axis.
             // float3x3(a, b, c) takes columns: the rows go in transposed.
             float3x3 basis = math.transpose(new float3x3(instance.Row0.xyz, instance.Row1.xyz, instance.Row2.xyz));
-            float head = unitHeight * (1f - crownSink);
+            float head = (crownSeat > 0f ? crownSeat : unitHeight) * (1f - crownSink);
             float3 offset = math.mul(basis, new float3(0f, head, 0f));
             float3x3 scaled = math.mul(basis, float3x3.Scale(unitWidth * crownWidth));
             Color accent = crownColor.linear;

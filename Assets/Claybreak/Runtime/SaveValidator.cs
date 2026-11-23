@@ -73,6 +73,12 @@ namespace Claybreak
             Check(save.skins != null && System.Array.IndexOf(save.skins, catalog.Skins[0].id) >= 0, "the free skin is not owned.", problems);
             Check(save.skins != null && System.Array.IndexOf(save.skins, save.skin) >= 0, $"worn skin '{save.skin}' is not owned.", problems);
             Check(catalog.ShapeIndexOf(save.shape) >= 0, $"crowd shape '{save.shape}' is not in the catalog.", problems);
+            // RT-6t.20 (save version 5): shapes are bought; the free one is always owned and the worn one must be owned.
+            CheckIds(save.ownedShapes, id => catalog.ShapeIndexOf(id) >= 0, "crowd shape", problems);
+            Check(save.ownedShapes != null && System.Array.IndexOf(save.ownedShapes, catalog.Shapes[0].id) >= 0,
+                "the free crowd shape is not owned.", problems);
+            Check(save.ownedShapes != null && System.Array.IndexOf(save.ownedShapes, save.shape) >= 0,
+                $"worn crowd shape '{save.shape}' is not owned.", problems);
             return problems.Count == before;
         }
 

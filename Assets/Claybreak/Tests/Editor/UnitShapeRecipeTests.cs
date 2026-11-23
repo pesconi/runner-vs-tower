@@ -97,31 +97,32 @@ namespace Claybreak.Tests
         [Test]
         public void PintinhoMatchesTheReferenceMirroredToPlusZ()
         {
+            // RT-6t.20: the egg-shaped Pintinho keeps the reference's parts and their mirror to +Z, raised with the egg.
             const float r = UnitShapeRecipes.Radius;
             Mesh mesh = Keep(UnitShapeRecipes.Pintinho(true));
             Vector3[] vertices = mesh.vertices;
             Color32[] colors = mesh.colors32;
 
-            // Beak apex: reference center (0, 0.95R, −1.05R) + half its height (0.055) toward the front.
+            // Beak apex: center (0, 1.2R, +1.0R) + half its height (0.055) toward the front.
             Vector3 beakTip = Extreme(vertices, colors, UnitShapeRecipes.Orange, v => v.z);
             Assert.AreEqual(0f, beakTip.x, 1e-4f);
-            Assert.AreEqual(r * 0.95f, beakTip.y, 1e-4f);
-            Assert.AreEqual(r * 1.05f + 0.055f, beakTip.z, 1e-4f);
+            Assert.AreEqual(r * 1.2f, beakTip.y, 1e-4f);
+            Assert.AreEqual(r * 1.0f + 0.055f, beakTip.z, 1e-4f);
 
-            // Crest top: reference ball 0.045 at (0, 2.02R, 0).
+            // Crest top: ball 0.06 at (0, 2.3R + 0.02, 0).
             Vector3 crestTop = Extreme(vertices, colors, UnitShapeRecipes.Orange, v => v.y);
-            Assert.AreEqual(r * 2.02f + 0.045f, crestTop.y, 1e-4f);
+            Assert.AreEqual(r * 2.3f + 0.02f + 0.06f, crestTop.y, 1e-4f);
 
-            // Tail (body color, behind the ball): apex at reference (0, 1.2R, 0.95R) + 0.06 along the axis rotated
-            // 1.1 rad about X, mirrored: (0, cos 1.1, −sin 1.1).
+            // Tail (body color, behind the egg): apex at (0, 1.3R, −0.9R) + 0.06 along the axis rotated 1.1 rad about X,
+            // mirrored: (0, cos 1.1, −sin 1.1).
             Vector3 tailTip = Extreme(vertices, colors, UnitShapeRecipes.Body, v => -v.z);
-            Assert.AreEqual(r * 1.2f + 0.06f * Mathf.Cos(1.1f), tailTip.y, 1e-4f);
-            Assert.AreEqual(-(r * 0.95f + 0.06f * Mathf.Sin(1.1f)), tailTip.z, 1e-4f);
+            Assert.AreEqual(r * 1.3f + 0.06f * Mathf.Cos(1.1f), tailTip.y, 1e-4f);
+            Assert.AreEqual(-(r * 0.9f + 0.06f * Mathf.Sin(1.1f)), tailTip.z, 1e-4f);
 
-            // Eyes: reference centers (±0.08, 1.15R, −0.86R); both balls together are centered across.
+            // Eyes: centers (±0.08, 1.45R, +0.86R); both balls together are centered across.
             Vector3 eyes = Centroid(vertices, colors, UnitShapeRecipes.Eyes);
             Assert.AreEqual(0f, eyes.x, 1e-4f);
-            Assert.AreEqual(r * 1.15f, eyes.y, 1e-4f);
+            Assert.AreEqual(r * 1.45f, eyes.y, 1e-4f);
             Assert.AreEqual(r * 0.86f, eyes.z, 1e-4f);
         }
 

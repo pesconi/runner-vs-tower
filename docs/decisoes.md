@@ -2089,3 +2089,46 @@ resposta. Aceite pendente: usuário aprovar o plano e as fichas.
 - **T-RT6t19-6 — Buraco perto do meio.** Na pista de 8 m a multidão espremida contra uma borda passa ao lado de um buraco
   encostado na outra: o gerador põe o buraco a até 50% do meio e o rolo a 30–80%; ainda assim os dois quase não custam a
   quem desvia. Registrado para o olhar do usuário (aceite da entrega) em vez de mudar o movimento aceito na RT-6t.18.
+
+## 2026-11-23 — T-RT6t20-1..7 — Formas compradas na loja (RT-6t.20) — técnica (sessão da entrega)
+
+- **T-RT6t20-1 — Forma é item do catálogo com preço, quique e figura.** `CrowdShapeOption` ganhou `price` (D32 A),
+  `motion` (o quique da forma, `SwarmMotionSettings` do kit), `crownSeat` (altura da coroa do líder; o coelho a leva na
+  cabeça, não na ponta das orelhas) e as duas camadas da figura da loja. A primeira forma é grátis (o catálogo recusa
+  outra coisa). Forma nova = linha em `WorldContent.Shapes` + receita em `UnitShapeRecipes`, sem código de loja.
+- **T-RT6t20-2 — Silhueta medida, não só olhada.** Critério do usuário (D31 A): reconhecível de longe. Na câmera da
+  corrida sobra quase só o contorno, então o teste `EveryPairOfShapesHasADifferentOutline` exige que cada par de formas
+  difira em ≥ 15% na altura, na largura ou na proporção. Com isso o PINTINHO, que tinha o tamanho da BOLINHA (o próprio
+  plano apontava que quase não se distinguiam), virou um ovo mais alto e estreito com a crista maior (mesmos 492
+  triângulos); BOLINHA ficou como estava. Coelho (orelhas, 488), sapo (achatado e largo com olhos saltados, 488) e
+  pinguim (oval alto com barriga branca, 476). Nenhuma passa de 492: o gate 3× não se aplica.
+- **T-RT6t20-3 — Quique por forma sem mexer no kit.** O renderizador do kit lê o `motion` serializado a cada quadro, mas
+  não tem setter. Em vez de esperar uma entrega K (o kit é de outra sessão agora), `SwarmMotionBridge` troca só esse
+  campo com `JsonUtility.FromJsonOverwrite` (API pública do Unity), na troca de forma do menu, nunca por quadro. O teste
+  `TheHopBridgeReachesBothKitRenderers` falha se o kit renomear o campo. Necessidade registrada para o kit: um
+  `SetMotion(SwarmMotionSettings)` em `SwarmRenderer` e `LooseSwarmRenderer`; quando existir, a ponte vira uma chamada.
+- **T-RT6t20-4 — Figura da loja desenhada no editor por software.** `ShapeFigures` rasteriza a malha (três quartos,
+  três faixas de luz, contorno) em duas camadas de 256 px: o corpo em cinza, que a loja pinta com a cor do exército no
+  mundo mostrado, e os detalhes por cima (olhos, bico, barriga, contorno). Roda no batchmode sem GPU (a cena é
+  reconstruída com `-nographics`) e dá os mesmos bytes a cada vez (só grava se mudou). Custo no jogo: duas imagens.
+- **T-RT6t20-5 — Save v5 = v4 + `ownedShapes`.** Migração v1–v4 → v5: possui a BOLINHA e a forma vestida só se ela
+  estava à venda no v4 (`SaveMigration.ShapesBeforeV5` = ball, chick); um v4 editado à mão com "penguin" ou com
+  `ownedShapes` não ganha nada (o v4 não tinha essa lista; ela é substituída). Normalização: ids desconhecidos e
+  repetidos saem, a grátis é sempre possuída, forma vestida sem posse volta para a grátis. O validador do save reprova
+  forma vestida não possuída e falta da grátis. Backup do JSON v4 pela chave `Claybreak.Save.backup.v4` (mecanismo da
+  RT-5). Fixtures: `v4-ball`, `v4-chick-bubblegum`, `v4-no-shape`, `v4-hand-edited-shapes`, `v5-bunny`.
+- **T-RT6t20-6 — Comprar = vestir na hora.** Como as cores: a compra cobra, veste e a multidão atrás do menu, o líder e o
+  assalto trocam de forma e de quique; uma forma possuída se veste de graça. O botão SHAPE saiu da tela inicial; a loja
+  tem 4 abas (margens de 4%).
+- **T-RT6t20-7 — Economia.** O jogador simulado compra as formas por último, na ordem do catálogo (depois das cores);
+  o total da loja inclui as formas (+5.300). Resultado: loja inteira 24.680 moedas em 58 min de jogo simulado (antes
+  19.380 em 50 min; a ficha D32 estimava 55–56 min por interpolação); preços ×0,75 → 51 min, ×1,5 → 70 min. O simulador
+  passou a só parar quando as formas também estão compradas. Números em `rt6-economia.md`.
+- **T-RT6t20-8 — Revisão de segurança do save (revisor só leitura, modelo fable, como na 6t.6b).** Sem achado grave.
+  Corrigidos os três baixos e a nota: (1) um save v2/v3 forjado com `"shape":"chick"` ganharia o pintinho de graça; agora
+  as versões 1–3 sempre migram com a BOLINHA (nunca tiveram forma); (2) save ilegível (corrompido ou de versão mais nova
+  depois de um downgrade) era sobrescrito sem cópia, falha antiga; agora o JSON original fica uma vez em
+  `Claybreak.Save.backup.unreadable`; (3) o catálogo recusa forma vendida com preço ≤ 0 (só a primeira é grátis); (4) a
+  normalização tolera lista nula. Testes novos para (1) e (2). Áreas sem problema: v4 nunca traz `ownedShapes` confiável,
+  ids com maiúscula ou espaço caem para a BOLINHA, moedas presas a 0..99.999.999, compra dupla e vestir sem posse
+  recusados, normalização e validador coerentes, migração idempotente com backup v4.

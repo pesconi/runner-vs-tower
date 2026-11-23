@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// The generated crowd shape meshes (RT-6t.2): Bolinha and Pintinho, each with and without eyes (D25 open), written
+    /// The generated crowd shape meshes (RT-6t.2; RT-6t.20 added Coelhinho, Sapinho and Pinguim), each with and without eyes, written
     /// as mesh assets under <see cref="Folder"/> from <see cref="UnitShapeRecipes"/>. Deterministic and idempotent (assets
     /// keep their GUIDs). Runs inside <see cref="ToonLabBuilder.Build"/> (so inside the scene builder too).
     /// The validator checks every entry (<see cref="ClaybreakValidation"/>).
@@ -41,7 +41,20 @@ namespace Claybreak.Editor
             new Entry("BolinhaNoEyes", false, () => UnitShapeRecipes.Bolinha(false), null),
             new Entry("Pintinho", true, () => UnitShapeRecipes.Pintinho(true), UnitShapeRecipes.Orange),
             new Entry("PintinhoNoEyes", false, () => UnitShapeRecipes.Pintinho(false), UnitShapeRecipes.Orange),
+            // RT-6t.20: the three shapes sold in the shop (D31 A).
+            new Entry("Coelhinho", true, () => UnitShapeRecipes.Coelhinho(true), UnitShapeRecipes.Eyes),
+            new Entry("CoelhinhoNoEyes", false, () => UnitShapeRecipes.Coelhinho(false), null),
+            new Entry("Sapinho", true, () => UnitShapeRecipes.Sapinho(true), UnitShapeRecipes.Eyes),
+            new Entry("SapinhoNoEyes", false, () => UnitShapeRecipes.Sapinho(false), null),
+            new Entry("Pinguim", true, () => UnitShapeRecipes.Pinguim(true), UnitShapeRecipes.Orange),
+            new Entry("PinguimNoEyes", false, () => UnitShapeRecipes.Pinguim(false), UnitShapeRecipes.Orange),
         };
+
+        /// <summary>The generated entry called <paramref name="id"/> (an unknown id is a programming error).</summary>
+        public static Entry Named(string id)
+        {
+            return Array.Find(All, entry => entry.Id == id) ?? throw new ArgumentException($"no unit shape '{id}'", nameof(id));
+        }
 
         [MenuItem("Claybreak/Build Unit Shapes")]
         public static void Build()

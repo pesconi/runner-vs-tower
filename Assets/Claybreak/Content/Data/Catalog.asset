@@ -161,9 +161,68 @@ MonoBehaviour:
   - id: ball
     title: BALL
     mesh: {fileID: 4300000, guid: 3492d2dda05ae874b91f0decb7196476, type: 2}
+    price: 0
+    motion:
+      Frequency: 9.5
+      HopHeight: 0.2
+      SquashBase: 0.8
+      SquashAmount: 0.32
+      ForwardLean: 0.12
+    crownSeat: 0
+    figureBody: {fileID: 21300000, guid: 8e2e64665a09e44419a0d14d054c9fa9, type: 3}
+    figureDetail: {fileID: 21300000, guid: 478c38073e177f64cbd454b7205387ee, type: 3}
   - id: chick
     title: CHICK
     mesh: {fileID: 4300000, guid: 8cb3313dda0ba81449f15ea8919ed45c, type: 2}
+    price: 300
+    motion:
+      Frequency: 11
+      HopHeight: 0.15
+      SquashBase: 0.82
+      SquashAmount: 0.28
+      ForwardLean: 0.2
+    crownSeat: 0
+    figureBody: {fileID: 21300000, guid: db0e1c513788fdc448a3a76015cf575c, type: 3}
+    figureDetail: {fileID: 21300000, guid: 6e31634458c2d9d49bf5cd5bfdc917b9, type: 3}
+  - id: bunny
+    title: BUNNY
+    mesh: {fileID: 4300000, guid: d6ee4835431f06645b101b1f0be46dbd, type: 2}
+    price: 1000
+    motion:
+      Frequency: 6.5
+      HopHeight: 0.42
+      SquashBase: 0.7
+      SquashAmount: 0.5
+      ForwardLean: 0.08
+    crownSeat: 0.41799998
+    figureBody: {fileID: 21300000, guid: 2a41ee385cef2b64493fba64df94f767, type: 3}
+    figureDetail: {fileID: 21300000, guid: 4630115ec3020ae418cbf31d205440d2, type: 3}
+  - id: froggy
+    title: FROGGY
+    mesh: {fileID: 4300000, guid: 0bcc3faa76a8a5948b87ec4c3943eca0, type: 2}
+    price: 1600
+    motion:
+      Frequency: 5.5
+      HopHeight: 0.3
+      SquashBase: 0.6
+      SquashAmount: 0.6
+      ForwardLean: 0.18
+    crownSeat: 0
+    figureBody: {fileID: 21300000, guid: 2a9e032d59304e34a984c3406b2b8e2b, type: 3}
+    figureDetail: {fileID: 21300000, guid: dca5a3bdca1f6d34ebe975ff2e2cac3c, type: 3}
+  - id: penguin
+    title: PENGUIN
+    mesh: {fileID: 4300000, guid: a1b80d0e1217520449d6309d045b5bbc, type: 2}
+    price: 2400
+    motion:
+      Frequency: 14
+      HopHeight: 0.05
+      SquashBase: 0.94
+      SquashAmount: 0.1
+      ForwardLean: 0
+    crownSeat: 0
+    figureBody: {fileID: 21300000, guid: c566c469ed282d848981348bfca409c5, type: 3}
+    figureDetail: {fileID: 21300000, guid: 4617acc69d046a34484e51102f3d7f72, type: 3}
   loadoutSlots: 2
   specialEvery: 3
   worldsFooter: MORE WORLDS SOON

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JungleDegree.StudioKit.Swarm;
 using UnityEngine;
 
 namespace Claybreak
@@ -79,8 +80,10 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// A crowd shape the player picks on the home screen (D26 A: free, no price). The mesh is one of the generated crowd
-    /// shapes (one submesh, body tinted by the skin); the first shape is the default for a new or migrated save.
+    /// A crowd shape sold in the shop's SHAPES tab (RT-6t.20, D31 A / D32 A; before, D26 A: free on the home screen). The
+    /// mesh is one of the generated crowd shapes (one submesh, body tinted by the skin); each shape hops its own way
+    /// (<see cref="motion"/>), so it reads from afar in a crowd of 300. The first shape is free and the default for a new
+    /// or migrated save.
     /// </summary>
     [Serializable]
     public sealed class CrowdShapeOption
@@ -89,6 +92,16 @@ namespace Claybreak
         public string id = "shape";
         public string title = "SHAPE";
         public Mesh mesh;
+        [Tooltip("Price in coins; the first shape must be free (the default look).")]
+        [Min(0)] public int price;
+        [Tooltip("How the units of this shape hop (the crowd, the leader, the assault).")]
+        public SwarmMotionSettings motion = SwarmMotionSettings.Default;
+        [Tooltip("Height of the leader's crown seat (m); 0 = the top of the mesh (a shape with ears seats it on the head).")]
+        [Min(0f)] public float crownSeat;
+        [Tooltip("Shop figure, body layer: white shading the shop tints with the army's color (generated from the mesh).")]
+        public Sprite figureBody;
+        [Tooltip("Shop figure, detail layer: the fixed colors and the outline, drawn over the body layer untinted.")]
+        public Sprite figureDetail;
     }
 
     /// <summary>A world in the world list and what opens it.</summary>
@@ -114,7 +127,7 @@ namespace Claybreak
         [SerializeField] private UpgradeTrack[] upgrades = new UpgradeTrack[0];
         [SerializeField] private UnitType[] units = new UnitType[0];
         [SerializeField] private CrowdSkin[] skins = new CrowdSkin[0];
-        [Tooltip("Crowd shapes picked on the home screen (D26 A: free); the first is the default.")]
+        [Tooltip("Crowd shapes sold in the shop (RT-6t.20); the first is free and the default.")]
         [SerializeField] private CrowdShapeOption[] shapes = new CrowdShapeOption[0];
         [Tooltip("Special unit types equipped at once (GDD 6: 1-2).")]
         [SerializeField, Range(1, MaximumLoadoutSlots)] private int loadoutSlots = MaximumLoadoutSlots;
@@ -289,9 +302,9 @@ namespace Claybreak
                 }
             }
 
-            if (shapes == null || shapes.Length == 0)
+            if (shapes == null || shapes.Length == 0 || shapes[0] == null || shapes[0].price != 0)
             {
-                error = "the catalog needs at least one crowd shape (the first is the default).";
+                error = "the catalog needs crowd shapes, and the first one is the free default.";
                 return false;
             }
 
@@ -307,6 +320,21 @@ namespace Claybreak
                 if (shape.mesh == null || shape.mesh.subMeshCount != 1)
                 {
                     error = $"shape '{shape.id}' needs one of the generated crowd shapes (one submesh).";
+                    return false;
+                }
+
+                // A sold shape has a real price (the free one is the first): a zero or negative price would give it away
+                // or pay the player for it.
+                if (i > 0 && shape.price <= 0)
+                {
+                    error = $"shape '{shape.id}' needs a price (only the first shape is free).";
+                    return false;
+                }
+
+                SwarmMotionSettings hop = shape.motion;
+                if (!(hop.Frequency > 0f) || !(hop.HopHeight >= 0f) || !(hop.SquashBase > 0f) || !(hop.SquashAmount >= 0f))
+                {
+                    error = $"shape '{shape.id}' needs a hop with a positive speed and squash.";
                     return false;
                 }
             }

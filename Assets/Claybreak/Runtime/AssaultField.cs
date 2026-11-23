@@ -197,10 +197,11 @@ namespace Claybreak
             crowdColor = color;
         }
 
-        /// <summary>The unit shape the units in flight are drawn with (the crowd's, picked in the menu).</summary>
-        public void UseShape(Mesh shape)
+        /// <summary>The unit shape the units in flight are drawn with and how they hop (the crowd's, bought in the shop).</summary>
+        public void UseShape(CrowdShapeOption shape)
         {
-            flyers.SetUnitMesh(shape);
+            flyers.SetUnitMesh(shape.mesh);
+            SwarmMotionBridge.Apply(flyers, shape.motion);
         }
 
         /// <summary>

@@ -823,10 +823,30 @@ namespace Claybreak.Editor
                 }
             }
 
-            // Every save before version 4 migrates to this id: it must stay on offer, or those players silently lose their shape.
-            if (catalog.ShapeIndexOf(SaveMigration.ShapeBeforeV4) < 0)
+            // Every save before version 5 migrates to these ids: they must stay on offer, or those players silently lose their
+            // shape (the Pintinho a version-4 player wore is kept without paying, D31 A).
+            foreach (string id in SaveMigration.ShapesBeforeV5)
             {
-                failures.Add($"the catalog must keep the shape '{SaveMigration.ShapeBeforeV4}' older saves migrate to");
+                if (catalog.ShapeIndexOf(id) < 0)
+                {
+                    failures.Add($"the catalog must keep the shape '{id}' older saves migrate to");
+                }
+            }
+
+            if (catalog.Shapes[0].id != SaveMigration.ShapeBeforeV4 || catalog.Shapes[0].price != 0)
+            {
+                failures.Add($"the first crowd shape must be the free '{SaveMigration.ShapeBeforeV4}'");
+            }
+
+            // RT-6t.20: every shape has its two shop figure layers, generated from its own mesh.
+            foreach (CrowdShapeOption shape in catalog.Shapes)
+            {
+                if (shape.figureBody == null || shape.figureDetail == null
+                    || AssetDatabase.GetAssetPath(shape.figureBody) != ShapeFigures.BodyPath(shape.id)
+                    || AssetDatabase.GetAssetPath(shape.figureDetail) != ShapeFigures.DetailPath(shape.id))
+                {
+                    failures.Add($"crowd shape '{shape.id}' needs its generated shop figures ({ShapeFigures.Folder})");
+                }
             }
 
             if (swarm.UnitMesh != catalog.Shapes[0].mesh)

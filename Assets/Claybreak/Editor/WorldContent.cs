@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JungleDegree.StudioKit.Swarm;
 using UnityEditor;
 using UnityEngine;
 
@@ -674,7 +675,11 @@ namespace Claybreak.Editor
             var shapes = new List<CrowdShapeOption>();
             foreach (ShapeDefinition shape in Shapes)
             {
-                shapes.Add(new CrowdShapeOption { id = shape.Id, title = shape.Title, mesh = UnitShapeAssets.Load(shape.Asset) });
+                shapes.Add(new CrowdShapeOption
+                {
+                    id = shape.Id, title = shape.Title, mesh = UnitShapeAssets.Load(shape.Asset), price = shape.Price, motion = shape.Motion,
+                    crownSeat = shape.CrownSeat, figureBody = ShapeFigures.LoadBody(shape.Id), figureDetail = ShapeFigures.LoadDetail(shape.Id)
+                });
             }
             var entries = new WorldEntry[worlds.Length];
             for (int w = 0; w < worlds.Length; w++)
@@ -721,30 +726,55 @@ namespace Claybreak.Editor
             new SkinDefinition("frost", "BUBBLEGUM", "#ff9ed2", 2500),
         };
 
-        /// <summary>A crowd shape on offer: stable save id, title on the home screen and the generated mesh it draws.</summary>
+        /// <summary>
+        /// A crowd shape in the shop: stable save id, shop title, the generated mesh it draws, price in coins, its own hop
+        /// and the leader's crown seat (0 = the top of the mesh).
+        /// </summary>
         public readonly struct ShapeDefinition
         {
-            public ShapeDefinition(string id, string title, UnitShapeAssets.Entry asset)
+            public ShapeDefinition(string id, string title, UnitShapeAssets.Entry asset, int price, SwarmMotionSettings motion,
+                float crownSeat = 0f)
             {
                 Id = id;
                 Title = title;
                 Asset = asset;
+                Price = price;
+                Motion = motion;
+                CrownSeat = crownSeat;
             }
 
             public string Id { get; }
             public string Title { get; }
             public UnitShapeAssets.Entry Asset { get; }
+            public int Price { get; }
+            public SwarmMotionSettings Motion { get; }
+            public float CrownSeat { get; }
         }
 
         /// <summary>
-        /// The free crowd shapes (D26 A), both with eyes (D25 A; the eyeless meshes stay generated as the reserve). The first
-        /// is the default and the shape every save before version 4 was drawn with (<see cref="SaveMigration.ShapeBeforeV4"/>).
+        /// The crowd shapes of the shop's SHAPES tab (RT-6t.20: D31 A, prices D32 A), all with eyes (D25 A; the eyeless
+        /// meshes stay generated as the reserve). The first is free, the default and the shape every save before version 4
+        /// was drawn with (<see cref="SaveMigration.ShapeBeforeV4"/>). Each hops its own way so the crowd reads from afar: the
+        /// Bolinha the reference hop, the Pintinho quick pecks leaning forward, the Coelhinho big slow hops, the Sapinho
+        /// squashed leaps and the Pinguim an upright shuffle.
         /// </summary>
         public static readonly ShapeDefinition[] Shapes =
         {
-            new ShapeDefinition(SaveMigration.ShapeBeforeV4, "BALL", UnitShapeAssets.All[0]),
-            new ShapeDefinition("chick", "CHICK", UnitShapeAssets.All[2]),
+            new ShapeDefinition(SaveMigration.ShapeBeforeV4, "BALL", UnitShapeAssets.Named("Bolinha"), 0, SwarmMotionSettings.Default),
+            new ShapeDefinition("chick", "CHICK", UnitShapeAssets.Named("Pintinho"), 300, Hop(11f, 0.15f, 0.82f, 0.28f, 0.2f)),
+            new ShapeDefinition("bunny", "BUNNY", UnitShapeAssets.Named("Coelhinho"), 1000, Hop(6.5f, 0.42f, 0.7f, 0.5f, 0.08f),
+                UnitShapeRecipes.BunnyHeadTop),
+            new ShapeDefinition("froggy", "FROGGY", UnitShapeAssets.Named("Sapinho"), 1600, Hop(5.5f, 0.3f, 0.6f, 0.6f, 0.18f)),
+            new ShapeDefinition("penguin", "PENGUIN", UnitShapeAssets.Named("Pinguim"), 2400, Hop(14f, 0.05f, 0.94f, 0.1f, 0f)),
         };
+
+        private static SwarmMotionSettings Hop(float frequency, float height, float squashBase, float squashAmount, float lean)
+        {
+            return new SwarmMotionSettings
+            {
+                Frequency = frequency, HopHeight = height, SquashBase = squashBase, SquashAmount = squashAmount, ForwardLean = lean
+            };
+        }
 
         private static Color Hex(string hex)
         {

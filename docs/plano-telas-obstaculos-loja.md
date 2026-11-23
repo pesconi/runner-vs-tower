@@ -311,6 +311,9 @@ Unity em batchmode dos dois lados não podem rodar ao mesmo tempo (aprendizado d
   na câmera da corrida com 300 bonecos (reconhecíveis de longe) e no assalto, e da aba SHAPES nas 4 proporções; gate 3× se a forma mais pesada passar de 492 triângulos; APK
   no OPPO com o save atual do usuário (CHICK ou BALL mantida).
 - **Olhar humano:** sim, o usuário aprova o visual das formas novas (capturas) antes do APK.
+- **Status (2026-11-23):** concluída, validação completa verde, capturas em `docs/art/rt6t20/`; loja 24.680 moedas em
+  58 min; gate 3× não se aplica (máximo 492 triângulos). Aceite pendente: o usuário aprovar as capturas; depois o APK.
+  Detalhes em `plano-de-entregas.md`, seção RT-6t.20.
 
 ### Ordem e paralelismo
 

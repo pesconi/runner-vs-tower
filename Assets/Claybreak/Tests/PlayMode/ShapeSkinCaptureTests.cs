@@ -10,9 +10,7 @@ namespace Claybreak.Tests
     /// <summary>
     /// RT-6t.6b record, on the OPPO CPH2791 screen shape (1080×2354, at half or quarter size):
     /// <list type="bullet">
-    /// <item><c>menu-forma.png</c>: the home screen with the shape picker, before and after one tap (the crowd waiting behind
-    /// the menu changes shape).</item>
-    /// <item><c>formas-mundos.png</c>: both crowd shapes (rows) in the four worlds (columns), wearing the default skin (each
+    /// <item><c>formas-mundos.png</c>: every crowd shape (rows; five since RT-6t.20) in the four worlds (columns), wearing the default skin (each
     /// world's color), in the world's device-gate run (the crowd at its cap).</item>
     /// <item><c>skins-mundos.png</c>: the default skin and the 8 paid skins (columns) in the four worlds (rows), the eye check
     /// behind the validator's contrast warning (D26 A).</item>
@@ -40,35 +38,7 @@ namespace Claybreak.Tests
         }
 
         [UnityEngine.TestTools.UnityTest]
-        public IEnumerator CaptureTheMenuShapePicker()
-        {
-            string folder = Folder();
-            yield return ClaybreakSceneTests.LoadScene(false);
-            var flow = UnityEngine.Object.FindFirstObjectByType<ClaybreakFlow>();
-            Assert.AreEqual(FlowState.Menu, flow.State);
-            Camera view = flow.Crowd.CameraRig.GetComponent<Camera>();
-            // The overlay canvas never reaches a render texture: draw it through the run camera, as the edit-mode captures do.
-            var canvas = GameObject.Find("/Ui").GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            canvas.worldCamera = view;
-            canvas.planeDistance = 1f;
-            using var shot = new Shot(view, Width, Height);
-            using var sheet = new Sheet(2, 1, Width, Height);
-            yield return new WaitForSeconds(1f);
-            yield return shot.Take();
-            sheet.Put(0, 0, shot.Panel);
-            Assert.AreEqual(0, flow.Progress.ShapeIndex);
-
-            GameObject.Find("/Ui/Screens/Home/Safe/ShapeButton").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
-            Assert.AreEqual(1, flow.Progress.ShapeIndex, "the picker did not move to the next shape");
-            yield return new WaitForSeconds(0.5f);
-            yield return shot.Take();
-            sheet.Put(1, 0, shot.Panel);
-            sheet.Save(Path.Combine(folder, "menu-forma.png"));
-        }
-
-        [UnityEngine.TestTools.UnityTest]
-        public IEnumerator CaptureBothShapesInTheFourWorlds()
+        public IEnumerator CaptureEveryShapeInTheFourWorlds()
         {
             string folder = Folder();
             var catalog = UnityEditor.AssetDatabase.LoadAssetAtPath<ClaybreakCatalog>(CatalogPath);
@@ -85,7 +55,7 @@ namespace Claybreak.Tests
                 flow.Crowd.Wear(flow.Progress.CrowdColorIn(world - 1));
                 for (int shape = 0; shape < shapes; shape++)
                 {
-                    flow.Crowd.UseShape(catalog.Shapes[shape].mesh);
+                    flow.Crowd.UseShape(catalog.Shapes[shape]);
                     yield return new WaitForSeconds(shape == 0 ? 1.5f : 0.1f);
                     yield return shot.Take();
                     sheet.Put(world - 1, shape, shot.Panel);
@@ -110,7 +80,7 @@ namespace Claybreak.Tests
                 ClaybreakFlow flow = null;
                 yield return LoadWorldRun(world, loaded => flow = loaded);
                 using var shot = new Shot(flow.Crowd.CameraRig.GetComponent<Camera>(), Width / small, Height / small);
-                flow.Crowd.UseShape(catalog.Shapes[0].mesh);
+                flow.Crowd.UseShape(catalog.Shapes[0]);
                 for (int skin = 0; skin < skins; skin++)
                 {
                     Assert.IsTrue(flow.Progress.TryWearSkin(skin), "the gate loadout owns every skin");
@@ -124,7 +94,7 @@ namespace Claybreak.Tests
             sheet.Save(Path.Combine(folder, "skins-mundos.png"));
         }
 
-        private static IEnumerator LoadWorldRun(int world, Action<ClaybreakFlow> loaded)
+        internal static IEnumerator LoadWorldRun(int world, Action<ClaybreakFlow> loaded)
         {
 #if UNITY_EDITOR
             ClaybreakFlow.EditorUsesDeviceGateRun = true;
@@ -148,7 +118,7 @@ namespace Claybreak.Tests
             return folder;
         }
 
-        private static string Argument(string name)
+        internal static string Argument(string name)
         {
             string[] arguments = Environment.GetCommandLineArgs();
             for (int i = 0; i < arguments.Length - 1; i++)

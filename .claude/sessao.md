@@ -168,3 +168,10 @@
   fase é guardado por `FitObstacles` (±4,8% de corrida + `SecondsAfterRun`). Perda esperada = `ObstacleLoss` (cache; a vida
   usa quem desvia). Iterar a curva sem a validação completa: EditMode só com `-testFilter Claybreak.Tests.ObstacleCurveTests`
   (o teste loga a tabela de perdas por fase), ~3 min; não precisa reconstruir a cena para isso.
+- 2026-11-23 (RT-6t.20): formas são itens do catálogo com preço, quique (`motion`) e figura da loja (`WorldContent.Shapes`);
+  a figura é rasterizada por software no editor (`ShapeFigures`, roda com `-nographics`). O quique chega ao kit pela
+  `SwarmMotionBridge` (campo serializado `motion`; o kit não tem setter). Save v5 (`ownedShapes`). Capturas das formas com
+  GPU: `-testFilter Claybreak.Tests.ShapeShopCaptureTests -shapeShopCaptureDir <pasta>` (corrida com 300 e assalto); a aba
+  SHAPES sai no `ScreenFitTests` (`telas-loja-formas.png`). Silhueta nova precisa passar em
+  `EveryPairOfShapesHasADifferentOutline` (≥ 15% na altura, largura ou proporção). A ferramenta Bash também quebra heredoc
+  com apóstrofo em `cat > arquivo <<EOF`: escrever o arquivo com Write.

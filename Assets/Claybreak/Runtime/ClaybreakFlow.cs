@@ -308,7 +308,7 @@ namespace Claybreak
             deviceGateWorld = Mathf.Clamp(deviceGateWorld, 0, stressLevels.Length - 1);
 
             progression = new Progression(catalog, LoadSave());
-            UseShape(progression.Shape.mesh);
+            UseShape(progression.Shape);
             DressArmy(progression.WorldIndex);
             gameAudio.Configure(this, theme.Audio);
             ClaybreakSfx.Configure(theme.Audio);
@@ -325,7 +325,6 @@ namespace Claybreak
             screens.PlayPressed += () => StartLevel(progression.CurrentLevel);
             screens.ShopPressed += () => screens.ShowShop(progression);
             screens.WorldsPressed += () => screens.ShowWorlds(progression);
-            screens.ShapePressed += OnShape;
             screens.BackPressed += ShowMenu;
             screens.ShopItemPressed += OnShopItem;
             screens.WorldPressed += OnWorld;
@@ -487,21 +486,6 @@ namespace Claybreak
                 ? DailyReward.NextAmount(progression.Save, monetization.DailyRewards) : 0);
             screens.SetPrivacyVisible(adGateway.PrivacyOptionsRequired);
             Enter(FlowState.Menu);
-        }
-
-        // RT-6t.6b (D26 A): the home screen's shape button walks through the free crowd shapes; the crowd waiting behind the
-        // menu changes at once (a mesh reference swap, nothing created).
-        private void OnShape()
-        {
-            if (state != FlowState.Menu || deviceGate || !progression.TrySelectNextShape())
-            {
-                return;
-            }
-
-            UseShape(progression.Shape.mesh);
-            WriteSave();
-            Debug.Log($"[Claybreak] Crowd shape: {progression.Shape.id}.", this);
-            screens.ShowShape(progression);
         }
 
         private void OnDaily()
@@ -682,10 +666,21 @@ namespace Claybreak
                     bought = progression.TryBuyUnit(index);
                     changed = bought || progression.TryToggleUnit(index);
                     break;
-                default:
+                case ShopTab.Skins:
                     bought = progression.TryBuySkin(index);
                     // The level prepared below dresses the army in the new color.
                     changed = bought || progression.TryWearSkin(index);
+                    break;
+                default:
+                    // RT-6t.20 (D31 A): a shape bought is worn at once; the crowd behind the menu changes shape and hop now
+                    // (a mesh reference swap, nothing created).
+                    bought = progression.TryBuyShape(index);
+                    changed = bought || progression.TryWearShape(index);
+                    if (changed)
+                    {
+                        UseShape(progression.Shape);
+                    }
+
                     break;
             }
 
@@ -697,7 +692,7 @@ namespace Claybreak
             GameAudio.Play(bought ? GameSound.Coin : GameSound.ButtonClick);
             WriteSave();
             Debug.Log($"[Claybreak] Shop: {tab} #{index} {(bought ? "bought" : "toggled")}; coins {progression.Save.coins}, "
-                + $"loadout [{string.Join(", ", progression.Save.loadout)}], skin {progression.Save.skin}.", this);
+                + $"loadout [{string.Join(", ", progression.Save.loadout)}], skin {progression.Save.skin}, shape {progression.Save.shape}.", this);
             PrepareLevel(progression.CurrentLevel);
             screens.ShowShop(progression);
         }
@@ -727,8 +722,8 @@ namespace Claybreak
             }
         }
 
-        // The crowd shape picked in the menu (RT-6t.6b), in the run and in the assault alike (RT-6t.7).
-        private void UseShape(Mesh shape)
+        // The crowd shape worn (bought in the shop, RT-6t.20), with its hop, in the run and in the assault alike (RT-6t.7).
+        private void UseShape(CrowdShapeOption shape)
         {
             crowd.UseShape(shape);
             field.UseShape(shape);

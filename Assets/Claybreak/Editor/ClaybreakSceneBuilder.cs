@@ -97,6 +97,8 @@ namespace Claybreak.Editor
             AssetDatabase.SaveAssets();
             // The crowd shapes and the crowd materials come first: the catalog offers the shapes and the run draws with them.
             ToonLabBuilder.Build();
+            // RT-6t.20: the shop figures of the shapes, drawn from their meshes, before the catalog points at them.
+            ShapeFigures.Build();
             WorldContent.Write();
             MonetizationContent.Write();
             BuildCrowdData();
@@ -860,8 +862,8 @@ namespace Claybreak.Editor
             ClaybreakScreens screens = screensObject.AddComponent<ClaybreakScreens>();
 
             // Home, top to bottom: settings and coins, the name, the world card (world, level, stars), the compact level
-            // meter; from the bottom (thumb reach): SHOP and WORLDS side by side, the big PLAY, and two small seals over it
-            // (the crowd shape until the shop sells shapes, RT-6t.20; the daily gift when due). The elites line moved to the shop.
+            // meter; from the bottom (thumb reach): SHOP and WORLDS side by side, the big PLAY, and a small seal over it (the
+            // daily gift when due). The elites line moved to the shop; the shape picker left for the shop's SHAPES tab (RT-6t.20).
             RectTransform home = MenuPage("Home", screensRect, 0.28f, out RectTransform homePage);
             (Button settingsButton, TMP_Text _) = PillButton("SettingsButton", home, pill, new Vector2(0f, 1f), new Vector2(170f, -110f),
                 new Vector2(290f, 104f), UiColors.Lilac, "SETTINGS", 42);
@@ -890,8 +892,6 @@ namespace Claybreak.Editor
             (Button worldsButton, TMP_Text _) = PillButton("WorldsButton", home, pill, new Vector2(0.5f, 0f), new Vector2(235f, 210f),
                 new Vector2(430f, 140f), UiColors.Sky, "WORLDS", 60);
             StretchAcross(worldsButton, 0.51f, 0.94f);
-            (Button shapeButton, TMP_Text shapeLabel) = PillButton("ShapeButton", home, pill, new Vector2(0.5f, 0f), new Vector2(-250f, 605f),
-                new Vector2(360f, 100f), UiColors.Lilac, ClaybreakScreens.ShapeLine(catalog.Shapes[0].title), 40);
             (Button daily, TMP_Text dailyLabel) = PillButton("DailyGift", home, pill, new Vector2(0.5f, 0f), new Vector2(250f, 605f),
                 new Vector2(360f, 100f), UiColors.Gold, "GIFT", 42, true);
             // A seal, not a full button: tilted a little over PLAY's corner.
@@ -924,19 +924,19 @@ namespace Claybreak.Editor
             credits.text = "CLAY SIEGE  ·  JUNGLE DEGREE\nMUSIC AND SOUND: JUNGLE DEGREE  ·  FONT: BALOO 2 (SIL OFL 1.1)";
             Button settingsBack = BackButton(settingsRoot, pill);
 
-            // Shop: three tabs in equal parts of the width over one list (rows = the longest catalog list), coins only (D6:
+            // Shop: four tabs (RT-6t.20 added SHAPES) in equal parts of the width over one list (rows = the longest catalog list), coins only (D6:
             // no real money). Over the list, what the army takes into a run; under it, a fade that says the list goes on.
             RectTransform shopRoot = MenuPage("Shop", screensRect, 0.5f, out RectTransform shopPage);
             TMP_Text shopCoins = Coins(shopRoot, pill);
             Heading(shopRoot, "SHOP");
-            string[] tabNames = { "UPGRADES", "ELITES", "SKINS" };
+            string[] tabNames = { "UPGRADES", "ELITES", "SKINS", "SHAPES" };
             var tabs = new UnityEngine.Object[tabNames.Length];
             for (int i = 0; i < tabNames.Length; i++)
             {
                 (Button tab, TMP_Text _) = PillButton("Tab" + tabNames[i], shopRoot, pill, new Vector2(0.5f, 1f),
-                    new Vector2((i - 1) * 330f, -300f), new Vector2(310f, 110f), UiColors.Lilac, tabNames[i], 46);
-                // RT-6t.16: equal parts of the safe width (6% margins, 1.5% gaps), never a fixed width past the screen.
-                const float margin = 0.06f;
+                    new Vector2(0f, -300f), new Vector2(240f, 110f), UiColors.Lilac, tabNames[i], 40);
+                // RT-6t.16: equal parts of the safe width (4% margins since RT-6t.20, 1.5% gaps), never a fixed width past the screen.
+                const float margin = 0.04f;
                 const float gap = 0.015f;
                 float part = (1f - 2f * margin - (tabNames.Length - 1) * gap) / tabNames.Length;
                 float left = margin + i * (part + gap);
@@ -947,7 +947,12 @@ namespace Claybreak.Editor
             Image loadoutCard = Card("LoadoutCard", shopRoot, pill, new Vector2(0.5f, 1f), new Vector2(0f, -418f), new Vector2(900f, 80f));
             TMP_Text loadout = Caption("Loadout", loadoutCard.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(840f, 64f), 36,
                 UiColors.Ink, true);
-            int shopCount = Mathf.Max(catalog.Upgrades.Count, Mathf.Max(catalog.Units.Count, catalog.Skins.Count));
+            int shopCount = 0;
+            for (int i = 0; i < ClaybreakScreens.ShopTabCount; i++)
+            {
+                shopCount = Mathf.Max(shopCount, ClaybreakScreens.ShopCount(catalog, (ShopTab)i));
+            }
+
             (RectTransform shopContent, UnityEngine.Object[] shopRows, GameObject shopFade) =
                 List(shopRoot, pill, fade, "ShopList", -480f, 240f, shopCount);
             Button shopBack = BackButton(shopRoot, pill);
@@ -1031,8 +1036,6 @@ namespace Claybreak.Editor
             SetRef(screens, "shopButton", shop);
             SetRef(screens, "shopBadge", badge.gameObject);
             SetRef(screens, "worldsButton", worldsButton);
-            SetRef(screens, "shapeButton", shapeButton);
-            SetRef(screens, "shapeLabel", shapeLabel);
             SetRef(screens, "soundButton", sound);
             SetRef(screens, "soundLabel", soundLabel);
             SetRef(screens, "musicButton", music);
@@ -1188,12 +1191,23 @@ namespace Claybreak.Editor
             detail.textWrappingMode = TextWrappingModes.Normal;
             Span(detail.rectTransform, 44f, -340f, -84f, 132f);
             Image swatch = Img("Swatch", rect, pill, new Vector2(1f, 1f), new Vector2(-305f, -52f), new Vector2(56f, 56f), Color.white);
+            // RT-6t.20: a shape's figure in the same corner, larger (two layers: the tinted body, the details over it).
+            Image figureBody = Img("FigureBody", rect, null, new Vector2(1f, 0.5f), new Vector2(-360f, 0f), new Vector2(160f, 160f), Color.white);
+            Image figureDetail = Img("FigureDetail", rect, null, new Vector2(1f, 0.5f), new Vector2(-360f, 0f), new Vector2(160f, 160f), Color.white);
+            figureBody.preserveAspect = true;
+            figureDetail.preserveAspect = true;
+            figureBody.raycastTarget = false;
+            figureDetail.raycastTarget = false;
+            figureBody.gameObject.SetActive(false);
+            figureDetail.gameObject.SetActive(false);
             (Button button, TMP_Text label) = PillButton("Action", rect, pill, new Vector2(1f, 0.5f), new Vector2(-145f, 0f),
                 new Vector2(240f, 120f), UiColors.Primary, "BUY", 42);
             ClaybreakListRow row = card.gameObject.AddComponent<ClaybreakListRow>();
             SetRef(row, "title", title);
             SetRef(row, "detail", detail);
             SetRef(row, "swatch", swatch);
+            SetRef(row, "figureBody", figureBody);
+            SetRef(row, "figureDetail", figureDetail);
             SetRef(row, "button", button);
             SetRef(row, "buttonLabel", label);
             return row;

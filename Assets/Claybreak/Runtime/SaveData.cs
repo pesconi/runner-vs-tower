@@ -32,7 +32,7 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// The player's progress, versioned JSON (RT-5; version 4 since RT-6t.6b). Content is referenced by stable ids from
+    /// The player's progress, versioned JSON (RT-5; version 4 since RT-6t.6b, 5 since RT-6t.20). Content is referenced by stable ids from
     /// <see cref="ClaybreakCatalog"/>, so adding worlds, upgrades, units or skins never breaks a save, and a
     /// removed id is dropped when the save is normalized. Preferences (sound, music, vibration) are not here:
     /// they stay in the kit's own PlayerPrefs keys, so a broken save never resets them and vice versa.
@@ -41,7 +41,7 @@ namespace Claybreak
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         public int version = CurrentVersion;
         public int coins;
@@ -57,8 +57,10 @@ namespace Claybreak
         public string[] skins = new string[0];
         [Tooltip("Id of the crowd skin worn.")]
         public string skin = string.Empty;
-        [Tooltip("Id of the crowd shape picked on the home screen (version 4, D26 A; free, never bought).")]
+        [Tooltip("Id of the crowd shape worn (version 4; bought in the shop since version 5, RT-6t.20).")]
         public string shape = string.Empty;
+        [Tooltip("Ids of the crowd shapes owned (version 5, RT-6t.20: the free one plus those bought).")]
+        public string[] ownedShapes = new string[0];
         public int levelsWon;
         public int levelsLost;
         // RT-7 (additive, so it stayed version 3: a save without them reads 0 = "never", which is right).
@@ -82,6 +84,7 @@ namespace Claybreak
             copy.units = units == null ? new string[0] : (string[])units.Clone();
             copy.loadout = loadout == null ? new string[0] : (string[])loadout.Clone();
             copy.skins = skins == null ? new string[0] : (string[])skins.Clone();
+            copy.ownedShapes = ownedShapes == null ? new string[0] : (string[])ownedShapes.Clone();
             return copy;
         }
     }
@@ -131,10 +134,36 @@ namespace Claybreak
         /// </summary>
         public static void AddShape(SaveData save)
         {
-            if (save != null && string.IsNullOrEmpty(save.shape))
+            // RT-6t.20 (save review): versions 1 to 3 never had a shape, so whatever a hand edit put there is replaced (a
+            // crafted "shape":"chick" would otherwise be owned for free by the version-5 step).
+            if (save != null)
             {
                 save.shape = ShapeBeforeV4;
             }
+        }
+
+        /// <summary>
+        /// The crowd shapes a version-4 save could hold (both free then, D26 A). Part of the save format: a version-4 save
+        /// keeps the one it wore only if it is one of these, so a hand-edited version-4 save can never get a shape sold
+        /// since version 5 for free.
+        /// </summary>
+        public static readonly string[] ShapesBeforeV5 = { ShapeBeforeV4, "chick" };
+
+        /// <summary>
+        /// Versions 1 to 4 to 5 (RT-6t.20, D31 A): shapes are bought in the shop. An older save owns the free Bolinha and the
+        /// shape it wore (a player who picked the Pintinho keeps it without paying); a worn shape that was not on offer then
+        /// is not owned (the save falls back to the default when it is normalized).
+        /// </summary>
+        public static void AddOwnedShapes(SaveData save)
+        {
+            if (save == null)
+            {
+                return;
+            }
+
+            bool keepsWorn = !string.IsNullOrEmpty(save.shape) && save.shape != ShapeBeforeV4
+                && Array.IndexOf(ShapesBeforeV5, save.shape) >= 0;
+            save.ownedShapes = keepsWorn ? new[] { ShapeBeforeV4, save.shape } : new[] { ShapeBeforeV4 };
         }
 
         /// <summary>
@@ -198,6 +227,11 @@ namespace Claybreak
         public const string Key = "Claybreak.Save";
         /// <summary>The untouched JSON of a migrated save, kept once, so a bad migration can be undone by hand.</summary>
         public const string BackupKeyPrefix = "Claybreak.Save.backup.v";
+        /// <summary>
+        /// The untouched JSON of a save that could not be read (damaged, or from a newer version after a downgrade), kept
+        /// once before the fresh save overwrites it (RT-6t.20 save review), so the progress can be recovered by hand.
+        /// </summary>
+        public const string UnreadableBackupKey = "Claybreak.Save.backup.unreadable";
         /// <summary>A save larger than this is not the game's (the biggest real one is a few KB).</summary>
         public const int MaximumJsonLength = 64 * 1024;
         /// <summary>No list in a real save comes close; longer ones are cut, never trusted.</summary>
@@ -245,15 +279,23 @@ namespace Claybreak
                         parsed = old == null ? null : SaveMigration.FromV1(old);
                         SaveMigration.World1To10Levels(parsed);
                         SaveMigration.AddShape(parsed);
+                        SaveMigration.AddOwnedShapes(parsed);
                         break;
                     case 2:
                         parsed = JsonUtility.FromJson<SaveData>(json);
                         SaveMigration.World1To10Levels(parsed);
                         SaveMigration.AddShape(parsed);
+                        SaveMigration.AddOwnedShapes(parsed);
                         break;
                     case 3:
                         parsed = JsonUtility.FromJson<SaveData>(json);
                         SaveMigration.AddShape(parsed);
+                        SaveMigration.AddOwnedShapes(parsed);
+                        break;
+                    case 4:
+                        // Version 4 had no ownedShapes: whatever a hand edit put there is replaced, never trusted.
+                        parsed = JsonUtility.FromJson<SaveData>(json);
+                        SaveMigration.AddOwnedShapes(parsed);
                         break;
                     case SaveData.CurrentVersion:
                         parsed = JsonUtility.FromJson<SaveData>(json);
@@ -291,7 +333,12 @@ namespace Claybreak
             {
                 if (!string.IsNullOrEmpty(json))
                 {
-                    Debug.LogWarning("[Claybreak] The save could not be read; starting fresh.");
+                    if (!PlayerPrefs.HasKey(UnreadableBackupKey))
+                    {
+                        PlayerPrefs.SetString(UnreadableBackupKey, json);
+                    }
+
+                    Debug.LogWarning($"[Claybreak] The save could not be read; starting fresh (original kept in {UnreadableBackupKey}).");
                 }
 
                 return data;
@@ -343,6 +390,7 @@ namespace Claybreak
             save.units = Cut(save.units ?? new string[0]);
             save.loadout = Cut(save.loadout ?? new string[0]);
             save.skins = Cut(save.skins ?? new string[0]);
+            save.ownedShapes = Cut(save.ownedShapes ?? new string[0]);
         }
 
         private static T[] Cut<T>(T[] items)

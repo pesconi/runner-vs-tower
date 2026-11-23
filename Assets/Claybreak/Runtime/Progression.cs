@@ -413,15 +413,32 @@ namespace Claybreak
             return true;
         }
 
-        // ---------- crowd shape (RT-6t.6b, D26 A: free, picked on the home screen) ----------
+        // ---------- crowd shapes (RT-6t.20, D31 A: bought in the shop's SHAPES tab; the first is free) ----------
 
         public int ShapeIndex => Mathf.Max(0, catalog.ShapeIndexOf(Save.shape));
         public CrowdShapeOption Shape => catalog.Shapes[ShapeIndex];
+        public bool IsShapeOwned(int shape) => Contains(Save.ownedShapes, catalog.Shapes[shape].id);
+        public bool IsShapeWorn(int shape) => shape == ShapeIndex;
+        public bool CanBuyShape(int shape) => !IsShapeOwned(shape) && Save.coins >= catalog.Shapes[shape].price;
 
-        /// <summary>Picks the crowd shape at catalog index <paramref name="shape"/>; false when it is out of range or already picked.</summary>
-        public bool TrySelectShape(int shape)
+        /// <summary>Buys the crowd shape at catalog index <paramref name="shape"/> and wears it; false when it cannot be bought.</summary>
+        public bool TryBuyShape(int shape)
         {
-            if (shape < 0 || shape >= catalog.Shapes.Count || shape == ShapeIndex)
+            if (shape < 0 || shape >= catalog.Shapes.Count || !CanBuyShape(shape))
+            {
+                return false;
+            }
+
+            Save.coins -= catalog.Shapes[shape].price;
+            Save.ownedShapes = Append(Save.ownedShapes, catalog.Shapes[shape].id);
+            Save.shape = catalog.Shapes[shape].id;
+            return true;
+        }
+
+        /// <summary>Wears an owned crowd shape; false when it is out of range, not owned or already worn.</summary>
+        public bool TryWearShape(int shape)
+        {
+            if (shape < 0 || shape >= catalog.Shapes.Count || !IsShapeOwned(shape) || IsShapeWorn(shape))
             {
                 return false;
             }
@@ -429,9 +446,6 @@ namespace Claybreak
             Save.shape = catalog.Shapes[shape].id;
             return true;
         }
-
-        /// <summary>Picks the next crowd shape of the catalog (the home screen's single button walks through them).</summary>
-        public bool TrySelectNextShape() => TrySelectShape((ShapeIndex + 1) % catalog.Shapes.Count);
 
         /// <summary>True when the shop has something the player can buy now (the home screen shows a dot).</summary>
         public bool CanBuyAnything
@@ -462,6 +476,14 @@ namespace Claybreak
                     }
                 }
 
+                for (int i = 0; i < catalog.Shapes.Count; i++)
+                {
+                    if (CanBuyShape(i))
+                    {
+                        return true;
+                    }
+                }
+
                 return false;
             }
         }
@@ -470,7 +492,7 @@ namespace Claybreak
 
         /// <summary>
         /// The maximum loadout (RT-5 device gate): every upgrade at its top step, every unit owned, the loadout
-        /// full, the last (dearest) skin worn and the heaviest crowd shape. Never written to the player's save.
+        /// full, the last (dearest) skin worn, every crowd shape owned and the heaviest one worn. Never written to the player's save.
         /// </summary>
         public static SaveData MaximumLoadout(ClaybreakCatalog catalog)
         {
@@ -499,6 +521,13 @@ namespace Claybreak
 
             save.skins = skins;
             save.skin = skins[skins.Length - 1];
+            var shapes = new string[catalog.Shapes.Count];
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                shapes[i] = catalog.Shapes[i].id;
+            }
+
+            save.ownedShapes = shapes;
             save.shape = catalog.Shapes[HeaviestShape(catalog)].id;
             return save;
         }
@@ -590,9 +619,17 @@ namespace Claybreak
                 Save.skin = free;
             }
 
-            if (catalog.ShapeIndexOf(Save.shape) < 0)
+            // RT-6t.20: the free shape is always owned; a worn shape that is not owned (unknown, or a hand edit) falls back to it.
+            Save.ownedShapes = Known(Save.ownedShapes, id => catalog.ShapeIndexOf(id) >= 0, int.MaxValue);
+            string freeShape = catalog.Shapes[0].id;
+            if (!Contains(Save.ownedShapes, freeShape))
             {
-                Save.shape = catalog.Shapes[0].id;
+                Save.ownedShapes = Prepend(Save.ownedShapes, freeShape);
+            }
+
+            if (!Contains(Save.ownedShapes, Save.shape))
+            {
+                Save.shape = freeShape;
             }
 
             int selected = catalog.WorldIndexOf(Save.world);
@@ -732,7 +769,7 @@ namespace Claybreak
         private static string[] Known(string[] ids, System.Func<string, bool> keep, int maximum)
         {
             var kept = new List<string>();
-            foreach (string id in ids)
+            foreach (string id in ids ?? new string[0])
             {
                 if (kept.Count < maximum && !string.IsNullOrEmpty(id) && keep(id) && !kept.Contains(id))
                 {
