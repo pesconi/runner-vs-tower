@@ -246,6 +246,10 @@ Unity em batchmode dos dois lados não podem rodar ao mesmo tempo (aprendizado d
   do braço verde e captura do chefe em dois instantes com o braço em lugares diferentes; APK no OPPO. Gate 3×
   dispensado se a cena de jogo só ganhar a correção do braço (o braço já era desenhado; mover não muda o peso).
 - **Olhar humano:** o usuário joga um chefe no OPPO (o tronco anda) e confere loja e home sem corte.
+- **Status: concluída em 2026-11-23** (aceite do usuário pendente). O rótulo ficou "LEVEL x/10" (a interface do jogo é
+  toda em inglês, T-RT6t6b-2); a coroa fica para a 6t.17. Capturas `telas-*.png` (4 proporções lado a lado) e
+  `chefe-braco-dois-instantes.png` em `docs/art/rt6t16/`, geradas por `ScreenFitTests` (`-screenFitCaptureDir`) e
+  `SweeperMotionTests` (`-sweeperCaptureDir`). Decisões T-RT6t16-1..7. O jogo já não chama `AddGloss`: a K.14 pode seguir.
 
 ### K.14 (studiokit) — Tirar o brilho branco dos botões do kit
 

@@ -147,3 +147,9 @@
   janela de reação (`ReactionWindow`, leitura ≥ 3 s, entre pares ≥ 1,6 s) e recusa fase abaixo. A economia soma corrida real
   (pista ÷ velocidade) + 39 s/19 s de assalto e resultado. O `adb install` do OPPO pode encontrar o celular bloqueado: conferir
   `isKeyguardShowing` e deixar o comando para o usuário se seguir bloqueado.
+- 2026-11-23 (RT-6t.16): o Unity em batchmode pode travar ao sair depois dos testes (`abort_threads` no fim do log, processo
+  vivo). Se o log parar de crescer, mate o processo e o `rt4-check.sh` órfão (`taskkill //PID <bash> //T //F`) e rode só as
+  etapas que faltam (`Tools/rt4-check.sh <out> "playmode economy ..."`). Capturas das telas em 4 proporções e do braço do
+  chefe: PlayMode com GPU (sem `-nographics`), `-testFilter ScreenFitTests -screenFitCaptureDir <pasta>` e
+  `-testFilter SweeperMotionTests -sweeperCaptureDir <pasta>`. O `adb install -r` pode responder "failed to install" vazio
+  e ter instalado: conferir `lastUpdateTime` e o tamanho do `base.apk` antes de repetir.

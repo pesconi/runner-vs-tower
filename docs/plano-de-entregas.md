@@ -34,7 +34,7 @@ lançamento jun/2027.
 | RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22; ajuste "sem neblina nenhuma" pedido pelo usuário feito, validado, gate 3× aprovado e APK instalado no OPPO; **aceite do usuário em 2026-11-22** ("Aprovo") | — | — | antes da RT-9 |
 | RT-6t.14 Limite configurável da multidão (300 neste jogo) e portões que nunca passam dele (D27 revista) — concluída em 2026-11-22; pendente instalar o APK no OPPO | — | — | antes da RT-9 |
 | RT-6t.15 Multidão mais rápida na corrida (+30% constante, pedido do usuário em 2026-11-23) — concluída em 2026-11-23 (`RunPace`; janela de reação verificada; loja em 49 min); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou boa") | — | — | antes da RT-9 |
-| RT-6t.16 Correções rápidas: tronco de espinhos que anda, mostrador de fase compacto, loja e home sem corte em telas estreitas, jogo sem o brilho branco — **planejada** (pedido do usuário em 2026-11-23; `plano-telas-obstaculos-loja.md`) | — | — | antes da RT-9 |
+| RT-6t.16 Correções rápidas: tronco de espinhos que anda, mostrador de fase compacto, loja e home sem corte em telas estreitas, jogo sem o brilho branco — concluída em 2026-11-23 (capturas em 4 proporções em `docs/art/rt6t16/`); **aceite do usuário pendente** (jogar um chefe no OPPO e conferir loja e home) | — | — | antes da RT-9 |
 | K.14 (studiokit) Tirar o brilho branco dos botões do kit (`ClayUi.AddGloss`), versão 0.8.0, chamadas mortas do Wild Pack fora — **planejada**; depois da 6t.16, em paralelo com as seguintes | — | — | antes da RT-9 |
 | RT-6t.17 Telas novas no estilo toon pastel (botões vivos, Baloo 2, loja legível de 16:9 a 21:9) — **planejada** | — | — | antes da RT-9 |
 | RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — **planejada** | — | — | antes da RT-9 |
@@ -626,6 +626,24 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   11,7 s; loja inteira 53 → 49 min (preços iguais). Detalhes em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md), seção
   RT-6t.15; decisões T-RT6t15-1..5.
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.15`).
+
+## RT-6t.16 — Correções rápidas: tronco, mostrador, cortes e brilho no jogo
+
+- **Origem:** pedido do usuário em 2026-11-23 (plano em [`plano-telas-obstaculos-loja.md`](plano-telas-obstaculos-loja.md),
+  seções 2, 3.2, 3.4 e 4).
+- **Escopo:** (1) o braço de espinhos do chefe anda (`AssaultField.Running` repassa ao braço), com teste; (2) mostrador de
+  fase compacto; (3) Canvas casa pela largura e linhas, abas e botões de baixo esticam com a tela; (4) o jogo não chama
+  mais `ClayUi.AddGloss`; (5) captura das telas em 4 proporções e teste que reprova botão fora da tela.
+- **Depende de:** RT-6t.15.
+- **Aceite:** validação padrão completa verde; capturas nas 4 proporções sem corte; braço em dois instantes; APK no OPPO.
+  Gate 3× dispensado (na cena de jogo só o braço passa a se mover; T-RT6t16-7).
+- **Status: concluída em 2026-11-23; aceite do usuário pendente.** O braço agora varre a frente da torre e a faixa que mata
+  vai com ele (`SweeperMotionTests`; captura `chefe-braco-dois-instantes.png`). A home ganhou uma cápsula "LEVEL x/10" com
+  60% da largura e pontos espaçados pela largura. O Canvas tem sempre 1080 de largura (16:9 igual a antes; no OPPO a
+  interface fica ~20% menor que na 6t.15) e loja, abas e botões esticam: nenhum botão fora da tela em 16:9, 19,5:9, 20:9 e
+  21:9 (`ScreenFitTests`, que também grava `telas-*.png`). Sem brilho branco nos botões (o validador proíbe `ClayGloss`).
+  Testes: EditMode 336/336; PlayMode 40/40 sem falha (26 passam; 14 são capturas que só rodam com GPU, rodadas à parte: 3/3 e 2/2). Decisões T-RT6t16-1..7. A K.14 (kit) fica liberada.
+- Histórico: entregue em 2026-11-23 (`Stage RT.6t.16`).
 
 ## RT-6t.16 a RT-6t.20 e K.14 — Telas, obstáculos, formas na loja e mostrador (planejadas)
 

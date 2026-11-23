@@ -29,6 +29,8 @@ namespace Claybreak
         [SerializeField] private Text starsText;
         [SerializeField] private Text loadoutText;
         [SerializeField] private Image[] levelDots = new Image[0];
+        [Tooltip("RT-6t.16: the level meter's caption (LEVEL x/n) over the dots.")]
+        [SerializeField] private Text levelMeterText;
         [SerializeField] private Button playButton;
         [SerializeField] private Text playLabel;
         [SerializeField] private Button shopButton;
@@ -137,7 +139,7 @@ namespace Claybreak
         public bool DailyShown => dailyButton != null && dailyButton.gameObject.activeSelf;
 
         public bool HasParts => home != null && homeCoins != null && worldText != null && starsText != null
-            && loadoutText != null && levelDots != null && levelDots.Length > 0 && playButton != null && playLabel != null
+            && loadoutText != null && levelDots != null && levelDots.Length > 0 && levelMeterText != null && playButton != null && playLabel != null
             && shopButton != null && shopBadge != null && worldsButton != null && shapeButton != null && shapeLabel != null
             && soundButton != null && soundLabel != null
             && musicButton != null && musicLabel != null && vibrationButton != null && vibrationLabel != null
@@ -275,6 +277,7 @@ namespace Claybreak
             worldText.text = $"{world.WorldName}  ·  {progression.CurrentLevel.Title}{loop}";
             starsText.text = $"★ {progression.WorldStars(progression.WorldIndex)} / {progression.MaximumWorldStars(progression.WorldIndex)}";
             int levelCount = world.LevelCount;
+            levelMeterText.text = LevelMeterLine(save.nextLevel, levelCount);
             for (int i = 0; i < levelDots.Length; i++)
             {
                 bool used = i < levelCount;
@@ -283,6 +286,12 @@ namespace Claybreak
                 {
                     continue;
                 }
+
+                // RT-6t.16: the world's dots spread evenly over the meter's row, whatever its width and level count.
+                RectTransform dot = levelDots[i].rectTransform;
+                float x = (i + 0.5f) / levelCount;
+                dot.anchorMin = new Vector2(x, 0.5f);
+                dot.anchorMax = new Vector2(x, 0.5f);
 
                 bool boss = i == levelCount - 1;
                 Color color = i == save.nextLevel ? dotNext
@@ -308,6 +317,13 @@ namespace Claybreak
         }
 
         public static string ShapeLine(string title) => $"SHAPE: {title}";
+
+        /// <summary>The level meter's caption: the level to play now (1-based, capped at the count) of the world's count.</summary>
+        public static string LevelMeterLine(int nextLevel, int levelCount)
+        {
+            int count = Mathf.Max(1, levelCount);
+            return $"LEVEL {Mathf.Clamp(nextLevel + 1, 1, count)}/{count}";
+        }
 
         /// <summary>The daily reward button: shown with its coins when a claim is due, hidden otherwise.</summary>
         public void SetDaily(int coins)

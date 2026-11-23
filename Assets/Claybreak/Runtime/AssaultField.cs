@@ -75,7 +75,24 @@ namespace Claybreak
         /// <summary>The instanced units in flight and their deaths.</summary>
         public LooseSwarmRenderer Flyers => flyers;
         public int GateShift => gateShift;
-        public bool Running { get; set; }
+        private bool running;
+
+        /// <summary>
+        /// True while the assault plays. The sweeper's arm swings only while this is on: setting it here is the one
+        /// place that starts and stops the arm, so no caller can start the field and forget the arm (RT-6t.16).
+        /// </summary>
+        public bool Running
+        {
+            get => running;
+            set
+            {
+                running = value;
+                if (sweeper != null)
+                {
+                    sweeper.Running = value;
+                }
+            }
+        }
 
         /// <summary>The crowd skin color the plain units wear now.</summary>
         public Color CrowdColor => crowdColor;
@@ -268,6 +285,9 @@ namespace Claybreak
 
         public ShieldDefense Shield => shield;
 
+        /// <summary>The sweeper's spiked arm (it swings while <see cref="Running"/> is on).</summary>
+        public SweeperDefense Sweeper => sweeper;
+
         /// <summary>Boss rule (GDD 4.4): the gate row turns one lane to the right.</summary>
         public void ShiftGates()
         {
@@ -346,7 +366,6 @@ namespace Claybreak
             PeakInFlight = 0;
             TowerHits = 0;
             Running = false;
-            sweeper.Running = false;
         }
 
         private void Update()

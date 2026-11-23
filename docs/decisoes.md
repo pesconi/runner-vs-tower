@@ -1951,3 +1951,33 @@ resposta. Aceite pendente: usuário aprovar o plano e as fichas.
   aceite. Substitui o item 1 da D26.
 - **2026-11-23 — D32 Preços das formas — A — usuário.** PINTINHO 300 · COELHINHO 1.000 · SAPINHO 1.600 · PINGUIM 2.400
   (total 5.300); preços de melhorias, elites e cores iguais (D19); a RT-6t.20 registra o tempo real da loja.
+
+## 2026-11-23 — T-RT6t16-1..7 — Correções rápidas (RT-6t.16) — técnica (sessão da entrega)
+
+- **T-RT6t16-1 — O braço liga pelo `AssaultField.Running`.** A propriedade deixou de ser automática: ligar ou desligar o
+  campo liga ou desliga o `SweeperDefense` (aplica a T-6t16-2). O `ResetField` não desliga mais o braço à parte. Nenhum
+  caminho do fluxo (início do assalto, continuar) precisa lembrar do braço. Prova: `SweeperMotionTests` (o braço anda
+  mais de 2,5 m, o braço desenhado fica onde a morte é, a faixa de morte sai do lugar antigo e parar o campo para o braço).
+- **T-RT6t16-2 — Canvas pela largura sem refazer o layout.** `CanvasMatch = 0` (fonte única no builder; o validador
+  recusa outro valor). Toda tela retrato passa a ter 1080 unidades de largura e só cresce na altura (1920 a 2520): em
+  16:9 o layout fica igual ao de antes; nas telas mais altas o meio abre espaço. Só esticam com âncoras o que podia
+  cortar: linhas das listas (largura da lista, descrição entre a borda e a amostra de cor), abas da loja (partes iguais,
+  margens de 6%) e SHOP/WORLDS (metades da largura). Consequência: no OPPO a interface fica ~20% menor que antes (escala
+  1,0 em vez de 1,26); o visual novo e os tamanhos finais são da RT-6t.17.
+- **T-RT6t16-3 — Mostrador em inglês: "LEVEL x/10".** O plano escreveu "FASE x/10", mas toda a interface do jogo é em
+  inglês (PLAY, SHOP; T-RT6t6b-2): o rótulo segue a interface. Cápsula com 60% da largura segura (`LevelMeterShare`),
+  pontos de 24 ancorados em frações da fileira; o `ClaybreakScreens` reparte os pontos pela quantidade de fases do mundo
+  (`LevelMeterLine` faz o rótulo). O ícone de coroa no ponto do chefe fica para a RT-6t.17 (visual); o chefe segue em
+  vermelho e maior.
+- **T-RT6t16-4 — O jogo não chama mais `ClayUi.AddGloss`.** O validador recusa qualquer `ClayGloss` na cena. O kit não
+  mudou; a remoção da função é a K.14, liberada a partir deste commit em `main`.
+- **T-RT6t16-5 — Ferramenta de captura e teste de corte = `ScreenFitTests` (PlayMode).** O canvas é desenhado pela
+  câmera do jogo numa textura de cada proporção (1080×1920, 2340, 2400, 2520), então o `CanvasScaler` mede como o
+  celular mediria. Em 10 telas (home, ajustes, 3 abas da loja, mundos, vitória, derrota, continuar, HUD) todo botão
+  ativo tem de estar dentro da tela; botão de lista, dentro das laterais da lista (a máscara corta o resto). Sem GPU só
+  confere; com `-screenFitCaptureDir <pasta>` (sem `-nographics`) grava `telas-<tela>.png` com as 4 proporções lado a
+  lado. Limite: no editor a área segura é a tela inteira; recorte de câmera real só no aparelho.
+- **T-RT6t16-6 — Captura do braço com a câmera do assalto do jogo** (`-sweeperCaptureDir`): chefe, defesas e braço como
+  o jogador vê, em dois instantes com o braço a mais de 3 m de distância (`chefe-braco-dois-instantes.png`).
+- **T-RT6t16-7 — Gate 3× dispensado.** Em jogo, a cena só ganhou o movimento do braço (um objeto que já era desenhado
+  passa a mudar de posição; mesmas chamadas de desenho); o resto é tela de menu. Decisão prevista no aceite do plano.

@@ -960,6 +960,27 @@ namespace Claybreak.Editor
                 failures.Add("the shop and world lists need one row per catalog entry (rebuild the scene after a catalog change)");
             }
 
+            // RT-6t.16: the canvas matches the width (nothing cut at the sides from 16:9 to 21:9) and no button wears the
+            // kit's white gloss (it leaves the kit in K.14).
+            foreach (UnityEngine.UI.CanvasScaler scaler in Object.FindObjectsByType<UnityEngine.UI.CanvasScaler>(
+                         FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (scaler.uiScaleMode == UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize
+                    && !Mathf.Approximately(scaler.matchWidthOrHeight, ClaybreakSceneBuilder.CanvasMatch))
+                {
+                    failures.Add($"{scaler.name}: the canvas must match the width (match {ClaybreakSceneBuilder.CanvasMatch}), "
+                        + $"not {scaler.matchWidthOrHeight}");
+                }
+            }
+
+            foreach (Transform any in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (any.name == "ClayGloss")
+                {
+                    failures.Add($"{any.parent?.name}: a button still wears the white gloss (ClayUi.AddGloss)");
+                }
+            }
+
             if (scene.isDirty)
             {
                 failures.Add("opening the scene changed it (rebuild the scene)");

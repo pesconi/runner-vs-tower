@@ -24,6 +24,9 @@ namespace Claybreak
         public float ArmX { get; private set; }
         public bool HasParts => arm != null;
 
+        /// <summary>The drawn arm (it follows <see cref="ArmX"/>).</summary>
+        public Transform Arm => arm;
+
         public void Configure(bool enabled, float z, float period, float trackMinX, float trackMaxX)
         {
             present = enabled && arm != null;

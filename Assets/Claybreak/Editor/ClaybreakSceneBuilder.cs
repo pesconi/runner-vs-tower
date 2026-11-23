@@ -55,6 +55,10 @@ namespace Claybreak.Editor
         public const int ProjectilePoolSize = 32;
         public const int LevelDots = ClaybreakWorld.MaximumLevels;
         public const float RowStep = 230f;
+        /// <summary>The canvas scaler's match (0 = width): RT-6t.16, no side is cut from 16:9 to 21:9.</summary>
+        public const float CanvasMatch = 0f;
+        /// <summary>The home level meter's share of the safe width at most (RT-6t.16, plan 3.4).</summary>
+        public const float LevelMeterShare = 0.6f;
 
         private const string GeneratedFolder = Root + "/Generated";
         public const string FontPath = GameFonts.TtfPath;
@@ -705,7 +709,9 @@ namespace Claybreak.Editor
             var scaler = canvasObject.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1080f, 1920f);
-            scaler.matchWidthOrHeight = 1f;
+            // RT-6t.16: the canvas matches the width, so a portrait screen is always 1080 units wide and only grows taller
+            // (16:9 = 1920, 20:9 = 2400, 21:9 = 2520); top and bottom anchored content spreads, nothing is cut at the sides.
+            scaler.matchWidthOrHeight = CanvasMatch;
             return canvasObject.transform;
         }
 
@@ -828,12 +834,7 @@ namespace Claybreak.Editor
             Text world = Label("World", home, new Vector2(0.5f, 1f), new Vector2(0f, -440f), 46, TextAnchor.MiddleCenter);
             Text worldStars = Label("Stars", home, new Vector2(0.5f, 1f), new Vector2(0f, -505f), 44, TextAnchor.MiddleCenter);
             worldStars.color = Gold;
-            var dots = new UnityEngine.Object[LevelDots];
-            for (int i = 0; i < LevelDots; i++)
-            {
-                dots[i] = Img("Dot" + (i + 1), home, pill, new Vector2(0.5f, 1f), new Vector2((i - (LevelDots - 1) * 0.5f) * 92f, -650f),
-                    new Vector2(50f, 50f), Color.white);
-            }
+            (UnityEngine.Object[] dots, Text levelMeterText) = LevelMeter(home, pill);
 
             Text loadout = Label("Loadout", home, new Vector2(0.5f, 1f), new Vector2(0f, -720f), 38, TextAnchor.MiddleCenter);
             loadout.color = new Color(1f, 0.86f, 0.72f);
@@ -841,9 +842,11 @@ namespace Claybreak.Editor
                 new Vector2(640f, 180f), Orange, "PLAY", 84);
             (Button shop, Text _) = PillButton("ShopButton", home, pill, new Vector2(0.5f, 0f), new Vector2(-235f, 235f),
                 new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "SHOP", 56);
+            StretchAcross(shop, 0.06f, 0.49f);
             Image badge = Img("Badge", shop.transform, pill, new Vector2(1f, 1f), new Vector2(-30f, -22f), new Vector2(46f, 46f), Gold);
             (Button worldsButton, Text _) = PillButton("WorldsButton", home, pill, new Vector2(0.5f, 0f), new Vector2(235f, 235f),
                 new Vector2(430f, 130f), new Color(0.55f, 0.32f, 0.16f), "WORLDS", 56);
+            StretchAcross(worldsButton, 0.51f, 0.94f);
             // RT-7: the daily gift over PLAY (shown only when due). RT-8: SETTINGS top left opens the settings page.
             // RT-6t.6b: the crowd shape picker under the loadout line (free shapes, D26 A); the crowd behind the menu shows it.
             (Button shapeButton, Text shapeLabel) = PillButton("ShapeButton", home, pill, new Vector2(0.5f, 1f), new Vector2(0f, -830f),
@@ -888,6 +891,12 @@ namespace Claybreak.Editor
             {
                 (Button tab, Text _) = PillButton("Tab" + tabNames[i], shopRoot, pill, new Vector2(0.5f, 1f),
                     new Vector2((i - 1) * 330f, -350f), new Vector2(310f, 110f), grey, tabNames[i], 40);
+                // RT-6t.16: equal parts of the safe width (6% margins, 1.5% gaps), never a fixed width past the screen.
+                const float margin = 0.06f;
+                const float gap = 0.015f;
+                float part = (1f - 2f * margin - (tabNames.Length - 1) * gap) / tabNames.Length;
+                float left = margin + i * (part + gap);
+                StretchAcross(tab, left, left + part);
                 tabs[i] = tab;
             }
 
@@ -966,6 +975,7 @@ namespace Claybreak.Editor
             SetRef(screens, "starsText", worldStars);
             SetRef(screens, "loadoutText", loadout);
             SetArray(screens, "levelDots", dots);
+            SetRef(screens, "levelMeterText", levelMeterText);
             SetRef(screens, "playButton", play);
             SetRef(screens, "playLabel", playLabel);
             SetRef(screens, "shopButton", shop);
@@ -1085,10 +1095,19 @@ namespace Claybreak.Editor
             ClayUi.MakePill(card, pill, 100f);
             ClayUi.AddSlab(card, 8f);
             RectTransform rect = card.rectTransform;
+            // RT-6t.16: the row is as wide as the list (no fixed 930 cut by the list's mask on a narrow screen).
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(0f, height);
             Text title = Label("Title", rect, new Vector2(0f, 1f), new Vector2(50f, -26f), 44, TextAnchor.UpperLeft);
             title.color = Orange;
             Text detail = Label("Detail", rect, new Vector2(0f, 1f), new Vector2(50f, -84f), 30, TextAnchor.UpperLeft);
-            detail.rectTransform.sizeDelta = new Vector2(590f, 120f);
+            // Between the left edge and the swatch, whatever the row's width.
+            RectTransform detailRect = detail.rectTransform;
+            detailRect.anchorMin = new Vector2(0f, 1f);
+            detailRect.anchorMax = new Vector2(1f, 1f);
+            detailRect.offsetMin = new Vector2(50f, -84f - 120f);
+            detailRect.offsetMax = new Vector2(-350f, -84f);
             detail.horizontalOverflow = HorizontalWrapMode.Wrap;
             Image swatch = Img("Swatch", rect, pill, new Vector2(1f, 1f), new Vector2(-310f, -48f), new Vector2(54f, 54f), Color.white);
             (Button button, Text label) = PillButton("Action", rect, pill, new Vector2(1f, 0.5f), new Vector2(-140f, -10f),
@@ -1117,13 +1136,57 @@ namespace Claybreak.Editor
             face.color = color;
             ClayUi.MakePill(face, pill, size.y);
             ClayUi.AddSlab(face, slab);
-            ClayUi.AddGloss(rect, pill, size.y);
             Button button = buttonObject.GetComponent<Button>();
             ClayUi.AddPress(button, slab);
             ClayUi.ExpandTouchTarget(face, size.y, 120f);
             Text label = Label("Label", rect, new Vector2(0.5f, 0.5f), Vector2.zero, fontSize, TextAnchor.MiddleCenter);
             label.text = caption;
             return (button, label);
+        }
+
+        // RT-6t.16: a button that spans [left, right] of its parent's width (anchors), keeping its height and y.
+        private static void StretchAcross(Button button, float left, float right)
+        {
+            var rect = (RectTransform)button.transform;
+            rect.anchorMin = new Vector2(left, rect.anchorMin.y);
+            rect.anchorMax = new Vector2(right, rect.anchorMax.y);
+            rect.sizeDelta = new Vector2(0f, rect.sizeDelta.y);
+            rect.anchoredPosition = new Vector2(0f, rect.anchoredPosition.y);
+        }
+
+        // RT-6t.16 (plan 3.4): the home level meter, a compact capsule at most LevelMeterShare of the safe width, centered,
+        // with "LEVEL x/n" over a row of small dots. The dots sit on anchors spread over the row (ClaybreakScreens spaces
+        // them by the world's level count), so the spacing follows the width, never a fixed step.
+        private static (UnityEngine.Object[], Text) LevelMeter(RectTransform home, Sprite pill)
+        {
+            const float height = 120f;
+            const float top = -600f;
+            Image capsule = Img("LevelMeter", home, pill, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(0f, height),
+                new Color(0.1f, 0.08f, 0.08f, 0.7f));
+            ClayUi.MakePill(capsule, pill, height);
+            RectTransform rect = capsule.rectTransform;
+            float side = (1f - LevelMeterShare) * 0.5f;
+            rect.anchorMin = new Vector2(side, 1f);
+            rect.anchorMax = new Vector2(1f - side, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, top);
+            rect.sizeDelta = new Vector2(0f, height);
+            Text label = Label("Label", rect, new Vector2(0.5f, 1f), new Vector2(0f, -12f), 36, TextAnchor.UpperCenter);
+            label.rectTransform.sizeDelta = new Vector2(0f, 50f);
+            label.rectTransform.anchorMin = new Vector2(0f, 1f);
+            label.rectTransform.anchorMax = new Vector2(1f, 1f);
+            label.text = ClaybreakScreens.LevelMeterLine(0, LevelDots);
+            RectTransform row = Stretch("Dots", rect);
+            row.offsetMin = new Vector2(height * 0.4f, 12f);
+            row.offsetMax = new Vector2(-height * 0.4f, -62f);
+            var dots = new UnityEngine.Object[LevelDots];
+            for (int i = 0; i < LevelDots; i++)
+            {
+                float x = (i + 0.5f) / LevelDots;
+                dots[i] = Img("Dot" + (i + 1), row, pill, new Vector2(x, 0.5f), Vector2.zero, new Vector2(24f, 24f), Color.white);
+            }
+
+            return (dots, label);
         }
 
         private static RectTransform Stretch(string name, Transform parent)
