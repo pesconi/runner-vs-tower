@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13bb24070fdcf1d4b8798f005145b724, type: 3}
+  m_Name: ObstacleLab
+  m_EditorClassIdentifier: Claybreak.Runtime::Claybreak.ClaybreakLevel
+  title: OBSTACLE LAB
+  startCount: 150
+  runSpeed: 8.5
+  runGates:
+  - z: 18
+    left:
+      operation: 0
+      value: 40
+    right:
+      operation: 0
+      value: 60
+  crates: []
+  obstacles:
+  - kind: 0
+    z: 36
+    across: 0
+    period: 0
+    phase: 0
+  - kind: 1
+    z: 54
+    across: 0
+    period: 0
+    phase: 0
+  - kind: 2
+    z: 70
+    across: -1
+    period: 0
+    phase: 0
+  - kind: 3
+    z: 86
+    across: 0.6
+    period: 0
+    phase: 0
+  - kind: 4
+    z: 114
+    across: -0.4
+    period: 0
+    phase: 0
+  firingLineZ: 124
+  launchRate: 12
+  unitSpeed: 9
+  laneSpread: 0.7
+  maximumUnitsInFlight: 300
+  assaultGateDistance: 9
+  assaultGates:
+  - operation: 2
+    value: 2
+  - operation: 3
+    value: 2
+  - operation: 2
+    value: 2
+  autoLaunch: 0
+  recycleUnits: 0
+  tower: 0
+  towerDistance: 30
+  towerHealth: 150
+  floors: 1
+  damagePerUnit: 1
+  bossRule: 0
+  wallEnabled: 0
+  wallLane: 2
+  wallDistance: 20
+  wallHealth: 60
+  cannonEnabled: 1
+  cannonInterval: 2.2
+  projectileFlightTime: 0.9
+  blastRadius: 1.1
+  maximumProjectiles: 3
+  sweeperEnabled: 0
+  sweeperDistance: 15
+  sweeperPeriod: 3.2
+  shieldEnabled: 0
+  shieldLane: 0
+  shieldDistance: 26
+  shieldHealth: 60
+  shieldBlock: 0.5
+  coinReward: 0

@@ -492,6 +492,18 @@ namespace Claybreak.Editor
                     + $"no run gate to change it) and auto-launch with {ClaybreakSceneBuilder.FlightCapacity} units in flight");
             }
 
+            // RT-6t.18: the run gate measures the most obstacles a level holds, every kind among them.
+            var kinds = new HashSet<ObstacleKind>();
+            foreach (ObstaclePlacement obstacle in stress.Obstacles)
+            {
+                kinds.Add(obstacle.kind);
+            }
+
+            if (stress.Obstacles.Count != ClaybreakLevel.MaximumObstacles || kinds.Count != ObstacleMotion.KindCount)
+            {
+                failures.Add($"{stress.name}: the device gate runs the most obstacles a level holds ({ClaybreakLevel.MaximumObstacles}), every kind among them");
+            }
+
             if (stress.Tower != boss.Tower || stress.BossRule != boss.BossRule || !stress.CannonEnabled || !stress.SweeperEnabled
                 || !stress.WallEnabled || stress.MaximumProjectiles < 12 || stress.ShieldEnabled != worldHasShield)
             {
@@ -572,37 +584,65 @@ namespace Claybreak.Editor
 
             float legible = ReactionWindow.LegibleDistance(profile.Settings, ArmyLimit.Units, ClaybreakSceneBuilder.TrackWidth * 0.5f,
                 GateArt.LabelEm);
-            string worstSight = null, worstGap = null;
-            float sight = float.MaxValue, gap = float.MaxValue;
+            var levels = new List<ClaybreakLevel>();
             foreach (WorldEntry entry in catalog.Worlds)
             {
-                foreach (ClaybreakLevel level in entry.world.Levels)
+                levels.AddRange(entry.world.Levels);
+            }
+
+            // RT-6t.18: the obstacle lab is played too (the flow's lab mode): same windows.
+            var lab = AssetDatabase.LoadAssetAtPath<ClaybreakLevel>(WorldContent.ObstacleLabPath);
+            if (lab == null)
+            {
+                failures.Add("missing the obstacle lab " + WorldContent.ObstacleLabPath + " (run Claybreak > Build Scene)");
+            }
+            else
+            {
+                CheckLevel(lab, failures);
+                levels.Add(lab);
+            }
+
+            string worstSight = null, worstGap = null, worstObstacleSight = null, worstObstacleGap = null;
+            float sight = float.MaxValue, gap = float.MaxValue, obstacleSight = float.MaxValue, obstacleGap = float.MaxValue;
+            foreach (ClaybreakLevel level in levels)
+            {
+                ReactionWindow.Result result = ReactionWindow.Of(level.RunSpeed, level.RunGates, level.Obstacles, legible);
+                if (!result.GatesPass)
                 {
-                    ReactionWindow.Result result = ReactionWindow.Of(level.RunSpeed, level.RunGates, legible);
-                    if (!result.Passes)
-                    {
-                        failures.Add($"{level.name}: at {level.RunSpeed} m/s the gate numbers read {result.SightSeconds:0.00} s ahead "
-                            + $"(minimum {ReactionWindow.MinimumSightSeconds} s) and the pairs come {result.GapSeconds:0.00} s apart "
-                            + $"(minimum {ReactionWindow.MinimumGapSeconds} s): slow the pace or space the gates");
-                    }
-
-                    if (result.SightSeconds < sight)
-                    {
-                        sight = result.SightSeconds;
-                        worstSight = level.name;
-                    }
-
-                    if (result.GapSeconds < gap)
-                    {
-                        gap = result.GapSeconds;
-                        worstGap = level.name;
-                    }
+                    failures.Add($"{level.name}: at {level.RunSpeed} m/s the gate numbers read {result.SightSeconds:0.00} s ahead "
+                        + $"(minimum {ReactionWindow.MinimumSightSeconds} s) and the pairs come {result.GapSeconds:0.00} s apart "
+                        + $"(minimum {ReactionWindow.MinimumGapSeconds} s): slow the pace or space the gates");
                 }
+
+                if (!result.ObstaclesPass)
+                {
+                    failures.Add($"{level.name}: at {level.RunSpeed} m/s an obstacle is seen {result.ObstacleSightSeconds:0.00} s before the crowd "
+                        + $"reaches it (minimum {ReactionWindow.MinimumSightSeconds} s) and comes {result.ObstacleGapSeconds:0.00} s from a gate pair "
+                        + $"(minimum {ReactionWindow.MinimumGapSeconds} s): move it away from the start and the gates");
+                }
+
+                Worst(result.SightSeconds, level.name, ref sight, ref worstSight);
+                Worst(result.GapSeconds, level.name, ref gap, ref worstGap);
+                Worst(result.ObstacleSightSeconds, level.name, ref obstacleSight, ref worstObstacleSight);
+                Worst(result.ObstacleGapSeconds, level.name, ref obstacleGap, ref worstObstacleGap);
             }
 
             Debug.Log($"[ClaybreakValidation] Reaction window: gate numbers legible {legible:0.0} m ahead; shortest sight {sight:0.00} s "
-                + $"({worstSight}), shortest gap between pairs {gap:0.00} s ({worstGap}).");
+                + $"({worstSight}), shortest gap between pairs {gap:0.00} s ({worstGap}); obstacles seen at least "
+                + $"{Seconds(obstacleSight)} ({worstObstacleSight ?? "no obstacle"}) and at least {Seconds(obstacleGap)} from a gate pair "
+                + $"({worstObstacleGap ?? "none near a gate"}).");
         }
+
+        private static void Worst(float value, string level, ref float worst, ref string worstLevel)
+        {
+            if (value < worst)
+            {
+                worst = value;
+                worstLevel = level;
+            }
+        }
+
+        private static string Seconds(float value) => value >= float.MaxValue ? "-" : value.ToString("0.00") + " s";
 
         private static void CheckLevel(ClaybreakLevel level, List<string> failures)
         {
@@ -682,7 +722,8 @@ namespace Claybreak.Editor
             }
 
             // RT-6t.11: the instanced materials are drawn by both routes; the fallback (RenderMeshInstanced) needs instancing on.
-            foreach (string path in new[] { ToonLabBuilder.SwarmMaterialPath, ToonLabBuilder.ShadowMaterialPath, SceneryArt.PropsMaterialPath })
+            foreach (string path in new[] { ToonLabBuilder.SwarmMaterialPath, ToonLabBuilder.ShadowMaterialPath, SceneryArt.PropsMaterialPath,
+                ObstacleArt.MaterialPath })
             {
                 var material = AssetDatabase.LoadAssetAtPath<Material>(path);
                 string problem = material == null ? "missing (run Claybreak > Build Scene)" : ToonInstanceDraw.ValidateMaterial(material);

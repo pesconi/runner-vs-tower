@@ -45,6 +45,7 @@ MonoBehaviour:
       operation: 1
       value: 20
   crates: []
+  obstacles: []
   firingLineZ: 98
   launchRate: 12
   unitSpeed: 9

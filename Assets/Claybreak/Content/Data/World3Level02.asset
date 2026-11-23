@@ -41,6 +41,7 @@ MonoBehaviour:
   - z: 28
     right: 1
     units: 4
+  obstacles: []
   firingLineZ: 74
   launchRate: 12
   unitSpeed: 9

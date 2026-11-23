@@ -56,6 +56,9 @@ namespace Claybreak.Editor
         public static string StressLevelPath(int world) =>
             world == 0 ? $"{DataFolder}/DeviceGateLevel.asset" : $"{DataFolder}/DeviceGateLevelWorld{world + 1}.asset";
 
+        /// <summary>RT-6t.18: the obstacle lab (every obstacle kind in one played level, outside the worlds).</summary>
+        public const string ObstacleLabPath = DataFolder + "/ObstacleLab.asset";
+
         /// <summary>
         /// Every world in catalog order, each look (and each art option's look) on the world's palette
         /// (<see cref="PaletteContent"/>; null before the palettes are first written).
@@ -131,6 +134,7 @@ namespace Claybreak.Editor
                 WriteLevel(StressLevelPath(w), DeviceGateLevel(definition));
             }
 
+            WriteLevel(ObstacleLabPath, ObstacleLab());
             return WriteCatalog(worlds, definitions);
         }
 
@@ -528,8 +532,47 @@ namespace Claybreak.Editor
                 shieldLane = 0,
                 shieldDistance = 56f,
                 shieldHealth = NumberLabels.CachedMaximum,
-                shieldBlock = 0.5f
+                shieldBlock = 0.5f,
+                obstacles = DeviceGateObstacles()
             };
+        }
+
+        /// <summary>
+        /// RT-6t.18: the most obstacles a level holds (<see cref="ClaybreakLevel.MaximumObstacles"/>), every kind, all in the
+        /// device gate's short run (before its firing line): the run gate measures them drawn and killing with the crowd at its
+        /// cap, the saws' slots riding with the hole (3 pits in one call).
+        /// </summary>
+        public static ObstaclePlacement[] DeviceGateObstacles() => new[]
+        {
+            new ObstaclePlacement(ObstacleKind.SwingingLog, 6f),
+            new ObstaclePlacement(ObstacleKind.Saw, 9.5f),
+            new ObstaclePlacement(ObstacleKind.Hammer, 12f, -1f),
+            new ObstaclePlacement(ObstacleKind.Hole, 15f, 0.6f),
+            new ObstaclePlacement(ObstacleKind.Saw, 17.5f, 0f, 0f, 0.5f),
+            new ObstaclePlacement(ObstacleKind.Roller, 19f, 0.5f)
+        };
+
+        /// <summary>
+        /// RT-6t.18: the obstacle lab, played with the player's loadout in a loop and never saved (the flow's lab mode): one
+        /// gate pair to grow the crowd, then the five kinds one after the other at the kinds' default rhythm, each far
+        /// enough from the start, the gate and the next to be read (the validator's reaction window), then an easy tower.
+        /// Run at the game's pace (world 2's opening course pace).
+        /// </summary>
+        public static LevelSpec ObstacleLab()
+        {
+            LevelSpec spec = Spec("OBSTACLE LAB", 150, RunPace.Of(6.5f), 124f,
+                new[] { Pair(18f, Add(40), Add(60)) }, null,
+                Row(Mul(2), Div(2), Mul(2)), TowerKind.Keep, 150, 1, 30f, 0,
+                s => Cannon(s, 2.2f, 0.9f, 1.1f, 3));
+            spec.obstacles = new[]
+            {
+                new ObstaclePlacement(ObstacleKind.SwingingLog, 36f),
+                new ObstaclePlacement(ObstacleKind.Saw, 54f),
+                new ObstaclePlacement(ObstacleKind.Hammer, 70f, -1f),
+                new ObstaclePlacement(ObstacleKind.Hole, 86f, 0.6f),
+                new ObstaclePlacement(ObstacleKind.Roller, 114f, -0.4f)
+            };
+            return spec;
         }
 
         // ---------- meta (RT-5), prices [P] (D19 A) ----------

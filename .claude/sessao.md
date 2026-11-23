@@ -158,3 +158,8 @@
   O `ScreenFitTests` reprova glifo fora do atlas e legenda maior que o botão. Se o `studiokit` de outra sessão não compilar,
   build com um clone do último commit do kit (manifest temporário para `file:C:/temp/kit-head/...`, depois
   `git checkout -- Packages/`), sem mexer no repo do kit.
+- 2026-11-23 (RT-6t.18): obstáculos da corrida = `ClaybreakLevel.obstacles` (até 6), movidos por `ObstacleMotion` (puro) e
+  desenhados pelo `RunObstacleCourse` (1 chamada por tipo); a janela de reação deles está no `ReactionWindow`. Fase de
+  laboratório: `Data/ObstacleLab.asset`, aberta no jogo instalado com `--ez obstacleLab true` (não salva). Prova com GPU:
+  `-testFilter Claybreak.Tests.ObstacleRunTests.CaptureEachKindKillingOnBothRoutes -obstacleCaptureDir <pasta>` sem
+  `-nographics`. Mudança de tamanho da pista (fase mais longa, como o laboratório) regrava `GroundAndRails.asset`.

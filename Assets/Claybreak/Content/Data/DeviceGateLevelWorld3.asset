@@ -17,6 +17,37 @@ MonoBehaviour:
   runSpeed: 12
   runGates: []
   crates: []
+  obstacles:
+  - kind: 0
+    z: 6
+    across: 0
+    period: 0
+    phase: 0
+  - kind: 1
+    z: 9.5
+    across: 0
+    period: 0
+    phase: 0
+  - kind: 2
+    z: 12
+    across: -1
+    period: 0
+    phase: 0
+  - kind: 3
+    z: 15
+    across: 0.6
+    period: 0
+    phase: 0
+  - kind: 1
+    z: 17.5
+    across: 0
+    period: 0
+    phase: 0.5
+  - kind: 4
+    z: 19
+    across: 0.5
+    period: 0
+    phase: 0
   firingLineZ: 24
   launchRate: 150
   unitSpeed: 5

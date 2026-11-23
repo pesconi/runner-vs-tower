@@ -70,6 +70,9 @@ namespace Claybreak.Editor
         private const string FadeTexturePath = GeneratedFolder + "/FadeUp.png";
         public const float TrackWidth = 8f;
 
+        /// <summary>Units an obstacle hit can have on their way out at once (RT-6t.18): two seconds of the course's kill cap is far more.</summary>
+        public const int ObstacleDyingCapacity = 128;
+
         /// <summary>Far clip of the game camera (m): the props wrap past it, so none pops in on screen (RT-6t.13, no fog).</summary>
         public const float CameraFarClip = 170f;
         private const float TrackStartZ = -12f;
@@ -101,6 +104,7 @@ namespace Claybreak.Editor
             new ArtPalette();
             GateArt.BuildAssets();
             LeaderArt.BuildAssets();
+            ObstacleArt.BuildAssets();
             CreatePillSprite();
             CreateStarSprite();
             CreateCrownSprite();
@@ -189,9 +193,10 @@ namespace Claybreak.Editor
 
             var theme = Load<ClaybreakTheme>(ThemePath);
             var monetization = Load<ClaybreakMonetization>(MonetizationContent.MonetizationPath);
+            var obstacleLab = Load<ClaybreakLevel>(WorldContent.ObstacleLabPath);
             var palette = new ArtPalette();
 
-            float trackEnd = 0f;
+            float trackEnd = obstacleLab.TowerZ + 16f;
             foreach (ClaybreakLevel level in stress)
             {
                 trackEnd = Mathf.Max(trackEnd, level.TowerZ + 16f);
@@ -229,6 +234,7 @@ namespace Claybreak.Editor
             Renderer track = scenery.Track;
 
             RunGateCourse gates = CreateRunGates(palette);
+            RunObstacleCourse obstacles = CreateObstacles(catalog);
             Transform firingLine = Prim.Box(null, "FiringLine", new Vector3(0f, 0.01f, first.FiringLineZ),
                 new Vector3(TrackWidth, 0.03f, 0.35f), palette.Line).transform;
             Transform laneMarker = Prim.Box(null, "LaneMarker", new Vector3(0f, 0.015f, first.FiringLineZ + 1.5f),
@@ -255,6 +261,8 @@ namespace Claybreak.Editor
             SetRef(flow, "assaultShot", Load<SwarmCameraShot>(AssaultShotPath));
             SetRef(flow, "bossAssaultShot", Load<SwarmCameraShot>(BossAssaultShotPath));
             SetRef(flow, "gates", gates);
+            SetRef(flow, "obstacles", obstacles);
+            SetRef(flow, "obstacleLab", obstacleLab);
             SetRef(flow, "field", field);
             SetRef(flow, "tower", tower);
             SetRef(flow, "cannon", cannon);
@@ -480,6 +488,28 @@ namespace Claybreak.Editor
             SetRef(course, "offMaterial", palette.GateOff);
             SetRef(course, "goodLabelMaterial", GameFonts.Preset(GameFonts.GateGoodPath));
             SetRef(course, "badLabelMaterial", GameFonts.Preset(GameFonts.GateBadPath));
+            return course;
+        }
+
+        // RT-6t.18: the run's obstacles (one instanced draw per kind) and the thrower of the units they kill: the crowd's
+        // shape and material, no live units and no shadows, a ring of dying units (the flow swaps in the player's shape).
+        private static RunObstacleCourse CreateObstacles(ClaybreakCatalog catalog)
+        {
+            var root = new GameObject("RunObstacles");
+            var deathsObject = new GameObject("ObstacleDeaths");
+            deathsObject.transform.SetParent(root.transform, false);
+            var deaths = deathsObject.AddComponent<LooseSwarmRenderer>();
+            var so = new SerializedObject(deaths);
+            so.FindProperty("unitMesh").objectReferenceValue = catalog.Shapes[0].mesh;
+            so.FindProperty("unitMaterial").objectReferenceValue = Load<Material>(ToonLabBuilder.SwarmMaterialPath);
+            so.FindProperty("capacity").intValue = 1;
+            so.FindProperty("dyingCapacity").intValue = ObstacleDyingCapacity;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            RunObstacleCourse course = root.AddComponent<RunObstacleCourse>();
+            SetArray(course, "meshes", ObstacleArt.LoadMeshes());
+            SetRef(course, "material", Load<Material>(ObstacleArt.MaterialPath));
+            SetRef(course, "deaths", deaths);
             return course;
         }
 

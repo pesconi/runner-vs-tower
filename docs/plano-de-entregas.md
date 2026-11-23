@@ -37,7 +37,7 @@ lançamento jun/2027.
 | RT-6t.16 Correções rápidas: tronco de espinhos que anda, mostrador de fase compacto, loja e home sem corte em telas estreitas, jogo sem o brilho branco — concluída em 2026-11-23 (capturas em 4 proporções em `docs/art/rt6t16/`); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
 | K.14 (studiokit) Tirar o brilho branco dos botões do kit (`ClayUi.AddGloss`), versão 0.8.0, chamadas mortas do Wild Pack fora — **planejada**; depois da 6t.16, em paralelo com as seguintes | — | — | antes da RT-9 |
 | RT-6t.17 Telas novas no estilo toon pastel (botões vivos, Baloo 2, loja legível de 16:9 a 21:9) — concluída em 2026-11-23 (capturas `telas-*.png` nas 4 proporções em `docs/art/rt6t17/`); gate 3× no OPPO em 2026-11-23 aprovado (mundo 4, chefe, 300 em voo: CPU p95 ≤ 5,5 ms, GPU p95 ≤ 4,3 ms, PSS 288 MB, 0 quadros perdidos); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou bom") | — | — | antes da RT-9 |
-| RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — **planejada** | — | — | antes da RT-9 |
+| RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — concluída em 2026-11-23 (motor, 5 tipos, fase de laboratório; capturas em `docs/art/rt6t18/`); APK instalado no OPPO; **aceite pendente:** gate 3× no OPPO (celular bloqueado) e o usuário jogar o laboratório | — | — | antes da RT-9 |
 | RT-6t.19 Obstáculos nas 40 fases e economia recalculada — **planejada** | — | — | antes da RT-9 |
 | RT-6t.20 Formas compradas na loja (save v5) — **planejada**; espera as fichas D31 e D32 | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
@@ -668,6 +668,37 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   tinha código não commitado de outra sessão que não compilava (T-RT6t17-9). Gate 3× e instalação no OPPO pendentes: o
   celular não estava conectado ao PC. Decisões T-RT6t17-1..9.
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.17`).
+
+## RT-6t.18 — Obstáculos na corrida (motor e 5 tipos)
+
+- **Origem:** pedido do usuário em 2026-11-23 ("Não tem desafio algum durante a corrida, tem que ter algo para atrapalhar e
+  matar a crowd"); plano em [`plano-telas-obstaculos-loja.md`](plano-telas-obstaculos-loja.md), seções 3.2 e 4.
+- **Escopo:** 5 tipos procedurais (tronco de espinhos que balança, serra, martelo, buraco, rolo de espinhos) com malha
+  toon, mortes pela morte balística, 1 chamada de desenho por tipo nas duas rotas, pré-alocação; lista de obstáculos no
+  dado de fase; janela de reação no validador; fase de laboratório com os 5 tipos; testes EditMode e PlayMode; capturas;
+  gate 3× no mundo 4 com o máximo de obstáculos e a multidão em 300; APK no OPPO. A distribuição nas 40 fases e a
+  economia são da RT-6t.19.
+- **Depende de:** RT-6t.16.
+- **Status: concluída em 2026-11-23; aceite pendente (gate 3× e olhar do usuário).** Cinco tipos procedurais, todos
+  instanciados (1 chamada por tipo em buffer e em blocos, conferido com GPU): tronco de espinhos em pêndulo, serra que vai
+  e volta girando num trilho, martelo que sobe e bate numa metade da pista, buraco, rolo de espinhos que rola em direção à
+  multidão numa faixa. Matam pela posição dos bonecos (sem colisor), com a morte balística do kit e um "−n" vermelho; cada
+  fase pode ter até 6 (`ClaybreakLevel.obstacles`). O validador recusa obstáculo visto a menos de 3 s ou a menos de 1,6 s
+  de um par de portões (laboratório: 4,06 s e 1,97 s). Fase de laboratório (`ObstacleLab`) com os 5 tipos, aberta no jogo
+  instalado com `--ez obstacleLab true`: repete sozinha, não salva, sem métricas nem anúncio. Fase de medição de cada
+  mundo com 6 obstáculos e a multidão em 300. As 40 fases seguem sem obstáculo (RT-6t.19). Testes: EditMode 635/635;
+  PlayMode 43 sem falha (28 passam, 15 capturas só com GPU; a de obstáculos rodada à parte com GPU: passou). Numa corrida
+  em linha reta pelo laboratório cada tipo matou de 37 a 91 bonecos. APKs e AAB gerados com o kit no último commit
+  (`8b511e8`; o `studiokit` tinha arquivos não commitados da K.17). Decisões T-RT6t18-1..9 (inclui a necessidade de um
+  `KillAt(índice)` no kit, registrada para uma entrega K). Revisão independente: sem problema sério; o risco apontado
+  (obstáculos sobrepostos matando a mesma vaga várias vezes) foi corrigido com uma marca por bit.
+- **Pendente (exige o celular desbloqueado):** gate 3× da corrida do mundo 4 —
+  `Tools/rt2-gate.sh run-w4-obst 60 20 /c/temp/rt6t18/final/Claybreak-measure.apk run:4`, depois
+  `adb shell am force-stop com.jungledegree.runnervstower` e `adb install -r /c/temp/rt6t18/final/Claybreak.apk` (o gate
+  instala o APK de medição). Limites: CPU p95 ≤ 11 ms, GPU p95 ≤ 11 ms, PSS ≤ 450 MB. Olhar do usuário: abrir o
+  laboratório com `adb shell am start -n com.jungledegree.runnervstower/com.unity3d.player.UnityPlayerGameActivity --ez obstacleLab true`
+  e dizer se os obstáculos são legíveis e justos (para voltar ao jogo normal, fechar o app e abrir pelo ícone).
+- Histórico: entregue em 2026-11-23 (`Stage RT.6t.18`).
 
 ## RT-6t.16 a RT-6t.20 e K.14 — Telas, obstáculos, formas na loja e mostrador (planejadas)
 

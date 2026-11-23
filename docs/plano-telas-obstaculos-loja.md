@@ -286,6 +286,8 @@ Unity em batchmode dos dois lados não podem rodar ao mesmo tempo (aprendizado d
   obstáculos por fase e a multidão em 300; APK no OPPO.
 - **Olhar humano:** sim, o usuário joga a fase de laboratório e diz se os obstáculos são legíveis e justos.
 
+- **Status (2026-11-23):** entregue (`Stage RT.6t.18`); detalhes e pendências em `plano-de-entregas.md`, seção RT-6t.18.
+
 ### RT-6t.19 — Obstáculos nas 40 fases e economia
 
 - **Escopo:** distribuição e curva da seção 3.2 nas 40 fases (gerador + fases à mão do mundo 1 e chefes); vida das

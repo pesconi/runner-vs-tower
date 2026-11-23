@@ -70,6 +70,13 @@ namespace Claybreak
         public const int MaximumFloors = 4;
         public const int MaximumCrates = 4;
 
+        /// <summary>Most obstacles in one level's run (RT-6t.18): the run course preallocates this many of every kind and marks
+        /// the crowd's slots with one bit per obstacle (at most 8).</summary>
+        public const int MaximumObstacles = 6;
+
+        /// <summary>Clear track an obstacle leaves after the start and before the firing line (m).</summary>
+        public const float ObstacleClearance = 4f;
+
         [Header("Identity")]
         [SerializeField] private string title = "LEVEL";
 
@@ -79,6 +86,8 @@ namespace Claybreak
         [SerializeField] private RunGatePair[] runGates = new RunGatePair[0];
         [Tooltip("Special-unit crates (only shown once the special unit is unlocked).")]
         [SerializeField] private CratePlacement[] crates = new CratePlacement[0];
+        [Tooltip("Obstacles of the run (RT-6t.18): procedural, they kill the units they touch.")]
+        [SerializeField] private ObstaclePlacement[] obstacles = new ObstaclePlacement[0];
         [Tooltip("Where the run ends and the assault starts (the firing line).")]
         [SerializeField, Min(5f)] private float firingLineZ = 80f;
 
@@ -159,6 +168,7 @@ namespace Claybreak
         public float RunSpeed => runSpeed;
         public IReadOnlyList<RunGatePair> RunGates => runGates;
         public IReadOnlyList<CratePlacement> Crates => crates;
+        public IReadOnlyList<ObstaclePlacement> Obstacles => obstacles ?? System.Array.Empty<ObstaclePlacement>();
         public float FiringLineZ => firingLineZ;
         public float LaunchRate => launchRate;
         public float UnitSpeed => unitSpeed;
@@ -245,6 +255,11 @@ namespace Claybreak
                     error = $"crates[{i}] must sit before the firing line, 3 m away from any gate pair, with at least 1 unit.";
                     return false;
                 }
+            }
+
+            if (!TryValidateObstacles(out error))
+            {
+                return false;
             }
 
             // RT-6t.14: no run gate label promises more than the crowd can hold, on any path (crates included).
@@ -344,6 +359,7 @@ namespace Claybreak
             runSpeed = spec.runSpeed;
             runGates = spec.runGates == null ? new RunGatePair[0] : (RunGatePair[])spec.runGates.Clone();
             crates = spec.crates == null ? new CratePlacement[0] : (CratePlacement[])spec.crates.Clone();
+            obstacles = spec.obstacles == null ? new ObstaclePlacement[0] : (ObstaclePlacement[])spec.obstacles.Clone();
             firingLineZ = spec.firingLineZ;
             launchRate = spec.launchRate;
             unitSpeed = spec.unitSpeed;
@@ -379,6 +395,51 @@ namespace Claybreak
             coinReward = spec.coinReward;
         }
 #endif
+
+        // RT-6t.18: the obstacles fit the course, keep clear of the start and the firing line, move no faster than the eye
+        // follows and leave a way past. The reaction window (editor) adds the timing against the gates.
+        private bool TryValidateObstacles(out string error)
+        {
+            ObstaclePlacement[] list = obstacles ?? new ObstaclePlacement[0];
+            if (list.Length > MaximumObstacles)
+            {
+                error = $"at most {MaximumObstacles} obstacles per level.";
+                return false;
+            }
+
+            for (int i = 0; i < list.Length; i++)
+            {
+                ObstaclePlacement obstacle = list[i];
+                if (!System.Enum.IsDefined(typeof(ObstacleKind), obstacle.kind))
+                {
+                    error = $"obstacles[{i}] has an unknown kind.";
+                    return false;
+                }
+
+                ObstacleMotion.Reach(obstacle, out float near, out float far);
+                if (near < ObstacleClearance || far > firingLineZ - ObstacleClearance)
+                {
+                    error = $"obstacles[{i}] ({obstacle.kind}) reaches {near:0.0}-{far:0.0} m: it must stay {ObstacleClearance} m clear of the start and of the firing line ({firingLineZ}).";
+                    return false;
+                }
+
+                float period = ObstacleMotion.Period(obstacle);
+                if (ObstacleMotion.Moves(obstacle.kind) && (period < ObstacleMotion.MinimumPeriod || period > ObstacleMotion.MaximumPeriod))
+                {
+                    error = $"obstacles[{i}] ({obstacle.kind}) needs a cycle of {ObstacleMotion.MinimumPeriod}-{ObstacleMotion.MaximumPeriod} s.";
+                    return false;
+                }
+
+                if (obstacle.across < -1f || obstacle.across > 1f || obstacle.phase < 0f || obstacle.phase > 1f)
+                {
+                    error = $"obstacles[{i}] across must be -1..1 and phase 0..1.";
+                    return false;
+                }
+            }
+
+            error = null;
+            return true;
+        }
 
         private bool NearGate(float z)
         {

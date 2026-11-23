@@ -14,6 +14,13 @@ namespace Claybreak.Editor
     /// moves with the crowd, so that distance ahead is the same for every gate; the window is it over the run speed;</item>
     /// <item>gap: from the start or the previous gate pair to the next one, the time to steer across after a choice.</item>
     /// </list>
+    /// RT-6t.18 adds the run obstacles (their deadly stretch, <see cref="ObstacleMotion.Reach"/>):
+    /// <list type="bullet">
+    /// <item>obstacle sight: from the moment it can be seen (the start, or the legible distance ahead, whichever comes later)
+    /// to the crowd reaching it, at least <see cref="MinimumSightSeconds"/>, as a gate number;</item>
+    /// <item>obstacle gap: an obstacle is never closer than <see cref="MinimumGapSeconds"/> to a gate pair, so the crowd never
+    /// has to dodge and choose a gate at once.</item>
+    /// </list>
     /// Pure (no scene); the validator and the tests give it the run camera profile and the levels.
     /// </summary>
     public static class ReactionWindow
@@ -41,14 +48,32 @@ namespace Claybreak.Editor
         public readonly struct Result
         {
             public Result(float sightSeconds, float gapSeconds)
+                : this(sightSeconds, gapSeconds, float.MaxValue, float.MaxValue)
+            {
+            }
+
+            public Result(float sightSeconds, float gapSeconds, float obstacleSightSeconds, float obstacleGapSeconds)
             {
                 SightSeconds = sightSeconds;
                 GapSeconds = gapSeconds;
+                ObstacleSightSeconds = obstacleSightSeconds;
+                ObstacleGapSeconds = obstacleGapSeconds;
             }
 
             public float SightSeconds { get; }
             public float GapSeconds { get; }
-            public bool Passes => SightSeconds >= MinimumSightSeconds && GapSeconds >= MinimumGapSeconds;
+
+            /// <summary>Shortest time from seeing an obstacle to reaching it (MaxValue without obstacles).</summary>
+            public float ObstacleSightSeconds { get; }
+
+            /// <summary>Shortest time between an obstacle's deadly stretch and a gate pair (MaxValue without either).</summary>
+            public float ObstacleGapSeconds { get; }
+
+            public bool GatesPass => SightSeconds >= MinimumSightSeconds && GapSeconds >= MinimumGapSeconds;
+
+            public bool ObstaclesPass => ObstacleSightSeconds >= MinimumSightSeconds && ObstacleGapSeconds >= MinimumGapSeconds;
+
+            public bool Passes => GatesPass && ObstaclesPass;
         }
 
         /// <summary>
@@ -87,6 +112,13 @@ namespace Claybreak.Editor
         /// <summary>The level's windows given the <paramref name="legibleDistance"/> of its gate numbers.</summary>
         public static Result Of(float runSpeed, IReadOnlyList<RunGatePair> gates, float legibleDistance)
         {
+            return Of(runSpeed, gates, System.Array.Empty<ObstaclePlacement>(), legibleDistance);
+        }
+
+        /// <summary>The level's windows, gates and obstacles, given the <paramref name="legibleDistance"/> ahead of the crowd.</summary>
+        public static Result Of(float runSpeed, IReadOnlyList<RunGatePair> gates, IReadOnlyList<ObstaclePlacement> obstacles,
+            float legibleDistance)
+        {
             float speed = math.max(0.01f, runSpeed);
             float shortestGap = float.MaxValue;
             float previous = 0f;
@@ -96,7 +128,22 @@ namespace Claybreak.Editor
                 previous = gates[i].z;
             }
 
-            return new Result(legibleDistance / speed, gates.Count == 0 ? float.MaxValue : shortestGap / speed);
+            float obstacleSight = float.MaxValue;
+            float obstacleGap = float.MaxValue;
+            for (int o = 0; o < obstacles.Count; o++)
+            {
+                ObstacleMotion.Reach(obstacles[o], out float near, out float far);
+                // Seen from the start when it is within the legible distance of it, else that distance ahead of the crowd.
+                obstacleSight = math.min(obstacleSight, math.min(near, legibleDistance) / speed);
+                for (int g = 0; g < gates.Count; g++)
+                {
+                    float z = gates[g].z;
+                    float apart = z < near ? near - z : z > far ? z - far : 0f;
+                    obstacleGap = math.min(obstacleGap, apart / speed);
+                }
+            }
+
+            return new Result(legibleDistance / speed, gates.Count == 0 ? float.MaxValue : shortestGap / speed, obstacleSight, obstacleGap);
         }
 
         // The farthest point straight ahead where the label is on screen and its capital height reads.

@@ -20,6 +20,7 @@ namespace Claybreak
         public float runSpeed = 5.5f;
         public RunGatePair[] runGates = new RunGatePair[0];
         public CratePlacement[] crates = new CratePlacement[0];
+        public ObstaclePlacement[] obstacles = new ObstaclePlacement[0];
         public float firingLineZ = 80f;
 
         // Assault

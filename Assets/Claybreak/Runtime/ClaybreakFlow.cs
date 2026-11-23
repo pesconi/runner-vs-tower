@@ -51,6 +51,10 @@ namespace Claybreak
         private const float OverheatFactor = 0.75f;
         // The device-gate run loops back to the start this far before the tower (the scenery and the tower stay ahead).
         private const float RunGateTowerGap = 10f;
+        // RT-6t.18: the units an obstacle kills are summed into one floating "-n" at most this often (s).
+        private const float ObstacleLossInterval = 0.3f;
+        // The obstacle lab (RT-6t.18) is asked for with this boolean intent extra (adb shell am start ... --ez obstacleLab true).
+        private const string ObstacleLabExtra = "obstacleLab";
 
         [SerializeField] private ClaybreakCatalog catalog;
         [Tooltip("Device-gate level per catalog world (300 units in flight, every defense at its limit, the world's heaviest tower, its scenery). Development and measurement builds pick it with `--ez stress true [--ei world N]` (N from 1); `--ez run true` measures its run instead (the crowd at its cap, looping, RT-6t.4).")]
@@ -66,6 +70,10 @@ namespace Claybreak
         [Tooltip("The assault shot of a boss level (higher and farther back: the boss tower is taller).")]
         [SerializeField] private SwarmCameraShot bossAssaultShot;
         [SerializeField] private RunGateCourse gates;
+        [Tooltip("The run's obstacles (RT-6t.18), placed from each level's list.")]
+        [SerializeField] private RunObstacleCourse obstacles;
+        [Tooltip("The obstacle lab (RT-6t.18): one level with every obstacle kind, played in a loop without saving when the game is started with `--ez obstacleLab true`.")]
+        [SerializeField] private ClaybreakLevel obstacleLab;
         [SerializeField] private AssaultField field;
         [SerializeField] private AssaultTower tower;
         [SerializeField] private CannonDefense cannon;
@@ -93,6 +101,9 @@ namespace Claybreak
         private FlowState state = FlowState.Menu;
         private bool deviceGate;
         private bool deviceGateRun;
+        private bool obstacleLabMode;
+        private int pendingLoss;
+        private float lossTimer;
         private int deviceGateWorld;
         private bool resultShown;
         private float launchCredit;
@@ -125,6 +136,9 @@ namespace Claybreak
         /// <summary>Editor only (PlayMode tests): the next flow presses PLAY by itself.</summary>
         public static bool EditorStartsWithoutTap { get; set; }
 
+        /// <summary>Editor only (PlayMode tests): the next flow plays the obstacle lab (RT-6t.18) in a loop.</summary>
+        public static bool EditorUsesObstacleLab { get; set; }
+
         /// <summary>Editor only (PlayMode tests): the save is not read nor written.</summary>
         public static bool EditorUsesFreshSave { get; set; }
 
@@ -136,6 +150,10 @@ namespace Claybreak
         public AssaultField Field => field;
         public RunCrowd Crowd => crowd;
         public RunGateCourse Gates => gates;
+        public RunObstacleCourse Obstacles => obstacles;
+
+        /// <summary>True when this session plays the obstacle lab (RT-6t.18) instead of the player's levels.</summary>
+        public bool PlaysObstacleLab => obstacleLabMode;
         public ClaybreakHud Hud => hud;
 
         /// <summary>True when the device gate measures the run (the crowd loops at its cap and never reaches the assault).</summary>
@@ -184,6 +202,7 @@ namespace Claybreak
         {
             ApplyMeasurementExtras();
             deviceGate = PickDeviceGate(out deviceGateWorld, out deviceGateRun);
+            obstacleLabMode = !deviceGate && PickObstacleLab();
             if (!Configure(out string error))
             {
                 Debug.LogError("[Claybreak] The game cannot start: " + error, this);
@@ -208,6 +227,12 @@ namespace Claybreak
 #endif
                 StartLevel(StressLevel);
             }
+            else if (obstacleLabMode)
+            {
+                // No session, metrics nor save: the lab is a test bench for the obstacles (played with the player's loadout).
+                Debug.Log("[Claybreak] OBSTACLE LAB: the obstacle level loops; nothing is saved.", this);
+                StartLevel(obstacleLab);
+            }
             else
             {
                 StartSession();
@@ -228,7 +253,7 @@ namespace Claybreak
         private bool Configure(out string error)
         {
             if (catalog == null || stressLevels == null || scenery == null || theme == null || track == null || crowd == null
-                || assaultShot == null || bossAssaultShot == null || gates == null || field == null
+                || assaultShot == null || bossAssaultShot == null || gates == null || obstacles == null || obstacleLab == null || field == null
                 || tower == null || cannon == null || hud == null || screens == null
                 || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null
                 || monetization == null || ads == null)
@@ -238,6 +263,11 @@ namespace Claybreak
             }
 
             if (!crowd.TryValidate(out error) || !theme.TryValidate(out error))
+            {
+                return false;
+            }
+
+            if (!obstacles.TryInitialize(crowd.MaximumArmy, out error))
             {
                 return false;
             }
@@ -267,6 +297,12 @@ namespace Claybreak
                     error = "device-gate level: " + (error ?? "missing");
                     return false;
                 }
+            }
+
+            if (!obstacleLab.TryValidate(crowd.MaximumArmy, field.FlightCapacity, out error))
+            {
+                error = "obstacle lab: " + error;
+                return false;
             }
 
             deviceGateWorld = Mathf.Clamp(deviceGateWorld, 0, stressLevels.Length - 1);
@@ -321,6 +357,30 @@ namespace Claybreak
 #else
             world = 0;
             run = false;
+            return false;
+#endif
+        }
+
+        // RT-6t.18: the obstacle lab. Read in every build (the user plays it on the installed game): only a launch with the
+        // extra (adb) asks for it, and the lab neither saves nor sends anything.
+        private static bool PickObstacleLab()
+        {
+#if UNITY_EDITOR
+            return EditorUsesObstacleLab;
+#elif UNITY_ANDROID
+            try
+            {
+                using AndroidJavaClass player = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using AndroidJavaObject activity = player.GetStatic<AndroidJavaObject>("currentActivity");
+                using AndroidJavaObject intent = activity.Call<AndroidJavaObject>("getIntent");
+                return intent.Call<bool>("getBooleanExtra", ObstacleLabExtra, false);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[Claybreak] Could not read the obstacle lab extra: " + exception.Message);
+                return false;
+            }
+#else
             return false;
 #endif
         }
@@ -408,7 +468,8 @@ namespace Claybreak
                 return;
             }
 #endif
-            if (!deviceGate)
+            // The device gate and the obstacle lab never write the player's save.
+            if (!deviceGate && !obstacleLabMode)
             {
                 SaveStore.Save(progression.Save);
             }
@@ -521,7 +582,7 @@ namespace Claybreak
         // Continue: the army fell in the assault; offered once per level, only with an ad loaded and a real army.
         private bool TryOfferContinue()
         {
-            if (deviceGate || continueUsed || !monetization.ContinueOnce || armyAtLine < monetization.ContinueMinimumArmy
+            if (deviceGate || obstacleLabMode || continueUsed || !monetization.ContinueOnce || armyAtLine < monetization.ContinueMinimumArmy
                 || !adGateway.RewardedReady)
             {
                 return false;
@@ -662,6 +723,7 @@ namespace Claybreak
             if (palette != null)
             {
                 crowd.CrownLeader(palette.UiAccent);
+                obstacles.Dress(palette.Defense);
             }
         }
 
@@ -670,6 +732,7 @@ namespace Claybreak
         {
             crowd.UseShape(shape);
             field.UseShape(shape);
+            obstacles.UseShape(shape);
         }
 
         // A falling tower floor throws units off where each block stood (the crowd's ballistic death).
@@ -729,6 +792,13 @@ namespace Claybreak
                 Debug.LogError("[Claybreak] The cannon or the run gates did not configure for " + level.name, this);
             }
 
+            if (!obstacles.Configure(level, track.bounds.center.x, crowd.TrackHalfWidth))
+            {
+                Debug.LogError("[Claybreak] The run obstacles did not configure for " + level.name, this);
+            }
+
+            pendingLoss = 0;
+            lossTimer = 0f;
             crowd.FollowWithCamera();
             crowd.ResetRun(level.StartCount + (played ? runLoadout.StartingArmy : 0));
             for (int i = 0; i < specials.Length; i++)
@@ -761,7 +831,7 @@ namespace Claybreak
             leavingResult = false;
             screens.HideAll();
             hud.Show(true);
-            if (!deviceGate)
+            if (!deviceGate && !obstacleLabMode)
             {
                 PlayerMetrics.LevelStarted(ClaybreakMetrics.LevelId(progression.World.WorldId, progression.LevelIndex),
                     progression.WorldIndex + 1, progression.LevelIndex + 1);
@@ -769,7 +839,7 @@ namespace Claybreak
 
             crowd.Speed = level.RunSpeed;
             crowd.Steering = true;
-            Debug.Log($"[Claybreak] Level '{level.name}' starts: army {crowd.Army}, {level.RunGates.Count} gate pairs, "
+            Debug.Log($"[Claybreak] Level '{level.name}' starts: army {crowd.Army}, {level.RunGates.Count} gate pairs, {level.Obstacles.Count} obstacles, "
                 + $"tower {level.Tower} {tower.MaximumHealth} in {level.Floors} floor(s), projectile limit {level.MaximumProjectiles}, "
                 + $"sweeper {(level.SweeperEnabled ? "on" : "off")}, wall {(level.WallEnabled ? "on" : "off")}.", this);
             Enter(FlowState.Run);
@@ -804,14 +874,22 @@ namespace Claybreak
                     }
 
                     Vector3 center = crowd.Position;
+                    int hit = obstacles.Track(crowd);
                     if (MeasuresRun)
                     {
-                        // The device gate keeps the crowd at its cap on the track: back to the start before the tower.
+                        // The device gate keeps the crowd at its cap on the track (the obstacles throw their kills out but the
+                        // army stays): back to the start before the tower, the obstacles ready to hit the same slots again.
                         if (center.z >= activeLevel.TowerZ - RunGateTowerGap)
                         {
                             crowd.RestartRun();
+                            obstacles.ClearMarks();
                         }
 
+                        break;
+                    }
+
+                    if (!deviceGate && OnObstacleHit(hit))
+                    {
                         break;
                     }
 
@@ -833,6 +911,10 @@ namespace Claybreak
                         if (deviceGate)
                         {
                             StartLevel(StressLevel);
+                        }
+                        else if (obstacleLabMode)
+                        {
+                            StartLevel(obstacleLab);
                         }
                         else
                         {
@@ -906,6 +988,40 @@ namespace Claybreak
             }
 
             return -1;
+        }
+
+        // RT-6t.18: units an obstacle killed leave the army (they were thrown out by the course); the loss floats as one
+        // "-n" every ObstacleLossInterval. True when the army is gone (the level is lost).
+        private bool OnObstacleHit(int killed)
+        {
+            lossTimer += Time.deltaTime;
+            if (killed > 0)
+            {
+                int army = Mathf.Max(0, crowd.Army - killed);
+                crowd.SetArmy(army);
+                pendingLoss += killed;
+                if (Specials > army)
+                {
+                    TrimSpecials(army);
+                }
+            }
+
+            if (pendingLoss > 0 && (lossTimer >= ObstacleLossInterval || crowd.Army == 0))
+            {
+                hud.FloatGate(new GateSpec(GateOperation.Subtract, pendingLoss));
+                GameAudio.Play(GameSound.GateBad);
+                pendingLoss = 0;
+                lossTimer = 0f;
+            }
+
+            if (crowd.Army > 0)
+            {
+                return false;
+            }
+
+            TrimSpecials(0);
+            Enter(FlowState.Lost);
+            return true;
         }
 
         private void OnGateCrossed(GateSpec gate)
@@ -1094,8 +1210,8 @@ namespace Claybreak
             int armyLeft = crowd.Army + field.InFlight;
             Debug.Log($"[Claybreak] Level {activeLevel.name} {(won ? "WON" : "LOST")} in {levelTime:0.0} s; army at line {armyAtLine}, "
                 + $"left {armyLeft}, tower {tower.Health}/{tower.MaximumHealth}, hits {field.TowerHits}, peak in flight {field.PeakInFlight}, "
-                + $"peak projectiles {cannon.PeakActive}/{activeLevel.MaximumProjectiles}.", this);
-            if (deviceGate)
+                + $"peak projectiles {cannon.PeakActive}/{activeLevel.MaximumProjectiles}, obstacle kills {obstacles.Kills}.", this);
+            if (deviceGate || obstacleLabMode)
             {
                 return;
             }
@@ -1131,7 +1247,8 @@ namespace Claybreak
             if (state == FlowState.Run)
             {
                 Vector3 center = crowd.Position;
-                Debug.Log($"[ClaybreakGate] t={levelTime:0.0} run army={crowd.Army} crowd z={center.z:0.0} x={center.x:0.00}");
+                Debug.Log($"[ClaybreakGate] t={levelTime:0.0} run army={crowd.Army} crowd z={center.z:0.0} x={center.x:0.00} "
+                    + $"obstacles={obstacles.Count} kills={obstacles.Kills} dying={obstacles.DyingCount} calls={obstacles.DrawCalls}");
             }
             else if (state == FlowState.Assault)
             {

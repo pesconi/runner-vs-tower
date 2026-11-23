@@ -2017,3 +2017,45 @@ resposta. Aceite pendente: usuário aprovar o plano e as fichas.
   kit tinha `Runtime/Levels` não commitado com erro de compilação (sessão K em andamento). Sem tocar no repositório do
   kit: clone do último commit (`465881b`) em `C:\temp\kit-head`, manifest apontado para ele só durante os passos `apk aab`
   e devolvido em seguida (`git checkout -- Packages/`). Os APKs contêm o kit que está em `main` do `studiokit`.
+
+## 2026-11-23 — T-RT6t18-1..9 — Obstáculos na corrida: motor e 5 tipos (RT-6t.18) — técnica (sessão da entrega)
+
+- **T-RT6t18-1 — Obstáculos são dado de fase e matemática pura.** `ObstaclePlacement` (tipo, z, lado, ciclo, fase) na lista
+  `obstacles` do `ClaybreakLevel`/`LevelSpec`; `ObstacleMotion` calcula, sem cena, onde cada tipo está num instante, se
+  mata naquele instante e se um boneco em (x, z) está dentro da área que mata, e o trecho da pista que ele alcança (`Reach`).
+  O percurso (`RunObstacleCourse`), o validador e os testes usam as mesmas funções. Tamanhos para a pista de 8 m.
+- **T-RT6t18-2 — Morte pela posição, com a morte balística do kit, sem mexer no kit.** O percurso testa a posição de cada
+  boneco perto de um obstáculo mortal e joga um boneco na morte balística exatamente de onde o atingido estava
+  (`LooseSwarmRenderer.Throw`, um "arremessador" sem bonecos vivos, 1 chamada só enquanto há bonecos voando); o exército
+  perde o mesmo número. O `SwarmRenderer` do kit só sabe tirar o anel de fora, então quem some da formação é um boneco
+  da borda, e o atingido fica no lugar dele. Cada vaga da formação é atingida no máximo uma vez por obstáculo; teto de 6
+  mortes por quadro para a rajada ser legível. **Necessidade registrada para o kit** (entrega K futura, não feita aqui
+  porque outra sessão escreve no `studiokit`): `SwarmRenderer/SwarmSimulation.KillAt(índice)` que remove a própria
+  unidade atingida (troca com a última, morte balística dela), para a formação perder o boneco certo.
+- **T-RT6t18-3 — Uma chamada por tipo, nas duas rotas.** Um `ToonInstanceDraw` por tipo (material `ObstacleToon`, ToonLit
+  instanciado, instancing ligado), no máximo 6 instâncias (um bloco de 256 na rota de blocos): 1 chamada por tipo em
+  buffer e em GLES. O trilho da serra é um buraco esticado e vai na chamada dos buracos. Malhas toon geradas no editor
+  (`ObstacleArt`): corpo branco com alfa 1 tingido pela cor de defesa da paleta do mundo; espinhos, lâmina, ferro,
+  madeira e o poço com cor própria.
+- **T-RT6t18-4 — Movimentos:** tronco = pêndulo de 6,95 m pendurado a 7,6 m (mata só quando baixo, cobre a pista toda ao
+  longo do ciclo); serra = vai e volta de borda a borda (cosseno), girando; martelo = metade da pista, sobe suave, espera
+  em cima, bate acelerando e fica no chão; buraco = parado, 3,6 m × 2,4 m, sempre deixa mais da metade da pista livre;
+  rolo = rola 10 m em direção à multidão numa faixa, sobe da pista no começo e afunda no fim (sem aparecer do nada).
+- **T-RT6t18-5 — Regras do dado e janela de reação.** O `ClaybreakLevel` recusa mais de 6 obstáculos, trecho mortal a
+  menos de 4 m da largada ou da linha de tiro e ciclo fora de 1,2–12 s. O `ReactionWindow` ganhou a janela dos obstáculos:
+  visto pelo menos 3 s antes de a multidão chegar (da largada, ou da distância legível) e nunca a menos de 1,6 s de um par
+  de portões; o validador recusa a fase e loga a pior.
+- **T-RT6t18-6 — Pré-alocação.** Tudo é alocado ao carregar a cena (arrays de instâncias, draws, marcas das vagas do
+  tamanho da multidão); cada fase só reposiciona. Nenhum `Instantiate`/`new GameObject` em jogo (teste PlayMode conta os
+  objetos).
+- **T-RT6t18-7 — Fase de laboratório jogável no APK instalado.** `Data/ObstacleLab.asset` (fora dos mundos): um par de
+  portões e os 5 tipos em sequência, ritmo de mundo 2 (8,5 m/s), torre fácil. O jogo a abre, em qualquer build, só quando
+  iniciado com `--ez obstacleLab true` (adb); no modo laboratório a fase repete sozinha, sem salvar, sem métricas e sem
+  anúncio de continuar. Ler um extra de intent em release é inofensivo (nada é gravado nem enviado) e permite ao usuário
+  jogar o laboratório no próprio jogo instalado, com o save intacto.
+- **T-RT6t18-8 — Gate com o máximo de obstáculos.** A fase de medição de cada mundo leva 6 obstáculos (os 5 tipos, duas
+  serras) antes da linha de tiro; no gate a multidão fica em 300 (os obstáculos matam e arremessam, o exército não cai) e
+  as marcas são limpas a cada volta da corrida medida. As 40 fases seguem sem obstáculo (distribuição e economia são da
+  RT-6t.19).
+- **T-RT6t18-9 — Perda na tela:** as mortes de obstáculo somam num único "−n" vermelho (o mesmo número flutuante dos
+  portões) a cada 0,3 s, com o som de portão ruim; sem tremor de câmera (seria contínuo dentro de um buraco).
