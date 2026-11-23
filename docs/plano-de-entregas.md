@@ -33,7 +33,7 @@ lançamento jun/2027.
 | RT-6t.1–6t.12 Direção visual "crowd toon" (multidão instanciada, toon, paletas, cenário, portões) — concluída em 2026-11-22 (motor no `studiokit` 0.5.0; aceite pendente: jogar os 4 mundos; `rt6t-crowd-toon.md`) | ~2,5 [I] | ~3 | antes da RT-9 |
 | RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22; ajuste "sem neblina nenhuma" pedido pelo usuário feito, validado, gate 3× aprovado e APK instalado no OPPO; **aceite do usuário em 2026-11-22** ("Aprovo") | — | — | antes da RT-9 |
 | RT-6t.14 Limite configurável da multidão (300 neste jogo) e portões que nunca passam dele (D27 revista) — concluída em 2026-11-22; pendente instalar o APK no OPPO | — | — | antes da RT-9 |
-| RT-6t.15 Multidão mais rápida na corrida (+30% constante, pedido do usuário em 2026-11-23) — concluída em 2026-11-23 (`RunPace`; janela de reação verificada; loja em 49 min) | — | — | antes da RT-9 |
+| RT-6t.15 Multidão mais rápida na corrida (+30% constante, pedido do usuário em 2026-11-23) — concluída em 2026-11-23 (`RunPace`; janela de reação verificada; loja em 49 min); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou boa") | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |

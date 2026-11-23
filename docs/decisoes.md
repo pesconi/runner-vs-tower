@@ -1913,3 +1913,5 @@ mundos; aceleração só se o constante deixasse a reação aos portões ruim ou
   399 moedas por minuto. Preços e moedas por fase não mudaram.
 - **T-RT6t15-5 — Gate 3× não roda.** O peso da cena é o mesmo (mesmas capacidades, mesmo cenário) e o gate da corrida já
   mede a 12 m/s, acima da fase mais rápida nova (9,75).
+- **2026-11-23 — RT-6t.15 aceita pelo usuário.** Jogou no OPPO a corrida 30% mais rápida (`RunPace.Factor` = 1,3) e
+  respondeu "Ficou boa". Sem aceleração durante a fase.
