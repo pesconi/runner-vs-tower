@@ -1915,3 +1915,28 @@ mundos; aceleração só se o constante deixasse a reação aos portões ruim ou
   mede a 12 m/s, acima da fase mais rápida nova (9,75).
 - **2026-11-23 — RT-6t.15 aceita pelo usuário.** Jogou no OPPO a corrida 30% mais rápida (`RunPace.Factor` = 1,3) e
   respondeu "Ficou boa". Sem aceleração durante a fase.
+
+## 2026-11-23 — Pedido do usuário após jogar no OPPO: telas, obstáculos, forma na loja, mostrador — plano (sessão de planejamento)
+
+Palavras do usuário e plano completo em `plano-telas-obstaculos-loja.md` (seções 0 e 4). Entregas planejadas RT-6t.16 a
+RT-6t.20 e K.14 (studiokit); fichas D31 (leitura do pedido "formato como compra") e D32 (preços das formas) aguardando
+resposta. Aceite pendente: usuário aprovar o plano e as fichas.
+
+## 2026-11-23 — T-6t16-1..8 — Diagnóstico e escolhas técnicas do plano — técnica (sessão de planejamento)
+
+- **T-6t16-1 — Canvas casa pela largura.** Causa da loja cortada: Canvas 1080×1920 casando pela altura; num 20:9 a largura
+  útil é ~864 e as linhas da loja têm 930 fixas (abas ~970). Correção: `matchWidthOrHeight = 0` e âncoras que esticam.
+- **T-6t16-2 — Tronco de espinhos parado é bug desde a RT-4a.** `SweeperDefense.Running` nunca recebe `true`; o fluxo liga
+  `AssaultField.Running`, que não repassa. Correção no `AssaultField` (propriedade que repassa ao braço), com teste.
+- **T-6t16-3 — "Mostrador de progresso" = pontos de fase da home** (espaçamento fixo de 92, fileira de ~880 de borda a
+  borda). Vira cápsula compacta ≤ 60% da largura; a 6t.16 confere também o HUD em 4 proporções.
+- **T-6t16-4 — Obstáculos da corrida nascem no jogo**, como as defesas do assalto; viram entrega K só se outro jogo pedir.
+- **T-6t16-5 — Obstáculos sem colisor:** teste de área contra as posições da multidão, morte balística existente, 1 chamada
+  de desenho por tipo, pré-alocados por fase, janela de reação no validador.
+- **T-6t16-6 — Curva sem ficha:** o tempo de fase não muda; a vida das torres é recalculada sobre o exército esperado de
+  quem desvia. Vira ficha só se o tempo da loja mudar mais de 10%.
+- **T-6t16-7 — Brilho branco sai do kit na K.14 (0.8.0)**, depois de a 6t.16 tirar a chamada do jogo. Impacto: o Wild Pack
+  só chama `AddGloss` atrás de `DecorativeHighlights`, desligado nos 3 temas (nada muda na tela dele, só código morto sai);
+  o incremental só no `TestProject` (botão de exemplo).
+- **T-6t16-8 — Capturas do diagnóstico:** OPPO desconectado; usadas as do editor (`docs/art/rt6t16/atual-*.png`) e uma
+  simulação da faixa visível em 20:9 (`simulado-20x9-*.png`). A 6t.16 cria capturas reais em 16:9, 19,5:9, 20:9 e 21:9.

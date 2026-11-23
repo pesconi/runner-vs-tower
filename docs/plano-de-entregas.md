@@ -34,6 +34,12 @@ lançamento jun/2027.
 | RT-6t.13 Ajustes pós-teste do usuário: neblina quase zero e líder da multidão — concluída em 2026-11-22; ajuste "sem neblina nenhuma" pedido pelo usuário feito, validado, gate 3× aprovado e APK instalado no OPPO; **aceite do usuário em 2026-11-22** ("Aprovo") | — | — | antes da RT-9 |
 | RT-6t.14 Limite configurável da multidão (300 neste jogo) e portões que nunca passam dele (D27 revista) — concluída em 2026-11-22; pendente instalar o APK no OPPO | — | — | antes da RT-9 |
 | RT-6t.15 Multidão mais rápida na corrida (+30% constante, pedido do usuário em 2026-11-23) — concluída em 2026-11-23 (`RunPace`; janela de reação verificada; loja em 49 min); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou boa") | — | — | antes da RT-9 |
+| RT-6t.16 Correções rápidas: tronco de espinhos que anda, mostrador de fase compacto, loja e home sem corte em telas estreitas, jogo sem o brilho branco — **planejada** (pedido do usuário em 2026-11-23; `plano-telas-obstaculos-loja.md`) | — | — | antes da RT-9 |
+| K.14 (studiokit) Tirar o brilho branco dos botões do kit (`ClayUi.AddGloss`), versão 0.8.0, chamadas mortas do Wild Pack fora — **planejada**; depois da 6t.16, em paralelo com as seguintes | — | — | antes da RT-9 |
+| RT-6t.17 Telas novas no estilo toon pastel (botões vivos, Baloo 2, loja legível de 16:9 a 21:9) — **planejada** | — | — | antes da RT-9 |
+| RT-6t.18 Obstáculos na corrida (5 tipos procedurais que matam parte da multidão) — **planejada** | — | — | antes da RT-9 |
+| RT-6t.19 Obstáculos nas 40 fases e economia recalculada — **planejada** | — | — | antes da RT-9 |
+| RT-6t.20 Formas compradas na loja (save v5) — **planejada**; espera as fichas D31 e D32 | — | — | antes da RT-9 |
 | RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
@@ -620,6 +626,21 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   11,7 s; loja inteira 53 → 49 min (preços iguais). Detalhes em [`rt6t-crowd-toon.md`](rt6t-crowd-toon.md), seção
   RT-6t.15; decisões T-RT6t15-1..5.
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.15`).
+
+## RT-6t.16 a RT-6t.20 e K.14 — Telas, obstáculos, formas na loja e mostrador (planejadas)
+
+- **Origem:** o usuário jogou no OPPO e pediu em 2026-11-23 (palavras dele em
+  [`plano-telas-obstaculos-loja.md`](plano-telas-obstaculos-loja.md), seção 0): telas primitivas e loja cortada, botões
+  sem o brilho branco (tirar do studiokit), desafio na corrida e o tronco de espinhos do chefe parado, forma como compra
+  na loja com impacto visual, mostrador de progresso ocupando a tela.
+- **Plano completo** (diagnóstico com evidência, propostas, escopo, dependências, aceite e olhar humano de cada
+  entrega): [`plano-telas-obstaculos-loja.md`](plano-telas-obstaculos-loja.md). Capturas do diagnóstico em
+  `docs/art/rt6t16/`.
+- **Entregas:** RT-6t.16 correções rápidas (tronco, mostrador, cortes, brilho no jogo) → RT-6t.17 telas novas →
+  RT-6t.18 obstáculos → RT-6t.19 obstáculos nas 40 fases e economia → RT-6t.20 formas na loja. K.14 no `studiokit` (e
+  Wild Pack) depois da 6t.16, em paralelo com as seguintes (repos diferentes; Unity em batchmode um de cada vez).
+- **Fichas pendentes:** D31 (leitura do pedido "formato como compra") e D32 (preços das formas); só a RT-6t.20 espera.
+- **Status: planejadas em 2026-11-23; aceite pendente: usuário aprovar o plano e as fichas.**
 
 ## RT-9 — Preparação do soft launch
 
