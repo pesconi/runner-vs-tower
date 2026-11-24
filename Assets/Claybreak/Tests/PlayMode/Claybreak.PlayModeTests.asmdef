@@ -3,6 +3,7 @@
     "rootNamespace": "Claybreak.Tests",
     "references": [
         "Unity.TextMeshPro",
+        "Unity.InputSystem",
         "Claybreak.Runtime",
         "Claybreak.Lab",
         "JungleDegree.StudioKit.Swarm",

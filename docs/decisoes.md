@@ -2203,3 +2203,50 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
   `audio-licenses.md` passam a Stampeep. Registros históricos (decisões, seções RT-4 a RT-8b, `rt8b-firebase.md`, que
   descreve o projeto Firebase já criado como "Clay Siege") não se reescrevem. O nome do projeto e do app no console do
   Firebase é interno e não aparece ao jogador; trocá-lo fica a critério do usuário na RT-9.
+
+## 2026-11-24 — T-RT9a-1..8 — Material da loja e declarações (RT-9a) — técnica (sessão da entrega)
+
+- **T-RT9a-1 — Capturas da loja tiradas de fases reais, não do nível de medição.** O nível de medição (`DEVICE GATE`)
+  mostra o rótulo "DEVICE GATE", portões ×1 e 0 moedas: não serve à loja. `StoreCaptureTests` carrega um save de meio
+  de jogo (mundos anteriores com estrelas, parte das melhorias e as elites compradas), aperta PLAY e joga a fase como
+  um jogador: na corrida escolhe o portão que deixa o exército maior (`GateMath.Apply`), no assalto um dedo simulado
+  (Input System, `IgnoreFocus` só durante o teste) segura o meio da tela. Quadros 1080×1920 com o HUD do jogo; quadros
+  largos e quadrados sem HUD para o destaque e o ícone. A escolha dos quadros e o gráfico ficam em
+  `Tools/store/make_store_art.py` (nomes estáveis: repete numa nova captura). Nada de mock-up nem texto por cima das
+  capturas; o destaque leva o nome do jogo na fonte do próprio título (Baloo 2), sobre um quadro do mundo 3.
+- **T-RT9a-2 — Endereço da política: `https://jungledegree.com/stampeep/privacy/`.** Mesmo padrão do Wild Pack
+  (`/wild-pack/privacy/`), já em `MonetizationContent.PrivacyPolicyUrl` (o botão de SETTINGS abre a página quando ela for
+  publicada; até lá dá "página não encontrada" só no teste interno). O HTML é gerado do Markdown revisto
+  (`Tools/store/make_privacy_html.py`, uma fonte só, sem scripts nem fontes externas); `--check` falha enquanto sobrar
+  campo `<...>`. Os dados da empresa não foram inventados: 5 campos (PT) + 5 (EN) para o usuário.
+- **T-RT9a-3 — Consentimento dos anúncios fora da Europa (nota da RT-8b): mensagem RGPD do AdMob "Em todo o lado" e
+  distribuição só no EEE/Reino Unido/Suíça enquanto valer a D23 = B; sem mudança de código.** Base: a empresa é
+  portuguesa e aplica o RGPD a todo o tratamento que faz (art. 3.º, n.º 1); o acesso ao ID de publicidade no aparelho
+  pede consentimento (ePrivacy art. 5.º, n.º 3). O UMP só mostra o formulário onde a mensagem estiver segmentada; a
+  ajuda do AdMob (answer/10113207, lida em 2026-11-24) oferece a segmentação **"Everywhere"**. Com ela, nenhum anúncio é
+  pedido em país nenhum antes da resposta (o `MobileAdsGate` já espera o UMP), sem tocar no kit. Alternativas
+  descartadas: pedir anúncios não personalizados fora da Europa (`npa=1`) exigiria mudar o `MobileAdsGate` do kit
+  (entrega K) e não resolve o acesso ao ID; pergunta própria do jogo (D23 opção A) é mais código e mais uma tela. A
+  política foi ajustada (fora destas regiões a janela não aparece; por agora só distribuímos no EEE, Reino Unido e
+  Suíça). **A conferir antes de sair da Europa (RT-11):** com a segmentação "Everywhere", se o UMP grava
+  `IABTCF_gdprApplies=1` fora do EEE (geografia de depuração do UMP no OPPO); se gravar, o Firebase passa a medir com o
+  mesmo "sim" (D23 opção E) sem código novo; se não, volta à D23.
+- **T-RT9a-4 — Ícone do celular = ícone da loja.** O APK usava o ícone padrão do Unity (logótipo de terceiros, T-RT6t21-4).
+  `ProjectConfiguration.ApplyLauncherIcon` põe `Content/Icon/AppIcon.png` (1024, um quadro do jogo: a multidão rosa com
+  o líder coroado e o portão ×2) nas duas camadas do ícone adaptativo (o Unity 6 só aceita o tipo adaptativo; legado e
+  redondo saem dele). O mesmo quadro, em 512, é o ícone da loja. Trocar o ícone = trocar o recorte no script e gerar de
+  novo. Aprovação visual do usuário junto com a ficha (RT-9b).
+- **T-RT9a-5 — Ficha só em inglês até a D10; texto conferido por script.** `Tools/store/check_listing.py` mede os limites
+  (30/80/4000) e recusa palavras da política de metadados ("best", "#1", "free", "new"…) e da direção adulta ("kids",
+  "cute", "family"…), além de emoji. Cada frase da descrição tem a fonte no código (notas do arquivo).
+- **T-RT9a-6 — AAB assinado pelo usuário, sem segredo no repositório.** O fluxo existente (`ClaybreakBuild` + variáveis
+  `CLAYBREAK_*`, RT-8) já assina com a chave de upload sem gravar nada no `ProjectSettings`. Para o usuário,
+  `Tools/store/build-signed-aab.ps1` pede as senhas sem mostrar, passa-as só ao processo do Unity, apaga-as no fim e
+  imprime o certificado (recusa chave dentro do repositório; avisa se saiu com a chave de debug). Chave de upload
+  própria do Stampeep (não reutilizar a do Wild Pack: separar o estrago se uma vazar).
+- **T-RT9a-7 — Requisitos técnicos da Play conferidos no artefacto.** targetSdk 36 (exigido desde 31/08/2026), só
+  arm64, e todas as bibliotecas nativas com alinhamento de 16 KB (`Tools/store/check_16kb.py`; exigido para
+  atualizações a partir de 01/02/2027). Nada a mudar.
+- **T-RT9a-8 — Categoria "Ação"; declarações em `docs/store/declaracoes.md`.** Segurança dos dados com 4 tipos
+  (localização aproximada, interações com o app, diagnóstico, IDs do dispositivo), todos recolhidos e partilhados por
+  causa do AdMob; o rascunho `data-safety.md` fica como histórico do levantamento.

@@ -330,9 +330,10 @@ namespace Claybreak.Tests
                 Assert.AreEqual(!music, GameAudio.MusicMuted, "MUSIC did not switch");
                 Press("/Ui/Screens/Settings/Safe/Vibration");
                 Assert.AreEqual(!vibration, GameHaptics.Enabled, "VIBRATION did not switch");
-                Press("/Ui/Screens/Settings/Safe/PrivacyPolicy");
-                var note = GameObject.Find("/Ui/Screens/Settings/Safe/Note").GetComponent<TMPro.TMP_Text>();
-                Assert.IsNotEmpty(note.text, "the policy link said nothing while its page is not published");
+                // RT-9a: the link carries the published https page (pressing it would open a browser here).
+                Assert.IsNotNull(GameObject.Find("/Ui/Screens/Settings/Safe/PrivacyPolicy"), "the policy link is missing");
+                Assert.IsTrue(ClaybreakMonetization.IsHttpsPage(flow.Screens.PrivacyPolicyUrl),
+                    "the policy link has no https page: " + flow.Screens.PrivacyPolicyUrl);
                 Press("/Ui/Screens/Settings/Safe/Back");
                 Assert.IsFalse(flow.Screens.SettingsShown);
                 Assert.IsTrue(GameObject.Find("Home") != null, "BACK did not return home");

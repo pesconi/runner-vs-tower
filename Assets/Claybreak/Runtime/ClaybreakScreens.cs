@@ -345,6 +345,9 @@ namespace Claybreak
             RefreshSwitches();
         }
 
+        /// <summary>The public privacy policy page the settings link opens (RT-9a: set; empty would show a note).</summary>
+        public string PrivacyPolicyUrl => privacyPolicyUrl ?? string.Empty;
+
         /// <summary>The public privacy policy page (https); empty until the store release publishes it.</summary>
         public void SetPrivacyPolicyUrl(string url)
         {

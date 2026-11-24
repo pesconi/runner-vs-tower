@@ -41,7 +41,8 @@ lançamento jun/2027.
 | RT-6t.19 Obstáculos nas 40 fases e economia recalculada — concluída em 2026-11-23 (mundo 1 ensina um tipo por vez, um tipo novo por mundo, 2–3 por fase no fim do mundo 4; vida das torres sobre o exército depois das perdas; `rt6-economia.md` com a perda esperada; fases ±5% do tempo da RT-6t.15, loja 49 → 50 min); gate 3× não se aplica (no máximo 3 obstáculos por fase, 6 já medidos); APK instalado no OPPO; **aceite do usuário em 2026-11-23** ("Ficou boa") | — | — | antes da RT-9 |
 | RT-6t.20 Formas compradas na loja (save v5) — concluída em 2026-11-23 (5 formas com silhueta e quique próprios, aba SHAPES, botão SHAPE fora da home, save v5 com migração; loja 24.680 moedas em 58 min; capturas em `docs/art/rt6t20/`); gate 3× não se aplica (forma mais pesada continua 492 triângulos); **aceite do usuário em 2026-11-23** ("Aprovo, instala"); APK instalado no OPPO, save migrado v4 → v5 com a forma BALL mantida | — | — | antes da RT-9 |
 | RT-6t.21 Rename para Stampeep (D29) — concluída em 2026-11-23 (nome no ícone do celular, título da home e créditos; subtítulo "STORM THE TOWER" mantido; política de privacidade e licenças de áudio; validador recusa "Clay Siege"; ícone sem identidade antiga, não muda; busca oficial EUIPO e INPI sem marca igual, risco médio com "STAMPEDE" anotado; ficha de gasto D33 pendente, não bloqueia); gate 3× não se aplica; APK instalado no OPPO com o save mantido | — | — | antes da RT-9 |
-| RT-9 Preparação do soft launch | 1 | 1,2 | início de mai |
+| RT-9a Material da loja e declarações (IA) — concluída em 2026-11-24 (ficha en-US, 6 capturas reais 9:16, ícone 512 também no celular, destaque 1024×500, declarações com evidência, política final + HTML, regras da Play pesquisadas, passo a passo da RT-9b; fichas D7, D9, D10 pendentes; `docs/store/`) | — | — | antes da RT-9b |
+| RT-9b Console, AdMob e teste interno (usuário, com passagens curtas da IA) — **planejada**; bloqueada pelas fichas D7, D9 (só a parte de produção) e D10 | 1 | 1,2 | início de mai |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
 | RT-12 Operação | contínuo | — | a partir de jul |
@@ -820,26 +821,81 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Status:** plano aprovado em 2026-11-23; RT-6t.16 a 6t.19 aceitas; RT-6t.20 concluída com aceite pendente (capturas);
   K.14 no `studiokit`.
 
-## RT-9 — Preparação do soft launch
+## RT-9 — Preparação do soft launch (dividida em 2026-11-24: RT-9a e RT-9b)
 
 - **Notas da RT-8b (2026-11-21):** a empresa é portuguesa — checagem de marca de "Clay Siege" em **EUIPO** e **INPI
   Portugal**, além do TMview; publicar a mensagem GDPR no AdMob (Privacidade e mensagens); restringir a chave de API
   do Firebase ao pacote e à SHA-1; preencher na política os dados da empresa (denominação, NIPC, morada, e-mail);
   rever o consentimento dos **anúncios** fora da Europa sob o RGPD; resposta da D23.
 
-- **Escopo:** ficha da loja (título, textos, capturas 9:16, ícone 512, gráfico
-  1024×500, direção adulta), classificação etária (IARC) com evidência do
-  código, público 13+, Data safety, política de privacidade publicada no site
-  do estúdio, teste interno e fechado exigidos pela Play (regra vigente para o
-  tipo de conta; **não pesquisada ainda**, ver riscos), definição dos países de
-  soft launch e do protocolo de medição.
-- **Depende de:** RT-8, conta Play (da publicação do Wild Pack), decisões de
-  países e orçamento.
-- **Aceite:** AAB assinado enviado a teste interno; ficha sem avisos de
-  política; documento de declarações como o do Wild Pack
-  (`docs/store/declaracoes.md`).
-- **Exige o usuário:** criar o app e as faixas no Console, enviar o AAB,
-  preencher declarações, aprovar textos.
+- **Divisão (pedido do usuário "Preparar a RT-9", 2026-11-24):** a RT-9a é tudo o que a IA faz sozinha (material,
+  declarações, pesquisa, roteiro); a RT-9b é o que só o usuário faz no Play Console, no AdMob, no site e no Google
+  Cloud, com passagens curtas da IA (IDs do AdMob, conferências no OPPO). Escopo original: ficha da loja, IARC,
+  público 13+, Data safety, política publicada, teste interno, países e protocolo de medição.
+
+## RT-9a — Material da loja e declarações
+
+- **Escopo:** ficha da loja (título ≤ 30, curta ≤ 80, longa ≤ 4000) nos idiomas da D10 (em aberto: inglês e ficha D10);
+  capturas 9:16 reais do jogo, ícone 512, gráfico 1024×500; `docs/store/declaracoes.md` no modelo do Wild Pack (Data
+  safety com evidência, IARC, 13+, anúncios, acesso, ID de publicidade); política final + HTML estático com marcadores
+  para os dados da empresa; consentimento dos anúncios fora da Europa (nota da RT-8b); regras vigentes da Play para
+  conta de organização nova; passo a passo da RT-9b; fichas D7, D9, D10; AAB assinado sem segredo no repositório.
+- **Depende de:** RT-6t.21.
+- **Aceite:** limites da ficha conferidos; capturas conferidas (nada cortado, nenhum "Clay Siege", nenhuma marca de
+  terceiros); `rt4-check` verde se mexer em código; fichas completas no registro.
+- **Exige o usuário:** nada para terminar; as fichas D7/D9/D10 e a aprovação das imagens e textos vão para a RT-9b.
+- **Status: concluída em 2026-11-24** (`Stage RT.9a`). Tudo em [`store/`](store/README.md):
+  - **Ficha en-US** (`store/ficha/en-US.md`): título "Stampeep: Storm the Tower" (25), curta 77, longa 1.245; cada frase
+    com fonte no código; `Tools/store/check_listing.py` (limites + palavras proibidas) PASS.
+  - **Gráficos** (`store/graficos/`): 6 capturas 1080×1920 de fases reais (mundos 2, 3 e 4, loja de formas, home),
+    tiradas por `StoreCaptureTests` (save de meio de jogo, PLAY, portões escolhidos como um jogador, dedo simulado no
+    assalto) e escolhidas por `Tools/store/make_store_art.py`; ícone 512 (a multidão rosa com o líder e o portão ×2) que
+    passa a ser **também o ícone do celular** (antes era o padrão do Unity, T-RT9a-4); destaque 1024×500 com o título na
+    fonte do jogo.
+  - **Declarações** (`store/declaracoes.md`): Segurança dos dados (4 tipos, recolhidos e partilhados pelo AdMob),
+    IARC (violência de fantasia leve, sem sangue), público 13+ com o risco do visual fofo, anúncios sim, acesso livre,
+    ID de publicidade sim, outras não.
+  - **Política** final (`politica-de-privacidade.md`) com 10 marcadores (5 PT + 5 EN) para os dados da empresa, e
+    página `store/site/stampeep/privacy/index.html` gerada do Markdown (`Tools/store/make_privacy_html.py --check`).
+    Endereço `https://jungledegree.com/stampeep/privacy/` já no jogo (`MonetizationContent.PrivacyPolicyUrl`).
+  - **Consentimento fora da Europa (T-RT9a-3):** mensagem RGPD do AdMob segmentada "Em todo o lado" + distribuição só
+    no EEE/Reino Unido/Suíça enquanto valer a D23 = B; sem código novo. Conferir `IABTCF_gdprApplies` fora do EEE antes
+    da RT-11.
+  - **Regras da Play** (`store/requisitos-play.md`, fontes oficiais lidas em 2026-11-24): teste fechado de 12 pessoas por
+    14 dias só para contas **pessoais** criadas depois de 13/11/2023 (a da empresa é de organização: não se aplica,
+    confirmar no Console); teste interno até 100 testadores; targetSdk 36 (o jogo já é 36); 16 KB a partir de
+    01/02/2027 (o AAB já está pronto, `Tools/store/check_16kb.py`); ≥ 3 capturas 9:16 ≥ 1080×1920 para jogos serem
+    promovidos (temos 6). **Calendário:** sem os 14 dias de teste fechado; contar até 7 dias de revisão do público-alvo
+    antes da produção (RT-10).
+  - **AAB assinado:** o fluxo existente (`ClaybreakBuild`, variáveis `CLAYBREAK_*`) assina com a chave de upload sem
+    gravar nada no repositório; `Tools/store/build-signed-aab.ps1` é para o usuário rodar (pede as senhas sem mostrar,
+    imprime o certificado). Falta a chave de upload do Stampeep (passo 2 do roteiro).
+  - **Passo a passo da RT-9b** (`store/passo-a-passo-console.md`): 11 passos curtos.
+  - **Fichas D7, D9, D10** completas em `riscos-e-decisoes.md`, com a segunda opinião (fable).
+  - **Validação (2026-11-24):** `rt4-check` completo — cena, validador, isolamento, EditMode 684 (683 passam, 1
+    ignorado), economia, capturas, APK, APK de medição e AAB verdes; o PlayMode acusou 1 falha esperada (o teste da
+    página de ajustes supunha a política sem endereço; agora confere o link https sem abrir o navegador) e, corrigido,
+    passou: 49 (28 passam, 21 capturas ignoradas sem GPU), com APK e AAB refeitos. `aapt2`: nome "Stampeep",
+    targetSdk 36, ícone adaptativo = o do jogo; `check_16kb.py` PASS no AAB. `StoreCaptureTests` com GPU: 12/12.
+    Revisão de segurança independente (só leitura) antes do commit. Decisões técnicas T-RT9a-1..8 em `decisoes.md`.
+  - **Observação:** no ícone adaptativo, as máscaras redondas cortam a borda do "×2"; a multidão e o líder ficam no
+    centro. Se o usuário quiser o "×2" inteiro no celular, refazer o recorte (`ICON_CROP`) na RT-9b.
+- Histórico: entregue em 2026-11-24 (`Stage RT.9a`).
+
+## RT-9b — Console, AdMob e teste interno (usuário)
+
+- **Escopo:** o roteiro de `store/passo-a-passo-console.md`: publicar a política no site (com os dados da empresa);
+  criar a chave de upload; criar o app no Play Console (D7, D10); criar o app e a unidade premiada no AdMob e passar os
+  IDs à IA (que liga os IDs de produção, valida e commita, conferindo que são da conta business); gerar o AAB
+  assinado; enviar ao teste interno e instalar pela Play no OPPO; preencher as declarações copiando de
+  `store/declaracoes.md`; ficha da loja e gráficos; mensagem RGPD no AdMob ("Em todo o lado"); restringir a chave de
+  API do Firebase ao pacote e às SHA-1 (assinatura do app e upload); conferir consentimento, anúncio e eventos no OPPO.
+- **Depende de:** RT-9a; fichas **D7** e **D10** (criar o app); **D9** só para preparar a produção/soft launch.
+- **Aceite:** AAB assinado enviado ao teste interno e instalado pela Play no OPPO; Console sem avisos de política; link
+  da política abrindo a página publicada; mensagem RGPD aparecendo; eventos no DebugView com o "sim".
+- **Exige o usuário:** quase tudo (Console, AdMob, site, Google Cloud, chave de upload, aprovar textos e imagens).
+- **Calendário:** sem teste fechado obrigatório (conta de organização; confirmar). Se o Console exigir, +14 dias com
+  12 testadores.
 
 ## RT-10 — Soft launch e ajuste
 
@@ -857,7 +913,8 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   ativas do Play Console** (limitado) [I]; ver decisão D4.
 - **Critério para lançar:** metas atingidas **ou** decisão explícita do usuário
   de lançar abaixo delas; nenhuma falha aberta que bloqueie; Console sem avisos.
-- **Depende de:** RT-9.
+- **Depende de:** RT-9b (e a ficha D9). Revisão do público-alvo pela Play antes da produção: até 7 dias ou mais
+  (`store/requisitos-play.md`).
 - **Aceite:** relatório de soft launch (N de instalações, D1, D7, aceite do
   recompensado, falhas); lista de ajustes aplicados; decisão de lançar, ajustar
   mais ou parar.
@@ -899,9 +956,11 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Mitigações:** cortar escopo em vez de prazo (menos mundos no lançamento;
   intersticial e passe depois); RT-1 com alternativa B (fork) se estourar;
   RT-3 pode encurtar o RT-10 se o protótipo já mostrar números fortes **[I]**.
-- **Desconhecido que pode estourar o calendário:** a regra da Play para teste
-  fechado de contas novas (a pesquisa não achou; o Wild Pack passa por isso no
-  8.7 e o resultado informa o prazo deste jogo) [F: pesquisa, "Conta Play"].
+- **Desconhecido que pode estourar o calendário:** ~~a regra da Play para teste
+  fechado de contas novas~~ — **pesquisada na RT-9a (2026-11-24):** os 12
+  testadores por 14 dias valem só para contas pessoais novas; a da empresa é de
+  organização (`store/requisitos-play.md`). Resta a revisão do público-alvo
+  (até 7 dias) antes da produção.
 - **Paralelismo:** RT-0 e RT-1 correm junto com a operação do Wild Pack; sem
   outro desenvolvedor, qualquer incidente do Wild Pack consome as semanas
   deste plano. A margem de 20% **não** cobre incidentes grandes.

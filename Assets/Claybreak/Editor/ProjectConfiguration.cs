@@ -21,6 +21,11 @@ namespace Claybreak.Editor
         // Google's public sample AdMob app ID (not an account of the studio). The ads SDK the kit depends on
         // stops the app at launch without an app ID; RT-7 shows Google test ads with it; the real app ID comes with RT-9 (D7).
         public const string SampleAdMobAppId = "ca-app-pub-3940256099942544~3347511713";
+        /// <summary>
+        /// RT-9a (T-RT9a-4): the launcher icon, the same picture as the store icon (a frame the game drew, made by
+        /// Tools/store/make_store_art.py), instead of Unity's default icon.
+        /// </summary>
+        public const string AppIconPath = "Assets/Claybreak/Content/Icon/AppIcon.png";
 
         public static void Apply()
         {
@@ -37,6 +42,31 @@ namespace Claybreak.Editor
             PlayerSettings.enableFrameTimingStats = true;
             ApplyAdsSampleAppId();
             DisableEngineHardwareStatistics();
+            ApplyLauncherIcon();
+        }
+
+        // Both layers of every adaptive icon slot get the game's icon: the picture
+        // is full-bleed and keeps the crowd and the gate in the middle, inside the adaptive icon's safe circle.
+        private static void ApplyLauncherIcon()
+        {
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(AppIconPath);
+            if (icon == null)
+            {
+                throw new InvalidOperationException($"The launcher icon {AppIconPath} is missing (Tools/store/make_store_art.py).");
+            }
+
+            // Unity 6 keeps only the adaptive kind (legacy and round are obsolete and generated from it).
+            PlatformIconKind kind = UnityEditor.Android.AndroidPlatformIconKind.Adaptive;
+            PlatformIcon[] slots = PlayerSettings.GetPlatformIcons(NamedBuildTarget.Android, kind);
+            foreach (PlatformIcon slot in slots)
+            {
+                for (int layer = 0; layer < slot.maxLayerCount; layer++)
+                {
+                    slot.SetTexture(icon, layer);
+                }
+            }
+
+            PlayerSettings.SetPlatformIcons(NamedBuildTarget.Android, kind, slots);
         }
 
         // RT-7 (privacy): the player does not send Unity its hardware statistics (Player setting

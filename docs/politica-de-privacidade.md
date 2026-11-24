@@ -1,7 +1,11 @@
-# Política de privacidade — Stampeep (rascunho da RT-7, analytics e RGPD na RT-8b)
+# Política de privacidade — Stampeep (versão final da RT-9a, para publicar)
 
-Texto para o usuário revisar e publicar numa URL pública na RT-9 (o Play Console pede a URL; nada foi
-publicado nem enviado). Escrito **só** com o que o código faz hoje; cada frase tem a evidência na tabela do
+**Versão final (RT-9a, 2026-11-24)** para publicar em **https://jungledegree.com/stampeep/privacy/** (endereço que o
+jogo já abre no botão da política, `MonetizationContent.PrivacyPolicyUrl`, e que vai no Play Console). A mesma
+política em HTML estático, pronta para subir no site, está em
+[`store/site/stampeep/privacy/index.html`](store/site/stampeep/privacy/index.html) (copiar a pasta `stampeep/` para a
+raiz do site, ao lado de `wild-pack/`). Nada foi publicado pela IA: publicar é o passo 1 de
+[`store/passo-a-passo-console.md`](store/passo-a-passo-console.md). Escrito **só** com o que o código faz hoje; cada frase tem a evidência na tabela do
 fim. Quando o código mudar (IDs reais do AdMob na RT-9, intersticial ligado, pedido próprio de consentimento da
 D23, outra medição), este texto e o [`data-safety.md`](data-safety.md) mudam juntos — o validador de monetização
 confere que os dois existem e citam AdMob, UMP, analytics e Firebase.
@@ -11,8 +15,9 @@ União Europeia). Pelo art. 3.º, n.º 1, do RGPD, o regulamento vale para todo 
 for o país do jogador; a autoridade de controlo é a **CNPD** (Comissão Nacional de Proteção de Dados). A parte em
 português está em **português de Portugal**. Não é parecer jurídico.
 
-Campos a preencher pelo usuário antes de publicar: `<denominação legal da empresa>`, `<NIPC>`, `<morada>`,
-`<e-mail de contacto>` e `<data de publicação>`.
+**Campos a preencher pelo usuário antes de publicar** (aqui e no HTML; a IA não os inventa): `<denominação legal da
+empresa>`, `<NIPC>`, `<morada>`, `<e-mail de contacto>` e `<data de publicação>` — em inglês `<company legal name>`,
+`<NIPC>`, `<address>`, `<contact e-mail>` e `<publication date>`. Procure por `<` no arquivo: não pode sobrar nenhum.
 
 ---
 
@@ -38,7 +43,9 @@ termos da sua política: https://policies.google.com/technologies/partner-sites
 **Consentimento (UMP).** Antes de pedir qualquer anúncio, o jogo usa a Plataforma de Mensagens ao Utilizador da
 Google (UMP). No Espaço Económico Europeu, no Reino Unido e na Suíça, ela pergunta se aceita anúncios personalizados e a
 medição de utilização; nenhum anúncio é pedido antes da resposta. Pode mudar a escolha a qualquer momento no botão
-**PRIVACY** do ecrã inicial. Também pode repor ou eliminar o ID de publicidade nas definições do Android.
+**PRIVACY** do ecrã inicial. Também pode repor ou eliminar o ID de publicidade nas definições do Android. Fora destas
+regiões a janela não aparece e a Google decide a personalização segundo as definições do Android e as suas regras
+locais; por agora o jogo só é distribuído no Espaço Económico Europeu, no Reino Unido e na Suíça.
 
 **Medição de utilização (Google Analytics for Firebase).** Para saber se o jogo está bom (quantos jogadores voltam
 no dia seguinte e na semana seguinte, onde os níveis ficam difíceis demais e quantas pessoas aceitam o anúncio
@@ -114,7 +121,9 @@ advertising, measurement and fraud prevention. See https://policies.google.com/t
 **Consent (UMP).** Before requesting any ad, the game uses Google's User Messaging Platform (UMP). In the
 European Economic Area, the UK and Switzerland it asks whether you accept personalised ads and usage measurement; no ad is
 requested before you answer. You can change your choice at any time with the **PRIVACY** button on the home
-screen. You can also reset or delete your advertising ID in Android settings.
+screen. You can also reset or delete your advertising ID in Android settings. Outside these regions the form
+does not appear and Google decides on personalisation according to your Android settings and local rules; for now the
+game is only distributed in the European Economic Area, the UK and Switzerland.
 
 **Usage measurement (Google Analytics for Firebase).** To learn whether the game works (how many players come
 back the next day and the next week, where levels get too hard, and how many accept the rewarded ad), the game

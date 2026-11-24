@@ -1,4 +1,6 @@
-# Seção "Segurança dos dados" (Data safety) — rascunho da RT-7, analytics na RT-8b
+# Seção "Segurança dos dados" (Data safety) — rascunho da RT-7, analytics na RT-8b (histórico)
+
+> **Substituído na RT-9a (2026-11-24)** por [`store/declaracoes.md`](store/declaracoes.md), que tem as respostas finais para copiar no Console. Este arquivo fica como o levantamento original.
 
 Rascunho para o usuário preencher no Play Console na RT-9. **Nada foi enviado.** O que veio do código tem
 evidência; o que depende do texto atual do formulário ou da documentação do Google está marcado

@@ -166,10 +166,10 @@ uma antes da entrega indicada.
 | **D4** | **Analytics** (nenhum / mínimo consentido / outro) | Sem dado não há D1/D7; muda política de privacidade, UMP e Data safety; contraria o "fora do escopo" | RT-7 (antes: RT-3 se medir no teste) | Analytics **mínimo** (só D1, D7, aceite de anúncio), com consentimento, e escolha da ferramenta pelo usuário (**sem chamadas pagas sem aprovação**) — **decidido em 2026-11-20: A** (mínimo consentido + funil de fases, ferramenta gratuita escolhida antes da RT-7; ver `decisoes.md`) |
 | **D5** | **Escopo de retenção:** recompensa diária, missões, eventos | SISTEMA.md veda "missões diárias, login ou analytics" | RT-7 | Reabrir só recompensa diária e missões locais; eventos só depois do lançamento — **decidido em 2026-11-20: B** (só recompensa diária local; missões só se D7 < 12%; eventos pós-lançamento) |
 | **D6** | **Monetização aprovada para v1:** intersticial? IAP remover anúncios? passe? | Cada item adiciona SDK, declarações, política e teste | RT-7 | v1 com recompensado + intersticial com limite + remover anúncios; passe só pós-lançamento — **decidido em 2026-11-20: B** (recompensado + intersticial pronto e desligado na 1ª turma do soft launch; sem IAP na v1) |
-| **D7** | **Conta Play e conta AdMob:** usar as do Wild Pack ou separar; DUNS; risco de conta única | O Wild Pack ainda está criando a conta (P1) | RT-9 | Mesma conta de organização; app e unidade de anúncio separados |
+| **D7** | **Conta Play e conta AdMob:** usar as do Wild Pack ou separar; DUNS; risco de conta única | O Wild Pack ainda está criando a conta (P1) | RT-9b (criar o app) | A: mesma conta de organização e mesma conta AdMob business; app e unidade de anúncio próprios — ficha completa abaixo (RT-9a, 2026-11-24) — **pendente** |
 | **D8** | **Orçamento de UA e de ferramentas** (se houver) | Sem orçamento, o gênero (CPI alto, descoberta difícil [F]) exige ASO e orgânico; não há dado para dimensionar | RT-10 | Soft launch **sem** UA paga ou com valor pequeno e fixo, definido por você |
-| **D9** | **Países do soft launch** — orientação do usuário em 2026-11-21: **Europa** (D23); falta escolher quais | CPM e CPI variam muito por país [F: Adjust 2026-04-15] | RT-9 | Escolher poucos países de idioma suportado; usar dados do Wild Pack para decidir |
-| **D10** | **Idiomas** | Ficha e textos | RT-9 | Os mesmos do Wild Pack (P6) |
+| **D9** | **Países do soft launch** — orientação do usuário em 2026-11-21: **Europa** (D23); falta escolher quais | CPM e CPI variam muito por país [F: Adjust 2026-04-15] | RT-9b (produção) / RT-10 | A: Portugal, Irlanda, Países Baixos, Suécia, Dinamarca, Noruega, Finlândia (E: os mesmos em teste aberto) — ficha completa abaixo (RT-9a, 2026-11-24) — **pendente** |
+| **D10** | **Idiomas** | Ficha e textos | RT-9b (criar o app) | A: só inglês (en-US) até o jogo ser traduzido; a ficha em inglês está pronta (`store/ficha/en-US.md`) — ficha completa abaixo (RT-9a, 2026-11-24) — **pendente** |
 | **D11** | **Extração do kit:** pacote local (A), fork (B) | Reuso técnico, 5.2 | RT-1 | **Decidido em 2026-11-19: A** (ver `decisoes.md`, K1) |
 | **D12** | **Quantidade de conteúdo no lançamento** (mundos, fases) | Define RT-6 e o prazo | RT-5 (trava a RT-6) | **4 mundos × 10 fases (40)**; se apertar, 3 + 1 no soft launch — ficha em `decisoes.md` (RT-5) — **decidido em 2026-11-20: A** (4 mundos × 10 fases) |
 | **D13** | **Quem são os 5 testadores** do protótipo (portão) | Sem testadores não há portão | RT-3 | Gente fora do estúdio, que joga celular, com alguns que não conhecem o Wild Pack — **decidido em 2026-11-20: dispensado** (RT-3 cancelada; o usuário segue sem teste externo; ver `decisoes.md`) |
@@ -276,6 +276,223 @@ https://inpi.justica.gov.pt/en-gb/SME-Fund/SME-Fund-2026-EU-Fund-for-the-Protect
 https://ipoi.gov.ie/en/news-events/news-categories-/announcements/sme-fund-2026-continuing-support-for-smes-now-available.html
 · .com https://investor.verisign.com/news-releases/news-release-details/verisign-reports-first-quarter-2026-results ·
 RDAP https://rdap.verisign.com/com/v1/domain/stampeep.com (404 = livre). Busca completa em `decisoes.md` (2026-11-23).
+
+### Fichas D7, D9 e D10 (escritas na RT-9a, 2026-11-24; bloqueiam a RT-9b, não a RT-9a)
+
+As três são do usuário (conta, países, idiomas: produto e coisas difíceis de desfazer). A RT-9a terminou tudo o resto
+sem elas: a ficha da loja está em inglês, as declarações valem para qualquer resposta, e o passo a passo da RT-9b diz
+onde cada resposta entra.
+
+```text
+DECISÃO D7 — Em que conta publicar o Stampeep (Google Play e AdMob)?
+
+O que você está aprovando: o Stampeep é publicado na mesma conta de programador Google Play
+de organização da JUNGLE DEGREE, LDA (a do Wild Pack) e os anúncios usam a mesma conta
+AdMob da empresa (a "business", não a pessoal), com um app AdMob e uma unidade de anúncio
+premiado próprios do Stampeep.
+
+Por que agora: é o primeiro passo da RT-9b (criar o app no Console). Sem esta resposta não
+há onde criar o app nem de onde tirar os códigos de anúncio reais do jogo.
+
+Contexto que você precisa saber:
+- A conta Play de organização JUNGLE DEGREE, LDA já existe, está totalmente verificada e já
+  publicou o Wild Pack em teste interno (2026-11-21). Fato (SISTEMA.md do Wild Pack, P1).
+- A regra do teste fechado (12 pessoas durante 14 dias antes da produção) é escrita só para
+  contas pessoais criadas depois de 13/11/2023 (fato: ajuda oficial da Play, lida em
+  2026-11-24). Que ela não vale para a conta de organização é dedução nossa: a página não
+  fala de organizações; confirmar no Console ao pedir produção.
+- Na loja aparecem, para conta de organização: nome legal, D-U-N-S (número da empresa na
+  Dun & Bradstreet), morada, e-mail e telefone do programador. Fato (ajuda da Play).
+- Uma conta nova custaria a taxa única da Play (25 US$, memória não verificada) e outra
+  verificação de identidade; uma segunda conta de organização exigiria outra empresa (outro
+  D-U-N-S). O que a conta atual tem de valor é a verificação feita, não histórico de loja:
+  o Wild Pack só chegou ao teste interno. Inferência nossa.
+- Risco de conta única: se um app levar uma violação grave de política, o Google pode
+  suspender a conta inteira, com os dois jogos; e as regras da Play preveem encerrar
+  também contas relacionadas ao mesmo dono (memória, não verificado hoje) — separar não
+  isola de verdade. Chance para nós: baixa (sem SDK estranho, declarações com evidência).
+- AdMob partilhado: tráfego inválido (amigos ou testadores a tocar em anúncios reais) pode
+  limitar ou suspender a conta AdMob inteira, com os dois jogos. É mais provável que uma
+  violação da Play. Inferência do revisor, plausível.
+- O app AdMob do Wild Pack ficou "Requer revisão / Veiculação limitada" até ser ligado à
+  loja (fato, SISTEMA.md do Wild Pack); o do Stampeep deve passar pelo mesmo: anúncios
+  reais podem não aparecer no teste interno.
+- AdMob: a conta business (pub-4219609499469762) já tem o Wild Pack. Um app AdMob por jogo
+  separa relatórios e revisão. Os códigos do AdMob são públicos (ficam dentro do app).
+- Decisões já tomadas que isto afeta: D3 (segundo app aprovado), D6 (só premiado na v1,
+  intersticial desligado), D21/D23 (Firebase, consentimento).
+
+Opções:
+A) Mesma conta Play de organização + mesma conta AdMob business, app e unidade próprios.
+   + zero custo, conta já verificada, sem espera; tudo no mesmo login.
+   - Riscos: suspensão de conta derruba os dois jogos (chance: baixa; impacto: alto) —
+     mitigar com declarações honestas e nunca publicar sem o passo a passo; tráfego
+     inválido no AdMob atinge os dois (chance: baixa-média; impacto: alto) — nunca tocar
+     em anúncios reais próprios, testar com o OPPO registado como aparelho de teste; a
+     IA confere que os IDs começam pela conta business (pub-4219609499469762), erro que já
+     aconteceu no Wild Pack.
+   Custo: zero. Dá para voltar atrás? Mudar de conta depois exige transferir o app
+   (processo do Google, possível mas burocrático).
+B) Conta Play pessoal nova só para o Stampeep; AdMob igual a A.
+   + isola o risco de suspensão.
+   - Riscos: conta pessoal nova cai na regra dos 12 testadores por 14 dias (chance: certa;
+     impacto: médio — +2 semanas e 12 pessoas); a loja mostraria o seu nome pessoal, não
+     a empresa (inferência nossa); o Google pode ligar as contas pelo mesmo dono de
+     qualquer forma.
+   Custo: taxa da conta + dias de verificação. Dá para voltar atrás? com custo.
+C) Mesma conta Play (A), mas conta AdMob separada.
+   + separa a receita.
+   - Riscos: outra conta AdMob para a mesma empresa pode ser recusada ou ligada pelo Google
+     (chance: média; impacto: médio); mais pagamentos e impostos a gerir.
+   Custo: tempo. Dá para voltar atrás? sim.
+
+Recomendação: A — é o que a tabela de decisões já recomendava desde a RT-0; a conta
+verificada é um ativo, e o isolamento de B custa semanas sem tirar o risco de fato.
+Segunda opinião (fable): concorda com A: a conta verificada já existe e separar não isola
+de fato, porque o Google encerra contas relacionadas; pediu para juntar o risco de tráfego
+inválido no AdMob partilhado e confirmar no Console se há exigência de teste fechado
+(feito acima).
+Se você não responder: a RT-9b não começa; nada mais trava (o jogo continua como está).
+
+Responda: A, B ou C, ou a letra + ajuste, ou "explica melhor".
+```
+
+```text
+DECISÃO D9 — Em quais países europeus fazer o soft launch
+
+O que você está aprovando: o Stampeep fica disponível na Google Play, no soft launch
+(primeira publicação aberta, para medir antes do lançamento), só em: Portugal, Irlanda,
+Países Baixos, Suécia, Dinamarca, Noruega e Finlândia. Os outros países ficam fechados
+até a RT-11.
+
+Por que agora: o Play Console pede os países ao preparar a produção (RT-9b/RT-10). O teste
+interno não precisa disto; a publicação aberta precisa.
+
+Contexto que você precisa saber:
+- Você já orientou (2026-11-21, D23 = B): testes e soft launch só na Europa; rever antes de
+  sair dela. Fato (decisoes.md). Motivo técnico: o pedido de consentimento do Google (UMP)
+  só aparece no Espaço Económico Europeu (EEE), Reino Unido e Suíça; fora disso o jogo não
+  mede nada e o anúncio não pergunta antes (decisão técnica T-RT9a-3).
+- O jogo está só em inglês (menus e textos). Fato (código). Países onde muita gente lê
+  inglês dão um teste mais justo. Inferência nossa (sem estudo citado).
+- Soft launch = publicar para poucos países, medir D1 e D7 (% de jogadores que voltam 1 e 7
+  dias depois de instalar; metas D1 ≥ 35%, D7 ≥ 12%) e ajustar antes do lançamento.
+- Sem dinheiro para anúncios de instalação (D8 pendente; recomendação: sem gasto), as
+  instalações vêm só da loja e de divulgação gratuita: devem ser poucas dezenas a
+  centenas. Inferência nossa. Com isso, em QUALQUER opção abaixo, D1 ≥ 35% e D7 ≥ 12%
+  provavelmente não serão medidos com confiança (o Firebase ainda esconde números muito
+  pequenos; registrado na D21). Os países pesam menos que a divulgação; vale decidir a
+  D8 (orçamento) junto com esta.
+- A política de privacidade está em inglês e português; nos nórdicos e Países Baixos fica
+  em inglês, coerente com o jogo em inglês.
+- Antes de abrir a produção, a Play revê o público-alvo (pode levar 7 dias ou mais). Fato
+  (ajuda da Play).
+- O preço do anúncio (CPM) e o custo por instalação variam muito por país (Adjust,
+  2026-04-15, citado na RT-0); os nórdicos e a Irlanda costumam pagar mais por anúncio que
+  Portugal. Inferência a partir dessa fonte.
+- Portugal é o país da empresa (rede de contactos para pedir instalações). Reino Unido e
+  Alemanha/França ficam de fora para não "gastar" os maiores mercados europeus antes do
+  jogo estar ajustado. Inferência nossa (prática comum de soft launch).
+
+Opções:
+A) Portugal + Irlanda + Países Baixos + Suécia + Dinamarca + Noruega + Finlândia (7).
+   + muito inglês, mercados ricos e pequenos; Portugal para a sua rede de contactos.
+   - Riscos: poucas instalações orgânicas (chance: alta; impacto: médio — números
+     fracos) — mitigar com divulgação gratuita em Portugal; amostra puxada por conhecidos
+     (chance: alta; impacto: médio); conhecidos a tocar em anúncios = tráfego inválido
+     (ver D7; pedir que não toquem em anúncios por cortesia).
+   Custo: zero. Dá para voltar atrás? sim, países mudam a qualquer momento.
+B) Só Portugal.
+   + o mais simples; você controla quem instala.
+   - Riscos: amostra ainda menor e enviesada para conhecidos (chance: alta; impacto: médio).
+   Custo: zero. Dá para voltar atrás? sim.
+C) Todo o EEE + Reino Unido + Suíça (~32 países).
+   + mais instalações orgânicas.
+   - Riscos: queima a primeira impressão nos mercados grandes (Reino Unido, Alemanha,
+     França) com um jogo ainda por ajustar (chance: média; impacto: médio); jogadores que
+     não leem inglês (impacto: baixo).
+   Custo: zero. Dá para voltar atrás? sim, mas avaliações e primeira impressão ficam.
+D) Adiar — escolher depois do teste interno.
+   - Riscos: nenhum até a RT-10; só atrasa a preparação da produção.
+E) Os mesmos países de A, mas em "teste aberto" em vez de produção.
+   + a ficha aparece como acesso antecipado; as opiniões dos jogadores vão só para você,
+     não ficam públicas (memória, não verificado hoje): tira o risco de primeira impressão.
+   - Riscos: menos visibilidade na loja que a produção (chance: alta; impacto: baixo com
+     poucas instalações de qualquer forma); passar depois à produção é mais um passo.
+   Custo: zero. Dá para voltar atrás? sim.
+
+Recomendação: A — mantém a Europa (D23), joga em inglês onde se lê inglês e guarda os
+mercados grandes para o lançamento. E (os mesmos países em teste aberto) é a variante a
+escolher se você preferir que nenhuma avaliação pública fique antes do lançamento.
+Segunda opinião (fable): concorda com A, com ressalva: sem verba (D8) as instalações serão
+poucas em qualquer opção e o D1/D7 será ruído, então os países importam menos que a
+divulgação; sugeriu a opção E (teste aberto, sem avaliações públicas), incluída acima.
+Se você não responder: a RT-9b faz o teste interno (não precisa de países) e para antes de
+preparar a produção.
+
+Responda: A, B, C, D ou E, ou a letra + ajuste (ex.: "A sem a Noruega"), ou "explica melhor".
+```
+
+```text
+DECISÃO D10 — Em que idiomas fica a página da loja
+
+O que você está aprovando: a página do Stampeep na Google Play fica só em inglês (en-US)
+no teste interno e no soft launch; traduções da página entram quando o próprio jogo for
+traduzido.
+
+Por que agora: o Play Console pede o idioma padrão ao criar o app (primeiro passo da
+RT-9b). O texto em inglês já está pronto e conferido nos limites da Play.
+
+Contexto que você precisa saber:
+- O jogo está só em inglês (menus, botões, textos). Fato (código). A política de
+  privacidade está em inglês e português de Portugal.
+- O Wild Pack usa inglês (en-US) e português do Brasil (decisão P6). Fato. A tabela de
+  decisões recomendava "os mesmos do Wild Pack". Mas o Stampeep começa pela Europa (D23),
+  onde o português é o de Portugal, e o jogo não está traduzido.
+- Uma página em português de um jogo só em inglês pode decepcionar quem instala e gerar
+  avaliações negativas. Inferência nossa.
+- Sem tradução, a Play mostra a página em inglês em todos os países (comportamento padrão;
+  a Play pode oferecer uma tradução automática ao leitor — memória, não verificado).
+- Em Portugal, sem página em português, o jogo aparece menos em pesquisas em português.
+  Impacto baixo: as instalações portuguesas devem vir pelo link que você partilhar.
+  Inferência nossa.
+- A IA traduz a página sem custo quando você pedir (é só texto); o idioma padrão escolhido
+  ao criar o app não é fácil de trocar depois (memória não verificada; trocar o padrão é
+  possível no Console, mas mexe em todas as traduções).
+
+Opções:
+A) Só inglês (en-US) por agora; traduzir a página junto com o jogo.
+   + coerente com o jogo; nada a manter em dois idiomas.
+   - Riscos: em Portugal a página fica em inglês (chance: certa; impacto: baixo).
+   Custo: zero. Dá para voltar atrás? sim, adicionar idiomas é fácil.
+B) Inglês (padrão) + português de Portugal (pt-PT) na página, avisando "jogo em inglês".
+   + página na língua do país da empresa.
+   - Riscos: expectativa de jogo traduzido, atenuada pelo aviso (chance: baixa-média;
+     impacto: baixo); cada mudança futura da página tem de ser feita nos dois idiomas
+     (chance: certa; impacto: baixo).
+   Custo: zero (a IA traduz). Dá para voltar atrás? sim.
+C) Inglês + pt-PT + pt-BR (como o Wild Pack).
+   + pronto para o Brasil no lançamento.
+   - Riscos: o Brasil não está no soft launch (D23/D9) — trabalho sem uso agora (chance:
+     certa; impacto: baixo).
+   Custo: zero. Dá para voltar atrás? sim.
+
+D) Traduzir o próprio jogo para português de Portugal (um runner tem poucos textos) e a
+   página junto — depois do soft launch.
+   + coerente e ganha Portugal. - Riscos: mais escopo (chance: certa; impacto: médio:
+   textos, fonte e testes das telas). Custo: tempo de uma entrega. Volta atrás? sim.
+
+Recomendação: A — o jogo é inglês; a página em inglês é coerente, reversível e o inglês
+como padrão serve para qualquer caminho futuro (B, C ou D só acrescentam).
+Segunda opinião (fable): concorda com A (baixo risco, reversível); acha o argumento contra
+B mais fraco do que a primeira versão desta ficha dizia (B avisa "jogo em inglês"), e B
+vira a escolha certa se Portugal for a principal fonte de instalações por pesquisa;
+sugeriu a opção D (traduzir o jogo depois), incluída.
+Se você não responder: a RT-9b cria o app com inglês (en-US) como padrão, que serve para
+qualquer opção (B e C só acrescentam traduções).
+
+Responda: A, B, C ou D, ou "explica melhor".
+```
 
 ### Dúvidas abertas registradas pela sessão (sem resposta)
 

@@ -129,7 +129,7 @@ namespace Claybreak.Tests
             Assert.IsEmpty(problems, "buttons off the screen:\n" + string.Join("\n", problems));
         }
 
-        private static void Show(ClaybreakFlow flow, string screen)
+        internal static void Show(ClaybreakFlow flow, string screen)
         {
             ClaybreakScreens screens = flow.Screens;
             Progression progress = flow.Progress;

@@ -180,3 +180,10 @@
   `#basic/1+1+1+1/100+100+100+100/<TERMO>` mostra o resultado da busca ANTERIOR ao trocar só o hash: recarregar a página
   a cada termo. INPI: "Pesquisa fonética (para Marcas)". Nome e ícone do APK: `aapt2 dump badging <apk>` (build-tools do
   SDK do Unity); o ícone é adaptativo (`mipmap/app_icon`), hoje o padrão do Unity.
+- 2026-11-24 (RT-9a): material da loja em `docs/store/` (README com os comandos). Capturas da loja vêm de fases reais:
+  `-testFilter Claybreak.Tests.StoreCaptureTests -storeCaptureDir <pasta>` com GPU (save de meio de jogo, PLAY, portões
+  escolhidos por `GateMath`, dedo simulado no assalto com `InputSystem` em `IgnoreFocus` só no teste; ~15 min) e
+  `python -X utf8 Tools/store/make_store_art.py <pasta>`; o nível de medição não serve (rótulo DEVICE GATE, portões x1).
+  O `ProjectSettings.asset` agora guarda o ícone do celular (`m_BuildTargetPlatformIcons`, Unity 6 só aceita o tipo
+  adaptativo): depois de um build, reverter só a linha `AndroidKeystoreName`, não o arquivo inteiro. A política tem
+  endereço no jogo: teste que aperte o link da política abre o navegador da máquina (confira a URL, não aperte).

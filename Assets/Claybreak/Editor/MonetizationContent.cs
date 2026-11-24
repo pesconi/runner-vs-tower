@@ -29,11 +29,11 @@ namespace Claybreak.Editor
         public static readonly int[] DailyRewards = { 50, 75, 100, 125, 150, 200, 300 };
 
         /// <summary>
-        /// RT-8: public page of the privacy policy, opened from the settings page. Empty until RT-9 publishes
-        /// docs/politica-de-privacidade.md at a public https address (the settings link then says it comes with
-        /// the store release); the monetization validator refuses a production build without it.
+        /// RT-8: public page of the privacy policy, opened from the settings page; the monetization validator refuses
+        /// a production build without it. RT-9a (T-RT9a-2): the studio site's page for this game, same pattern as the
+        /// other game's; the page itself is docs/store/site/stampeep/privacy/index.html, published by the user (RT-9b).
         /// </summary>
-        public const string PrivacyPolicyUrl = "";
+        public const string PrivacyPolicyUrl = "https://jungledegree.com/stampeep/privacy/";
 
         public static void Write()
         {
