@@ -42,7 +42,8 @@ lançamento jun/2027.
 | RT-6t.20 Formas compradas na loja (save v5) — concluída em 2026-11-23 (5 formas com silhueta e quique próprios, aba SHAPES, botão SHAPE fora da home, save v5 com migração; loja 24.680 moedas em 58 min; capturas em `docs/art/rt6t20/`); gate 3× não se aplica (forma mais pesada continua 492 triângulos); **aceite do usuário em 2026-11-23** ("Aprovo, instala"); APK instalado no OPPO, save migrado v4 → v5 com a forma BALL mantida | — | — | antes da RT-9 |
 | RT-6t.21 Rename para Stampeep (D29) — concluída em 2026-11-23 (nome no ícone do celular, título da home e créditos; subtítulo "STORM THE TOWER" mantido; política de privacidade e licenças de áudio; validador recusa "Clay Siege"; ícone sem identidade antiga, não muda; busca oficial EUIPO e INPI sem marca igual, risco médio com "STAMPEDE" anotado; ficha de gasto D33 pendente, não bloqueia); gate 3× não se aplica; APK instalado no OPPO com o save mantido | — | — | antes da RT-9 |
 | RT-9a Material da loja e declarações (IA) — concluída em 2026-11-24 (ficha en-US, 6 capturas reais 9:16, ícone 512 também no celular, destaque 1024×500, declarações com evidência, política final + HTML, regras da Play pesquisadas, passo a passo da RT-9b; fichas D7, D9, D10 = A em 2026-11-24; `docs/store/`) | — | — | antes da RT-9b |
-| RT-9b Console, AdMob e teste interno (usuário, com passagens curtas da IA) — **em curso**: D7, D9 e D10 = A (2026-11-24); passo 1 feito em 2026-11-24 (política completa publicada pela IA a pedido do usuário em https://jungledegree.com/stampeep/privacy/, site `92cf4d9`); passo 2 feito em 2026-11-24 (chave de upload criada pelo usuário fora do repositório, em `~/keys`); próximo: passo 3 (criar o app no Play Console, usuário) | 1 | 1,2 | início de mai |
+| RT-9b Console, AdMob e teste interno (usuário, com passagens curtas da IA) — **em curso**: D7, D9 e D10 = A (2026-11-24); passo 1 feito em 2026-11-24 (política completa publicada pela IA a pedido do usuário em https://jungledegree.com/stampeep/privacy/, site `92cf4d9`); passo 2 feito em 2026-11-24 (chave de upload criada pelo usuário fora do repositório, em `~/keys`); passo 4.5 feito em 2026-11-24 (IDs do AdMob em `_privado/runner-vs-tower/admob-ids.json`, fora do repositório, D35 = A, lidos pelo build do jogo na RT-9b.1); antes do passo 5: passo 4b (Firebase com o pacote novo, D34 = B, RT-9b.1); próximo: passo 3 (criar o app no Play Console, usuário) | 1 | 1,2 | início de mai |
+| RT-9b.1 Trocar o application ID para `com.jungledegree.stampeep` (D34 = B) — concluída em 2026-11-24 (fonte única + `Tools/app-id.sh`, validador recusa o ID antigo, build sem Firebase com aviso até o `google-services.json` novo, passo 4b do Firebase; junto, D35 = A: IDs do AdMob fora do repositório, passo 4.5 feito); aceite pendente: instalar no OPPO | — | RT-9b | antes do passo 5 da RT-9b |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
 | RT-12 Operação | contínuo | — | a partir de jul |
@@ -696,9 +697,9 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   (obstáculos sobrepostos matando a mesma vaga várias vezes) foi corrigido com uma marca por bit.
 - **Pendente (exige o celular desbloqueado):** gate 3× da corrida do mundo 4 —
   `Tools/rt2-gate.sh run-w4-obst 60 20 /c/temp/rt6t18/final/Claybreak-measure.apk run:4`, depois
-  `adb shell am force-stop com.jungledegree.runnervstower` e `adb install -r /c/temp/rt6t18/final/Claybreak.apk` (o gate
+  `adb shell am force-stop com.jungledegree.stampeep` e `adb install -r <APK atual>` (pacote novo desde a RT-9b.1; os APKs da RT-6t.18 têm o antigo e precisam ser gerados de novo) (o gate
   instala o APK de medição). Limites: CPU p95 ≤ 11 ms, GPU p95 ≤ 11 ms, PSS ≤ 450 MB. Olhar do usuário: abrir o
-  laboratório com `adb shell am start -n com.jungledegree.runnervstower/com.unity3d.player.UnityPlayerGameActivity --ez obstacleLab true`
+  laboratório com `adb shell am start -n com.jungledegree.stampeep/com.unity3d.player.UnityPlayerGameActivity --ez obstacleLab true`
   e dizer se os obstáculos são legíveis e justos (para voltar ao jogo normal, fechar o app e abrir pelo ícone).
 - Histórico: entregue em 2026-11-23 (`Stage RT.6t.18`).
 
@@ -896,6 +897,35 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Exige o usuário:** quase tudo (Console, AdMob, site, Google Cloud, chave de upload, aprovar textos e imagens).
 - **Calendário:** sem teste fechado obrigatório (conta de organização; confirmar). Se o Console exigir, +14 dias com
   12 testadores.
+
+## RT-9b.1 — Trocar o application ID para `com.jungledegree.stampeep` (D34 = B)
+
+- **Escopo:** o pacote passa de `com.jungledegree.runnervstower` para `com.jungledegree.stampeep` antes do primeiro
+  envio à Play (quando fica fixo para sempre). Fonte única `ProjectConfiguration.ApplicationId` (as ferramentas de
+  aparelho leem por `Tools/app-id.sh`), `ProjectSettings`, validador que recusa o ID antigo, build que sai sem Firebase
+  (com aviso) enquanto o `google-services.json` for do pacote antigo, passo novo do Firebase e restrição da chave no
+  `store/passo-a-passo-console.md`, documentos vivos. Namespaces, `Assets/Claybreak` e a chave do save não mudam
+  (T-RT4-6). Decisões T-RT9b1-1..4.
+- **Depende de:** D34 = B.
+- **Aceite:** `Tools/rt4-check.sh` completo verde; validador recusa o ID antigo; APK com o pacote novo instalado no
+  OPPO abrindo como "Stampeep" (app antigo desinstalado, progresso de teste perdido, aceito pelo usuário).
+- **Exige o usuário:** o passo 4b do roteiro (app Android novo no Firebase e `google-services.json` novo em
+  `_privado`); a IA valida depois com `Tools/rt8b-firebase-check.sh`.
+- **Status:** concluída em 2026-11-24, com aceite pendente no celular. `rt4-check` completo verde: cena, validador,
+  isolamento, EditMode 695/696 (0 falhas), PlayMode 28/49 (0 falhas), economia, capturas, APK do jogo, APK de medição
+  e AAB; as etapas cena, validador, EditMode, APKs e AAB foram repetidas depois da correção da restauração e da revisão de segurança (abaixo). O APK do jogo sai com o pacote
+  `com.jungledegree.stampeep`, nome "Stampeep", o app AdMob da conta business no manifesto e **sem Firebase** (aviso
+  claro no log: o `google-services.json` ainda é do pacote antigo). O APK de medição fica com o app de exemplo do
+  Google. Os assets commitados não guardam nenhum ID real (o validador confere).
+  Junto (D35 = A, pedido do maestro): IDs do AdMob lidos de `_privado\runner-vs-tower\admob-ids.json` só no build do
+  jogo; passo 4.5 do roteiro feito. Na primeira rodada, a restauração dos assets falhou depois do build (o build
+  descarrega o asset do plug-in) e deixou os IDs nos assets; o validador acusaria, os arquivos foram restaurados pelo
+  git antes de qualquer commit e a restauração agora recarrega os assets pelo caminho (T-RT9b1-5).
+- **Pendente (exige o OPPO no cabo e desbloqueado):** o celular não estava conectado (`adb devices` vazio). Comandos:
+  `adb start-server`, `adb shell dumpsys window | grep -i isKeyguardShowing` (tem de dar `false`),
+  `adb uninstall com.jungledegree.runnervstower`, `adb install /c/temp/rt9b1c/Claybreak.apk`,
+  `adb shell monkey -p com.jungledegree.stampeep -c android.intent.category.LAUNCHER 1`, e conferir que abre e mostra
+  "Stampeep". Depois do passo 4b do roteiro (Firebase), gerar o APK de novo e rodar `Tools/rt8b-firebase-check.sh`.
 
 ## RT-10 — Soft launch e ajuste
 

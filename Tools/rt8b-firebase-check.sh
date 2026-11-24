@@ -13,13 +13,26 @@
 set -uo pipefail
 APK=${1:-/c/temp/rt8b/Claybreak.apk}
 SECONDS_TO_RECORD=${2:-45}
-PKG=com.jungledegree.runnervstower
+PKG=$(bash "$(dirname "$0")/app-id.sh")   # single source: ProjectConfiguration.ApplicationId
 OUT=/c/temp/rt8b
 AAPT2=${AAPT2:-"/c/Program Files/Unity/Hub/Editor/6000.6.7f1/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/build-tools/36.0.0/aapt2.exe"}
 LOG="$OUT/firebase-check-logcat.txt"
 mkdir -p "$OUT"
 FAILED=0
 check() { if eval "$2"; then echo "PASS $1"; else echo "FAIL $1"; FAILED=1; fi; }
+
+# 0. The configuration (RT-9b.1): google-services.json outside the repository must have an Android app for this
+# package, and the APK must carry it (google_app_id); a file of another package builds an APK without Firebase.
+CONFIG=${CLAYBREAK_GOOGLE_SERVICES_JSON:-"$(cd "$(dirname "$0")/../.." && pwd)/_privado/runner-vs-tower/google-services.json"}
+PKG_LINE="\"package_name\": \"$PKG\""
+if [ -f "$CONFIG" ] && tr -s ' ' < "$CONFIG" | grep -qF "$PKG_LINE"; then HAS_APP=1; else HAS_APP=0; fi
+"$AAPT2" dump resources "$APK" > "$OUT/firebase-check-resources.txt" 2>/dev/null
+check "google-services.json exists and has an Android app for $PKG ($CONFIG)" "[ $HAS_APP -eq 1 ]"
+check "the APK carries the Firebase configuration (google_app_id)" "grep -qF 'string/google_app_id' \"\$OUT/firebase-check-resources.txt\""
+if [ $FAILED -ne 0 ]; then
+  echo "Stop: download the google-services.json of $PKG from the Firebase console, rebuild the APK and run again."
+  exit 1
+fi
 
 # 3. Manifest (no device needed).
 "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > "$OUT/firebase-check-manifest.txt"

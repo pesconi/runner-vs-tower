@@ -57,12 +57,34 @@ Não reutilize a chave do Wild Pack: cada jogo tem a sua.
 4. Anote os dois códigos que o AdMob mostra (são públicos, não são senha):
    - ID do app: `ca-app-pub-...~...`
    - ID da unidade premiada: `ca-app-pub-.../...`
-5. **Peça à IA:** "RT-9b: põe no Stampeep o app AdMob `<ID do app>` e a unidade premiada `<ID da unidade>`, libera os
-   IDs de produção, valida e commita." (O intersticial continua desligado, D6; não precisa de unidade agora.)
+5. Os dois códigos vão para o arquivo `C:\projects\games\_privado\runner-vs-tower\admob-ids.json`, **fora do
+   repositório e sem commit** (D35 = A), com os campos `androidAppId` (o do app, com `~`) e `rewardedAdUnitId` (o da
+   unidade, com `/`). **Peça à IA:** "RT-9b: os IDs do AdMob do Stampeep estão no admob-ids.json; valida e gera o
+   APK." O build do jogo lê o arquivo, confere o formato e que os dois são da mesma conta, e falha com aviso se ele
+   faltar; o desenvolvimento e o APK de medição usam os anúncios de teste do Google. O intersticial continua
+   desligado (D6; não precisa de unidade agora). **Feito em 2026-11-24** (arquivo criado; build validado na RT-9b.1).
+
+## Passo 4b — Firebase com o pacote novo (10 min)
+
+Desde a D34 o pacote do jogo é `com.jungledegree.stampeep`. O arquivo do Firebase que está no computador foi feito
+para o pacote antigo; com ele, o jogo funciona mas **não mede nada**. Faça antes do passo 5.
+
+1. Entre em https://console.firebase.google.com e abra o projeto do jogo (ainda chamado "Clay Siege").
+2. **Visão geral do projeto > Adicionar app > Android**.
+   - Nome do pacote Android: `com.jungledegree.stampeep` (exatamente assim).
+   - Apelido: `Stampeep`. SHA-1: deixe vazio. **Registar app**.
+3. Baixe o `google-services.json` que ele oferece.
+4. Ponha esse arquivo em `C:\projects\games\_privado\runner-vs-tower\`, **substituindo** o que já está lá (mesmo
+   nome). Nunca dentro da pasta do projeto.
+5. Os outros passos do assistente do Firebase (Gradle, SDK): pule com **Seguinte** até o fim. O jogo já tem tudo.
+6. **Peça à IA:** "RT-9b: baixei o google-services.json do Stampeep; gera o APK e valida o Firebase no OPPO."
+   (Ela roda `Tools/rt8b-firebase-check.sh`, que primeiro confere se o arquivo é do pacote novo.)
+
+O app antigo (`com.jungledegree.runnervstower`) pode ficar no Firebase; não atrapalha.
 
 ## Passo 5 — Gerar o AAB assinado (20 min, quase tudo espera)
 
-O AAB é o arquivo que vai para a Play. Faça depois de a IA terminar o passo 4.5.
+O AAB é o arquivo que vai para a Play. Faça depois de a IA terminar os passos 4.5 e 4b.6.
 
 1. Feche o Unity se estiver aberto neste projeto.
 2. No PowerShell, na pasta do projeto (`C:\projects\games\RunnerVsTower`), rode:
@@ -83,7 +105,8 @@ O AAB é o arquivo que vai para a Play. Faça depois de a IA terminar o passo 4.
 3. **Criar nova versão**. Na primeira vez o Console pergunta pela assinatura do app: aceite **a assinatura de
    apps do Google Play** (o Google guarda a chave final; você só usa a de upload). Se ele falar de "assinatura
    híbrida pronta para quântica", aceite o padrão.
-4. Arraste o arquivo `.aab` do passo 5.
+4. Arraste o arquivo `.aab` do passo 5. O Console mostra o pacote: tem de ser `com.jungledegree.stampeep`. Este
+   primeiro envio fixa o pacote para sempre; se aparecer outro, pare e **peça à IA**.
 5. Nome da versão: deixe o automático (`1 (0.1.0)`). Notas da versão (en-US): `First internal test build.`
 6. **Seguinte > Guardar e publicar**. Em poucos minutos fica disponível.
 7. Na aba Testadores, copie o **link de participação**, abra-o no OPPO (com a mesma conta Google da lista),
@@ -146,8 +169,9 @@ A chave de API do Firebase vai dentro do app (é normal). Restringi-la impede qu
    **impressão digital SHA-1 do certificado da chave de assinatura do app** (a do Google).
 2. Abra https://console.cloud.google.com, escolha o projeto do Firebase do jogo (ainda chamado "Clay Siege").
 3. **APIs e serviços > Credenciais**. Clique na chave "Android key (auto created by Firebase)".
-4. **Restrições de aplicação: Apps Android > Adicionar**:
-   - nome do pacote: `com.jungledegree.runnervstower`
+4. **Restrições de aplicação: Apps Android > Adicionar**, uma linha para cada SHA-1, todas com o pacote novo:
+   - nome do pacote: `com.jungledegree.stampeep` (o pacote antigo `com.jungledegree.runnervstower` não serve mais;
+     se ele já estiver na lista, pode apagar a linha dele)
    - SHA-1: a do passo 10.1. Adicione também a SHA-1 da chave de upload (passo 5.4).
 5. **Restrições de API:** deixe as que já estão marcadas (o Firebase marcou as dele). Não tire nenhuma.
 6. Guardar. Espere 5 minutos, abra o jogo instalado pela Play e **peça à IA** para conferir os eventos no

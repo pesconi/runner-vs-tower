@@ -11,7 +11,8 @@ Você cria o projeto gratuito do Firebase com a **sua** conta Google. A sessão 
    `Jungle Degree`, local **Portugal** (a empresa é portuguesa). Nas caixas de **compartilhamento de dados** com o Google, **desmarque todas**
    as que forem opcionais. Aceite os termos (só você pode) e crie o projeto.
 4. Na página do projeto, toque no ícone do **Android** ("Adicionar app"):
-   - Nome do pacote: `com.jungledegree.runnervstower` (exatamente assim)
+   - Nome do pacote: `com.jungledegree.stampeep` (exatamente assim; até a RT-9b.1 era `com.jungledegree.runnervstower`, D34 — o app novo
+     no projeto que já existe: `docs/store/passo-a-passo-console.md`, passo 4b)
    - Apelido: `Clay Siege Android`
    - SHA-1: deixe vazio.
    - **Registrar app**.
@@ -105,5 +106,5 @@ Com o OPPO conectado e desbloqueado (Git Bash, na raiz do repositório):
    `adb start-server; Tools/rt2-gate.sh rt8b-w4-oppo-60 60 20 /c/temp/rt8b/Claybreak-measure.apk 4`
    — limites: CPU p95 ≤ 11 ms, GPU p95 ≤ 11 ms, quadro p95 ≤ 33,3 ms, < 5% > 50 ms, PSS ≤ 450 MB
    (RT-8 sem Firebase: quadro p95 16 ms, CPU p95 ≤ 4,8 ms, GPU p95 ≤ 4,3 ms, PSS 228 MB).
-4. Fechar o app de medição e deixar o normal: `adb shell am force-stop com.jungledegree.runnervstower; adb install -r /c/temp/rt8b/Claybreak.apk`.
+4. Fechar o app de medição e deixar o normal: `adb shell am force-stop com.jungledegree.stampeep; adb install -r /c/temp/rt8b/Claybreak.apk` (pacote da D34).
 

@@ -28,7 +28,7 @@ FPS=${2:-60}
 SECONDS_TO_SAMPLE=${3:-20}
 APK=${4:-/c/temp/rt2/Claybreak-measure.apk}
 WORLD=${5:-1}
-PKG=com.jungledegree.runnervstower
+PKG=$(bash "$(dirname "$0")/app-id.sh")   # single source: ProjectConfiguration.ApplicationId
 KIT_TOOLS="$(cd "$(dirname "$0")/../../studiokit/com.jungledegree.studiokit/Tools~" && pwd)"
 OUT=/c/temp/rt2
 mkdir -p "$OUT"

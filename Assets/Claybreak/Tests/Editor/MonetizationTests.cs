@@ -135,7 +135,7 @@ namespace Claybreak.Tests
             }
         }
 
-        // The shipped asset keeps the decisions: interstitial off (D6), only Google test units until RT-9 (D7).
+        // The shipped asset keeps the decisions: interstitial off (D6), no real ad unit in the repository (D35: game builds read them from outside).
         [Test]
         public void ShippedMonetizationKeepsTheDecisions()
         {

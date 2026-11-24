@@ -14,7 +14,16 @@ namespace Claybreak.Editor
     /// </summary>
     public static class ProjectConfiguration
     {
-        public const string ApplicationId = "com.jungledegree.runnervstower";
+        /// <summary>
+        /// The Android application ID (D34 = B, RT-9b.1): fixed for ever once the first build reaches Google Play.
+        /// Single source: the device tools read it through Tools/app-id.sh.
+        /// </summary>
+        public const string ApplicationId = "com.jungledegree.stampeep";
+        /// <summary>
+        /// The provisional ID used before D34 (prototype builds only, never sent to Google Play). The validation refuses
+        /// it anywhere in the project settings so it cannot come back by mistake.
+        /// </summary>
+        public const string RetiredApplicationId = "com.jungledegree.runnervstower";
         /// <summary>The name the player sees (launcher, home title, credits): D29.</summary>
         public const string GameName = "Stampeep";
         private const string AdsSettingsPath = "Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset";
@@ -30,8 +39,8 @@ namespace Claybreak.Editor
         public static void Apply()
         {
             PlayerSettings.companyName = "Jungle Degree";
-            // Display name only (D29: "Stampeep", replacing the working name "Clay Siege" of D18). The application ID,
-            // the save key and the code namespaces stay as they are, so installs and saves are untouched (T-RT4-6).
+            // D29: "Stampeep", replacing the working name "Clay Siege" of D18. D34 = B moved the application ID to match
+            // it before the first Play upload; the save key and the code namespaces stay as they are (T-RT4-6).
             PlayerSettings.productName = GameName;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, ApplicationId);
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;

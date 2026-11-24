@@ -2287,7 +2287,8 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
 - **T-RT9b1-3 — Firebase de outro pacote não quebra o build.** O parser do kit lança erro quando o
   `google-services.json` não tem app para o pacote; o jogo agora confere antes (`ClaybreakFirebase.HasAndroidApp`) e,
   sem app para o pacote do build, tira a configuração e segue com um aviso (`[ClaybreakFirebase] WARNING ...`): o APK
-  sai sem medir nada. Arquivo malformado continua quebrando o build. O `rt8b-firebase-check.sh` agora para antes de
+  sai sem medir nada. Arquivo malformado continua quebrando o build, e um build assinado com a chave de upload (o que
+  vai para a Play) sem o arquivo certo também quebra (revisão de segurança). O `rt8b-firebase-check.sh` agora para antes de
   instalar se o arquivo não for do pacote ou se o APK não tiver `google_app_id`. O kit não mudou.
 - **T-RT9b1-4 — Passo novo para o usuário.** `docs/store/passo-a-passo-console.md` ganhou o passo 4b (app Android
   `com.jungledegree.stampeep` no projeto Firebase que já existe, `google-services.json` novo no mesmo lugar em
@@ -2304,3 +2305,16 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
 - O arquivo foi criado pelo maestro em `_privado` (fora de qualquer repositório) com `androidAppId` e
   `rewardedAdUnitId`. O build de release lê dali; sem o arquivo, falha com aviso claro (release) ou usa os IDs de
   teste do Google (desenvolvimento). Nenhum ID real entra no repositório nem nos documentos.
+
+## 2026-11-24 — T-RT9b1-5 — IDs do AdMob lidos de fora do repositório no build (RT-9b.1, D35) — técnica (sessão da entrega)
+
+- **T-RT9b1-5 — IDs do AdMob fora do repositório (D35 = A).** O build do jogo (APK e AAB) lê
+  `..\_privado\runner-vs-tower\admob-ids.json` (ou `CLAYBREAK_ADMOB_IDS`), confere o formato (app com `~`, unidade com
+  `/`, mesma conta `pub-`, nunca os IDs de teste do Google) e falha com aviso claro sem o arquivo
+  (`ClaybreakAdMob`). Os IDs entram no `GoogleMobileAdsSettings` e no `AdUnits.asset` só durante o build e voltam
+  depois (também quando o build falha); os assets commitados guardam o app de exemplo do Google e nenhuma unidade, e o
+  validador recusa qualquer outro valor neles. O APK de medição, o Editor e os testes ficam com os IDs de teste. O
+  `.gitignore` recusa `admob-ids.json`. Intersticial sem unidade e desligado (D6). O OPPO segue como aparelho de
+  teste pela lista do kit (`MobileAdsGate`). Revisão de segurança independente: a restauração volta sempre aos valores commitados fixos
+  (nunca aos "anteriores"), cada restauração roda mesmo se a outra falhar, e o build recusa começar se os assets já
+  estiverem com outros valores (build anterior interrompido). Sem hook de git: a rede é o validador.

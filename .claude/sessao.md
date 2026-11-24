@@ -17,7 +17,7 @@
   vez (mais a tabela de economia e de fases `docs/rt6-economia.md` e as capturas de arte, que regravam
   `docs/art/telas/` e `docs/art/rt6/`): `Tools/rt4-check.sh [/c/temp/rt4] ["passos"]`. E o gate 3x no OPPO
   CPH2791 com `Tools/rt2-gate.sh <rótulo> 60 20 <apk de medição> [mundo]` (decisão do usuário 2026-11-20: o gate roda UMA vez por entrega, no fim, no mundo/nível mais pesado;
-  repetir só se sair do limite; ao terminar, fechar o app no celular com `adb shell am force-stop com.jungledegree.runnervstower`) (aparelho conectado e desbloqueado;
+  repetir só se sair do limite; ao terminar, fechar o app no celular com `adb shell am force-stop com.jungledegree.stampeep` (D34; antes da RT-9b.1 era `com.jungledegree.runnervstower`)) (aparelho conectado e desbloqueado;
   passo a passo em `docs/rt4-fatia.md` seção 4).
 - **Custo:** liberado pesquisa web gratuita e edição de documentos. Qualquer gasto pago, upload
   ao Play Console/AdMob ou cópia de código do Wild Pack (reuso só pelo pacote studiokit): parar e perguntar.
@@ -187,3 +187,9 @@
   O `ProjectSettings.asset` agora guarda o ícone do celular (`m_BuildTargetPlatformIcons`, Unity 6 só aceita o tipo
   adaptativo): depois de um build, reverter só a linha `AndroidKeystoreName`, não o arquivo inteiro. A política tem
   endereço no jogo: teste que aperte o link da política abre o navegador da máquina (confira a URL, não aperte).
+- 2026-11-24 (RT-9b.1): o pacote é `com.jungledegree.stampeep` (D34); as ferramentas de aparelho leem de
+  `Tools/app-id.sh` (fonte `ProjectConfiguration.ApplicationId`), e o validador recusa o ID antigo. IDs do AdMob (D35) ficam
+  em `..\_privado\runner-vs-tower\admob-ids.json`: o build do jogo os põe no `GoogleMobileAdsSettings`/`AdUnits.asset` só
+  durante o build e restaura; se um build for morto no meio, `git checkout --` nesses dois antes de qualquer coisa (o
+  validador e o próximo build recusam). Nunca escrever IDs reais do AdMob em arquivo do repositório. Batchmode Android
+  reinicia o servidor do adb: outra família (match-3) mede no mesmo OPPO, então combinar a janela antes de rodar Unity/adb.

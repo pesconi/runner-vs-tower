@@ -19,6 +19,8 @@ namespace Claybreak.Editor
     /// CLAYBREAK_KEYSTORE (path outside the repo), CLAYBREAK_KEYSTORE_PASS, CLAYBREAK_KEY_ALIAS and
     /// CLAYBREAK_KEY_PASS in the environment of the build; the values are used for this build only and the
     /// project settings are restored afterwards, so nothing about the key is saved in ProjectSettings.
+    /// AdMob (D35): the game player (APK or AAB) needs <c>..\_privado\runner-vs-tower\admob-ids.json</c>
+    /// (<see cref="ClaybreakAdMob"/>); the measurement player keeps Google's test IDs.
     /// </summary>
     public static class ClaybreakBuild
     {
@@ -53,9 +55,13 @@ namespace Claybreak.Editor
         public static void Build(string output, bool measure, bool bundle)
         {
             ProjectConfiguration.Apply();
+            // D35: the game build carries the studio's AdMob IDs, read from outside the repository (it fails without
+            // them); the measurement player keeps Google's test IDs.
+            ClaybreakAdMob.Ids? adMob = measure ? (ClaybreakAdMob.Ids?)null : ClaybreakAdMob.Load(ClaybreakAdMob.ConfigPath());
             Directory.CreateDirectory(Path.GetDirectoryName(output));
             bool previousBundle = EditorUserBuildSettings.buildAppBundle;
             // The measurement player reads debug extras: it never carries the upload key.
+            using (adMob.HasValue ? new ClaybreakAdMob.Scope(adMob.Value) : null)
             using (var signing = new UploadKeyScope(!measure))
             {
                 try
@@ -81,7 +87,8 @@ namespace Claybreak.Editor
                     Debug.Log($"[ClaybreakBuild] {(measure ? "Measurement" : "Game")} {(bundle ? "AAB" : "APK")}: {output} "
                         + $"({bytes / (1024f * 1024f):0.0} MB, {bytes} bytes, {report.summary.totalTime.TotalSeconds:0} s), "
                         + $"version {PlayerSettings.bundleVersion} ({PlayerSettings.Android.bundleVersionCode}), "
-                        + $"signed with {(signing.UsesUploadKey ? "the upload key from the environment" : "the debug key")}.");
+                        + $"signed with {(signing.UsesUploadKey ? "the upload key from the environment" : "the debug key")}, "
+                        + $"{(adMob.HasValue ? "production AdMob IDs (D35)" : "Google's test AdMob IDs")}.");
                 }
                 finally
                 {

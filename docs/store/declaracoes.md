@@ -6,7 +6,10 @@ do código; o que depende do texto exato do formulário (que o Google não publi
 Console]**. Regras e fontes: [`requisitos-play.md`](requisitos-play.md). Substitui o rascunho
 [`../data-safety.md`](../data-safety.md) (RT-7/RT-8b), que fica como histórico do levantamento.
 
-Versão do código: `Stage RT.6t.21` + RT-9a (só o endereço da política mudou). Se o código mudar (IDs reais do AdMob,
+App: **Stampeep**, pacote (application ID) `com.jungledegree.stampeep` (D34 = B, RT-9b.1; fica fixo com o primeiro
+envio à Play). As respostas abaixo não mudaram com o pacote: o código, os SDKs e os dados são os mesmos.
+
+Versão do código: `Stage RT.6t.21` + RT-9a (só o endereço da política mudou) + RT-9b.1 (só o pacote mudou). Se o código mudar (IDs reais do AdMob,
 intersticial ligado, pedido próprio de consentimento da D23, outra medição), este documento, a política e a
 seção "Segurança dos dados" mudam juntos.
 

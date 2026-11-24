@@ -12,19 +12,15 @@ namespace Claybreak.Editor
     /// The monetization validator (RT-7 acceptance): the monetization asset and its decisions (D5 daily reward,
     /// D6 rewarded + interstitial OFF + no in-app purchase, D4 + D21 minimum measurement through Firebase Analytics in
     /// its minimal setup), the ad
-    /// units (only Google's test units until RT-9; a production unit must be well formed and come with a real app
-    /// ID), the scene wiring (both ad services on the game's units, no forced test ads, the gateway complete), the
+    /// units (the committed assets hold only Google's sample app and no unit: the studio's IDs live outside the
+    /// repository and enter only the game build, D35; when that file is present it must be a production pair), the
+    /// scene wiring (both ad services on the game's units, no forced test ads, the gateway complete), the
     /// packages (no billing, no other analytics SDK), the Firebase module (one pinned dependency, collection off and
     /// no advertising ID in its manifest, the configuration file outside the repository) and the privacy documents.
     /// Batchmode: -executeMethod Claybreak.Editor.MonetizationValidation.RunAndQuit (also part of ClaybreakValidation).
     /// </summary>
     public static class MonetizationValidation
     {
-        /// <summary>
-        /// False until the user hands over the AdMob account units (RT-9, decision D7): until then the unit fields
-        /// stay empty and every build shows Google's test ads. RT-9 sets this to true with the real IDs.
-        /// </summary>
-        public const bool ProductionUnitsAllowed = false;
 
         public const string PrivacyPolicyPath = "docs/politica-de-privacidade.md";
         public const string DataSafetyPath = "docs/data-safety.md";
@@ -76,7 +72,7 @@ namespace Claybreak.Editor
 
             CheckDecisions(monetization, failures);
             CheckUnits(monetization.AdUnits, failures);
-            Check(!ProductionUnitsAllowed || monetization.PrivacyPolicyUrl.Length > 0,
+            Check(monetization.PrivacyPolicyUrl.Length > 0,
                 "privacy: a production build needs the public privacy policy link (MonetizationContent.PrivacyPolicyUrl)", failures);
             CheckPackages(failures);
             CheckFirebaseModule(failures);
@@ -89,7 +85,7 @@ namespace Claybreak.Editor
         {
             if (failures.Count == 0)
             {
-                Debug.Log("PASS Claybreak monetization validation: decisions D4/D5/D6/D21, test ad units, scene wiring, packages, "
+                Debug.Log("PASS Claybreak monetization validation: decisions D4/D5/D6/D21/D35, no real AdMob ID in the repository, scene wiring, packages, "
                     + "minimal Firebase module and privacy documents.");
             }
             else
@@ -124,27 +120,26 @@ namespace Claybreak.Editor
                 return;
             }
 
-            string appId = ReadAppId();
-            bool production = false;
-            foreach (string unit in new[] { units.AndroidRewardedUnitId, units.AndroidInterstitialUnitId })
+            // D35: the committed assets never hold the studio's IDs (a build that stopped half way could leave them).
+            Check(units.AndroidRewardedUnitId.Length == 0 && units.AndroidInterstitialUnitId.Length == 0,
+                $"ads: {MonetizationContent.AdUnitsPath} holds an ad unit; the real IDs stay outside the repository (D35): restore it with git",
+                failures);
+            Check(ReadAppId() == ProjectConfiguration.SampleAdMobAppId,
+                $"ads: {AdsSettingsPath} must keep Google's sample app id; the real one stays outside the repository (D35): restore it with git",
+                failures);
+
+            string privateIds = ClaybreakAdMob.ConfigPath();
+            if (File.Exists(privateIds))
             {
-                if (string.IsNullOrEmpty(unit))
+                try
                 {
-                    continue;
+                    ClaybreakAdMob.Load(privateIds);
                 }
-
-                production = true;
-                Check(ProductionUnitsAllowed, $"ads: production unit '{unit}' set before RT-9 (D7: only Google test units in the repo now)", failures);
-                Check(AdUnitSettings.IsWellFormedUnitId(unit) && !AdUnitSettings.IsGoogleTestUnit(unit),
-                    $"ads: '{unit}' is not a production ad unit id", failures);
-                Check(appId != null && unit.Split('/')[0] == appId.Split('~')[0],
-                    $"ads: unit '{unit}' does not belong to the app id '{appId}'", failures);
-            }
-
-            if (!production)
-            {
-                Check(appId == ProjectConfiguration.SampleAdMobAppId,
-                    $"ads: with test units the app id must be Google's sample app id (found '{appId}')", failures);
+                catch (System.Exception exception) when (exception is System.InvalidOperationException || exception is IOException
+                    || exception is System.UnauthorizedAccessException)
+                {
+                    failures.Add("ads: " + exception.Message);
+                }
             }
         }
 

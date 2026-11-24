@@ -70,8 +70,52 @@ namespace Claybreak.Editor
             CheckScene(failures);
             CheckToonLab(failures);
             CheckGameName(failures);
+            CheckApplicationId(failures);
             failures.AddRange(MonetizationValidation.Run());
             return failures;
+        }
+
+        // Where the application ID is written outside its single source (ProjectConfiguration): the player settings,
+        // the Android plug-ins and the device and store tools.
+        private static readonly string[] ApplicationIdFolders = { "ProjectSettings", "Assets/Plugins/Android", "Tools" };
+
+        /// <summary>
+        /// RT-9b.1 (D34 = B): the Android build uses <see cref="ProjectConfiguration.ApplicationId"/>, and the retired
+        /// provisional ID appears in no project setting, Android plug-in or tool, so it cannot come back by mistake.
+        /// </summary>
+        public static void CheckApplicationId(List<string> failures)
+        {
+            string id = PlayerSettings.GetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android);
+            if (id != ProjectConfiguration.ApplicationId)
+            {
+                failures.Add($"application id: Android builds use '{id}', the game is '{ProjectConfiguration.ApplicationId}' (D34; run Claybreak > Build Scene)");
+            }
+
+            if (ProjectConfiguration.ApplicationId == ProjectConfiguration.RetiredApplicationId)
+            {
+                failures.Add($"application id: '{ProjectConfiguration.RetiredApplicationId}' was retired by D34");
+            }
+
+            foreach (string folder in ApplicationIdFolders)
+            {
+                if (!Directory.Exists(folder))
+                {
+                    continue;
+                }
+
+                foreach (string file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories))
+                {
+                    if (file.EndsWith(".meta") || file.EndsWith(".png") || file.EndsWith(".pyc"))
+                    {
+                        continue;
+                    }
+
+                    if (File.ReadAllText(file).Contains(ProjectConfiguration.RetiredApplicationId))
+                    {
+                        failures.Add($"application id: {file.Replace('\\', '/')} still names the retired id '{ProjectConfiguration.RetiredApplicationId}' (D34)");
+                    }
+                }
+            }
         }
 
         // Names the player must no longer see (D29 retired the working names of D1/D18). Internal names (the Claybreak

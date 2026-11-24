@@ -10,7 +10,7 @@ APK=${1:-/c/temp/rt6t1/Claybreak-measure.apk}
 UNITS=${2:-1000}
 RECORD=${3:-2000}
 PREFIX=${4:-toon}
-PKG=com.jungledegree.runnervstower
+PKG=$(bash "$(dirname "$0")/app-id.sh")   # single source: ProjectConfiguration.ApplicationId
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SHOTS="$HERE/../docs/art/rt6t"
 mkdir -p "$SHOTS"
