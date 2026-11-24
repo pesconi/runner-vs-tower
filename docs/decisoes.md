@@ -2250,3 +2250,16 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
 - **T-RT9a-8 — Categoria "Ação"; declarações em `docs/store/declaracoes.md`.** Segurança dos dados com 4 tipos
   (localização aproximada, interações com o app, diagnóstico, IDs do dispositivo), todos recolhidos e partilhados por
   causa do AdMob; o rascunho `data-safety.md` fica como histórico do levantamento.
+
+## 2026-11-24 — D7 = A, D9 = A, D10 = A — usuário
+
+- **D7 = A — conta.** O Stampeep é publicado na mesma conta de programador Google Play de organização da Jungle
+  Degree (a do Wild Pack) e usa a mesma conta AdMob business da empresa, com app AdMob e unidade de anúncio premiado
+  próprios do Stampeep.
+- **D9 = A — países do soft launch.** Portugal, Irlanda, Países Baixos, Suécia, Dinamarca, Noruega e Finlândia, em
+  produção; os outros países ficam fechados até a RT-11.
+- **D10 = A — idiomas da página.** Só inglês (en-US) no teste interno e no soft launch; traduções da página entram
+  quando o próprio jogo for traduzido.
+- Resposta do usuário: "D7 A, D9 A, D10 A". Fichas completas em `riscos-e-decisoes.md` (escritas na RT-9a).
+  Destravam a RT-9b (usuário no Play Console, guiado por `docs/store/passo-a-passo-console.md`). Ainda pendente do
+  usuário para a política: denominação, NIPC, morada e e-mail da empresa.
