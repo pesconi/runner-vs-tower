@@ -2263,3 +2263,13 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
 - Resposta do usuário: "D7 A, D9 A, D10 A". Fichas completas em `riscos-e-decisoes.md` (escritas na RT-9a).
   Destravam a RT-9b (usuário no Play Console, guiado por `docs/store/passo-a-passo-console.md`). Ainda pendente do
   usuário para a política: denominação, NIPC, morada e e-mail da empresa.
+
+## 2026-11-24 — D34 = B — ID permanente do app: `com.jungledegree.stampeep` — usuário
+
+- Pergunta feita ao criar o app no Play Console (RT-9b, passo 3): manter `com.jungledegree.runnervstower` (A) ou
+  trocar para `com.jungledegree.stampeep` (B) antes do primeiro envio, quando o ID fica fixo para sempre e aparece no
+  link da loja. Resposta do usuário: "B".
+- Consequências aceitas: no OPPO o jogo novo instala como outro app (o progresso de teste não passa); o Firebase
+  precisa de um app Android novo com o ID novo e um `google-services.json` novo (fora do repositório, em `_privado`),
+  senão o jogo não mede nada; a restrição da chave de API do Firebase usa o ID novo. Nada muda para jogadores (ainda
+  não há nenhum). Namespaces, pasta `Assets/Claybreak` e a chave do save continuam como estão (T-RT4-6).
