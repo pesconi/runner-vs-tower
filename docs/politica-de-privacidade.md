@@ -16,8 +16,7 @@ for o país do jogador; a autoridade de controlo é a **CNPD** (Comissão Nacion
 português está em **português de Portugal**. Não é parecer jurídico.
 
 **Dados da empresa** (2026-11-24, a pedido do usuário, os mesmos da conta Play do Wild Pack): denominação, NIPC e
-e-mail preenchidos. **Falta só a morada da sede** (`<morada>` / `<address>`), que o usuário informa; a IA não a
-inventa. Procure por `<` no arquivo: não pode sobrar nenhum antes de publicar.
+e-mail preenchidos; morada da sede informada pelo usuário no mesmo dia. Nenhum campo a preencher.
 
 ---
 
@@ -26,7 +25,7 @@ inventa. Procure por `<` no arquivo: não pode sobrar nenhum antes de publicar.
 **Stampeep** é um jogo da Jungle Degree. Esta política explica o que acontece aos seus dados quando joga.
 
 **Responsável pelo tratamento.** JUNGLE DEGREE, LDA ("Jungle Degree"), NIPC 519469771, com sede em
-`<morada>`, Portugal. Contacto para assuntos de privacidade: pesconi@jungledegree.com.
+Rua Fernando Namora, 10, 3.º Dto., 2675-487 Odivelas, Portugal. Contacto para assuntos de privacidade: pesconi@jungledegree.com.
 
 **O que fica só no seu telemóvel.** O seu progresso (níveis, estrelas, moedas, compras feitas com moedas do jogo,
 skins), as datas do primeiro dia de jogo e do último presente diário e as suas escolhas de som, música e vibração
@@ -105,7 +104,7 @@ pesconi@jungledegree.com.
 **Stampeep** is a game by Jungle Degree. This policy explains what happens to your data when you play.
 
 **Controller.** JUNGLE DEGREE, LDA ("Jungle Degree"), company number (NIPC) 519469771, registered at
-`<address>`, Portugal. Privacy contact: pesconi@jungledegree.com.
+Rua Fernando Namora, 10, 3.º Dto., 2675-487 Odivelas, Portugal. Privacy contact: pesconi@jungledegree.com.
 
 **What stays on your device.** Your progress (levels, stars, coins, items bought with in-game coins, skins),
 the dates of your first day of play and of your last daily gift, and your sound, music and vibration choices
