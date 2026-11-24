@@ -15,9 +15,9 @@ União Europeia). Pelo art. 3.º, n.º 1, do RGPD, o regulamento vale para todo 
 for o país do jogador; a autoridade de controlo é a **CNPD** (Comissão Nacional de Proteção de Dados). A parte em
 português está em **português de Portugal**. Não é parecer jurídico.
 
-**Campos a preencher pelo usuário antes de publicar** (aqui e no HTML; a IA não os inventa): `<denominação legal da
-empresa>`, `<NIPC>`, `<morada>`, `<e-mail de contacto>` e `<data de publicação>` — em inglês `<company legal name>`,
-`<NIPC>`, `<address>`, `<contact e-mail>` e `<publication date>`. Procure por `<` no arquivo: não pode sobrar nenhum.
+**Dados da empresa** (2026-11-24, a pedido do usuário, os mesmos da conta Play do Wild Pack): denominação, NIPC e
+e-mail preenchidos. **Falta só a morada da sede** (`<morada>` / `<address>`), que o usuário informa; a IA não a
+inventa. Procure por `<` no arquivo: não pode sobrar nenhum antes de publicar.
 
 ---
 
@@ -25,8 +25,8 @@ empresa>`, `<NIPC>`, `<morada>`, `<e-mail de contacto>` e `<data de publicação
 
 **Stampeep** é um jogo da Jungle Degree. Esta política explica o que acontece aos seus dados quando joga.
 
-**Responsável pelo tratamento.** `<denominação legal da empresa>` ("Jungle Degree"), NIPC `<NIPC>`, com sede em
-`<morada>`, Portugal. Contacto para assuntos de privacidade: `<e-mail de contacto>`.
+**Responsável pelo tratamento.** JUNGLE DEGREE, LDA ("Jungle Degree"), NIPC 519469771, com sede em
+`<morada>`, Portugal. Contacto para assuntos de privacidade: pesconi@jungledegree.com.
 
 **O que fica só no seu telemóvel.** O seu progresso (níveis, estrelas, moedas, compras feitas com moedas do jogo,
 skins), as datas do primeiro dia de jogo e do último presente diário e as suas escolhas de som, música e vibração
@@ -82,7 +82,7 @@ premiado), o jogo usa o Firebase Analytics, da Google, numa configuração míni
 **Os seus direitos.** Nos termos do RGPD, tem direito de acesso, retificação, apagamento, limitação do tratamento,
 portabilidade e oposição, e de retirar o consentimento a qualquer momento, sem afetar o tratamento anterior. Como
 não pedimos conta nem nome, a forma mais direta de exercer estes direitos é no próprio jogo (botão **PRIVACY**) ou
-apagando os dados da app/desinstalando; também pode escrever para `<e-mail de contacto>` (para identificarmos os
+apagando os dados da app/desinstalando; também pode escrever para pesconi@jungledegree.com (para identificarmos os
 dados de análise, pode ser preciso que nos indique como encontrar a sua instalação; não pedimos mais do que isso).
 Tem ainda o direito de apresentar reclamação à **CNPD — Comissão Nacional de Proteção de Dados** (www.cnpd.pt) ou à
 autoridade de controlo do seu país.
@@ -94,9 +94,9 @@ a partir da qual o consentimento para serviços da sociedade da informação é 
 são pedidos com classificação de conteúdo para público geral e sem marcação de público infantil.
 
 **Alterações e contacto.** Avisaremos de alterações atualizando esta página e a data abaixo. Dúvidas:
-`<e-mail de contacto>`.
+pesconi@jungledegree.com.
 
-Última atualização: `<data de publicação>`.
+Última atualização: 24 de novembro de 2026.
 
 ---
 
@@ -104,8 +104,8 @@ são pedidos com classificação de conteúdo para público geral e sem marcaç�
 
 **Stampeep** is a game by Jungle Degree. This policy explains what happens to your data when you play.
 
-**Controller.** `<company legal name>` ("Jungle Degree"), company number (NIPC) `<NIPC>`, registered at
-`<address>`, Portugal. Privacy contact: `<contact e-mail>`.
+**Controller.** JUNGLE DEGREE, LDA ("Jungle Degree"), company number (NIPC) 519469771, registered at
+`<address>`, Portugal. Privacy contact: pesconi@jungledegree.com.
 
 **What stays on your device.** Your progress (levels, stars, coins, items bought with in-game coins, skins),
 the dates of your first day of play and of your last daily gift, and your sound, music and vibration choices
@@ -159,7 +159,7 @@ uses Google's Firebase Analytics in a minimal setup:
 **Your rights.** Under the GDPR you have the right of access, rectification, erasure, restriction, portability
 and objection, and to withdraw consent at any time without affecting earlier processing. As we ask for no account
 or name, the most direct way to exercise them is in the game (the **PRIVACY** button) or by clearing the app's
-data / uninstalling; you can also write to `<contact e-mail>` (to find the analytics data we may need you to tell
+data / uninstalling; you can also write to pesconi@jungledegree.com (to find the analytics data we may need you to tell
 us how to identify your installation; we ask for nothing more). You may also lodge a complaint with the Portuguese
 supervisory authority, **CNPD — Comissão Nacional de Proteção de Dados** (www.cnpd.pt), or with the authority of
 your country.
@@ -169,9 +169,9 @@ your country.
 **Children.** The game is made for ages 13 and up and is not directed to children. Ads are requested with a
 general-audience content rating and without child-directed tags.
 
-**Changes and contact.** We will update this page and the date below. Questions: `<contact e-mail>`.
+**Changes and contact.** We will update this page and the date below. Questions: pesconi@jungledegree.com.
 
-Last updated: `<publication date>`.
+Last updated: 24 November 2026.
 
 ---
 
