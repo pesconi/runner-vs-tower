@@ -2273,3 +2273,34 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
   precisa de um app Android novo com o ID novo e um `google-services.json` novo (fora do repositório, em `_privado`),
   senão o jogo não mede nada; a restrição da chave de API do Firebase usa o ID novo. Nada muda para jogadores (ainda
   não há nenhum). Namespaces, pasta `Assets/Claybreak` e a chave do save continuam como estão (T-RT4-6).
+
+## 2026-11-24 — T-RT9b1-1..4 — Troca do application ID (RT-9b.1) — técnica (sessão da entrega)
+
+- **T-RT9b1-1 — Fonte única do ID.** `ProjectConfiguration.ApplicationId` é a única cópia; as ferramentas de aparelho
+  (`rt2-gate`, `rt6t-toonlab-gate`, `rt8b-firebase-check`) leem dela por `Tools/app-id.sh` em vez de ter o pacote
+  escrito. Registros históricos (decisões e entregas antigas) continuam com o ID antigo.
+- **T-RT9b1-2 — O ID antigo é recusado.** `ProjectConfiguration.RetiredApplicationId` guarda o ID provisório só para
+  isso: o validador (`ClaybreakValidation.CheckApplicationId`) falha se o build Android não usar o ID novo ou se o
+  antigo aparecer em `ProjectSettings`, `Assets/Plugins/Android` ou `Tools`; o teste EditMode
+  `FirebaseSetupTests.TheApplicationIdIsTheStoreOne` roda a mesma conferência. A lista de isolamento do kit já recusa
+  `stampeep` (e continua recusando o ID antigo).
+- **T-RT9b1-3 — Firebase de outro pacote não quebra o build.** O parser do kit lança erro quando o
+  `google-services.json` não tem app para o pacote; o jogo agora confere antes (`ClaybreakFirebase.HasAndroidApp`) e,
+  sem app para o pacote do build, tira a configuração e segue com um aviso (`[ClaybreakFirebase] WARNING ...`): o APK
+  sai sem medir nada. Arquivo malformado continua quebrando o build. O `rt8b-firebase-check.sh` agora para antes de
+  instalar se o arquivo não for do pacote ou se o APK não tiver `google_app_id`. O kit não mudou.
+- **T-RT9b1-4 — Passo novo para o usuário.** `docs/store/passo-a-passo-console.md` ganhou o passo 4b (app Android
+  `com.jungledegree.stampeep` no projeto Firebase que já existe, `google-services.json` novo no mesmo lugar em
+  `_privado`, depois validar com a IA) e o passo 10 passou a restringir a chave de API ao pacote novo com as duas SHA-1.
+
+## 2026-11-24 — D35 = A — IDs do AdMob do Stampeep fora do repositório — usuário
+
+- O app AdMob e a unidade premiada do Stampeep foram criados pelo usuário na conta business (RT-9b, passo 4). A regra
+  do `CLAUDE.md` ("No secrets in the repo (… AdMob/Play IDs of real accounts)") conflitava com o passo 4.5 do roteiro
+  ("põe… e commita"); a sessão RT-9b.1 recusou commitar os IDs e levou a decisão ao usuário.
+- Opções: A) IDs fora do repositório, em `C:\projects\games\_privado\runner-vs-tower\admob-ids.json`, lidos no build
+  (como o `google-services.json`); B) mudar a regra e tratar os IDs como públicos no repositório. Resposta do usuário:
+  "Opcao A".
+- O arquivo foi criado pelo maestro em `_privado` (fora de qualquer repositório) com `androidAppId` e
+  `rewardedAdUnitId`. O build de release lê dali; sem o arquivo, falha com aviso claro (release) ou usa os IDs de
+  teste do Google (desenvolvimento). Nenhum ID real entra no repositório nem nos documentos.
