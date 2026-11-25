@@ -26,8 +26,8 @@ chave de corda, nas cores do mundo. Nas telas da home o pós também pinta a UI 
   3 um Bibopzi de costas diante da torre (a D25 pede ícone sem rosto em destaque).
 - `A/`, `B/`, `C/`, `M/`: cada captura em tamanho real (corrida, assalto e torre nas duas versões, telas nas 4 proporções,
   líder, ícones 512).
-- `aparelho-0..3.png`: captura de tela do OPPO no laboratório de medição (0 = visual de hoje com o Bibopzi suavizado,
-  1–3 = A–C, pós ligado, metade do tamanho; a M ainda não).
+- `aparelho-0..4.png`: captura de tela do OPPO no laboratório de medição (0 = visual de hoje com o Bibopzi suavizado,
+  1–3 = A–C, 4 = M, pós ligado, metade do tamanho).
 
 ## Ensaio no OPPO CPH2791 (Mali-G1-Ultra MC12), 2026-11-25
 
@@ -45,12 +45,15 @@ PSS 199–213 MB.
 | B | ligado | 7,4–7,6 (repetição 7,3–7,5) | 8,3–8,5 |
 | C | desligado | 4,4–4,5 | 19,2–20,4 na 1ª rodada; **7,3–8,3 na repetição** |
 | C | ligado | 5,2–5,4 | 6,2–7,5 |
-| M | desligado / ligado | pendente: o OPPO ficou bloqueado depois das outras rodadas | `TOONLAB_VINYL="4" Tools/rt6t-toonlab-gate.sh /c/temp/rt6v32/Claybreak-measure.apk 300 0 v3` |
+| M | desligado | 4,7–5,3 | 20,0–20,4 numa rodada; **7,6–8,1 na repetição** |
+| M | ligado | 5,3–5,6 | 7,2–7,7 |
 
 Leitura: o shader de vinil custa ~0,5 ms de GPU a mais que o de hoje (Vulkan) e quase nada em GLES; o pós custa de 0,7 a
-3 ms. Tudo cabe no teto com folga (pior caso estável: 8,5 ms, B com pós em GLES). A 1ª rodada de C sem pós em GLES e uma
-janela de A saíram fora (picos isolados com o quadro a 60 fps estável); repetidas uma vez dentro, como manda a regra
-do gate. Anomalia registrada: B com pós (sem bloom) mede ~2 ms a mais que A com pós e bloom, reproduzido; investigar na
+3 ms. Tudo cabe no teto com folga (pior caso estável: 8,5 ms, B com pós em GLES). A 1ª rodada de C sem pós em GLES, uma rodada
+de M sem pós em GLES e uma janela de A saíram fora (~20 ms de GPU com o quadro firme a 60 fps: leitura do medidor
+no GLES sem pós, a investigar); repetidas dentro, como manda a regra do gate. A M foi medida depois (2026-11-25, celular
+desbloqueado); na 1ª tentativa a rodada "GLES" abriu em Vulkan (o `am start` caiu na instância ainda aberta: "Activity
+not started"), conferido pela linha `[ToonRoute]` e refeito. Anomalia registrada: B com pós (sem bloom) mede ~2 ms a mais que A com pós e bloom, reproduzido; investigar na
 K.v3a/RT-6v3.3. Arquivos brutos: `C:\temp\rt2\gate-v3300-*.txt` (fora do repositório).
 
 ## Referência do gênero (só por link; nenhuma arte copiada)

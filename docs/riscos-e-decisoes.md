@@ -325,12 +325,13 @@ Contexto que você precisa saber:
     A  sem pós 4,7 / 7,6*  com pós 5,6 / 7,1
     B  sem pós 4,6 / 7,9   com pós 7,6 / 8,5
     C  sem pós 4,5 / 8,3*  com pós 5,4 / 7,5
-    M  medição pendente: o celular ficou bloqueado depois das outras
-       (deve ficar perto da A; inferência nossa)
+    M  sem pós 5,3 / 8,1*  com pós 5,6 / 7,7
   Todas as medidas cabem no teto com folga e o laboratório ficou em 60 quadros por segundo.
-  *Picos isolados repetidos uma vez, como manda a regra: A teve uma janela de 18,4 ms; C sem
-  pós deu 20 ms na 1ª rodada e 8,3 na repetição. B com pós custa ~2 ms a mais que A com pós
-  (reproduzido, sem explicação ainda; a M usa o cenário da B, a investigar na RT-6v3.3).
+  *Picos isolados repetidos, como manda a regra: A teve uma janela de 18,4 ms; C sem pós
+  em OpenGL ES deu 20 ms na 1ª rodada e 8,3 na repetição; M sem pós em OpenGL ES deu 20 ms
+  numa rodada e 8,1 na seguinte — sempre com a tela firme a 60 quadros, então é leitura do
+  medidor nesse modo, a investigar na RT-6v3.3 (inferência nossa). B com pós custa ~2 ms a
+  mais que A com pós (reproduzido, sem explicação ainda; a M com pós não tem esse custo).
   Não medidos: a torre fábrica (13.920 triângulos, dentro da faixa de chefe de 8–15 mil) e
   o jogo inteiro — isso é o gate de cada entrega seguinte.
 - Inferência nossa: o shader novo custa ~0,5 ms a mais que o de hoje; o pós, de 0,7 a 3 ms.
@@ -368,7 +369,7 @@ C) Contraste alto, luz de fim de tarde (céu roxo e laranja).
      a luz de um mundo, não de todos (média; médio — usar só num mundo de pôr do sol).
 M) Mistura (recomendada pelo revisor): personagem da A com reflexo menor (a barriga não
    estoura), cenário quase sem reflexo, um pouco mais de contraste, brilho só nos reflexos.
-   + O melhor personagem das quatro; leve no celular (medição no celular pendente).
+   + O melhor personagem das quatro; leve no celular (com pós 5,6 / 7,7 ms, como a A).
    - Riscos: nas telas de longe é praticamente a A com menos brilho — o "cenário fosco" e o
      contraste multidão × pista prometidos ainda não aparecem, porque dependem da pista e
      do cenário novos (alta; médio — o alvo de cenário fecha na primeira fatia refeita).

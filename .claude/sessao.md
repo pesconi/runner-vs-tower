@@ -212,3 +212,5 @@
   memória e devolvida antes de cada cena). Ensaio: `TOONLAB_VINYL="0 1 2 3 4" Tools/rt6t-toonlab-gate.sh <apk> 300 0 v3`.
   Código que cria objetos em `Lab/Runtime` reprova no validador (2.2.1): o que só as capturas usam vai para o assembly de testes.
   O tonemapping Neutral acinzenta a paleta pastel (valores de tela): o laboratório usa sem tonemapping.
+  No ensaio, conferir a linha `[ToonRoute]` de cada arquivo: com "Activity not started" no log, o `am start` caiu na instância
+  aberta e a rodada "GLES" saiu em Vulkan (refazer). GLES sem pós às vezes lê ~20 ms de GPU com 60 fps firmes: repetir.
