@@ -2366,3 +2366,11 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
 - Leitura: a RT-6t.22 está aceita (o Bibopzi fica como forma padrão, com o save v6). O visual low poly do jogo inteiro
   (multidão, inimigos, portões, piso, cenário, efeitos e som) passa a ser trocado por uma direção nova, "v3, acabamento
   premium": plano em `direcao-visual-v3.md` e série RT-6v3.x no plano de entregas ("Sim, escreve o plano", 2026-11-25).
+
+## 2026-11-25 — D37 = C — Nada de imagem nem música gerada por IA (vidIQ) agora — usuário
+
+- Ficha em `riscos-e-decisoes.md` (fichas D36 e D37). Resposta do usuário (repassada pela sessão do personagem):
+  **"C, nada de IA agora"**.
+- Efeito: nenhum crédito do vidIQ é gasto; a série RT-6v3 segue sem IA generativa de imagem e música. Som por síntese
+  própria ou CC0 registrado em `audio-licenses.md`; arte saindo do motor (a imagem-alvo da D36 continua no Unity).
+  Pode ser reaberta (opção A depois de 15/12 ou música na RT-6v3.9) só com nova ficha.
