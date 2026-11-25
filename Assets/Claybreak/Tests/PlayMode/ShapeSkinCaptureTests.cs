@@ -195,9 +195,10 @@ namespace Claybreak.Tests
                 texture.SetPixels32(fill);
             }
 
-            public void Put(int column, int row, Texture2D panel)
+            /// <summary>Puts a panel in the grid; <paramref name="lift"/> moves a panel shorter than the cells down from the top edge.</summary>
+            public void Put(int column, int row, Texture2D panel, int lift = 0)
             {
-                texture.SetPixels(column * (width + Gap), (rows - 1 - row) * (height + Gap), width, height, panel.GetPixels());
+                texture.SetPixels(column * (width + Gap), (rows - 1 - row) * (height + Gap) + lift, panel.width, panel.height, panel.GetPixels());
             }
 
             public void Save(string path)

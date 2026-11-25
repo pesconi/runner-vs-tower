@@ -102,6 +102,9 @@ namespace Claybreak.Editor
             WorldContent.Write();
             MonetizationContent.Write();
             BuildCrowdData();
+            // RT-6v3.1: the style guide (the toon look it reads exists by now).
+            StyleGuideContent.Write();
+            StyleChecklist.Write();
             BuildTheme();
             new ArtPalette();
             GateArt.BuildAssets();

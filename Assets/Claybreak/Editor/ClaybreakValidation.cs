@@ -69,6 +69,7 @@ namespace Claybreak.Editor
             CheckRuntimeCode(failures);
             CheckScene(failures);
             CheckToonLab(failures);
+            failures.AddRange(StyleGuideValidation.Run());
             CheckGameName(failures);
             CheckApplicationId(failures);
             failures.AddRange(MonetizationValidation.Run());
@@ -140,7 +141,7 @@ namespace Claybreak.Editor
         {
             if (failures.Count == 0)
             {
-                Debug.Log("PASS Claybreak validation: catalog, worlds, levels, device-gate level, theme, saves, scene, pools, runtime code rules, toon lab and monetization.");
+                Debug.Log("PASS Claybreak validation: catalog, worlds, levels, device-gate level, theme, saves, scene, pools, runtime code rules, toon lab, style guide and monetization.");
             }
             else
             {

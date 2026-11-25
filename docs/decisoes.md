@@ -2374,3 +2374,45 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
 - Efeito: nenhum crédito do vidIQ é gasto; a série RT-6v3 segue sem IA generativa de imagem e música. Som por síntese
   própria ou CC0 registrado em `audio-licenses.md`; arte saindo do motor (a imagem-alvo da D36 continua no Unity).
   Pode ser reaberta (opção A depois de 15/12 ou música na RT-6v3.9) só com nova ficha.
+
+## 2026-11-25 — RT-6v3.1: guia de estilo como dado e validador (decisões técnicas do maestro)
+
+Entrega sem efeito na tela: o jogo não mudou (todas as classes `legado`). Decididas pela sessão da entrega, com o padrão
+de qualidade do maestro (limpo, escalável, seguro); nenhuma é de produto, dinheiro ou irreversível.
+
+- **T-RT6v3.1-1 — Onde mora o guia.** `StyleGuide` (ScriptableObject, assembly `Claybreak.Runtime`, tipos do jogo; nada no
+  `studiokit`) em `Assets/Claybreak/Content/Style/StyleGuide.asset`. O conteúdo é **código** (`StyleGuideContent`, editor), como
+  `PaletteContent`/`WorldContent`: o asset é regravado a cada build da cena e por `-executeMethod
+  Claybreak.Editor.StyleGuideContent.WriteAndQuit`; mudar o guia é uma edição revisada desse arquivo. O estado de migração
+  (`legado`/`v3`) também é conteúdo (a classe vira v3 editando `Classes()`), nunca lido do asset: uma fonte só.
+  Nenhum tipo genérico foi para o kit (o motor não precisou: seção 2.1 do plano diz "só se o motor precisar").
+- **T-RT6v3.1-2 — Paletas.** Os papéis de cor são os 17 de `ToonPalette.ColorNames` por mundo, lidos de `PaletteContent` (não
+  copiados) mais as duas cores de portão (iguais em todos os mundos). Os 3 níveis (base/sombra/destaque) valem a base
+  enquanto o papel é `legado` (hoje a rampa toon faz o sombreado); a entrega que migrar a classe dá valores aos níveis. A
+  régua v3 mede o ΔE CIE76 (≤ 3) da cor real contra o nível mais próximo, **antes do pós** (a paleta do asset, não a tela).
+- **T-RT6v3.1-3 — Validador em fatos e regras.** `StyleFacts` junta o que o jogo tem (materiais e shader real, malhas por
+  classe — assets gerados e objetos da cena —, cores de paleta, WAV lidos do arquivo, capacidade dos pools de efeito) e
+  `StyleGuideValidation.Run(guia, fatos)` aplica as regras, para que os testes alimentem fatos que o jogo não tem.
+  **Sempre ligadas:** todas as classes no guia; todo material/efeito/clipe com entrada e nenhuma entrada órfã; clipe na lista
+  de `audio-licenses.md`; material de perfil `legado` com o shader do perfil; malha ou objeto dentro do teto da classe
+  (enquanto `legado`; ao virar `v3` o teto antigo cede ao orçamento v3); malha de asset sem classe reprova; papéis de paleta
+  completos. **Só nas classes `v3`:** perfil não-legado que aceite o shader; faixa de triângulos, chamadas e aresta viva
+  (ângulo entre faces vizinhas, vértices soldados por posição) da classe; cor dentro do ΔE; pool de efeito dentro do limite;
+  pico do clipe no alvo. Ligado ao `ClaybreakValidation.Run`.
+- **T-RT6v3.1-4 — Tetos legados medidos.** Os tetos são o jogo de hoje com ~20% de folga (um retoque não reprova, uma
+  regressão sim); `StyleGuideTests` loga as medidas. O canhão é um pool: cada pedra e cada sombra de pouso é medida como um
+  objeto. As metas v3 são as do plano (4.1); aresta máxima 60° [P: ajustável na primeira classe que migrar]. Música pico
+  alvo -3 dBFS, efeitos -1 dBFS (o gerador), tolerância 1,5 dB.
+- **T-RT6v3.1-5 — Efeitos e sons como enums.** `StyleEffect` (Runtime) lista os seis efeitos de hoje; efeito novo = valor novo,
+  e o validador reprova até haver entrada. Sons: uma entrada por clipe de `ClaybreakAudio.ClipNames()`.
+- **T-RT6v3.1-6 — Checklist gerado.** `StyleChecklist` escreve `docs/art/v3/checklist.md` do guia (classes, paletas por mundo e
+  luz, perfis e materiais por classe, efeitos, sons); um teste reprova se o arquivo estiver velho. Regravado pelo build da
+  cena.
+- **T-RT6v3.1-7 — Câmeras fixas.** `StyleCaptureRig` (PlayMode, GPU): 6 enquadramentos — corrida com 300 (mundo 1), assalto
+  com 300 em voo (mundo 4, nível de gate), líder de perto (3 ângulos, Bibopzi com o shader do jogo), torre de perto (chefe do
+  mundo 4), telas (home nas 4 proporções) e ícone 512 (o ícone é um asset, não câmera). Determinismo: simulação a 30 quadros
+  fixos (`Time.captureFramerate`), esperas contadas em quadros e semente do gerador no início de cada enquadramento. Comando:
+  `-runTests -testPlatform PlayMode -testFilter Claybreak.Tests.StyleCaptureTests -styleCaptureDir <pasta>` (sem
+  `-nographics`).
+- **T-RT6v3.1-8 — Comparação de pixels.** `Tools/art/compare_captures.py <A> <B>`: pixel "diferente" = algum canal a mais de 8
+  (ruído de MSAA/GPU); passa com até 1% de pixels diferentes (duas rodadas iguais do rig deram 0,60% e 0,68% na corrida e no assalto, por causa da multidão e dos destroços; as estáticas dão 0). Capturas "antes" em `docs/art/v3/antes/`.

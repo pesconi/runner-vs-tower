@@ -199,3 +199,8 @@
   `OnBibopzi`. Esfera 6×3 não chega ao raio na frente (anéis a 60°): conta isso no marcador de frente (> 0,9 R).
   Capturas de perto com o shader do jogo: `-testFilter Claybreak.Tests.BibopziCaptureTests -bibopziCaptureDir <pasta>` com
   GPU; comparação com a referência: `python -X utf8 Tools/art/bibopzi_compare.py <pasta> <png da folha> docs/art/rt6t22`.
+- 2026-11-25 (RT-6v3.1): o guia de estilo é conteúdo em código (`StyleGuideContent`; classe vira v3 editando `Classes()`), regravado
+  pelo passo `scene` junto de `docs/art/v3/checklist.md`; mudou paleta/material/clipe/efeito do jogo, o validador pede entrada no
+  guia. Capturas fixas: `-testFilter Claybreak.Tests.StyleCaptureTests -styleCaptureDir <pasta>` (GPU) e
+  `python -X utf8 Tools/art/compare_captures.py <antes> <depois>` (tolerância 1%). O passo `capture` do rt4-check ainda regrava
+  `docs/art/rt4` e `rt6`: reverter com `git checkout --`; `docs/art/telas` sem diff = tela igual.
