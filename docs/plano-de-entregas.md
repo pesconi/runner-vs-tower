@@ -42,14 +42,33 @@ lançamento jun/2027.
 | RT-6t.20 Formas compradas na loja (save v5) — concluída em 2026-11-23 (5 formas com silhueta e quique próprios, aba SHAPES, botão SHAPE fora da home, save v5 com migração; loja 24.680 moedas em 58 min; capturas em `docs/art/rt6t20/`); gate 3× não se aplica (forma mais pesada continua 492 triângulos); **aceite do usuário em 2026-11-23** ("Aprovo, instala"); APK instalado no OPPO, save migrado v4 → v5 com a forma BALL mantida | — | — | antes da RT-9 |
 | RT-6t.21 Rename para Stampeep (D29) — concluída em 2026-11-23 (nome no ícone do celular, título da home e créditos; subtítulo "STORM THE TOWER" mantido; política de privacidade e licenças de áudio; validador recusa "Clay Siege"; ícone sem identidade antiga, não muda; busca oficial EUIPO e INPI sem marca igual, risco médio com "STAMPEDE" anotado; ficha de gasto D33 pendente, não bloqueia); gate 3× não se aplica; APK instalado no OPPO com o save mantido | — | — | antes da RT-9 |
 | RT-9a Material da loja e declarações (IA) — concluída em 2026-11-24 (ficha en-US, 6 capturas reais 9:16, ícone 512 também no celular, destaque 1024×500, declarações com evidência, política final + HTML, regras da Play pesquisadas, passo a passo da RT-9b; fichas D7, D9, D10 = A em 2026-11-24; `docs/store/`) | — | — | antes da RT-9b |
-| RT-6t.22 BIBOPZI ("Feijão") vira a forma padrão da multidão (decisão do usuário em 2026-11-25) — concluída em 2026-11-25 (receita de 490 triângulos com mola, engrenagem, barriga creme, mãos soltas e pés; BALL continua grátis na loja; save v6 com migração: quem estava na BALL padrão passa ao BIBOPZI, quem comprou outra forma a mantém; capturas em `docs/art/rt6t22/`); gate 3× não se aplica (a mais pesada continua 492); **aceite do usuário pendente** (capturas e APK no OPPO) | — | — | antes da RT-10 |
+| RT-6t.22 BIBOPZI ("Feijão") vira a forma padrão da multidão (decisão do usuário em 2026-11-25) — concluída em 2026-11-25 (receita de 490 triângulos com mola, engrenagem, barriga creme, mãos soltas e pés; BALL continua grátis na loja; save v6 com migração: quem estava na BALL padrão passa ao BIBOPZI, quem comprou outra forma a mantém; capturas em `docs/art/rt6t22/`); gate 3× não se aplica (a mais pesada continua 492); APK instalado no OPPO (save v5 → v6, Bibopzi vestido); **aceite do usuário em 2026-11-25** ("eu aprovo o personagem"; o visual low poly será trocado pela série RT-6v3) | — | — | antes da RT-10 |
 | RT-9b Console, AdMob e teste interno (usuário, com passagens curtas da IA) — **em curso**: D7, D9 e D10 = A (2026-11-24); passo 1 feito em 2026-11-24 (política completa publicada pela IA a pedido do usuário em https://jungledegree.com/stampeep/privacy/, site `92cf4d9`); passo 2 feito em 2026-11-24 (chave de upload criada pelo usuário fora do repositório, em `~/keys`); passo 4.5 feito em 2026-11-24 (IDs do AdMob em `_privado/runner-vs-tower/admob-ids.json`, fora do repositório, D35 = A, lidos pelo build do jogo na RT-9b.1); antes do passo 5: passo 4b (Firebase com o pacote novo, D34 = B, RT-9b.1); passos 3, 4, 4b e 9 feitos em 2026-11-24 (app no Play Console; app e unidade premiada no AdMob, IDs em `_privado` pela D35; app Android `com.jungledegree.stampeep` no Firebase com `google-services.json` novo em `_privado`; mensagem RGPD publicada). APK com Firebase gerado e instalado: a configuração entra no APK, mas o formulário de consentimento não carrega ("Account not approved yet" do AdMob, app novo em revisão), então a medição fica desligada, como manda o desenho; conferir de novo com `Tools/rt8b-firebase-check.sh` quando o AdMob aprovar o app. Passos 5, 6 e 10 feitos em 2026-11-25: AAB `Stampeep-0.1.0-1` (versão 1, 0.1.0) gerado pelo usuário em 2026-11-24 e conferido pelo maestro (assinado pela chave de upload, pacote `com.jungledegree.stampeep`, IDs reais do AdMob e config do Firebase dentro; IDs reais só no AAB, nunca no repositório); enviado ao teste interno, disponível para testadores; SHA-1 (públicas) da chave de assinatura do Google `08:3D:CF:7C:E6:DD:01:9D:3B:85:E0:21:7E:25:64:C6:AC:BF:76:C8`, da chave de upload `C9:2C:6C:A8:07:50:C3:F2:FC:2E:67:A3:89:2C:BE:FC:49:03:1F:40` e da chave de depuração deste PC (APKs de teste do maestro) `DD:B5:9B:B3:C6:DC:70:61:A0:9A:5D:AE:D9:FD:77:3A:9E:72:6E:82`, as três na restrição Android da chave de API do Firebase (projeto `clay-siege`). Nota: o kit guarda como reserva a unidade premiada do Wild Pack (`RewardedAdService`, usada só sem `AdUnitSettings`); o Stampeep usa a sua; tirar do kit numa entrega do studiokit. Próximo: passos 7 e 8 (declarações e ficha da loja) e 11 (conferir instalado pela Play) | 1 | 1,2 | início de mai |
 | RT-9b.1 Trocar o application ID para `com.jungledegree.stampeep` (D34 = B) — concluída em 2026-11-24 (fonte única + `Tools/app-id.sh`, validador recusa o ID antigo, build sem Firebase com aviso até o `google-services.json` novo, passo 4b do Firebase; junto, D35 = A: IDs do AdMob fora do repositório, passo 4.5 feito); instalado no OPPO em 2026-11-24 pelo maestro (app antigo desinstalado; abre como Stampeep, `com.jungledegree.stampeep`; Firebase desligado até o passo 4b; AdMob responde "Account not approved yet", esperado para app novo) | — | RT-9b | antes do passo 5 da RT-9b |
+| RT-6v3.1 Guia de estilo como dado e validador (sem mudar a tela) — **planejada** (2026-11-25; `direcao-visual-v3.md`) | 0,75 | 0,9 | dez/2026 |
+| RT-6v3.2 Imagem-alvo medida: 2–3 telas-conceito no Unity + ensaio no OPPO + ficha **D36** — **planejada** | 1 | 1,2 | dez/2026 |
+| K.v3a (studiokit) Shader irmão de vinil (`ToonLit` intacto; aceitação com match-3 e Wild Pack) — **planejada**; trava em D36 | 0,75 | 0,9 | dez/2026 |
+| RT-6v3.3 Vinil, plástico fosco, luz, céu e pós por mundo + gate 3× — **planejada** | 0,75 | 0,9 | dez/2026–jan/2027 |
+| K.v3b (studiokit) Layout de instância opcional (rosto, fase do quique, UV/UV2, atlas) — **planejada** | 0,75 | 0,9 | jan/2027 |
+| K.v3c (studiokit) Construtor liso e chanfrado (torno, chanfro, normais suaves, UV) — **planejada** | 0,5 | 0,6 | jan/2027 |
+| RT-6v3.4a Bibopzi detalhado (3–5 mil tri) e de multidão (800–1.200) por Blender (dados simples) + gate 3× — **planejada** | 1 | 1,2 | jan/2027 |
+| RT-6v3.4b Rosto (8 expressões) e animação do Bibopzi; aceite agrupado 1 — **planejada** | 1 | 1,2 | fev/2027 |
+| RT-6v3.4c As outras 5 formas da loja no padrão — **planejada** | 0,75 | 0,9 | fev/2027 |
+| RT-6v3.5 Inimigos, torres e chefes (tema pela D36) + gate 3× — **planejada** | 1,5 | 1,8 | fev/2027 |
+| RT-6v3.6 Portões e obstáculos + gate 3× — **planejada** | 0,75 | 0,9 | fev–mar/2027 |
+| RT-6v3.7 Piso, cenário e céu + gate 3×; aceite agrupado 2 — **planejada** | 1 | 1,2 | mar/2027 |
+| RT-6v3.8 Efeitos visuais + gate 3× — **planejada** | 0,75 | 0,9 | mar/2027 |
+| RT-6v3.9 Som e música (síntese/CC0; IA só com D37); escuta do usuário — **planejada**; em paralelo | 1 | 1,2 | dez/2026–mar/2027 (paralelo) |
+| RT-6v3.10 Telas e ícone; aceite agrupado 3 — **planejada** | 0,75 | 0,9 | mar/2027 |
+| RT-6v3.11 Gate final e capturas da loja — **planejada** | 0,75 | 0,9 | início de abr/2027 |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
 | RT-11 Lançamento | 2 | 2,4 | meados–fim de jun |
 | RT-12 Operação | contínuo | — | a partir de jul |
 
 Soma até o lançamento (RT-2…RT-11): 17,5 semanas base, ~21 com a margem.
+Série RT-6v3 + K.v3 (2026-11-25): 13,75 semanas base, ~16,5 com a margem; caminho crítico ~15,3 (o som corre em
+paralelo); com a espera da D36 e as festas, fim por volta de início de abr/2027. Lançamento de jun/2027 mantido **se** a
+série terminar até meados de abr (`direcao-visual-v3.md`, seção 8).
 Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 
 ---
@@ -955,9 +974,266 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   `bibopzi-corrida-300.png` (câmera da corrida com 300, cor do mundo 1 e verde-água, dois momentos),
   `bibopzi-tamanho-de-jogo.png` (recorte da multidão em tamanho real e ampliado 3×), `formas-corrida.png` e
   `formas-assalto.png` (as 6 formas lado a lado), `loja-formas-4-proporcoes.png` (aba SHAPES com 6 formas).
-- **Pendente do usuário:** aprovar o visual pelas capturas; depois instalar o APK no OPPO
+- **Aceite do usuário em 2026-11-25** ("eu aprovo o personagem"); APK instalado no OPPO pelo maestro no mesmo dia
+  (save v5 → v6, Bibopzi vestido, `docs/art/rt6t22/oppo-home.png`). Pendência original, já resolvida: aprovar pelas capturas; instalar o APK no OPPO
   (`adb install -r C:\temp\bib\Claybreak.apk`, mantém o save: quem estava na BALL passa ao BIBOPZI). Ícone, capturas da
   loja e ficha da Play com o Bibopzi ficam para quando você quiser (nada foi enviado ao Play Console).
+
+## RT-6v3 — Direção visual e sonora v3, "acabamento premium" (planejada em 2026-11-25)
+
+- **Origem:** pedido do usuário em 2026-11-25 ("não quero esse visual low poly, jogos com mecanicas já feitas exigem um
+  nível de polimento grafico melhor para cativar o usuário"; "o padrão visual deve cobrir todos os outros pontos, como
+  inimigos, portais, piso, background, efeitos sonoros"; "Sim, escreve o plano"). Direção, guia, papéis, ciclo, riscos e
+  calendário: [`direcao-visual-v3.md`](direcao-visual-v3.md). Fichas: **D36** (imagem-alvo; rascunho, sai no fim da
+  RT-6v3.2) e **D37** (imagem/música por IA; recomendação C agora) em `riscos-e-decisoes.md`.
+- **Regras da série:** uma entrega por sessão; cada entrega que muda o desenho passa pelo gate 3× no OPPO no caso mais
+  pesado, uma vez, em janela combinada com o match-3 (mesmo aparelho); mudança no motor é **entrega K própria** no
+  `studiokit` (K.v3a–c), feita antes da entrega do jogo que a usa, com a aceitação do studiokit **incluindo o match-3 e o
+  Wild Pack**, e com o `ToonLit` e o `ToonInstanceData` atuais intactos (shader irmão, layout novo opcional); uma sessão
+  escrevendo no `studiokit` por vez; nada de Instantiate/Destroy em jogo (2.2.1); crítica por agente com visão numa
+  sessão diferente da que implementou (ciclo da seção 6 de `direcao-visual-v3.md`); skills `unity:craft-game-floors` e
+  `unity:urp-postprocessing` quando couberem, com as regras do projeto prevalecendo. Commit `Stage RT.6v3.N: ...`.
+- **Aceites do usuário agrupados e não bloqueantes:** (1) depois da 6v3.4b (luz e personagem); (2) depois da 6v3.7
+  (mundo); (3) depois da 6v3.10 (efeitos, telas, ícone, som). Só a D36 bloqueia (trava 8 das 13 entregas do jogo).
+- **Ordem:** 6v3.1 → 6v3.2 (D36) → K.v3a → 6v3.3 → K.v3b → K.v3c → 6v3.4a → 6v3.4b → 6v3.4c → 6v3.5 → 6v3.6 → 6v3.7 →
+  6v3.8 → 6v3.10 → 6v3.11, **em série** (a cena é regravada inteira e `StyleGuide`, `ArtPalette` e o construtor da cena
+  são compartilhados). Em paralelo, só o som (6v3.9, depois da 6v3.1) e a geração de malhas no Blender.
+- **Modelo por entrega:** Opus nas K.v3a–c, 6v3.2, 6v3.3, 6v3.4a e 6v3.4b; Sonnet nas demais (Opus se a área travar);
+  crítica e fichas por Fable ou Opus.
+
+## RT-6v3.1 — Guia de estilo como dado e validador (Sonnet)
+
+- **Escopo:** `StyleGuide` (asset do jogo) com as seções da 2.1 de `direcao-visual-v3.md`, preenchido com os valores
+  **atuais** do jogo e todas as classes marcadas `legado` (nada muda na tela); `StyleGuideValidation` ligado ao validador do
+  jogo, com as regras sempre ligadas e as regras `v3` desligadas até cada classe migrar; `StyleCaptureRig` com as câmeras
+  fixas da seção 6 e as capturas "antes"; checklist gerado do guia (`docs/art/v3/checklist.md`). Tipos genéricos no kit só
+  se o motor precisar (então vira entrega K curta, antes).
+- **Depende de:** aprovação deste plano.
+- **Aceite:** validação padrão verde; o validador passa no jogo de hoje e **reprova** casos de teste (material sem entrada,
+  malha acima do orçamento, efeito e clipe sem entrada; e, com a classe marcada `v3`, cor e shader fora do guia);
+  capturas "antes" em `docs/art/v3/antes/`; comparação de pixels com as capturas de hoje dentro da tolerância. Gate 3× não
+  se aplica.
+- **Exige o usuário:** nada (técnica).
+- **Prompt da sessão:** "Entrega RT-6v3.1 do Runner vs Tower (Stampeep): guia de estilo como dado e validador. Leia
+  `docs/direcao-visual-v3.md` (seções 2 e 6) e `.claude/sessao.md`. Crie o `StyleGuide` com os valores atuais do jogo e
+  todas as classes `legado` (o jogo não pode mudar na tela), o `StyleGuideValidation` ligado ao `ClaybreakValidation`
+  (regras v3 ligadas só nas classes migradas), o `StyleCaptureRig` com as 6 câmeras fixas por área e o checklist gerado do
+  guia. Não mexa no `studiokit` (se precisar, pare e proponha uma entrega K). Rode o `rt4-check` e as capturas 'antes'.
+  Registre decisões técnicas em `docs/decisoes.md` e o status aqui."
+
+## RT-6v3.2 — Imagem-alvo medida: 2 a 3 telas-conceito no Unity + ensaio no OPPO (Opus)
+
+- **Escopo:** 2–3 direções de "brinquedo de vinil premium" (ex.: A vinil brilhante e saturado; B pastel fosco com
+  brilho só no personagem; C contraste alto com luz de fim de tarde [P]), cada uma nas **3 telas fixas** (corrida com 300,
+  assalto com a torre, home com o Bibopzi suavizado), feitas **no Unity** numa cena de laboratório com **shader de
+  laboratório local ao jogo** (sem tocar o kit). Para torres e chefes, duas versões: tema por mundo arredondado ×
+  "fábrica de brinquedo" (D17/D28). 2–3 esboços de ícone (D25). Uma referência do gênero lado a lado (2–3 jogos do topo,
+  por link, sem copiar arte). **Ensaio no OPPO** de cada opção com `Tools/rt6t-toonlab-gate.sh` (300 × 1.200 triângulos,
+  borda e especular, pós ligado e desligado, Vulkan e GLES em blocos), registrando GPU p95 contra o teto de 11 ms.
+  Imagens por IA só se a D37 aprovar, como inspiração. Completa a ficha **D36** com as imagens, os números, a
+  recomendação e a segunda opinião.
+- **Depende de:** 6v3.1 (câmeras fixas e checklist).
+- **Aceite:** telas em `docs/art/v3/alvo/` com o enquadramento das capturas "antes"; números do ensaio no OPPO por opção;
+  crítica do revisor (fable) contra o checklist; ficha D36 completa e enviada.
+- **Exige o usuário:** **D36** (imagem-alvo + tema das torres + ícone/público); OPPO conectado para o ensaio.
+- **Prompt da sessão:** "Entrega RT-6v3.2 do Stampeep: imagem-alvo medida. Leia `docs/direcao-visual-v3.md` (seções 2, 4
+  e 7), as decisões D17, D25 e D28 e o rascunho da D36 em `docs/riscos-e-decisoes.md`. Faça 2 a 3 direções de 'brinquedo
+  de vinil premium' nas 3 telas fixas, no Unity, com shader de laboratório local ao jogo (não toque o `studiokit`), duas
+  versões de torre/chefe (tema por mundo × fábrica de brinquedo), 2–3 esboços de ícone e uma referência do gênero por link.
+  Ensaie cada opção no OPPO com `Tools/rt6t-toonlab-gate.sh` (300 × 1.200 tri, pós ligado/desligado, duas rotas; combine a
+  janela do aparelho). Imagens por IA só se a D37 estiver aprovada. Passe pelo revisor (fable), complete a D36 com
+  imagens, números, recomendação e segunda opinião, envie e pare: a escolha é do usuário."
+
+## K.v3a (studiokit) — Shader irmão de vinil (Opus)
+
+- **Escopo:** no repositório `studiokit`, um shader **irmão** do `ToonLit` (ex.: `StudioKit/ToonVinyl` [P]) com rampa suave,
+  borda, especular suave, sombra quente e os perfis do guia (vinil, fosco, portão, inimigo, UI), nas duas rotas de
+  instancing (buffer e blocos de 256), lendo o **mesmo** `ToonInstanceData` de hoje; o `ToonLit` fica intacto. Testes do kit;
+  `TestProject` com captura.
+- **Depende de:** D36 (os parâmetros da opção escolhida); nenhuma outra sessão escrevendo no `studiokit`.
+- **Aceite:** aceitação do studiokit (testes, isolamento, validadores e save do Wild Pack, **match-3 sem mudança na tela**);
+  versão nova do kit com tag.
+- **Exige o usuário:** nada.
+- **Prompt da sessão:** "Entrega K.v3a do studiokit: shader irmão de vinil para o Stampeep (o kit não nomeia o jogo). Leia
+  `RunnerVsTower/docs/direcao-visual-v3.md` (seções 1, 2.1, 7) e a resposta da D36. Escreva um shader novo ao lado do
+  `ToonLit`, sem mudar o `ToonLit` nem o `ToonInstanceData`, nas duas rotas. Rode a aceitação do studiokit incluindo o
+  match-3 e o Wild Pack. Confira antes que nenhuma outra sessão está escrevendo no `studiokit`."
+
+## RT-6v3.3 — Vinil, plástico fosco, luz, céu e pós por mundo (Opus)
+
+- **Escopo:** no jogo, os materiais passam ao shader da K.v3a pelos perfis do guia; luz, céu (degradê + camada de nuvens) e
+  pós barato (tonemapping neutro, cor, vinheta; bloom só se passar) por mundo, vindos do guia, com a skill
+  `unity:urp-postprocessing`; paleta medida antes do pós; conferência da regra "skins ΔE ≥ 20" e da leitura dos números dos
+  portões depois do pós. Ainda com as malhas de hoje. Classes de luz e material marcadas `v3`.
+- **Depende de:** K.v3a.
+- **Aceite:** capturas das 6 câmeras nos 4 mundos contra a imagem-alvo (crítica de outra sessão); validador do guia verde;
+  **gate 3× no OPPO** no caso mais pesado (assalto do mundo 4, 300 em voo, chefe), Vulkan e GLES em blocos.
+- **Exige o usuário:** nada agora (entra no aceite agrupado 1).
+- **Prompt da sessão:** "Entrega RT-6v3.3 do Stampeep: vinil, luz e pós. Leia `docs/direcao-visual-v3.md`, a resposta da
+  D36 em `docs/decisoes.md` e as telas em `docs/art/v3/alvo/`. Use o shader da K.v3a pelos perfis do `StyleGuide`; luz, céu e
+  pós por mundo do guia (skills unity:urp-postprocessing e unity:craft-game-floors; as regras do projeto prevalecem). Ciclo:
+  capturas fixas → crítica contra o alvo → corrigir (até 3 voltas). Rode o `rt4-check` e o gate 3× no OPPO nas duas rotas.
+  Registre decisões e status."
+
+## K.v3b (studiokit) — Layout de instância novo: rosto, fase do quique, UV (Opus)
+
+- **Escopo:** no `studiokit`, um layout de instância **novo e opcional** (struct maior na rota de buffer; propriedade
+  instanciada nova na rota de blocos de 256) com índice de expressão e fase/velocidade do quique escritos pelo job da CPU;
+  suporte a UV, UV2 e amostragem de um atlas no shader irmão; atraso analítico de fase para vértices marcados (UV2). O layout
+  atual (64 bytes) continua sendo o padrão.
+- **Depende de:** 6v3.3.
+- **Aceite:** aceitação do studiokit (match-3 e Wild Pack incluídos); medição de custo nas duas rotas no `TestProject`.
+- **Exige o usuário:** nada.
+- **Prompt da sessão:** "Entrega K.v3b do studiokit: layout de instância opcional com expressão e fase do quique, UV/UV2 e
+  atlas no shader irmão, atraso analítico de fase por vértice marcado. Leia `RunnerVsTower/docs/direcao-visual-v3.md`
+  (seções 3.2 e 3.3). Não mude o layout atual nem o `ToonLit`. Aceitação do studiokit com match-3 e Wild Pack."
+
+## K.v3c (studiokit) — Construtor de malhas liso e chanfrado (Sonnet)
+
+- **Escopo:** `LowPolyMeshBuilder` ganha perfil/torno, chanfro, normais suaves por grupo e UV simples, sem mudar a saída
+  das primitivas atuais (match-3 e as formas de hoje dão os mesmos bytes).
+- **Depende de:** K.v3b (UV no shader); pode ser feita junto da K.v3b na mesma sessão se couber.
+- **Aceite:** testes do construtor (contagem, normais para fora, UV no intervalo); saída das primitivas antigas idêntica;
+  aceitação do studiokit.
+- **Exige o usuário:** nada.
+- **Prompt da sessão:** "Entrega K.v3c do studiokit: torno/perfil, chanfro, normais suaves e UV no `LowPolyMeshBuilder`,
+  sem mudar a saída das primitivas atuais. Leia `RunnerVsTower/docs/direcao-visual-v3.md` (seção 5). Aceitação do studiokit."
+
+## RT-6v3.4a — Bibopzi detalhado e de multidão: modelos e gate (Opus)
+
+- **Escopo:** scripts do Blender 5.3 sem interface em `Tools/blender/` (versão fixa) que gravam **dados simples**
+  versionados (posições, normais, UV, UV2, cor linear, índices; nada de FBX); gerador de Editor que grava os `.asset`; os
+  dois níveis (3–5 mil e 800–1.200 tri) com os marcos e os pesos da mola e das mãos em UV2; `BibopziHasItsLandmarks` nos
+  três níveis; orçamento por classe no validador. **Gate 3× no OPPO** com 300 Bibopzis de multidão no assalto do mundo 4;
+  se falhar, a reserva na ordem (LOD por distância → modelo de ~500 suavizado) e ficha se nada passar.
+- **Depende de:** K.v3b, K.v3c.
+- **Aceite:** testes e validador; a validação não depende do Blender instalado; capturas de perto e com 300 contra o alvo;
+  gate aprovado.
+- **Exige o usuário:** OPPO para o gate.
+- **Prompt da sessão:** "Entrega RT-6v3.4a do Stampeep: Bibopzi detalhado e de multidão. Leia `docs/direcao-visual-v3.md`
+  (seção 3.1), a folha do personagem no repositório `personagem` (D3 'Feijão') e as capturas da RT-6t.22. Escreva os
+  scripts do Blender 5.3 (`blender -b -P`) que gravam dados simples versionados e o gerador de Editor que grava os `.asset`;
+  marcos nos três níveis; gate 3× com 300 no assalto do mundo 4, reserva na ordem se falhar. Registre decisões e status."
+
+## RT-6v3.4b — Rosto e animação do Bibopzi (Opus)
+
+- **Escopo:** atlas de 8 expressões (células com margem, mipmaps, máscara 0 no rosto), tabela evento → expressão no guia,
+  amassar/esticar no pouso, atraso da mola e mãos pelo layout da K.v3b; o detalhado com o mesmo rosto nas telas.
+- **Depende de:** 6v3.4a.
+- **Aceite:** testes EditMode das fórmulas e da tabela; capturas em sequência (susto, feliz, vitória); gate 3× se o custo
+  mudar; **aceite agrupado 1** pedido ao usuário (luz e personagem: capturas + APK no OPPO), sem parar a série.
+- **Exige o usuário:** aceite agrupado 1 (não bloqueia a 6v3.4c).
+- **Prompt da sessão:** "Entrega RT-6v3.4b do Stampeep: rosto e animação. Leia `docs/direcao-visual-v3.md` (seções 3.2 e
+  3.3). Atlas de expressões, tabela evento → expressão no guia, amassar/esticar, atraso da mola e mãos pelo layout da K.v3b.
+  Capturas em sequência; gate se o custo mudar. Monte o pacote do aceite agrupado 1 (capturas e APK) e siga sem esperar."
+
+## RT-6v3.4c — As outras formas da loja no padrão (Sonnet)
+
+- **Escopo:** as 5 outras formas (D31/D32) em versão lisa de multidão (800–1.200 tri, mesma silhueta, preços e quiques
+  intocados) pelo construtor da K.v3c; quem veste outra forma usa o nível de multidão como líder e nas telas, olhos por
+  geometria; figuras da loja refeitas; `EveryPairOfShapesHasADifferentOutline` continua passando.
+- **Depende de:** 6v3.4a (pode seguir sem o aceite agrupado 1).
+- **Aceite:** testes de forma e silhueta; capturas das 6 formas na corrida e no assalto; gate se alguma passar a mais pesada.
+- **Exige o usuário:** nada (entra no aceite agrupado 2).
+- **Prompt da sessão:** "Entrega RT-6v3.4c do Stampeep: as outras formas da loja no padrão v3. Leia
+  `docs/direcao-visual-v3.md` (seção 3.1) e as decisões D31/D32. Refaça as 5 formas lisas com o construtor da K.v3c, mesma
+  silhueta e preços; figuras da loja; testes de silhueta; capturas. Registre decisões e status."
+
+## RT-6v3.5 — Inimigos, torres e chefes (Sonnet)
+
+- **Escopo:** defesas (canhão, muro, escudo, varredor), torres e os 4 chefes arredondados e chanfrados no tema que a D36
+  escolheu (tema por mundo ou fábrica de brinquedo), sem rostos (D17/D28); leitura de ameaça por cor de borda e luz; quebra
+  em peças pré-alocadas ao perder vida. Modelos por Blender (script, dados simples) ou receitas do kit, dentro do
+  orçamento por classe.
+- **Depende de:** 6v3.4a.
+- **Aceite:** capturas fixas do assalto nos 4 mundos contra o alvo; validador do guia (classes marcadas `v3`); gate 3× no
+  assalto mais pesado (mundo 4, chefe, 300 em voo).
+- **Exige o usuário:** nada agora (aceite agrupado 2).
+- **Prompt da sessão:** "Entrega RT-6v3.5 do Stampeep: inimigos, torres e chefes. Leia `docs/direcao-visual-v3.md`
+  (seções 2 e 4), a resposta da D36 (tema) e as decisões D17 e D28. Remodele defesas, torres e chefes sem rostos, dentro do
+  orçamento, com quebra em peças pré-alocadas (skill unity:craft-game-floors; regras do projeto prevalecem). Ciclo de
+  capturas e crítica; `rt4-check` e gate 3× no assalto do mundo 4. Registre decisões e status."
+
+## RT-6v3.6 — Portões e obstáculos (Sonnet)
+
+- **Escopo:** portões (arco de vinil chanfrado, painel translúcido com borda acesa, número com relevo) e os 5 obstáculos
+  (RT-6t.18) no padrão; cores bom/ruim do guia. Sem mudar regra, tempo nem janela de reação.
+- **Depende de:** 6v3.5 (em série: cena e guia compartilhados).
+- **Aceite:** capturas fixas da corrida com portões e cada obstáculo; `ReactionWindow` e `GateMath` sem mudança; leitura dos
+  números conferida depois do pós; gate 3× na corrida mais pesada (mundo 4, 300, 3 obstáculos).
+- **Exige o usuário:** nada agora (aceite agrupado 2).
+- **Prompt da sessão:** "Entrega RT-6v3.6 do Stampeep: portões e obstáculos. Leia `docs/direcao-visual-v3.md` (seção 4).
+  Remodele portões e os 5 obstáculos no padrão do guia, sem mudar regras nem tempos (skill unity:craft-game-floors; regras do
+  projeto prevalecem). Ciclo de capturas e crítica; `rt4-check` e gate 3× na corrida do mundo 4. Registre decisões e status."
+
+## RT-6v3.7 — Piso, cenário e céu (Sonnet)
+
+- **Escopo:** pista com faixas chanfradas e juntas de peças, trilhos arredondados; cenário instanciado por mundo (nada que
+  pareça doce/infantil demais, D25); céu com camada de nuvens recortadas; tudo do guia, com a skill
+  `unity:craft-game-floors`.
+- **Depende de:** 6v3.6.
+- **Aceite:** capturas fixas dos 4 mundos; neblina mínima (`PropWrapGuard`) respeitada; gate 3× na corrida mais pesada;
+  **aceite agrupado 2** pedido ao usuário (mundo: inimigos, portões, obstáculos, piso, cenário, formas), sem parar a série.
+- **Exige o usuário:** aceite agrupado 2 (não bloqueia a 6v3.8).
+- **Prompt da sessão:** "Entrega RT-6v3.7 do Stampeep: piso, cenário e céu. Leia `docs/direcao-visual-v3.md` (seções 2 e 4)
+  e a D25; use a skill unity:craft-game-floors (regras do projeto prevalecem). Refaça pista, trilhos, cenário instanciado e
+  céu nos 4 mundos a partir do guia. Ciclo de capturas e crítica; `rt4-check` e gate 3× na corrida do mundo 4. Monte o pacote
+  do aceite agrupado 2 e siga sem esperar."
+
+## RT-6v3.8 — Efeitos visuais (Sonnet)
+
+- **Escopo:** a tabela de efeitos do guia (confete de engrenagem, estalo de mola, poeira em anel, faísca de parafuso,
+  quebra da torre) com pools pré-alocados e limites por efeito e por tela.
+- **Depende de:** 6v3.7.
+- **Aceite:** capturas em sequência (3 instantes por efeito); validador (efeito sem entrada ou acima do limite reprova);
+  nenhum Instantiate em jogo (teste); gate 3× no assalto mais pesado com os efeitos.
+- **Exige o usuário:** nada agora (aceite agrupado 3; efeito é movimento: jogar no OPPO).
+- **Prompt da sessão:** "Entrega RT-6v3.8 do Stampeep: efeitos visuais. Leia `docs/direcao-visual-v3.md` (seção 2.1).
+  Implemente a tabela de efeitos com pools, cores da paleta e limites, sem Instantiate em jogo (skill
+  unity:craft-game-floors; regras do projeto prevalecem). Capturas em sequência e crítica; `rt4-check` e gate 3× no assalto
+  do mundo 4. Registre decisões e status."
+
+## RT-6v3.9 — Som e música (Sonnet; em paralelo)
+
+- **Escopo:** efeitos sonoros "brinquedo de corda" (catraca, mola, sino curto) por síntese (evolução de `Tools/audio/`) ou
+  CC0; música por mundo com o mesmo motivo de 4 notas; gerador de música do vidIQ só se a D37 aprovar, com os termos lidos
+  e a licença registrada; tabela evento → som no guia; métricas automáticas (volume aproximado, pico, duração) no
+  validador; tudo em `audio-licenses.md`. Toca só em `Tools/audio/`, `Content/Audio/` e na seção de som do guia.
+- **Depende de:** 6v3.1. Corre em paralelo com as outras (arquivos próprios; não usa o OPPO para gate).
+- **Aceite:** validador (clipe fora da lista ou fora do alvo reprova); página de escuta antes/depois com as métricas;
+  **escuta do usuário** (o modelo não ouve), no aceite agrupado 3.
+- **Exige o usuário:** escutar e aprovar; D37 se quiser música gerada.
+- **Prompt da sessão:** "Entrega RT-6v3.9 do Stampeep: som e música. Leia `docs/direcao-visual-v3.md` (seções 2.1 e 5),
+  `docs/audio-licenses.md` e a D37. Faça os efeitos 'brinquedo de corda' por síntese (ou CC0) e a música por mundo com o
+  motivo comum (skill unity:craft-game-floors para o mapa de sons; regras do projeto prevalecem); métricas de volume e pico
+  no validador; registre cada arquivo. Toque só nos arquivos de som. Prepare a escuta antes/depois e pare para o aceite: você
+  não ouve o resultado."
+
+## RT-6v3.10 — Telas e ícone (Sonnet)
+
+- **Escopo:** telas no padrão (botões de vinil com relevo e sombra, painéis, Bibopzi detalhado com expressões na home, na
+  loja e no resultado); ícone do celular e ícone 512 da loja conforme a resposta da D36 (rosto em destaque ou não, D25).
+- **Depende de:** 6v3.8 (e 6v3.4b).
+- **Aceite:** `ScreenFitTests` nas 4 proporções; capturas das telas e dos ícones; **aceite agrupado 3** (efeitos, telas,
+  ícone, som) pedido ao usuário.
+- **Exige o usuário:** aceite agrupado 3.
+- **Prompt da sessão:** "Entrega RT-6v3.10 do Stampeep: telas e ícone. Leia `docs/direcao-visual-v3.md` (seção 4) e as
+  respostas da D25 e da D36 (ícone). Refaça as telas no padrão do guia com o Bibopzi detalhado e as expressões (skill
+  unity:craft-game-floors; regras do projeto prevalecem) e o ícone escolhido. `ScreenFitTests` nas 4 proporções e
+  `rt4-check`. Monte o pacote do aceite agrupado 3. Não mexa na ficha da Play nem envie nada ao Play Console."
+
+## RT-6v3.11 — Gate final e capturas da loja (Sonnet)
+
+- **Escopo:** gate 3× final no OPPO no jogo inteiro (corrida e assalto do mundo 4, as duas rotas); capturas da loja refeitas
+  (`StoreCaptureTests` + `Tools/store/make_store_art.py`), destaque 1024×500 e vídeo se houver; antes/depois de todas as
+  câmeras fixas; `docs/store/` atualizado para o usuário subir; retrabalho pendente dos aceites agrupados.
+- **Depende de:** 6v3.10 e 6v3.9; respostas dos 3 aceites agrupados.
+- **Aceite:** gate 3× aprovado; material da loja novo em `docs/store/`; aceite final do usuário jogando no OPPO.
+- **Exige o usuário:** jogar no OPPO e aceitar; subir capturas e ícone no Play Console (a sessão nunca envia).
+- **Prompt da sessão:** "Entrega RT-6v3.11 do Stampeep: gate final e capturas da loja. Leia `docs/direcao-visual-v3.md` e
+  `docs/store/README.md`. Aplique o retrabalho pedido nos aceites agrupados, rode o gate 3× no OPPO no caso mais pesado (duas
+  rotas), refaça as capturas e o destaque da loja e monte o antes/depois de todas as câmeras fixas. Nada vai para o Play
+  Console: deixe o material pronto para o usuário."
 
 ## RT-10 — Soft launch e ajuste
 
@@ -1006,6 +1282,12 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 ---
 
 ## Folga e riscos de prazo
+
+- **Série RT-6v3 + K.v3 (2026-11-25) [I]:** ~16,5 semanas com a margem (caminho crítico ~15,3) + ~1 de espera da D36 + ~1
+  de festas, a partir de 1/dez/2026 → fim por volta de início de abr/2027; folga de ~2 semanas até meados de abr e ~6 até
+  o soft launch (meados de mai). Riscos próprios: custo por pixel no OPPO (ensaiado antes da D36), kit compartilhado com o
+  match-3 (entregas K com a aceitação dele), D36 voltando com "outra rodada". Acima de ~2 semanas de atraso, o soft launch
+  desliza para jun e o lançamento para jul/2027; antes disso, cortar escopo (rosto com 4 expressões, música por síntese).
 
 - **Datas absolutas [I]:** contando a partir de 1/fev/2027 com a margem de
   20% (acumulado em semanas): RT-2 até 1,2 (início/meados de fev); RT-3 até 1,8;

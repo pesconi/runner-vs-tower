@@ -2357,3 +2357,12 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
   o shader toon do jogo e a corrida com 300; comparação com o desenho de referência montada por
   `Tools/art/bibopzi_compare.py`.
 - **T-RT6t22-5 — Fora desta entrega (pendência do usuário):** ícone, capturas da loja e ficha da Play não mudam aqui.
+
+## 2026-11-25 — Aceite da RT-6t.22 (Bibopzi como forma padrão) — usuário
+
+- Depois de ver as capturas (`docs/art/rt6t22/`) e o jogo instalado no OPPO (save migrado v5 → v6, Bibopzi vestido),
+  o usuário escreveu (repassado pela sessão do personagem): **"eu aprovo o personagem, mas não quero esse visual low
+  poly, jogos com mecanicas já feitas exigem um nível de polimento grafico melhor para cativar o usuário"**.
+- Leitura: a RT-6t.22 está aceita (o Bibopzi fica como forma padrão, com o save v6). O visual low poly do jogo inteiro
+  (multidão, inimigos, portões, piso, cenário, efeitos e som) passa a ser trocado por uma direção nova, "v3, acabamento
+  premium": plano em `direcao-visual-v3.md` e série RT-6v3.x no plano de entregas ("Sim, escreve o plano", 2026-11-25).

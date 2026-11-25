@@ -191,6 +191,8 @@ uma antes da entrega indicada.
 | **D31** | **Forma da multidão como compra na loja** (leitura do pedido do usuário de 2026-11-23; substitui o item 1 da D26) | Loja, save v5, tela inicial | RT-6t.20 (as 6t.16–6t.19 seguem sem ela) | A: formas compradas na loja (bolinha grátis, pintinho e 3 novas pagas; quem usa o pintinho fica com ele), silhuetas distintas na câmera da corrida como aceite — ficha em `plano-telas-obstaculos-loja.md` seção 5 — **decidido em 2026-11-23: A** |
 | **D32** | **Preços das formas** | Economia da loja (D19), tempo para comprar tudo | RT-6t.20 (sem resposta: A provisório) | A: 300 · 1.000 · 1.600 · 2.400 (loja ~55–56 min) — ficha em `plano-telas-obstaculos-loja.md` seção 5 — **decidido em 2026-11-23: A** |
 | **D33** | **Proteger o nome "Stampeep": marca e domínio** (gasto; não bloqueia) | Marca e domínio do nome escolhido na D29 | antes da RT-9; **vale do SME Fund 2026 só até 04/12/2026** | C agora + pedir o vale já; marca PT (9 e 41) e UE só com opinião de agente — ficha abaixo, escrita na RT-6t.21 (2026-11-23) — **pendente** |
+| **D36** | **Imagem-alvo da direção visual v3** (2–3 telas-conceito no Unity, medidas no OPPO), com o tema das torres (D17/D28) e o ícone (D25) | Sem alvo, a crítica das capturas não tem referência | RT-6v3.3 (trava 8 das 13 entregas do jogo na série) | Escolher com as imagens e os números da RT-6v3.2 — ficha abaixo, **rascunho** (enviada no fim da RT-6v3.2) — **pendente** |
+| **D37** | **Imagem e música geradas por IA (vidIQ)**: gasto de créditos e licença | Regra de Custo; licença do que entra no build | RT-6v3.2 (conceito) e RT-6v3.9 (música); não trava nada (sem resposta: C) | C agora (nada por IA); A depois de 15/12 com os termos lidos; música na RT-6v3.9 — ficha abaixo (2026-11-25) — **pendente** |
 
 ### Ficha D33 — Proteger o nome "Stampeep" (gasto pendente, escrita na RT-6t.21; não bloqueia nenhuma entrega)
 
@@ -276,6 +278,116 @@ https://inpi.justica.gov.pt/en-gb/SME-Fund/SME-Fund-2026-EU-Fund-for-the-Protect
 https://ipoi.gov.ie/en/news-events/news-categories-/announcements/sme-fund-2026-continuing-support-for-smes-now-available.html
 · .com https://investor.verisign.com/news-releases/news-release-details/verisign-reports-first-quarter-2026-results ·
 RDAP https://rdap.verisign.com/com/v1/domain/stampeep.com (404 = livre). Busca completa em `decisoes.md` (2026-11-23).
+
+### Fichas D36 e D37 (escritas no planejamento da série RT-6v3, 2026-11-25)
+
+**D36 é rascunho:** só é enviada ao usuário no fim da RT-6v3.2, com as imagens e os números medidos no OPPO. A D37 pode
+ser respondida já (não trava nada).
+
+```text
+DECISÃO D36 — Qual imagem-alvo o visual novo do Stampeep deve perseguir? (RASCUNHO)
+
+O que você está aprovando: a direção visual "v3, acabamento premium" persegue a opção
+<A, B ou C> das telas-conceito da RT-6v3.2 (ou uma mistura dita por você, ex.: "luz da A,
+cores da B"), com torres e chefes no tema <por mundo / fábrica de brinquedo> e o ícone
+<1, 2 ou 3>. Essas telas viram a imagem-alvo: toda área nova é comparada com elas antes de
+chegar a você.
+
+Por que agora: trava 8 das 13 entregas da série no jogo (da RT-6v3.3 em diante; o som segue
+sem ela). Sem alvo, a IA não tem contra o que criticar as capturas.
+
+Contexto que você precisa saber:
+- Fato: você pediu (2026-11-25) "não quero esse visual low poly"; aprovou o Bibopzi; quer o
+  padrão em tudo (inimigos, portais, piso, fundo, sons).
+- Fato (preencher na RT-6v3.2): as telas foram feitas no próprio Unity, com o Bibopzi
+  suavizado, e cada opção foi ensaiada no OPPO: <GPU p95 de cada opção, com e sem pós,
+  Vulkan e GLES; teto do gate: 11 ms>.
+- Inferência nossa: até o ensaio, "dá para fazer no jogo" é inferência; a opção mais bonita
+  pode ser a mais cara no celular.
+- Tema das torres e chefes: a D28 (2026-11-22) manteve os temas por mundo (pedra, pântano,
+  fundição, gelo). A v3 pode mantê-los arredondados ou trocar por uma "fábrica de brinquedo"
+  feita das peças do Bibopzi (porca, engrenagem, mola, parafuso). As duas versões vêm nas telas.
+- Público (D25, 2026-11-22): o jogo é declarado 13+ e "não destinado a crianças", e o ícone
+  não teria rosto em destaque. Um robô bebê com expressões, num mundo de brinquedo, aumenta a
+  leitura infantil que a D25 quis evitar, e o Bibopzi tem rosto. Por isso os 2–3 esboços de
+  ícone vêm junto: com e sem o rosto em destaque.
+- Referência do gênero: <2–3 jogos do topo, por link, lado a lado com as opções>.
+
+Opções (previstas; as imagens e os números chegam com a RT-6v3.2):
+A) Vinil brilhante e saturado (cores fortes, brilho de borda em tudo).
+   + Mais "loja", chama atenção na lista. - Riscos: cansar o olho; mais caro no celular
+   (chance: média; impacto: médio — cortar brilho).
+B) Pastel fosco, brilho só no personagem (o cenário recua, o Bibopzi brilha).
+   + Mais leve no celular; personagem em destaque. - Riscos: parecer menos "premium" na
+   miniatura da loja (média; médio).
+C) Contraste alto com luz de fim de tarde por mundo.
+   + Dramático, diferente do gênero. - Riscos: leitura pior dos números dos portões
+   (média; alto — mexer no contraste do texto).
+D) Nenhuma ainda: outra rodada com o que você disser.
+   Custo: ~1 semana a mais (consome metade da folga do calendário). Volta atrás? sim.
+
+Custo: nenhum em dinheiro. Volta atrás? sim antes da RT-6v3.3; depois, cada área feita no
+alvo antigo teria de ser revista.
+Recomendação: <preencher na RT-6v3.2, com os números>.
+Segunda opinião (fable, sobre o plano): concorda em decidir só com as imagens na mão, desde
+que as telas sejam feitas no Unity com o número medido no OPPO de cada opção, que a ficha
+pergunte junto o tema das torres (D17/D28) e o risco de público (D25) com o ícone, e que haja
+uma referência do gênero lado a lado.
+Se você não responder: a série para na RT-6v3.2; o som (RT-6v3.9) segue.
+
+Responda: A, B, C, D ou uma mistura; tema "por mundo" ou "fábrica"; ícone 1, 2 ou 3; ou
+"explica melhor".
+```
+
+```text
+DECISÃO D37 — Usar imagem e música geradas por IA (vidIQ) no Stampeep?
+
+O que você está aprovando: <C / A / B>. Com C, nada é gerado por IA nem gasto: o som é
+sintetizado por código (como hoje) ou CC0, e a arte sai do motor. Com A ou B, a IA pode gastar
+até <teto> créditos por mês do seu plano do vidIQ, só depois de ler os termos de uso e trazer o
+resumo, e nada gerado entra no jogo sem a licença registada.
+
+Por que agora: a regra de Custo do projeto manda perguntar antes de qualquer gasto, e a série
+RT-6v3 poderia usar o gerador na RT-6v3.2 (conceito) e na RT-6v3.9 (música). Não trava nada:
+o caminho sem IA está planejado.
+
+Contexto que você precisa saber:
+- Fato (consulta só de leitura em 2026-11-25): 1 imagem custa 22 créditos (nos 4 modelos de
+  imagem listados); sua conta tem 18 de 150 créditos neste ciclo, que renova em 15/12/2026.
+  Hoje não dá para gerar nem 1 imagem; a RT-6v3.2 cai por volta de 8–12/12, antes da renovação.
+- Fato: 3 imagens = 66 créditos = 44% do ciclo mensal, que você também usa no vidIQ normal.
+- Não verificado: os termos de uso do conteúdo gerado (uso num jogo com anúncios, atribuição,
+  restrições do modelo por trás) e o preço da música. Enviar a folha do Bibopzi como referência
+  entregaria um personagem inédito a um terceiro: não fazemos isso sem os termos lidos.
+- Inferência nossa: o gerador é feito para miniaturas de YouTube; a utilidade para conceito de
+  jogo é incerta. A imagem-alvo sai do motor de qualquer forma (D36).
+- Fato: o som atual é síntese própria (D22 A) e o validador recusa áudio sem registo.
+
+Opções:
+C) Nenhuma IA generativa agora; tudo por código ou CC0.
+   + Zero gasto e zero risco de licença; não atrasa nada. - Riscos: música menos rica
+   (média; médio — reabrir na RT-6v3.9). Custo: zero. Volta atrás? sim.
+A) Conceito depois de 15/12: até 3 imagens (66 créditos), só como inspiração, com os termos
+   lidos antes, sem enviar a folha do personagem; nada no build.
+   + Pode ajudar a imagem-alvo. - Riscos: baixos; consome 44% do ciclo. Custo: créditos do
+   plano que você já paga. Volta atrás? sim.
+B) A + música por mundo gerada na RT-6v3.9, se os termos permitirem uso comercial sem
+   atribuição problemática; comparada com música CC0 ou um pacote de licença clara (que seria
+   gasto pago, com ficha própria).
+   + Música possivelmente melhor que a síntese. - Riscos: termos ambíguos ou mudarem (média;
+   alto — trocar a música depois de publicado); créditos insuficientes (alta; baixo). Custo:
+   créditos, preço a confirmar. Volta atrás? sim antes de publicar.
+
+Recomendação: C agora. Reabrir A depois de 15/12 só se a RT-6v3.2 sentir falta de inspiração,
+e decidir a música (B ou C) na RT-6v3.9, com preço e termos lidos.
+Segunda opinião (fable): concorda com C agora (com 18 créditos e a imagem a 22, nada sai antes
+de 15/12 sem comprar crédito ou atrasar a D36; os termos não foram lidos). A depois de 15/12
+com termos lidos, teto de créditos e sem enviar a folha do personagem; música só na RT-6v3.9,
+comparada com CC0 ou pacote de licença clara; o modelo não ouve, a escuta é sua.
+Se você não responder: vale C.
+
+Responda: C, A, B, ou "explica melhor".
+```
 
 ### Fichas D7, D9 e D10 (escritas na RT-9a, 2026-11-24; bloqueiam a RT-9b, não a RT-9a)
 
