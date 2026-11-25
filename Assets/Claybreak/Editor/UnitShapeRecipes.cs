@@ -168,6 +168,197 @@ namespace Claybreak.Editor
             return builder.ToMesh(eyes ? "Pinguim" : "PinguimNoEyes");
         }
 
+        // ---------- Bibopzi (2026-11-25, the studio's character in the "Feijão" direction, the default shape) ----------
+
+        /// <summary>Bibopzi's fixed orange (gear, spring, hands, feet): #FF8A3D of the character sheet.</summary>
+        public static readonly Color32 BibopziOrange = new Color32(0xff, 0x8a, 0x3d, 0);
+        /// <summary>Bibopzi's cream belly: #FFF1DC, never the skin.</summary>
+        public static readonly Color32 Cream = new Color32(0xff, 0xf1, 0xdc, 0);
+        /// <summary>Brows and the slot of the screw nose (darker than the eye diamonds, so the eyeless variant has no eye color).</summary>
+        public static readonly Color32 Brow = new Color32(0x1d, 0x2b, 0x3a, 0);
+        /// <summary>The screw nose.</summary>
+        public static readonly Color32 Steel = new Color32(0xc8, 0xce, 0xd6, 0);
+
+        // The bean body: one piece from y = BibopziBottom up BibopziBodyHeight, a superellipse profile (fuller sides than a
+        // sphere, round top and bottom), half-width BaseHalfWidth at the base narrowing to HeadHalfWidth at the head (the
+        // slightly chamfered shoulder is the step between them), depth BibopziDepth of the width. Proportions from the
+        // reference drawing (personagem/ia/2026-11/2026-11-25_bibopzi_direcoes-2d.svg, column A) at 0.0018 m per pixel.
+        private const float BibopziBottom = 0.03f;
+        private const float BibopziBodyHeight = 0.594f;
+        private const float BaseHalfWidth = 0.18f;
+        private const float HeadHalfWidth = 0.15f;
+        private const float BibopziDepth = 0.82f;
+        // Superellipse exponent of the profile (2 = the sphere itself; higher = straighter sides).
+        private const float Fullness = 2.78f;
+
+        /// <summary>Top of Bibopzi's head (the leader's crown sits there, the spring goes through it).</summary>
+        public const float BibopziHeadTop = BibopziBottom + BibopziBodyHeight;
+
+        /// <summary>
+        /// Bibopzi, the baby robot of the studio ("Feijão" direction, D3 of the character, user's pick on 2026-11-25): a
+        /// one-piece bean body that takes the skin, a cream belly, two eyes (white with a dark diamond) under brows, a small
+        /// screw nose, an orange gear on HIS right temple (+X: the viewer's left from the front) facing out like an ear so the
+        /// run camera behind the crowd sees it, an orange spring topknot, two loose orange ball hands (no arms) and two flat
+        /// orange feet that stick out at the front. The landmarks (spring, gear, belly, loose hands) keep it apart from other
+        /// bean-shaped characters.
+        /// Triangles: body 10×9 (160), belly 8×4 (48), eye whites 8-gon discs (2 × 8), diamonds (2 × 4), brows (2 × 4), nose
+        /// 6 + slot 4 (10), gear hexagonal hub with caps (24) + 3 tooth bars (36), spring 3 open 4-sided tubes (24) + ball
+        /// 6×4 (36), hands 6×4 (2 × 36), feet 6×3 (2 × 24) = 490; 458 without eyes (no whites, diamonds or brows).
+        /// </summary>
+        public static Mesh Bibopzi(bool eyes)
+        {
+            var builder = new LowPolyMeshBuilder();
+            // Body: a unit sphere bent into the bean afterwards (the kit's builder has no lathe); its vertices come first.
+            builder.AddSphere(Matrix4x4.identity, 10, 9, Body);
+            int bodyVertices = builder.VertexCount;
+
+            // Belly: a flat ellipsoid sunk into the front, low on the body, bulging a little.
+            builder.AddSphere(OnBibopzi(0.31f, FrontAzimuth(0.31f, 0f), -0.026f, new Vector3(0.112f, 0.044f, 0.1f)), 8, 4, Cream);
+
+            if (eyes)
+            {
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    float eyeAzimuth = FrontAzimuth(0.74f, side * 0.063f);
+                    builder.AddDisc(OnBibopzi(0.74f, eyeAzimuth, 0.002f, new Vector3(0.04f, 1f, 0.032f)), 8, White);
+                    builder.AddDisc(OnBibopzi(0.735f, eyeAzimuth, 0.004f, new Vector3(0.014f, 1f, 0.02f)), 4, Eyes);
+                    builder.AddDisc(OnBibopzi(0.86f, FrontAzimuth(0.86f, side * 0.066f), 0.003f, new Vector3(0.034f, 1f, 0.007f),
+                        side * 12f), 4, Brow);
+                }
+            }
+
+            // Screw nose: a hexagonal head with a slanted slot.
+            float noseAzimuth = FrontAzimuth(0.63f, 0f);
+            builder.AddDisc(OnBibopzi(0.63f, noseAzimuth, 0.003f, new Vector3(0.017f, 1f, 0.017f)), 6, Steel);
+            builder.AddDisc(OnBibopzi(0.63f, noseAzimuth, 0.005f, new Vector3(0.014f, 1f, 0.0035f), 45f), 4, Brow);
+
+            // Gear on his right temple (+X), turned a little to the front: a hexagonal hub and three bars = six teeth.
+            const float gearT = 0.73f;
+            const float gearAzimuth = 25f;
+            builder.AddCylinder(OnBibopzi(gearT, gearAzimuth, 0.014f, new Vector3(0.048f, 0.04f, 0.048f)), 6, BibopziOrange);
+            for (int tooth = 0; tooth < 3; tooth++)
+            {
+                builder.AddBox(OnBibopzi(gearT, gearAzimuth, 0.014f, new Vector3(0.14f, 0.034f, 0.026f), 30f + tooth * 60f), BibopziOrange);
+            }
+
+            // Spring topknot: a zigzag of three open tubes out of the head, with a ball on top (front view: an S).
+            Vector3[] coil =
+            {
+                new Vector3(0f, BibopziHeadTop - 0.012f, 0f), new Vector3(0.026f, BibopziHeadTop + 0.038f, 0f),
+                new Vector3(-0.022f, BibopziHeadTop + 0.08f, 0f), new Vector3(0.014f, BibopziHeadTop + 0.118f, 0f)
+            };
+            for (int i = 0; i < coil.Length - 1; i++)
+            {
+                builder.AddCylinder(Tube(coil[i], coil[i + 1], 0.012f), 4, BibopziOrange, false);
+            }
+
+            builder.AddSphere(LowPolyMeshBuilder.Place(coil[coil.Length - 1] + new Vector3(0f, 0.014f, 0f), Vector3.one * 0.024f),
+                SmallSegments, SmallBands, BibopziOrange);
+
+            // Loose ball hands beside the base (a clear gap to the body), and flat feet sticking out at the front.
+            for (int side = -1; side <= 1; side += 2)
+            {
+                builder.AddSphere(LowPolyMeshBuilder.Place(new Vector3(side * 0.25f, BibopziBottom + 0.38f * BibopziBodyHeight, 0.01f),
+                    Vector3.one * 0.045f), SmallSegments, SmallBands, BibopziOrange);
+                // Turned a quarter so a ring vertex points straight forward (6 segments have none on +Z otherwise).
+                builder.AddSphere(LowPolyMeshBuilder.Place(new Vector3(side * 0.08f, 0.032f, 0.12f), new Vector3(0f, 90f, 0f), new Vector3(0.102f, 0.032f, 0.07f)),
+                    SmallSegments, 3, BibopziOrange);
+            }
+
+            Mesh mesh = builder.ToMesh(eyes ? "Bibopzi" : "BibopziNoEyes");
+            BendIntoBean(mesh, bodyVertices);
+            return mesh;
+        }
+
+        // Moves the first bodyVertices (a unit sphere) onto the bean and gives them the bean's normals.
+        private static void BendIntoBean(Mesh mesh, int bodyVertices)
+        {
+            Vector3[] vertices = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+            float squareness = 2f / Fullness;
+            for (int i = 0; i < bodyVertices; i++)
+            {
+                Vector3 unit = vertices[i];
+                float across = Mathf.Sqrt(unit.x * unit.x + unit.z * unit.z);
+                float t = (Mathf.Sign(unit.y) * Mathf.Pow(Mathf.Abs(unit.y), squareness) + 1f) * 0.5f;
+                float radius = Mathf.Pow(across, squareness) * BibopziHalfWidth(t);
+                Vector3 p = across > 1e-6f
+                    ? new Vector3(unit.x / across * radius, 0f, unit.z / across * radius * BibopziDepth)
+                    : Vector3.zero;
+                p.y = BibopziBottom + t * BibopziBodyHeight;
+                vertices[i] = p;
+                normals[i] = BibopziNormal(p);
+            }
+
+            mesh.vertices = vertices;
+            mesh.normals = normals;
+            mesh.RecalculateBounds();
+        }
+
+        private static float BibopziHalfWidth(float t)
+        {
+            float k = Mathf.Clamp01((t - 0.45f) / 0.4f);
+            return Mathf.Lerp(BaseHalfWidth, HeadHalfWidth, k * k * (3f - 2f * k));
+        }
+
+        // The bean's surface is where this is 0 (negative inside).
+        private static float BibopziField(Vector3 p)
+        {
+            float t = (p.y - BibopziBottom) / BibopziBodyHeight;
+            float w = BibopziHalfWidth(Mathf.Clamp01(t));
+            float x = p.x / w;
+            float z = p.z / (w * BibopziDepth);
+            return Mathf.Pow(Mathf.Sqrt(x * x + z * z), Fullness) + Mathf.Pow(Mathf.Abs(2f * t - 1f), Fullness) - 1f;
+        }
+
+        private static Vector3 BibopziNormal(Vector3 p)
+        {
+            const float h = 1e-4f;
+            var gradient = new Vector3(
+                BibopziField(p + new Vector3(h, 0f, 0f)) - BibopziField(p - new Vector3(h, 0f, 0f)),
+                BibopziField(p + new Vector3(0f, h, 0f)) - BibopziField(p - new Vector3(0f, h, 0f)),
+                BibopziField(p + new Vector3(0f, 0f, h)) - BibopziField(p - new Vector3(0f, 0f, h)));
+            return gradient.sqrMagnitude > 0f ? gradient.normalized : Vector3.up;
+        }
+
+        // The bean's ring radius (before width and depth) at height fraction t.
+        private static float BibopziRing(float t)
+        {
+            return Mathf.Pow(1f - Mathf.Pow(Mathf.Abs(2f * t - 1f), Fullness), 1f / Fullness);
+        }
+
+        /// <summary>Point of the bean's surface at height fraction t (0 base, 1 top) and azimuth (0 = +X, 90 = +Z front).</summary>
+        private static Vector3 BibopziSurface(float t, float azimuthDegrees)
+        {
+            float radius = BibopziRing(t) * BibopziHalfWidth(t);
+            float a = azimuthDegrees * Mathf.Deg2Rad;
+            return new Vector3(Mathf.Cos(a) * radius, BibopziBottom + t * BibopziBodyHeight, Mathf.Sin(a) * radius * BibopziDepth);
+        }
+
+        // Azimuth of the front surface point at height fraction t that is x across.
+        private static float FrontAzimuth(float t, float x)
+        {
+            return Mathf.Acos(Mathf.Clamp(x / (BibopziRing(t) * BibopziHalfWidth(t)), -1f, 1f)) * Mathf.Rad2Deg;
+        }
+
+        // A primitive lying on the bean: local +Y along the surface normal (lift along it), local +X across, local +Z down
+        // the surface; spin turns it about the normal (positive raises its +X end).
+        private static Matrix4x4 OnBibopzi(float t, float azimuthDegrees, float lift, Vector3 scale, float spinDegrees = 0f)
+        {
+            Vector3 p = BibopziSurface(t, azimuthDegrees);
+            Vector3 n = BibopziNormal(p);
+            Quaternion q = Quaternion.LookRotation(n, Vector3.up) * Quaternion.Euler(90f, 0f, 0f) * Quaternion.Euler(0f, spinDegrees, 0f);
+            return Matrix4x4.TRS(p + n * lift, q, scale);
+        }
+
+        // A tube of the given radius from a to b, a little longer at both ends so the zigzag has no gaps at the corners.
+        private static Matrix4x4 Tube(Vector3 a, Vector3 b, float radius)
+        {
+            Vector3 along = b - a;
+            return Matrix4x4.TRS((a + b) * 0.5f, Quaternion.FromToRotation(Vector3.up, along),
+                new Vector3(radius, along.magnitude + radius, radius));
+        }
+
         /// <summary>Blob shadow disc under a unit: radius 0.95 R, 12 sides, facing up.</summary>
         public static Mesh ShadowDisc()
         {

@@ -108,13 +108,22 @@ namespace Claybreak.Tests
             }
         }
 
-        // D32 A: BALL free, CHICK 300, BUNNY 1000, FROGGY 1600, PENGUIN 2400 (total 5300), in that order.
+        // D32 A: BALL free, CHICK 300, BUNNY 1000, FROGGY 1600, PENGUIN 2400 (total 5300), in that order. 2026-11-25 (user):
+        // BIBOPZI replaces BALL as the default, first and free; BALL stays on offer, still free.
         [Test]
         public void PricesAreTheUsersDecision()
         {
-            CollectionAssert.AreEqual(new[] { "ball", "chick", "bunny", "froggy", "penguin" },
+            CollectionAssert.AreEqual(new[] { "bibopzi", "ball", "chick", "bunny", "froggy", "penguin" },
                 System.Array.ConvertAll(WorldContent.Shapes, s => s.Id));
-            CollectionAssert.AreEqual(new[] { 0, 300, 1000, 1600, 2400 }, System.Array.ConvertAll(WorldContent.Shapes, s => s.Price));
+            CollectionAssert.AreEqual(new[] { 0, 0, 300, 1000, 1600, 2400 }, System.Array.ConvertAll(WorldContent.Shapes, s => s.Price));
+            Assert.AreEqual(SaveMigration.DefaultShape, WorldContent.Shapes[0].Id);
+        }
+
+        [TestCase(true, 490)]
+        [TestCase(false, 458)]
+        public void BibopziTriangles(bool eyes, int expected)
+        {
+            Assert.AreEqual(expected, Triangles(Keep(UnitShapeRecipes.Bibopzi(eyes))));
         }
 
         // The bridge writes the kit renderers' serialized hop; it fails if the kit renames the field (the hop would silently stop).

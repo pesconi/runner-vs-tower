@@ -75,8 +75,12 @@ namespace Claybreak
             Check(catalog.ShapeIndexOf(save.shape) >= 0, $"crowd shape '{save.shape}' is not in the catalog.", problems);
             // RT-6t.20 (save version 5): shapes are bought; the free one is always owned and the worn one must be owned.
             CheckIds(save.ownedShapes, id => catalog.ShapeIndexOf(id) >= 0, "crowd shape", problems);
-            Check(save.ownedShapes != null && System.Array.IndexOf(save.ownedShapes, catalog.Shapes[0].id) >= 0,
-                "the free crowd shape is not owned.", problems);
+            for (int i = 0; i < catalog.Shapes.Count; i++)
+            {
+                string id = catalog.Shapes[i].id;
+                Check(catalog.Shapes[i].price != 0 || (save.ownedShapes != null && System.Array.IndexOf(save.ownedShapes, id) >= 0),
+                    $"the free crowd shape '{id}' is not owned.", problems);
+            }
             Check(save.ownedShapes != null && System.Array.IndexOf(save.ownedShapes, save.shape) >= 0,
                 $"worn crowd shape '{save.shape}' is not owned.", problems);
             return problems.Count == before;

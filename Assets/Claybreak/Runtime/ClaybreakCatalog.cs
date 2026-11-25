@@ -323,11 +323,11 @@ namespace Claybreak
                     return false;
                 }
 
-                // A sold shape has a real price (the free one is the first): a zero or negative price would give it away
-                // or pay the player for it.
-                if (i > 0 && shape.price <= 0)
+                // Price 0 = free and owned by every player (the default first; since save version 6 the Bolinha too, the old
+                // default, 2026-11-25). A negative price would pay the player for it ([Min(0)] guards the inspector only).
+                if (shape.price < 0)
                 {
-                    error = $"shape '{shape.id}' needs a price (only the first shape is free).";
+                    error = $"shape '{shape.id}' needs a price of 0 (free for everyone) or more.";
                     return false;
                 }
 

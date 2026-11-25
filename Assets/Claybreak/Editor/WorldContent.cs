@@ -753,13 +753,16 @@ namespace Claybreak.Editor
 
         /// <summary>
         /// The crowd shapes of the shop's SHAPES tab (RT-6t.20: D31 A, prices D32 A), all with eyes (D25 A; the eyeless
-        /// meshes stay generated as the reserve). The first is free, the default and the shape every save before version 4
-        /// was drawn with (<see cref="SaveMigration.ShapeBeforeV4"/>). Each hops its own way so the crowd reads from afar: the
+        /// meshes stay generated as the reserve). The first is the default: since 2026-11-25 Bibopzi (user's decision, "O jogo ta
+        /// apenas em teste, pode substituir a padrão"), free and owned by everyone; the Bolinha (<see cref="SaveMigration.ShapeBeforeV4"/>,
+        /// the default up to save version 5) stays free on offer. Bibopzi bounces like a little robot. Each hops its own way so the crowd reads from afar: the
         /// Bolinha the reference hop, the Pintinho quick pecks leaning forward, the Coelhinho big slow hops, the Sapinho
         /// squashed leaps and the Pinguim an upright shuffle.
         /// </summary>
         public static readonly ShapeDefinition[] Shapes =
         {
+            new ShapeDefinition(SaveMigration.DefaultShape, "BIBOPZI", UnitShapeAssets.Named("Bibopzi"), 0, Hop(8f, 0.24f, 0.86f, 0.24f, 0.06f),
+                UnitShapeRecipes.BibopziHeadTop),
             new ShapeDefinition(SaveMigration.ShapeBeforeV4, "BALL", UnitShapeAssets.Named("Bolinha"), 0, SwarmMotionSettings.Default),
             new ShapeDefinition("chick", "CHICK", UnitShapeAssets.Named("Pintinho"), 300, Hop(11f, 0.15f, 0.82f, 0.28f, 0.2f)),
             new ShapeDefinition("bunny", "BUNNY", UnitShapeAssets.Named("Coelhinho"), 1000, Hop(6.5f, 0.42f, 0.7f, 0.5f, 0.08f),

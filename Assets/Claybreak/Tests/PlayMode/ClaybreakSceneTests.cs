@@ -277,7 +277,7 @@ namespace Claybreak.Tests
             var flow = Object.FindFirstObjectByType<ClaybreakFlow>();
             RunCrowd crowd = flow.Crowd;
             ClaybreakCatalog catalog = flow.Progress.Catalog;
-            Assert.AreEqual(5, catalog.Shapes.Count, "BALL, CHICK, BUNNY, FROGGY, PENGUIN");
+            Assert.AreEqual(6, catalog.Shapes.Count, "BIBOPZI, BALL, CHICK, BUNNY, FROGGY, PENGUIN");
             Assert.IsNull(GameObject.Find("/Ui/Screens/Home/Safe/ShapeButton"), "the shape button left the home screen");
             Assert.AreEqual(catalog.Shapes[0].mesh, crowd.Swarm.UnitMesh, "a fresh save starts with the default shape");
             flow.Progress.Save.coins = 1500;
@@ -285,29 +285,29 @@ namespace Claybreak.Tests
             Press("/Ui/Screens/Home/Safe/ShopButton");
             Press("/Ui/Screens/Shop/Safe/TabSHAPES");
             Assert.AreEqual(ShopTab.Shapes, flow.Screens.Tab);
-            var price = GameObject.Find("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/Action").GetComponentInChildren<TMPro.TMP_Text>();
+            var price = GameObject.Find("/Ui/Screens/Shop/Safe/ShopList/Content/Row4/Action").GetComponentInChildren<TMPro.TMP_Text>();
             StringAssert.Contains("1000", price.text, "the bunny row shows its price");
-            Assert.IsTrue(GameObject.Find("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/FigureBody").activeSelf, "no figure on the row");
+            Assert.IsTrue(GameObject.Find("/Ui/Screens/Shop/Safe/ShopList/Content/Row4/FigureBody").activeSelf, "no figure on the row");
 
-            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/Action");
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row4/Action");
             Assert.AreEqual("bunny", flow.Progress.Save.shape, "the bunny was not bought and worn");
             Assert.AreEqual(500, flow.Progress.Save.coins, "the bunny costs 1000");
-            Assert.AreEqual(catalog.Shapes[2].mesh, crowd.Swarm.UnitMesh, "the crowd behind the menu did not change shape");
-            Assert.AreEqual(catalog.Shapes[2].mesh, flow.Field.Flyers.UnitMesh, "the assault is not drawn with the bought shape");
-            Assert.AreEqual(catalog.Shapes[2].motion.HopHeight, SwarmMotionBridge.Read(crowd.Swarm).HopHeight, "the crowd does not hop like a bunny");
-            Assert.AreEqual(catalog.Shapes[2].motion.HopHeight, crowd.Leader.Motion.HopHeight, "the leader does not hop like its crowd");
+            Assert.AreEqual(catalog.Shapes[3].mesh, crowd.Swarm.UnitMesh, "the crowd behind the menu did not change shape");
+            Assert.AreEqual(catalog.Shapes[3].mesh, flow.Field.Flyers.UnitMesh, "the assault is not drawn with the bought shape");
+            Assert.AreEqual(catalog.Shapes[3].motion.HopHeight, SwarmMotionBridge.Read(crowd.Swarm).HopHeight, "the crowd does not hop like a bunny");
+            Assert.AreEqual(catalog.Shapes[3].motion.HopHeight, crowd.Leader.Motion.HopHeight, "the leader does not hop like its crowd");
 
             Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row1/Action");
-            Assert.AreEqual("ball", flow.Progress.Save.shape, "the free shape was not worn again");
+            Assert.AreEqual("bibopzi", flow.Progress.Save.shape, "the free default (Bibopzi) was not worn again");
             Assert.AreEqual(500, flow.Progress.Save.coins, "wearing an owned shape is free");
-            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row3/Action");
+            Press("/Ui/Screens/Shop/Safe/ShopList/Content/Row4/Action");
             Assert.AreEqual(500, flow.Progress.Save.coins);
 
             Press("/Ui/Screens/Shop/Safe/Back");
             Press("/Ui/Screens/Home/Safe/Play");
             Assert.AreEqual(FlowState.Run, flow.State);
             yield return null;
-            Assert.AreEqual(catalog.Shapes[2].mesh, crowd.Swarm.UnitMesh, "the run is not drawn with the bought shape");
+            Assert.AreEqual(catalog.Shapes[3].mesh, crowd.Swarm.UnitMesh, "the run is not drawn with the bought shape");
         }
 
         // RT-8: SETTINGS opens the settings page; its switches drive the kit's preferences and come back as they

@@ -32,7 +32,8 @@ namespace Claybreak
     }
 
     /// <summary>
-    /// The player's progress, versioned JSON (RT-5; version 4 since RT-6t.6b, 5 since RT-6t.20). Content is referenced by stable ids from
+    /// The player's progress, versioned JSON (RT-5; version 4 since RT-6t.6b, 5 since RT-6t.20, 6 since Bibopzi became the
+    /// default crowd shape on 2026-11-25). Content is referenced by stable ids from
     /// <see cref="ClaybreakCatalog"/>, so adding worlds, upgrades, units or skins never breaks a save, and a
     /// removed id is dropped when the save is normalized. Preferences (sound, music, vibration) are not here:
     /// they stay in the kit's own PlayerPrefs keys, so a broken save never resets them and vice versa.
@@ -41,7 +42,7 @@ namespace Claybreak
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         public int version = CurrentVersion;
         public int coins;
@@ -148,6 +149,39 @@ namespace Claybreak
         /// since version 5 for free.
         /// </summary>
         public static readonly string[] ShapesBeforeV5 = { ShapeBeforeV4, "chick" };
+
+        /// <summary>
+        /// The default crowd shape since save version 6 (Bibopzi, the user's decision of 2026-11-25): what a new player wears,
+        /// and what a save that still wore the old default (the Bolinha) wears after migrating. Part of the save format.
+        /// </summary>
+        public const string DefaultShape = "bibopzi";
+
+        /// <summary>
+        /// Versions 1 to 5 to 6 (2026-11-25, Bibopzi replaces the Bolinha as the default): a save that wore the Bolinha (the
+        /// default it never had to pick) or no shape now wears Bibopzi and owns it; it keeps owning the Bolinha, so going
+        /// back is free. A shape the player bought or kept (chick, bunny...) stays worn. Nothing else changes.
+        /// </summary>
+        public static void DefaultToBibopzi(SaveData save)
+        {
+            if (save == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(save.shape) || save.shape == ShapeBeforeV4)
+            {
+                save.shape = DefaultShape;
+            }
+
+            string[] owned = save.ownedShapes ?? new string[0];
+            if (Array.IndexOf(owned, DefaultShape) < 0)
+            {
+                var withDefault = new string[owned.Length + 1];
+                withDefault[0] = DefaultShape;
+                Array.Copy(owned, 0, withDefault, 1, owned.Length);
+                save.ownedShapes = withDefault;
+            }
+        }
 
         /// <summary>
         /// Versions 1 to 4 to 5 (RT-6t.20, D31 A): shapes are bought in the shop. An older save owns the free Bolinha and the
@@ -297,6 +331,7 @@ namespace Claybreak
                         parsed = JsonUtility.FromJson<SaveData>(json);
                         SaveMigration.AddOwnedShapes(parsed);
                         break;
+                    case 5:
                     case SaveData.CurrentVersion:
                         parsed = JsonUtility.FromJson<SaveData>(json);
                         break;
@@ -307,6 +342,12 @@ namespace Claybreak
                 if (parsed == null)
                 {
                     return false;
+                }
+
+                // Every version before 6 wore the Bolinha as its default: it now wears Bibopzi (2026-11-25).
+                if (probe.version < 6)
+                {
+                    SaveMigration.DefaultToBibopzi(parsed);
                 }
 
                 fromVersion = probe.version;

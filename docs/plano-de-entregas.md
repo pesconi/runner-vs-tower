@@ -42,6 +42,7 @@ lançamento jun/2027.
 | RT-6t.20 Formas compradas na loja (save v5) — concluída em 2026-11-23 (5 formas com silhueta e quique próprios, aba SHAPES, botão SHAPE fora da home, save v5 com migração; loja 24.680 moedas em 58 min; capturas em `docs/art/rt6t20/`); gate 3× não se aplica (forma mais pesada continua 492 triângulos); **aceite do usuário em 2026-11-23** ("Aprovo, instala"); APK instalado no OPPO, save migrado v4 → v5 com a forma BALL mantida | — | — | antes da RT-9 |
 | RT-6t.21 Rename para Stampeep (D29) — concluída em 2026-11-23 (nome no ícone do celular, título da home e créditos; subtítulo "STORM THE TOWER" mantido; política de privacidade e licenças de áudio; validador recusa "Clay Siege"; ícone sem identidade antiga, não muda; busca oficial EUIPO e INPI sem marca igual, risco médio com "STAMPEDE" anotado; ficha de gasto D33 pendente, não bloqueia); gate 3× não se aplica; APK instalado no OPPO com o save mantido | — | — | antes da RT-9 |
 | RT-9a Material da loja e declarações (IA) — concluída em 2026-11-24 (ficha en-US, 6 capturas reais 9:16, ícone 512 também no celular, destaque 1024×500, declarações com evidência, política final + HTML, regras da Play pesquisadas, passo a passo da RT-9b; fichas D7, D9, D10 = A em 2026-11-24; `docs/store/`) | — | — | antes da RT-9b |
+| RT-6t.22 BIBOPZI ("Feijão") vira a forma padrão da multidão (decisão do usuário em 2026-11-25) — concluída em 2026-11-25 (receita de 490 triângulos com mola, engrenagem, barriga creme, mãos soltas e pés; BALL continua grátis na loja; save v6 com migração: quem estava na BALL padrão passa ao BIBOPZI, quem comprou outra forma a mantém; capturas em `docs/art/rt6t22/`); gate 3× não se aplica (a mais pesada continua 492); **aceite do usuário pendente** (capturas e APK no OPPO) | — | — | antes da RT-10 |
 | RT-9b Console, AdMob e teste interno (usuário, com passagens curtas da IA) — **em curso**: D7, D9 e D10 = A (2026-11-24); passo 1 feito em 2026-11-24 (política completa publicada pela IA a pedido do usuário em https://jungledegree.com/stampeep/privacy/, site `92cf4d9`); passo 2 feito em 2026-11-24 (chave de upload criada pelo usuário fora do repositório, em `~/keys`); passo 4.5 feito em 2026-11-24 (IDs do AdMob em `_privado/runner-vs-tower/admob-ids.json`, fora do repositório, D35 = A, lidos pelo build do jogo na RT-9b.1); antes do passo 5: passo 4b (Firebase com o pacote novo, D34 = B, RT-9b.1); passos 3, 4, 4b e 9 feitos em 2026-11-24 (app no Play Console; app e unidade premiada no AdMob, IDs em `_privado` pela D35; app Android `com.jungledegree.stampeep` no Firebase com `google-services.json` novo em `_privado`; mensagem RGPD publicada). APK com Firebase gerado e instalado: a configuração entra no APK, mas o formulário de consentimento não carrega ("Account not approved yet" do AdMob, app novo em revisão), então a medição fica desligada, como manda o desenho; conferir de novo com `Tools/rt8b-firebase-check.sh` quando o AdMob aprovar o app. Passos 5, 6 e 10 feitos em 2026-11-25: AAB `Stampeep-0.1.0-1` (versão 1, 0.1.0) gerado pelo usuário em 2026-11-24 e conferido pelo maestro (assinado pela chave de upload, pacote `com.jungledegree.stampeep`, IDs reais do AdMob e config do Firebase dentro; IDs reais só no AAB, nunca no repositório); enviado ao teste interno, disponível para testadores; SHA-1 (públicas) da chave de assinatura do Google `08:3D:CF:7C:E6:DD:01:9D:3B:85:E0:21:7E:25:64:C6:AC:BF:76:C8`, da chave de upload `C9:2C:6C:A8:07:50:C3:F2:FC:2E:67:A3:89:2C:BE:FC:49:03:1F:40` e da chave de depuração deste PC (APKs de teste do maestro) `DD:B5:9B:B3:C6:DC:70:61:A0:9A:5D:AE:D9:FD:77:3A:9E:72:6E:82`, as três na restrição Android da chave de API do Firebase (projeto `clay-siege`). Nota: o kit guarda como reserva a unidade premiada do Wild Pack (`RewardedAdService`, usada só sem `AdUnitSettings`); o Stampeep usa a sua; tirar do kit numa entrega do studiokit. Próximo: passos 7 e 8 (declarações e ficha da loja) e 11 (conferir instalado pela Play) | 1 | 1,2 | início de mai |
 | RT-9b.1 Trocar o application ID para `com.jungledegree.stampeep` (D34 = B) — concluída em 2026-11-24 (fonte única + `Tools/app-id.sh`, validador recusa o ID antigo, build sem Firebase com aviso até o `google-services.json` novo, passo 4b do Firebase; junto, D35 = A: IDs do AdMob fora do repositório, passo 4.5 feito); instalado no OPPO em 2026-11-24 pelo maestro (app antigo desinstalado; abre como Stampeep, `com.jungledegree.stampeep`; Firebase desligado até o passo 4b; AdMob responde "Account not approved yet", esperado para app novo) | — | RT-9b | antes do passo 5 da RT-9b |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
@@ -926,6 +927,37 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   `adb uninstall com.jungledegree.runnervstower`, `adb install /c/temp/rt9b1c/Claybreak.apk`,
   `adb shell monkey -p com.jungledegree.stampeep -c android.intent.category.LAUNCHER 1`, e conferir que abre e mostra
   "Stampeep". Depois do passo 4b do roteiro (Firebase), gerar o APK de novo e rodar `Tools/rt8b-firebase-check.sh`.
+
+## RT-6t.22 — BIBOPZI como forma padrão da multidão
+
+- **Escopo:** decisão do usuário em 2026-11-25 ("O jogo ta apenas em teste, pode substituir a padrão"): o Bibopzi na
+  direção "Feijão" (repositório `personagem`, D3 de 2026-11-25) substitui a BOLINHA como unidade padrão; as outras formas
+  continuam na loja. Ícone, capturas da loja e ficha da Play não mudam nesta entrega.
+- **Feito:** receita `UnitShapeRecipes.Bibopzi` (490 triângulos; 458 sem olhos): corpo de peça única em feijão (base
+  larga, cabeça mais estreita, ombro suave) que recebe a cor do mundo/skin; barriga creme #FFF1DC; olhos brancos com
+  losango escuro e sobrancelhas; nariz de parafuso; engrenagem laranja #FF8A3D na têmpora direita dele (+X, à esquerda de
+  quem olha de frente) virada para fora; topete de mola; duas mãos esféricas soltas; dois pés achatados laranja. Catálogo:
+  BIBOPZI primeiro (grátis, padrão, quique próprio, coroa do líder no topo da cabeça), BALL continua grátis, preços das
+  outras iguais (D32 A). Save v6: migração v1–v5 → v6 (`SaveMigration.DefaultToBibopzi`), fixtures `v5-ball` e
+  `v6-ball-picked`. Decisões técnicas T-RT6t22-1..5 em `decisoes.md`.
+- **Validação (2026-11-25):** `rt4-check` completo verde — cena, validador (fixtures v1–v6, incluindo `v5-ball` e
+  `v6-ball-picked`), isolamento, EditMode 715 (714 passam, 1 ignorado), PlayMode 50 (28 passam, 22 capturas ignoradas sem
+  GPU), economia (tabela igual: as formas grátis não mudam a loja), capturas, APK, APK de medição e AAB. Capturas com GPU
+  4/4 (`BibopziCaptureTests`, `ShapeShopCaptureTests` ×2, `ScreenFitTests`).
+- **No tamanho de jogo** (`bibopzi-tamanho-de-jogo.png`): a mola aparece como uma ponta laranja sobre cada cabeça e as
+  mãos como pontos laranja dos lados (lê-se bem no líder); a engrenagem vira um ponto laranja, sem forma de engrenagem; a
+  barriga não aparece na corrida, porque a câmera vê a multidão de costas (aparece na loja, no menu de frente e de perto).
+- Histórico: entregue em 2026-11-25 (`Stage RT.6t.22`).
+- **Gate 3×:** não se aplica: o BIBOPZI tem 490 triângulos, abaixo dos 492 do PINTINHO, que continua a forma mais pesada
+  vestida pelo nível de gate (teste `NoShapeOnOfferPassesThePintinhosTriangles`).
+- **Capturas (`docs/art/rt6t22/`):** `bibopzi-vs-referencia.png` (desenho de referência, coluna A, ao lado da frente, 3/4 e
+  3/4 de costas no shader do jogo, verde-água #22B3A6), `bibopzi-perto.png` (as mesmas, mais a frente na cor do mundo 1),
+  `bibopzi-corrida-300.png` (câmera da corrida com 300, cor do mundo 1 e verde-água, dois momentos),
+  `bibopzi-tamanho-de-jogo.png` (recorte da multidão em tamanho real e ampliado 3×), `formas-corrida.png` e
+  `formas-assalto.png` (as 6 formas lado a lado), `loja-formas-4-proporcoes.png` (aba SHAPES com 6 formas).
+- **Pendente do usuário:** aprovar o visual pelas capturas; depois instalar o APK no OPPO
+  (`adb install -r C:\temp\bib\Claybreak.apk`, mantém o save: quem estava na BALL passa ao BIBOPZI). Ícone, capturas da
+  loja e ficha da Play com o Bibopzi ficam para quando você quiser (nada foi enviado ao Play Console).
 
 ## RT-10 — Soft launch e ajuste
 

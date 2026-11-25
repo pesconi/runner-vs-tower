@@ -49,6 +49,7 @@ namespace Claybreak.Tests
                 },
                 new[]
                 {
+                    new CrowdShapeOption { id = SaveMigration.DefaultShape, title = "BIBOPZI", mesh = Shape("bibopzi", 10) },
                     new CrowdShapeOption { id = SaveMigration.ShapeBeforeV4, title = "BALL", mesh = Shape("ball", 12) },
                     new CrowdShapeOption { id = "chick", title = "CHICK", mesh = Shape("chick", 24), price = 300 },
                     new CrowdShapeOption { id = "bunny", title = "BUNNY", mesh = Shape("bunny", 18), price = 1000 }

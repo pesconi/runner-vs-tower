@@ -896,9 +896,17 @@ namespace Claybreak.Editor
                 }
             }
 
-            if (catalog.Shapes[0].id != SaveMigration.ShapeBeforeV4 || catalog.Shapes[0].price != 0)
+            // Save version 6 (2026-11-25): Bibopzi is the free default every new and migrated save wears; the Bolinha, the old
+            // default, stays free (older saves own it and may go back to it).
+            if (catalog.Shapes[0].id != SaveMigration.DefaultShape || catalog.Shapes[0].price != 0)
             {
-                failures.Add($"the first crowd shape must be the free '{SaveMigration.ShapeBeforeV4}'");
+                failures.Add($"the first crowd shape must be the free default '{SaveMigration.DefaultShape}'");
+            }
+
+            int oldDefault = catalog.ShapeIndexOf(SaveMigration.ShapeBeforeV4);
+            if (oldDefault >= 0 && catalog.Shapes[oldDefault].price != 0)
+            {
+                failures.Add($"the old default shape '{SaveMigration.ShapeBeforeV4}' must stay free (older saves wore it without buying it)");
             }
 
             // RT-6t.20: every shape has its two shop figure layers, generated from its own mesh.

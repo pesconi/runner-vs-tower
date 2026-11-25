@@ -48,6 +48,9 @@ namespace Claybreak.Editor
             new Entry("SapinhoNoEyes", false, () => UnitShapeRecipes.Sapinho(false), null),
             new Entry("Pinguim", true, () => UnitShapeRecipes.Pinguim(true), UnitShapeRecipes.Orange),
             new Entry("PinguimNoEyes", false, () => UnitShapeRecipes.Pinguim(false), UnitShapeRecipes.Orange),
+            // 2026-11-25: Bibopzi, the default shape (user's decision); its feet stick out at the front.
+            new Entry("Bibopzi", true, () => UnitShapeRecipes.Bibopzi(true), UnitShapeRecipes.BibopziOrange),
+            new Entry("BibopziNoEyes", false, () => UnitShapeRecipes.Bibopzi(false), UnitShapeRecipes.BibopziOrange),
         };
 
         /// <summary>The generated entry called <paramref name="id"/> (an unknown id is a programming error).</summary>

@@ -153,8 +153,8 @@ namespace Claybreak.Tests
                     Press("Ui/Screens/Shop/Safe/TabSKINS");
                     break;
                 case "loja-formas":
-                    // RT-6t.20: the SHAPES tab with one shape bought (BALL owned, CHICK worn, the rest at their price).
-                    progress.TryBuyShape(1);
+                    // RT-6t.20: the SHAPES tab with one shape bought (BIBOPZI and BALL free, CHICK worn, the rest at their price).
+                    progress.TryBuyShape(2);
                     Press("Ui/Screens/Shop/Safe/TabSHAPES");
                     break;
                 case "mundos":

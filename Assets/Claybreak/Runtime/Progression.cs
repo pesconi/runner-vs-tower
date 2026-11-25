@@ -619,13 +619,22 @@ namespace Claybreak
                 Save.skin = free;
             }
 
-            // RT-6t.20: the free shape is always owned; a worn shape that is not owned (unknown, or a hand edit) falls back to it.
-            Save.ownedShapes = Known(Save.ownedShapes, id => catalog.ShapeIndexOf(id) >= 0, int.MaxValue);
-            string freeShape = catalog.Shapes[0].id;
-            if (!Contains(Save.ownedShapes, freeShape))
+            // RT-6t.20: the free shapes (price 0: the default first and, since save version 6, the Bolinha, the old default)
+            // are always owned, in catalog order; a worn shape that is not owned (unknown, or a hand edit) falls back to the
+            // default.
+            // Rebuilt in catalog order, so unknown and repeated ids drop out.
+            Save.ownedShapes ??= new string[0];
+            var ownedShapes = new List<string>(catalog.Shapes.Count);
+            for (int i = 0; i < catalog.Shapes.Count; i++)
             {
-                Save.ownedShapes = Prepend(Save.ownedShapes, freeShape);
+                if (catalog.Shapes[i].price == 0 || Contains(Save.ownedShapes, catalog.Shapes[i].id))
+                {
+                    ownedShapes.Add(catalog.Shapes[i].id);
+                }
             }
+
+            Save.ownedShapes = ownedShapes.ToArray();
+            string freeShape = catalog.Shapes[0].id;
 
             if (!Contains(Save.ownedShapes, Save.shape))
             {

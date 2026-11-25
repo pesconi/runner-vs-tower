@@ -193,3 +193,9 @@
   durante o build e restaura; se um build for morto no meio, `git checkout --` nesses dois antes de qualquer coisa (o
   validador e o próximo build recusam). Nunca escrever IDs reais do AdMob em arquivo do repositório. Batchmode Android
   reinicia o servidor do adb: outra família (match-3) mede no mesmo OPPO, então combinar a janela antes de rodar Unity/adb.
+- 2026-11-25 (RT-6t.22): a forma padrão é `catalog.Shapes[0]` = `SaveMigration.DefaultShape` (`bibopzi`, save v6); preço 0
+  = grátis e possuída por todos (BIBOPZI e BALL). O construtor do kit não tem torno: corpo de forma livre = esfera dobrada
+  depois de `ToMesh` (os vértices do corpo vêm primeiro) com normais da própria superfície; detalhes assentados por
+  `OnBibopzi`. Esfera 6×3 não chega ao raio na frente (anéis a 60°): conta isso no marcador de frente (> 0,9 R).
+  Capturas de perto com o shader do jogo: `-testFilter Claybreak.Tests.BibopziCaptureTests -bibopziCaptureDir <pasta>` com
+  GPU; comparação com a referência: `python -X utf8 Tools/art/bibopzi_compare.py <pasta> <png da folha> docs/art/rt6t22`.

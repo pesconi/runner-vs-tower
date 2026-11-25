@@ -158,6 +158,19 @@ MonoBehaviour:
     color: {r: 1, g: 0.61960787, b: 0.8235294, a: 1}
     price: 2500
   shapes:
+  - id: bibopzi
+    title: BIBOPZI
+    mesh: {fileID: 4300000, guid: 87cb0bb252eff41448988e832fc48398, type: 2}
+    price: 0
+    motion:
+      Frequency: 8
+      HopHeight: 0.24
+      SquashBase: 0.86
+      SquashAmount: 0.24
+      ForwardLean: 0.06
+    crownSeat: 0.62399995
+    figureBody: {fileID: 21300000, guid: 831ba089a26124448af4937295bb0823, type: 3}
+    figureDetail: {fileID: 21300000, guid: ff1c5be5d57117c4992fa820d1081971, type: 3}
   - id: ball
     title: BALL
     mesh: {fileID: 4300000, guid: 3492d2dda05ae874b91f0decb7196476, type: 2}

@@ -1,4 +1,4 @@
-# Save fixtures (RT-5, RT-6, RT-6t.6b, RT-6t.20)
+# Save fixtures (RT-5, RT-6, RT-6t.6b, RT-6t.20, RT-6t.22)
 
 Real-format saves the save validator (`ClaybreakValidation`) and the tests (`SaveMigrationTests`) read.
 
@@ -13,7 +13,10 @@ Real-format saves the save validator (`ClaybreakValidation`) and the tests (`Sav
   owning the free `ball` plus the shape worn when it was on offer then (`ball` or `chick`): `v4-ball`, `v4-chick-bubblegum`
   (the Pintinho is kept without paying, D31 A), `v4-no-shape` (no `shape`: the Bolinha). `v4-hand-edited-shapes` wears a
   shape sold only since version 5 and lists an `ownedShapes` version 4 never had: both are ignored (owns `ball` only).
-- `v5-*.json`: current format (RT-6t.20): shapes bought in the shop (`ownedShapes`), the worn one among them.
+- `v5-*.json`: the RT-6t.20 format: shapes bought in the shop (`ownedShapes`), the worn one among them. Since version 6
+  (RT-6t.22, 2026-11-25) the old default `ball` becomes the new default `bibopzi` (`v5-ball`); a bought shape stays
+  (`v5-bunny`); every save owns `bibopzi` and keeps `ball`.
+- `v6-*.json`: current format (RT-6t.22): same fields; `ball` is a pick like any other and is kept (`v6-ball-picked`).
 - `damaged-*.json`: must be refused (fresh save, no crash).
 
-Never edit a `v1-*` to `v4-*` file to make a test pass: it stands for a save already on a phone.
+Never edit a `v1-*` to `v5-*` file to make a test pass: it stands for a save already on a phone.

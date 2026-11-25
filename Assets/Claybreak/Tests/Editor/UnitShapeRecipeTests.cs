@@ -140,6 +140,84 @@ namespace Claybreak.Tests
             Assert.AreEqual(r * 0.86f, eyes.z, 1e-4f);
         }
 
+        // 2026-11-25: Bibopzi's landmarks (what keeps it apart from other bean characters) are in the mesh, where the reference
+        // drawing has them: the gear on HIS right temple (+X), the spring above the head, the cream belly low on the front,
+        // hands loose beside the body, flat feet at the front, a bean wider at the base than at the head.
+        [Test]
+        public void BibopziHasItsLandmarks()
+        {
+            Mesh mesh = Keep(UnitShapeRecipes.Bibopzi(true));
+            Vector3[] v = mesh.vertices;
+            Color32[] c = mesh.colors32;
+            Color32 orange = UnitShapeRecipes.BibopziOrange;
+            float headTop = UnitShapeRecipes.BibopziHeadTop;
+
+            Assert.AreEqual(0f, mesh.bounds.min.y, 1e-4f, "stands on the ground");
+            Vector3 springTop = Extreme(v, c, orange, p => p.y);
+            Assert.Greater(springTop.y, headTop + 0.1f, "the spring stands out of the head");
+
+            // Gear: the orange around the temple height, all on +X.
+            Vector3 gear = CentroidWhere(v, c, orange, p => p.y > headTop * 0.6f && p.y < headTop);
+            Assert.Greater(gear.x, 0.1f, "the gear is on his right temple (+X, the viewer's left)");
+            Assert.Less(Extreme(v, c, orange, p => -p.x).x, -0.2f, "the left hand is there too");
+
+            // Belly: cream, on the front, below the eyes.
+            Vector3 belly = Centroid(v, c, UnitShapeRecipes.Cream);
+            Vector3 eyes = Centroid(v, c, UnitShapeRecipes.Eyes);
+            Assert.Greater(belly.z, 0.1f);
+            Assert.Less(belly.y, eyes.y - 0.15f);
+            Assert.AreEqual(0f, eyes.x, 1e-3f, "both eyes, centered");
+
+            // Hands: a gap between the body and each hand at the hand's height.
+            float handInner = Extreme(v, c, orange, p => p.x).x - 0.09f;
+            float bodyHalf = 0f;
+            for (int i = 0; i < v.Length; i++)
+            {
+                if (c[i].a == 255)
+                {
+                    bodyHalf = Mathf.Max(bodyHalf, Mathf.Abs(v[i].x));
+                }
+            }
+
+            Assert.Greater(handInner - bodyHalf, 0.01f, "the hands float loose, no arms");
+
+            // A bean: wider at the base than at the head.
+            Assert.Greater(BodyHalfWidthNear(v, c, headTop * 0.3f), BodyHalfWidthNear(v, c, headTop * 0.85f) + 0.02f);
+            Assert.IsEmpty(UnitShapeRules.Check(mesh, true, orange));
+        }
+
+        private static float BodyHalfWidthNear(Vector3[] v, Color32[] c, float y)
+        {
+            float half = 0f;
+            for (int i = 0; i < v.Length; i++)
+            {
+                if (c[i].a == 255 && Mathf.Abs(v[i].y - y) < 0.05f)
+                {
+                    half = Mathf.Max(half, Mathf.Abs(v[i].x));
+                }
+            }
+
+            return half;
+        }
+
+        private static Vector3 CentroidWhere(Vector3[] vertices, Color32[] colors, Color32 color, System.Func<Vector3, bool> where)
+        {
+            Vector3 sum = Vector3.zero;
+            int count = 0;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                Color32 c = colors[i];
+                if (c.r == color.r && c.g == color.g && c.b == color.b && c.a == color.a && where(vertices[i]))
+                {
+                    sum += vertices[i];
+                    count++;
+                }
+            }
+
+            Assert.Greater(count, 0, "no vertex of that color there");
+            return sum / count;
+        }
+
         private Mesh Keep(Mesh mesh)
         {
             made.Add(mesh);

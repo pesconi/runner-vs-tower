@@ -2318,3 +2318,42 @@ RT-6t.21 não para: o nome é decisão do usuário (D29), não há marca igual, 
   teste pela lista do kit (`MobileAdsGate`). Revisão de segurança independente: a restauração volta sempre aos valores commitados fixos
   (nunca aos "anteriores"), cada restauração roda mesmo se a outra falhar, e o build recusa começar se os assets já
   estiverem com outros valores (build anterior interrompido). Sem hook de git: a rede é o validador.
+
+## 2026-11-25 — Bibopzi (direção "Feijão") substitui a BOLINHA como forma padrão da multidão — usuário
+
+- Contexto: no repositório `personagem`, o usuário escolheu para o Bibopzi (bebê robô do estúdio) a direção visual
+  "Feijão" (D3 do personagem, `C:\projects\personagem\conceito\2026-11-25_rumo-e-visual.md`; desenho de referência
+  `personagem/ia/2026-11/2026-11-25_bibopzi_direcoes-2d.svg`, coluna A) e perguntou se ele entra no Stampeep.
+- Resposta do usuário (2026-11-25): **"O jogo ta apenas em teste, pode substituir a padrão"** — o Bibopzi vira a unidade
+  padrão da multidão (antes a BOLINHA/BALL); as outras formas continuam na loja.
+- Risco anotado no personagem: semelhança com Fall Guys/Among Us/Baymax (feijão com pés), maior numa multidão de jogo.
+  Mitigação: os marcos (topete de mola, engrenagem, barriga creme, mãos soltas) ficam na malha e são conferidos por teste.
+
+## 2026-11-25 — T-RT6t22-1..5 — Bibopzi como forma padrão (RT-6t.22) — técnica (sessão da entrega)
+
+- **T-RT6t22-1 — Receita BIBOPZI no `UnitShapeRecipes`, 490 triângulos (458 sem olhos).** O construtor do kit não tem
+  torno: o corpo é uma esfera 10×9 dobrada depois em feijão (perfil superelíptico, base larga 0,36 m, cabeça 0,30 m,
+  altura 0,59 m, profundidade 82%), com normais da própria superfície; os detalhes são assentados na superfície
+  calculada (discos para olhos, losangos, sobrancelhas e parafuso; elipsoide afundado para a barriga). Engrenagem laranja
+  na têmpora direita DELE (+X) virada para fora como orelha, porque a câmera da corrida vê a multidão de costas; topete
+  de mola em zigue-zague com bola; mãos esféricas soltas com folga do corpo; pés achatados que saem à frente (são o
+  marcador de frente do validador). Corpo com máscara 255 (cor do mundo/skin); creme #FFF1DC, laranja #FF8A3D, olhos,
+  sobrancelhas e parafuso com máscara 0. Nada passa dos 492 do PINTINHO: o gate 3× não se aplica. Sem boca (o orçamento
+  não cabe; o rosto lê pelos olhos). Teste `BibopziHasItsLandmarks` confere engrenagem em +X, mola acima da cabeça,
+  barriga creme na frente abaixo dos olhos, mãos soltas e base mais larga que a cabeça.
+- **T-RT6t22-2 — Catálogo: BIBOPZI primeiro, grátis; BALL continua grátis na loja.** A primeira forma é a padrão (nova
+  regra do validador: `SaveMigration.DefaultShape` = `bibopzi`). Preço 0 passa a significar "grátis e possuída por todos"
+  (antes só a primeira podia ser 0); preço negativo continua recusado. Assim a BOLINHA, que todo jogador já tinha, segue
+  na loja sem inventar preço (decisão de dinheiro fica com o usuário); a loja inteira continua 5.300 moedas em formas.
+  Quique próprio (8 Hz, altura 0,24: "robozinho saltitante"). Coroa do líder no topo da cabeça.
+- **T-RT6t22-3 — Save v6.** v6 = v5 com a forma padrão nova. Migração v1–v5 → v6 (`SaveMigration.DefaultToBibopzi`):
+  quem vestia a BOLINHA (a padrão, que ninguém precisou escolher) ou nenhuma forma passa a vestir o BIBOPZI; quem comprou
+  ou manteve outra (PINTINHO, COELHINHO...) continua com ela; todos possuem o BIBOPZI e continuam possuindo a BOLINHA
+  (voltar é grátis). Num v6 a BOLINHA é escolha como outra qualquer e nunca é trocada de novo. Backup do JSON v5 pela
+  chave `Claybreak.Save.backup.v5` (mecanismo da RT-5). Normalização refeita na ordem do catálogo (tira ids desconhecidos
+  e repetidos, inclui todas as grátis). Fixtures novas `v5-ball` (vira BIBOPZI) e `v6-ball-picked` (mantém a BOLINHA).
+  Limitação aceita: um v5 que tinha voltado de propósito para a BOLINHA também passa ao BIBOPZI (o v5 não distingue).
+- **T-RT6t22-4 — Capturas com GPU** (`BibopziCaptureTests`, `-bibopziCaptureDir`): perto (frente, 3/4, 3/4 de costas) com
+  o shader toon do jogo e a corrida com 300; comparação com o desenho de referência montada por
+  `Tools/art/bibopzi_compare.py`.
+- **T-RT6t22-5 — Fora desta entrega (pendência do usuário):** ícone, capturas da loja e ficha da Play não mudam aqui.

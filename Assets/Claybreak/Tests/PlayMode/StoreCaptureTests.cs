@@ -134,8 +134,8 @@ namespace Claybreak.Tests
             ClaybreakFlow flow = null;
             yield return LoadMidGame(1, 3, loaded => flow = loaded);
             Camera view = flow.Crowd.CameraRig.GetComponent<Camera>();
-            flow.Progress.TryBuyShape(1);
             flow.Progress.TryBuyShape(2);
+            flow.Progress.TryBuyShape(3);
             string[] screens = { "home", "loja-upgrades", "loja-elites", "loja-formas", "mundos" };
             foreach (string screen in screens)
             {
