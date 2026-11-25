@@ -86,6 +86,7 @@ namespace Claybreak.Editor
                 AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<SwarmCameraProfile>(), CameraProfilePath);
             }
 
+            VinylLabBuilder.BuildAssets();
             AssetDatabase.SaveAssets();
             CreateScene();
         }
@@ -211,6 +212,7 @@ namespace Claybreak.Editor
             eventSystem.AddComponent<EventSystem>();
             eventSystem.AddComponent<InputSystemUIInputModule>();
 
+            VinylLabBuilder.Wire(lab, sun);
             EditorSceneManager.SaveScene(scene, ToonLab.ScenePath);
         }
 
@@ -312,7 +314,7 @@ namespace Claybreak.Editor
             return builder.ToMesh("LabGround");
         }
 
-        private static Mesh SaveMesh(Mesh mesh, string path)
+        internal static Mesh SaveMesh(Mesh mesh, string path)
         {
             var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if (existing == null)
@@ -328,7 +330,7 @@ namespace Claybreak.Editor
             return existing;
         }
 
-        private static Material SaveMaterial(string path, Shader shader, System.Action<Material> configure)
+        internal static Material SaveMaterial(string path, Shader shader, System.Action<Material> configure)
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (material == null)
@@ -343,7 +345,7 @@ namespace Claybreak.Editor
             return material;
         }
 
-        private static T Load<T>(string path) where T : Object
+        internal static T Load<T>(string path) where T : Object
         {
             T asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset == null)
@@ -365,14 +367,14 @@ namespace Claybreak.Editor
             return shader;
         }
 
-        private static void SetObject(Object target, string property, Object value)
+        internal static void SetObject(Object target, string property, Object value)
         {
             var so = new SerializedObject(target);
             so.FindProperty(property).objectReferenceValue = value;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path))
             {

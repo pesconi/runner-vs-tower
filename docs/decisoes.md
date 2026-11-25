@@ -2416,3 +2416,44 @@ de qualidade do maestro (limpo, escalável, seguro); nenhuma é de produto, dinh
   `-nographics`).
 - **T-RT6v3.1-8 — Comparação de pixels.** `Tools/art/compare_captures.py <A> <B>`: pixel "diferente" = algum canal a mais de 8
   (ruído de MSAA/GPU); passa com até 1% de pixels diferentes (duas rodadas iguais do rig deram 0,60% e 0,68% na corrida e no assalto, por causa da multidão e dos destroços; as estáticas dão 0). Capturas "antes" em `docs/art/v3/antes/`.
+
+## 2026-11-25 — RT-6v3.2: imagem-alvo medida (decisões técnicas da sessão da entrega)
+
+Laboratório, sem efeito no jogo: a cena do jogo, os materiais e o `studiokit` não mudaram. A escolha entre as direções é
+do usuário (D36); estas são as decisões técnicas para produzir e medir as opções.
+
+- **T-RT6v3.2-1 — Shader de laboratório irmão, local ao jogo.** `Claybreak/VinylLab` (`Assets/Claybreak/Lab/Shaders`) tem as
+  mesmas propriedades, palavras-chave (`STUDIOKIT_TOON_INSTANCES`, `_SLOTS`, `_BUFFER`) e dados de instância (inclui o
+  `ToonInstanceData.hlsl` do kit) que o `StudioKit/ToonLit`: um material ToonLit trocado para ele continua funcionando nas
+  duas rotas. Luz: rampa suave (smoothstep de N·L + meia-Lambert), sombra tingida (não cinza), brilho especular suave
+  (Blinn-Phong por smoothstep), luz de borda colorida e o ambiente de 2 tons do kit; brilho e borda escalados por
+  `lerp(_VinylSceneGloss, 1, _VinylHero)` e, no cenário, zerados nas faces que olham para cima (chão e pista ofuscavam em
+  ângulo rasante na primeira rodada). O shader que vai para o jogo é o da K.v3a, com os números escolhidos.
+- **T-RT6v3.2-2 — Direções como dado.** `VinylDirection.All` (A, B, C) guarda luz do shader, sol, céu/neblina e pós de cada
+  opção; é a fonte única das telas no editor e do ensaio no celular (`--ei vinyl N`). Os perfis de pós são assets gerados
+  dela (`Lab/Generated/VinylPost{A,B,C}.asset`, pelo `VinylLabBuilder` dentro do `ToonLabBuilder`), para que o player de
+  medição carregue as variantes do pós (o URP retira as não usadas). O material `VinylCrowd.mat` (instanciado) carrega o
+  shader e suas variantes de instancing para o player.
+- **T-RT6v3.2-3 — Pós sem tonemapping no laboratório.** O tonemapping Neutral do guia acinzentou a pista e o céu quase brancos
+  (a paleta é de valores de tela); o laboratório usa tonemapping desligado, cor/contraste/saturação, vinheta e bloom com
+  limiar 1,1 (só o brilho e a borda passam de 1 em HDR). Fica como achado para o guia (2.1) na RT-6v3.3.
+- **T-RT6v3.2-4 — Bibopzi suavizado por algoritmo.** `VinylMeshSmoothing`: normais suavizadas entre faces com menos de 50°
+  e uma subdivisão PN-triangles (pontos novos no retalho cúbico das normais; ponto médio reto nas arestas duras, sem
+  rachar): 490 → 1.960 triângulos. Acima da faixa v3 de 800–1.200: o ensaio mede um caso **mais pesado** que o orçamento
+  (conservador). O modelo final vem da RT-6v3.4a.
+- **T-RT6v3.2-5 — Telas com as câmeras fixas.** `VinylConceptTests` reusa o `StyleCaptureRig` por dois ganchos opcionais
+  (`Dress` antes de cada foto e `AlternateTower` para refazer o assalto e a torre com outra torre), mesmo enquadramento das
+  capturas "antes". Materiais ToonLit trocados só em memória e devolvidos antes de cada carga de cena (o jogo recusa partir
+  com o chão fora do ToonLit). O editor grava `_VinylHero` nos `.mat` ao sair: depois das capturas, `git checkout --
+  Assets/Claybreak/Content`. Torres do mundo: só normais suavizadas (< 45°), sem remodelar (RT-6v3.5). O pós colore também a
+  UI nas telas (canvas em `ScreenSpaceCamera` só na captura; no jogo a UI é overlay e não passa pelo pós).
+- **T-RT6v3.2-6 — Torre "fábrica de brinquedo" procedural.** `ToyFactoryTowerSketch`: tambor com borda de engrenagem,
+  tambor parafusado, engrenagem frontal, duas molas, cúpula e chave de corda, por torno e hélice com normais suaves; cores
+  pelos pesos de estrutura da paleta do mundo (como as torres de hoje); 13.920 triângulos (faixa do chefe v3: 8–15 mil).
+  Mora no assembly de testes (só as capturas a constroem): o validador recusa criar objetos em código de runtime (2.2.1).
+- **T-RT6v3.2-7 — Ensaio no OPPO.** `TOONLAB_VINYL="0 1 2 3" Tools/rt6t-toonlab-gate.sh <apk> 300 0 v3`: 300 unidades na
+  ToonLab, MSAA/HDR do projeto, cada visual (0 = ToonLit com o Bibopzi suavizado, 1–3 = A–C) com pós desligado e ligado,
+  nas rotas Vulkan (buffer) e GLES (blocos de 256), mais uma captura de tela do aparelho por visual.
+- **T-RT6v3.2-8 — Mistura M com imagem própria.** O revisor (fable) recomendou misturar as direções; para a ficha não pedir
+  escolha às cegas, a mistura virou a quarta entrada de `VinylDirection.All` (M: vinil da A no personagem, cenário fosco da
+  B, contraste +14, brilho menor, bloom acima de 1,3), com as mesmas telas e o mesmo ensaio (`--ei vinyl 4`).

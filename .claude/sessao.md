@@ -204,3 +204,11 @@
   guia. Capturas fixas: `-testFilter Claybreak.Tests.StyleCaptureTests -styleCaptureDir <pasta>` (GPU) e
   `python -X utf8 Tools/art/compare_captures.py <antes> <depois>` (tolerância 1%). O passo `capture` do rt4-check ainda regrava
   `docs/art/rt4` e `rt6`: reverter com `git checkout --`; `docs/art/telas` sem diff = tela igual.
+- 2026-11-25 (RT-6v3.2): laboratório de vinil = `Claybreak/VinylLab` (irmão do ToonLit, local ao jogo) + `VinylDirection.All`
+  (A, B, C, M; dado único das telas e do celular). Telas-conceito: `-testFilter Claybreak.Tests.VinylConceptTests
+  -vinylConceptDir <pasta>` com GPU (`-vinylConceptOnly M`, `-vinylConceptQuick` só a corrida, `-vinylConceptIcons` só líder e
+  ícones) e `python -X utf8 Tools/art/vinyl_sheets.py <pasta>`. O editor grava `_VinylHero` nos `.mat` do jogo ao sair:
+  `git checkout -- Assets/Claybreak/Content` depois. O jogo recusa partir com o chão fora do ToonLit (troca de shader só em
+  memória e devolvida antes de cada cena). Ensaio: `TOONLAB_VINYL="0 1 2 3 4" Tools/rt6t-toonlab-gate.sh <apk> 300 0 v3`.
+  Código que cria objetos em `Lab/Runtime` reprova no validador (2.2.1): o que só as capturas usam vai para o assembly de testes.
+  O tonemapping Neutral acinzenta a paleta pastel (valores de tela): o laboratório usa sem tonemapping.

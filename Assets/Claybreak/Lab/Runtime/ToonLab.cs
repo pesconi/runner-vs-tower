@@ -39,6 +39,20 @@ namespace Claybreak.Lab
         [SerializeField] private ShapeChoice[] shapes = Array.Empty<ShapeChoice>();
         [Min(0)] [SerializeField] private int shapeIndex;
         [SerializeField] private bool eyes = true;
+        [Header("RT-6v3.2 vinyl rehearsal (--ei vinyl N, --ez post)")]
+        [Tooltip("An instanced material on Claybreak/VinylLab: carries the shader and its instancing variants into the "
+            + "measurement player (variants of a shader no instanced material uses are stripped); its shader replaces ToonLit.")]
+        [SerializeField] private Material vinylMaterial;
+        [Tooltip("The smoothed Bibopzi of the concept screens (PN subdivided).")]
+        [SerializeField] private Mesh vinylUnit;
+        [Tooltip("Post profiles of directions A..C (VinylDirection.All order).")]
+        [SerializeField] private VolumeProfile[] vinylProfiles = Array.Empty<VolumeProfile>();
+        [SerializeField] private Volume vinylVolume;
+        [SerializeField] private Light sun;
+        [Tooltip("Editor only: the direction to show (-1 = the plain lab, 0 = ToonLit with the smoothed Bibopzi, 1..3 = A..C).")]
+        [SerializeField] private int editorVinyl = -1;
+        [SerializeField] private bool editorPost;
+        private int vinyl = -1;
 
         private bool dragging;
         private float pressX;
@@ -178,6 +192,8 @@ namespace Claybreak.Lab
             }
 
             shapeIndex = Mathf.Clamp(shapeIndex, 0, Mathf.Max(0, shapes.Length - 1));
+            vinyl = fromLaunch ? settings.Vinyl : editorVinyl;
+            ApplyVinyl(fromLaunch ? settings.Post : editorPost);
             ApplyShape();
 
             swarm.SetCount(Mathf.Clamp(settings.Units, 0, swarm.Capacity));
@@ -254,8 +270,45 @@ namespace Claybreak.Lab
             RenderSettings.fogEndDistance = fogEnd * scale;
         }
 
+        // RT-6v3.2: the direction's light, sky and post, the swarm on the lab shader and the smoothed Bibopzi. In players
+        // only the loaded copies of the materials change; in the Editor the swarm material asset would be switched, so the
+        // Editor shows the direction without switching shaders (captures of the game use VinylConceptTests instead).
+        private void ApplyVinyl(bool post)
+        {
+            Camera view = cameraRig.GetComponent<Camera>();
+            VinylDirection.SetPost(view, false);
+            if (vinyl < 0)
+            {
+                return;
+            }
+
+            if (vinyl > 0 && vinyl <= VinylDirection.All.Length && vinylMaterial != null)
+            {
+                VinylDirection direction = VinylDirection.All[vinyl - 1];
+                direction.ApplyLight(sun);
+                if (!Application.isEditor)
+                {
+                    VinylDirection.SwitchMaterials(vinylMaterial.shader, "CrowdToon");
+                }
+
+                if (vinylVolume != null && vinyl - 1 < vinylProfiles.Length)
+                {
+                    vinylVolume.sharedProfile = vinylProfiles[vinyl - 1];
+                    vinylVolume.enabled = post;
+                }
+
+                VinylDirection.SetPost(view, post);
+            }
+        }
+
         private void ApplyShape()
         {
+            if (vinyl >= 0 && vinylUnit != null)
+            {
+                swarm.SetUnitMesh(vinylUnit);
+                return;
+            }
+
             if (shapes.Length == 0)
             {
                 return; // the swarm keeps the mesh set on it
@@ -358,7 +411,9 @@ namespace Claybreak.Lab
             var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             string pipeline = urp == null ? "none" : $"msaa={urp.msaaSampleCount} hdr={(urp.supportsHDR ? "on" : "off")} renderScale={urp.renderScale:0.##}";
             Camera view = cameraRig.GetComponent<Camera>();
-            Debug.Log($"[ToonLab] units={units} dying={churnUnits} shape=\"{ShapeLabel}\" {pipeline} fps={Application.targetFrameRate} "
+            string look = vinyl < 0 ? "lab" : vinyl == 0 ? "toonlit-smooth" : "vinyl-" + VinylDirection.All[Mathf.Min(vinyl, VinylDirection.All.Length) - 1].id;
+            bool postOn = view.GetUniversalAdditionalCameraData().renderPostProcessing;
+            Debug.Log($"[ToonLab] look={look} post={(postOn ? "on" : "off")} units={units} dying={churnUnits} shape=\"{ShapeLabel}\" {pipeline} fps={Application.targetFrameRate} "
                 + $"tris/unit={swarm.UnitTriangles} draws=1+{(swarm.DrawsShadows ? 1 : 0)} "
                 + $"api={SystemInfo.graphicsDeviceType} gpu={SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsDeviceVersion}) "
                 + $"cpu={SystemInfo.processorType} x{SystemInfo.processorCount} screen={Screen.width}x{Screen.height} "

@@ -191,7 +191,7 @@ uma antes da entrega indicada.
 | **D31** | **Forma da multidão como compra na loja** (leitura do pedido do usuário de 2026-11-23; substitui o item 1 da D26) | Loja, save v5, tela inicial | RT-6t.20 (as 6t.16–6t.19 seguem sem ela) | A: formas compradas na loja (bolinha grátis, pintinho e 3 novas pagas; quem usa o pintinho fica com ele), silhuetas distintas na câmera da corrida como aceite — ficha em `plano-telas-obstaculos-loja.md` seção 5 — **decidido em 2026-11-23: A** |
 | **D32** | **Preços das formas** | Economia da loja (D19), tempo para comprar tudo | RT-6t.20 (sem resposta: A provisório) | A: 300 · 1.000 · 1.600 · 2.400 (loja ~55–56 min) — ficha em `plano-telas-obstaculos-loja.md` seção 5 — **decidido em 2026-11-23: A** |
 | **D33** | **Proteger o nome "Stampeep": marca e domínio** (gasto; não bloqueia) | Marca e domínio do nome escolhido na D29 | antes da RT-9; **vale do SME Fund 2026 só até 04/12/2026** | C agora + pedir o vale já; marca PT (9 e 41) e UE só com opinião de agente — ficha abaixo, escrita na RT-6t.21 (2026-11-23) — **pendente** |
-| **D36** | **Imagem-alvo da direção visual v3** (2–3 telas-conceito no Unity, medidas no OPPO), com o tema das torres (D17/D28) e o ícone (D25) | Sem alvo, a crítica das capturas não tem referência | RT-6v3.3 (trava 8 das 13 entregas do jogo na série) | Escolher com as imagens e os números da RT-6v3.2 — ficha abaixo, **rascunho** (enviada no fim da RT-6v3.2) — **pendente** |
+| **D36** | **Imagem-alvo da direção visual v3** (telas-conceito A, B, C e a mistura M, feitas no Unity e medidas no OPPO), com o tema das torres (D17/D28) e o ícone (D25) | Sem alvo, a crítica das capturas não tem referência | RT-6v3.3 (trava 8 das 13 entregas do jogo na série) | Recomendação: M + torre fábrica nas cores de cada mundo + ícone 2 — ficha completa abaixo (RT-6v3.2, imagens em `docs/art/v3/alvo/`) — **pendente (com o usuário)** |
 | **D37** | **Imagem e música geradas por IA (vidIQ)**: gasto de créditos e licença | Regra de Custo; licença do que entra no build | RT-6v3.2 (conceito) e RT-6v3.9 (música); não trava nada (sem resposta: C) | C agora (nada por IA); A depois de 15/12 com os termos lidos; música na RT-6v3.9 — ficha abaixo (2026-11-25) — **decidido em 2026-11-25: C** (usuário) |
 
 ### Ficha D33 — Proteger o nome "Stampeep" (gasto pendente, escrita na RT-6t.21; não bloqueia nenhuma entrega)
@@ -279,63 +279,149 @@ https://ipoi.gov.ie/en/news-events/news-categories-/announcements/sme-fund-2026-
 · .com https://investor.verisign.com/news-releases/news-release-details/verisign-reports-first-quarter-2026-results ·
 RDAP https://rdap.verisign.com/com/v1/domain/stampeep.com (404 = livre). Busca completa em `decisoes.md` (2026-11-23).
 
-### Fichas D36 e D37 (escritas no planejamento da série RT-6v3, 2026-11-25)
+### Fichas D36 e D37 (D36 completada na RT-6v3.2, 2026-11-25; D37 do planejamento da série)
 
-**D36 é rascunho:** só é enviada ao usuário no fim da RT-6v3.2, com as imagens e os números medidos no OPPO. A D37 pode
-ser respondida já (não trava nada).
+**D36 completa** (RT-6v3.2): telas feitas no Unity e medidas no OPPO; duas revisões independentes (fable) incorporadas —
+uma das telas, outra da ficha. A D37 já foi respondida (C).
 
 ```text
-DECISÃO D36 — Qual imagem-alvo o visual novo do Stampeep deve perseguir? (RASCUNHO)
+DECISÃO D36 — Qual imagem-alvo o visual novo do Stampeep deve perseguir?
+(três respostas curtas: 1 o visual, 2 as torres, 3 o ícone)
 
-O que você está aprovando: a direção visual "v3, acabamento premium" persegue a opção
-<A, B ou C> das telas-conceito da RT-6v3.2 (ou uma mistura dita por você, ex.: "luz da A,
-cores da B"), com torres e chefes no tema <por mundo / fábrica de brinquedo> e o ícone
-<1, 2 ou 3>. Essas telas viram a imagem-alvo: toda área nova é comparada com elas antes de
-chegar a você.
+O que você está aprovando: o visual novo ("v3, brinquedo de vinil premium") persegue a
+opção <A, B, C ou M> das telas-conceito como alvo de PERSONAGEM E LUZ; as torres e
+chefes seguem o tema <do mundo / fábrica de brinquedo / decidir depois>; o ícone segue o
+esboço <1, 2, 3 / decidir depois>. O alvo de pista e cenário fecha quando a primeira fatia
+refeita (pista, portão, árvore) chegar no seu aceite agrupado "mundo" (depois da
+RT-6v3.7). Toda área refeita é comparada com esse alvo antes de chegar a você.
 
-Por que agora: trava 8 das 13 entregas da série no jogo (da RT-6v3.3 em diante; o som segue
-sem ela). Sem alvo, a IA não tem contra o que criticar as capturas.
+Por que agora: sem ela param 8 das 13 entregas da série no jogo (da RT-6v3.3 em diante,
+conta do plano de 2026-11-25; o som segue sem ela). Sem alvo, a revisão por IA não tem
+contra o que comparar as capturas.
+
+Imagens (repositório, pasta docs/art/v3/alvo/; abrem no GitHub pelo celular):
+https://github.com/pesconi/runner-vs-tower/tree/main/docs/art/v3/alvo
+- comparar-lider.png — o personagem de perto: ONDE A DIFERENÇA MAIS APARECE
+- comparar-corrida.png, comparar-assalto.png, comparar-home.png — hoje | A | B | C | M
+- torres.png — torre do mundo 4 com a luz nova × "fábrica de brinquedo"
+- icones.png — o ícone de hoje e 3 esboços por opção
 
 Contexto que você precisa saber:
-- Fato: você pediu (2026-11-25) "não quero esse visual low poly"; aprovou o Bibopzi; quer o
-  padrão em tudo (inimigos, portais, piso, fundo, sons).
-- Fato (preencher na RT-6v3.2): as telas foram feitas no próprio Unity, com o Bibopzi
-  suavizado, e cada opção foi ensaiada no OPPO: <GPU p95 de cada opção, com e sem pós,
-  Vulkan e GLES; teto do gate: 11 ms>.
-- Inferência nossa: até o ensaio, "dá para fazer no jogo" é inferência; a opção mais bonita
-  pode ser a mais cara no celular.
-- Tema das torres e chefes: a D28 (2026-11-22) manteve os temas por mundo (pedra, pântano,
-  fundição, gelo). A v3 pode mantê-los arredondados ou trocar por uma "fábrica de brinquedo"
-  feita das peças do Bibopzi (porca, engrenagem, mola, parafuso). As duas versões vêm nas telas.
-- Público (D25, 2026-11-22): o jogo é declarado 13+ e "não destinado a crianças", e o ícone
-  não teria rosto em destaque. Um robô bebê com expressões, num mundo de brinquedo, aumenta a
-  leitura infantil que a D25 quis evitar, e o Bibopzi tem rosto. Por isso os 2–3 esboços de
-  ícone vêm junto: com e sem o rosto em destaque.
-- Referência do gênero: <2–3 jogos do topo, por link, lado a lado com as opções>.
+- Fato (seu pedido, 2026-11-25): "não quero esse visual low poly"; você aprovou o Bibopzi e
+  quer o padrão em tudo (inimigos, portais, piso, fundo, sons).
+- Fato (RT-6v3.2): as telas foram feitas no próprio jogo, nos mesmos enquadramentos das
+  capturas de hoje, com um shader de teste ("shader" = o programa que pinta a luz na tela):
+  luz suave em vez das 3 faixas duras, sombra colorida, reflexo de plástico e luz de borda;
+  e o Bibopzi arredondado (490 → 1.960 triângulos). O que AINDA NÃO mudou: modelos do
+  cenário, árvores, inimigos, portões, obstáculos, pista e botões. Por isso corrida e
+  assalto vistos de longe mudam pouco e ainda parecem "low poly" (os dois revisores
+  disseram isso). A diferença real está no personagem de perto e na torre "fábrica".
+- Fato (medido no OPPO, no laboratório de medição, 300 Bibopzis de 1.960 triângulos — mais
+  pesados que a meta de 1.200). Número = tempo da placa de vídeo no quadro mais lento de
+  cada 20 ("GPU p95"), pior janela estável; teto do jogo ("gate" = a régua de desempenho):
+  11 ms. Vulkan / OpenGL ES (os dois modos de desenho do celular); "pós" = filtro de cor,
+  escurecido nos cantos ("vinheta") e brilho por cima da imagem:
+    hoje (shader atual):    4,1 / 7,6 ms
+    A  sem pós 4,7 / 7,6*  com pós 5,6 / 7,1
+    B  sem pós 4,6 / 7,9   com pós 7,6 / 8,5
+    C  sem pós 4,5 / 8,3*  com pós 5,4 / 7,5
+    M  medição pendente: o celular ficou bloqueado depois das outras
+       (deve ficar perto da A; inferência nossa)
+  Todas as medidas cabem no teto com folga e o laboratório ficou em 60 quadros por segundo.
+  *Picos isolados repetidos uma vez, como manda a regra: A teve uma janela de 18,4 ms; C sem
+  pós deu 20 ms na 1ª rodada e 8,3 na repetição. B com pós custa ~2 ms a mais que A com pós
+  (reproduzido, sem explicação ainda; a M usa o cenário da B, a investigar na RT-6v3.3).
+  Não medidos: a torre fábrica (13.920 triângulos, dentro da faixa de chefe de 8–15 mil) e
+  o jogo inteiro — isso é o gate de cada entrega seguinte.
+- Inferência nossa: o shader novo custa ~0,5 ms a mais que o de hoje; o pós, de 0,7 a 3 ms.
+  O custo não decide entre as opções; o gosto decide.
+- Torres e chefes: a D28 (2026-11-22) manteve os temas por mundo (pedra, pântano, fundição,
+  gelo) sem refazer modelos. A v3 já prevê remodelar torres e chefes arredondados (entrega
+  RT-6v3.5, no calendário de qualquer jeito); a "fábrica" muda o TEMA (troca a D28), não o
+  volume de trabalho (inferência nossa). O esboço da fábrica (engrenagem, molas, parafusos,
+  cúpula, chave de corda) já usa as cores do mundo; só há imagem no mundo 4 e não há chefe
+  de outro mundo desenhado.
+- Público (D25, 2026-11-22): jogo declarado 13+ e "não destinado a crianças", ícone sem
+  rosto em destaque. Um mundo de brinquedo (molas, chave de corda) aumenta a leitura
+  infantil — a própria direção v3 já anotou esse risco.
+- Referência do gênero (só por link, nada copiado; downloads das páginas da Play em
+  2026-11-25): Mob Control (Voodoo) e Count Masters e Join Clash 3D (Freeplay), todos
+  com 100 milhões+. Formas lisas, poucas cores fortes, pista clara; nenhum usa "vinil" com
+  reflexo no personagem.
+  play.google.com/store/apps/details?id=com.vincentb.MobControl
+  play.google.com/store/apps/details?id=freeplay.crowdrun.com
+  play.google.com/store/apps/details?id=com.freeplay.runandfight
 
-Opções (previstas; as imagens e os números chegam com a RT-6v3.2):
-A) Vinil brilhante e saturado (cores fortes, brilho de borda em tudo).
-   + Mais "loja", chama atenção na lista. - Riscos: cansar o olho; mais caro no celular
-   (chance: média; impacto: médio — cortar brilho).
-B) Pastel fosco, brilho só no personagem (o cenário recua, o Bibopzi brilha).
-   + Mais leve no celular; personagem em destaque. - Riscos: parecer menos "premium" na
-   miniatura da loja (média; médio).
-C) Contraste alto com luz de fim de tarde por mundo.
-   + Dramático, diferente do gênero. - Riscos: leitura pior dos números dos portões
-   (média; alto — mexer no contraste do texto).
+1 — O VISUAL (personagem e luz)
+A) Vinil brilhante e saturado — reflexo e borda em tudo, cores fortes, brilho leve.
+   + O personagem parece plástico de brinquedo caro; chama atenção na loja.
+   - Riscos: cansa o olho e o cenário perde o "fosco" (média; médio — baixar a saturação);
+     a barriga do Bibopzi estoura para branco (alta; baixo — reduzir o reflexo).
+B) Pastel fosco, reflexo só no personagem.
+   + O cenário recua e o personagem destaca.
+   - Riscos: ficou com cara de névoa cinza, a menos "premium" das três (alta; médio); a
+     multidão rosa-claro se mistura com a pista (alta; alto para a leitura do jogo); a mais
+     cara com pós (7,6 / 8,5 ms, ainda dentro do teto).
+C) Contraste alto, luz de fim de tarde (céu roxo e laranja).
+   + Dramático; é a única em que a multidão separa bem da pista.
+   - Riscos: chão cor de mostarda "suja", vinheta pesada, faixa de reflexo dura no rosto; é
+     a luz de um mundo, não de todos (média; médio — usar só num mundo de pôr do sol).
+M) Mistura (recomendada pelo revisor): personagem da A com reflexo menor (a barriga não
+   estoura), cenário quase sem reflexo, um pouco mais de contraste, brilho só nos reflexos.
+   + O melhor personagem das quatro; leve no celular (medição no celular pendente).
+   - Riscos: nas telas de longe é praticamente a A com menos brilho — o "cenário fosco" e o
+     contraste multidão × pista prometidos ainda não aparecem, porque dependem da pista e
+     do cenário novos (alta; médio — o alvo de cenário fecha na primeira fatia refeita).
 D) Nenhuma ainda: outra rodada com o que você disser.
-   Custo: ~1 semana a mais (consome metade da folga do calendário). Volta atrás? sim.
+   - Riscos: ~1 semana a mais (metade da folga de ~2 semanas até meados de abril; conta da
+     direção v3, seção 8) e a nova rodada continua sem cenário refeito, então a dúvida
+     "parece premium?" pode voltar (média; médio).
+Custo de A, B, C ou M: nenhum em dinheiro. Volta atrás? sim, antes da RT-6v3.3; depois,
+cada área feita no alvo antigo teria de ser revista.
 
-Custo: nenhum em dinheiro. Volta atrás? sim antes da RT-6v3.3; depois, cada área feita no
-alvo antigo teria de ser revista.
-Recomendação: <preencher na RT-6v3.2, com os números>.
-Segunda opinião (fable, sobre o plano): concorda em decidir só com as imagens na mão, desde
-que as telas sejam feitas no Unity com o número medido no OPPO de cada opção, que a ficha
-pergunte junto o tema das torres (D17/D28) e o risco de público (D25) com o ícone, e que haja
-uma referência do gênero lado a lado.
+2 — TORRES E CHEFES
+Mundo) Tema de cada mundo (pedra, pântano, fundição, gelo), remodelado arredondado na
+   RT-6v3.5. + Mantém a D28 e a variedade entre mundos; menos infantil. - Risco: hoje
+   (só com a luz nova) ainda parece o modelo antigo; o "premium" depende inteiro da
+   remodelagem (média; médio).
+Fábrica) Torres e chefes de brinquedo feitos das peças do Bibopzi, nas cores de cada mundo.
+   + A única peça que já tem cara de v3; combina com o personagem (o mundo dele).
+   - Riscos: troca a D28; molas e chave de corda puxam para o infantil (D25) (média; alto
+     para a ficha da Play); os 4 mundos podem ficar parecidos demais (média; médio — formas
+     diferentes por mundo).
+Depois) Decidir com a primeira torre remodelada na mão (RT-6v3.5). Sem atraso: a RT-6v3.5
+   vem 7 entregas depois desta.
+
+3 — ÍCONE
+1) Rosto do Bibopzi em destaque. - Contraria a D25 (ícone sem rosto). 
+2) Multidão de costas indo para a torre. + Sem rosto; mostra o jogo. - Fraco em tamanho
+   pequeno (torre solta, multidão cortada); só vale com a torre fábrica.
+3) Um Bibopzi de costas diante da torre. - Vira um "ovo rosa" pequeno demais; só vale com a
+   fábrica.
+Depois) Decidir na RT-6v3.10 (telas e ícone), com o cenário pronto. Sem atraso.
+
+Recomendação: 1 = M, 2 = Fábrica, 3 = 2 (ajustado: torre maior, menos unidades e maiores,
+testado a 48 pixels). M porque o personagem em vinil é o que mais mostrou "premium" e o
+reflexo menor resolve a barriga; vale como alvo de personagem e luz, e o alvo de pista e
+cenário fecha na primeira fatia refeita. Fábrica porque é a única peça já no padrão e
+combina com o personagem; o risco infantil (D25) é controlado com cores escuras de ameaça e
+sem rosto, mas é real. Ícone 2 porque respeita a D25. Se você não quer mexer na D28 agora,
+"2 = Depois" e "3 = Depois" não atrasam nada.
+Antes de virar alvo, a RT-6v3.3 corrige o que os revisores apontaram: nada de brilho no
+chão, botões fora do filtro de cor, faixa de reflexo dura da C, números dos portões
+ilegíveis (problema de hoje, não da direção); mãos, barriga e engrenagem do Bibopzi ainda
+facetadas (RT-6v3.4a).
+Segunda opinião (fable, duas revisões independentes): a das telas recomendou a mistura, não
+a A pura (a escolha "óbvia"), a fábrica com as cores de cada mundo e o ícone 2, e alertou
+que de longe tudo ainda parece low poly porque os modelos não mudaram. A da ficha concorda
+com M + fábrica + ícone 2, com ressalva: "nas telas a M é praticamente a A com menos brilho
+— o cenário fosco e o contraste multidão × pista prometidos ainda não aparecem, então ela
+deve valer como alvo de personagem, luz e torre, e o alvo de pista e cenário só fecha
+depois da primeira fatia refeita. A fábrica ... custa refazer torres e chefes (muda a D28)
+e puxa para o infantil (D25)". A ficha foi ajustada a isso.
 Se você não responder: a série para na RT-6v3.2; o som (RT-6v3.9) segue.
 
-Responda: A, B, C, D ou uma mistura; tema "por mundo" ou "fábrica"; ícone 1, 2 ou 3; ou
+Responda em uma linha, ex.: "M, fábrica, 2" ou "M, depois, depois" ou "C, mundo, 2" — ou
 "explica melhor".
 ```
 

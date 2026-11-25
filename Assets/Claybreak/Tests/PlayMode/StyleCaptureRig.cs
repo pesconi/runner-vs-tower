@@ -37,6 +37,18 @@ namespace Claybreak.Tests
         /// <summary>The six framings: file name without extension.</summary>
         public static readonly string[] Framings = { "corrida-300", "assalto-300", "lider-perto", "torre-perto", "telas", "icone" };
 
+        /// <summary>
+        /// RT-6v3.2: called with the flow right before every shot of the run, the assault and the screens (null = the game as it
+        /// is). The concept screens of the vinyl directions use it to dress the same framings (<c>VinylConceptTests</c>).
+        /// </summary>
+        public static Action<ClaybreakFlow> Dress;
+
+        /// <summary>
+        /// RT-6v3.2: when set, after the two assault shots the tower is swapped by this callback (it returns the file suffix) and
+        /// both shots are taken again, e.g. <c>assalto-300-fabrica</c> and <c>torre-perto-fabrica</c>.
+        /// </summary>
+        public static Func<ClaybreakFlow, AssaultTower, string> AlternateTower;
+
         public const int RunWidth = 540;
         public const int RunHeight = 1177;
         public const int CloseSize = 600;
@@ -76,6 +88,8 @@ namespace Claybreak.Tests
             ClaybreakFlow.EditorUsesDeviceGateRun = false;
             ClaybreakFlow.EditorDeviceGateWorld = 1;
 #endif
+            Dress = null;
+            AlternateTower = null;
         }
 
         /// <summary>Waits <paramref name="frames"/> simulation frames (never seconds: the step is fixed).</summary>
@@ -113,6 +127,7 @@ namespace Claybreak.Tests
             using var shot = new ShapeSkinCaptureTests.Shot(flow.Crowd.CameraRig.GetComponent<Camera>(), RunWidth, RunHeight);
             yield return Frames(FrameRate * 2);
             Assert.AreEqual(flow.Crowd.MaximumArmy, flow.Crowd.Army, "the run is not at the crowd's cap");
+            Dress?.Invoke(flow);
             yield return shot.Take();
             Save(folder, "corrida-300", shot.Panel);
             Debug.Log($"[StyleCapture] corrida-300 army={flow.Crowd.Army} camera={flow.Crowd.CameraRig.transform.position}");
@@ -138,6 +153,7 @@ namespace Claybreak.Tests
                 Assert.AreEqual(FlowState.Assault, flow.State);
                 yield return WaitFor(() => flow.Field.InFlight >= 300, FrameRate * 30);
                 Assert.AreEqual(300, flyers.Count, "the field never filled");
+                Dress?.Invoke(flow);
                 yield return shot.Take();
                 Save(folder, "assalto-300", shot.Panel);
                 Debug.Log($"[StyleCapture] assalto-300 level={flow.ActiveLevel.name} inFlight={flow.Field.InFlight} dying={flyers.DyingCount}");
@@ -154,9 +170,21 @@ namespace Claybreak.Tests
                 close.fieldOfView = 50f;
                 using (var closeShot = new ShapeSkinCaptureTests.Shot(close, RunWidth, RunHeight))
                 {
+                    Dress?.Invoke(flow);
                     yield return closeShot.Take();
                     Save(folder, "torre-perto", closeShot.Panel);
                     Debug.Log($"[StyleCapture] torre-perto tower={flow.ActiveLevel.Tower} z={tower.transform.position.z:0.0}");
+                }
+
+                if (AlternateTower != null)
+                {
+                    string suffix = AlternateTower(flow, tower);
+                    Dress?.Invoke(flow);
+                    yield return shot.Take();
+                    Save(folder, "assalto-300" + suffix, shot.Panel);
+                    using var closeShot = new ShapeSkinCaptureTests.Shot(close, RunWidth, RunHeight);
+                    yield return closeShot.Take();
+                    Save(folder, "torre-perto" + suffix, closeShot.Panel);
                 }
 
                 Object.Destroy(closeObject);
@@ -238,6 +266,7 @@ namespace Claybreak.Tests
                     ScreenFitTests.Show(flow, "home");
                     yield return null;
                     Canvas.ForceUpdateCanvases();
+                    Dress?.Invoke(flow);
                     yield return shot.Take();
                     // Panels of different heights share the sheet's top edge.
                     sheet.Put(i, 0, shot.Panel, ScreenHeights[ScreenHeights.Length - 1] / half - ScreenHeights[i] / half);
@@ -270,7 +299,7 @@ namespace Claybreak.Tests
             Debug.Log("[StyleCapture] icone");
         }
 
-        private static void Save(string folder, string name, Texture2D texture)
+        public static void Save(string folder, string name, Texture2D texture)
         {
             File.WriteAllBytes(Path.Combine(folder, name + ".png"), texture.EncodeToPNG());
         }
