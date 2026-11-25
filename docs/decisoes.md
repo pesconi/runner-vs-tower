@@ -2457,3 +2457,28 @@ do usuário (D36); estas são as decisões técnicas para produzir e medir as op
 - **T-RT6v3.2-8 — Mistura M com imagem própria.** O revisor (fable) recomendou misturar as direções; para a ficha não pedir
   escolha às cegas, a mistura virou a quarta entrada de `VinylDirection.All` (M: vinil da A no personagem, cenário fosco da
   B, contraste +14, brilho menor, bloom acima de 1,3), com as mesmas telas e o mesmo ensaio (`--ei vinyl 4`).
+
+## 2026-11-25 — D36 respondida — imagem-alvo da direção visual v3 — usuário
+
+- Ficha em `riscos-e-decisoes.md` (D36), imagens em `docs/art/v3/alvo/` (RT-6v3.2). O usuário não escolheu uma letra
+  pura; respondeu com o que fica de cada opção e 6 diretrizes. Texto dele (2026-11-25), resumido fielmente:
+  - **Personagem:** a A (vinil brilhante) é a melhor; a B piora ("mais lavado").
+  - **Jogabilidade:** a C é a única em que a multidão salta da pista, mas o chão amarelado ficou sujo: **usar a lógica de
+    contraste da C, não as cores**.
+  - **Cenário:** as telas noturnas da fábrica (fundo azul escuro, torre branca, brilho ciano) são "de longe as mais atuais".
+  - **Ícone:** A1, rosto em fundo saturado, corte mais fechado e olhos maiores; o ícone atual (print do jogo) é o mais fraco.
+  - Diretrizes: (1) contraste de valor — multidão é a coisa mais saturada da tela, pista neutra bem mais clara ou mais escura
+    que ela, inimigo em cor complementar (rosa contra azul/teal); (2) luz — principal quente, ambiente frio, contorno e sombra
+    de contato (mancha redonda sob cada boneco), sugerindo shader matcap; (3) formas — normais suaves e cantos arredondados
+    em tudo, pinheiros trocados por formas arredondadas de brinquedo; (4) personagem — olhos maiores legíveis a 40 px e uma
+    **chave de corda girando nas costas** (a multidão é vista de costas); (5) animação procedural — estica/achata no pulo,
+    antena balançando como mola, bonecos estourando em peças e confete, micro-pausa no impacto, tremida de câmera, números
+    pulando nos portões; (6) profundidade — névoa colorida em vez de branca, céu em degradê, bloom leve e vinheta.
+- Registro (leitura do maestro, a confirmar nos aceites agrupados): **1 = A** (vinil brilhante no personagem; o estouro da
+  barriga é corrigido tecnicamente, sem baixar o vinil para a M); **contraste = regra da C** (vira regra medida no guia);
+  **cenário = fábrica noturna** (céu azul escuro em degradê, estruturas claras, brilho ciano) como referência de clima, com
+  variação por mundo nas cores de destaque [inferência]; **2 = fábrica** (revê a D28); **3 = ícone A1** ajustado (revê só a
+  cláusula "ícone sem rosto" da D25; 13+ e "não destinado a crianças" seguem). Risco anotado: ícone com rosto e mundo de
+  brinquedo aumentam a leitura infantil na Play (D25); a declaração de público é refeita com o visual novo na RT-6v3.11.
+- Efeito: destrava K.v3a e RT-6v3.3 em diante. As diretrizes entram em `direcao-visual-v3.md` seção 10, que prevalece
+  sobre o texto anterior onde divergirem. "Matcap" é sugestão técnica: a sessão decide pela medida no OPPO.

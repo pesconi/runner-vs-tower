@@ -261,3 +261,22 @@ Revisor: fable (só leitura), 2026-11-25, sobre a primeira versão deste plano.
   D36; os termos não foram lidos; a imagem-alvo sai do motor de qualquer forma. Recomenda C agora; A depois de 15/12 com
   termos lidos, teto de créditos e sem enviar a folha do personagem; música só na RT-6v3.9, com preço e licença
   conferidos e comparada com CC0 ou pacote de licença clara; o modelo não ouve, a escuta é do usuário.
+
+## 10. D36 respondida (2026-11-25): o alvo e as diretrizes do usuário
+
+Prevalece sobre as seções anteriores onde divergirem. Registro completo em `decisoes.md` (2026-11-25, D36).
+
+| Tema | Alvo | Onde entra |
+|---|---|---|
+| Personagem | Direção **A** (vinil brilhante) por inteiro; corrigir o estouro da barriga sem apagar o vinil | K.v3a, RT-6v3.3, 6v3.4a/b |
+| Contraste (jogabilidade) | Lógica da **C**, não as cores: a multidão é o elemento **mais saturado** da tela; pista neutra com grande diferença de **valor** (bem mais clara ou bem mais escura que a multidão); inimigos em cor **complementar** (rosa da multidão contra azul/teal). Vira regra medida no `StyleGuideValidation` (saturação e diferença de luminância por papel, medidas na captura) | RT-6v3.3 (guia e validador), todas as áreas |
+| Cenário e céu | Clima da **fábrica noturna** das telas A/M: céu azul escuro em degradê, estruturas claras, brilho ciano; cada mundo varia nas cores de destaque [I] | RT-6v3.3, 6v3.7 |
+| Torres e chefes | **Fábrica de brinquedo** (revê a D28), formas diferentes por mundo para não ficarem iguais, cores de ameaça escuras, sem rosto | RT-6v3.5 |
+| Ícone | **A1**: rosto do Bibopzi em fundo saturado, corte mais fechado, olhos maiores (revê só a cláusula de ícone da D25) | RT-6v3.10 |
+| Luz | Principal **quente**, ambiente **frio**, luz de **contorno** e **sombra de contato** (mancha redonda sob cada boneco). Matcap é a sugestão do usuário: medir contra o shader de luz do laboratório e escolher pelo número | K.v3a, RT-6v3.3 |
+| Formas | Normais suaves e cantos arredondados em tudo; **pinheiros viram formas arredondadas de brinquedo** | K.v3c, 6v3.4a, 6v3.7 |
+| Personagem (detalhes) | Olhos **maiores, legíveis a 40 px**; **chave de corda girando nas costas** (novo marco obrigatório do Bibopzi nos 3 níveis; a multidão é vista de costas) | 6v3.4a/b |
+| Animação (maior ganho, toda procedural) | Estica e achata no pulo; antena balançando como mola; bonecos **estourando em peças e confete**; **micro-pausa no impacto**; **tremida de câmera**; **números pulando nos portões** | 6v3.4b, 6v3.6, 6v3.8 |
+| Profundidade | **Névoa colorida** (não branca), **céu em degradê**, **bloom leve** e **vinheta** (o pós custou 0,7–3 ms no ensaio, dentro do teto) | RT-6v3.3, 6v3.7 |
+
+O alvo de pista e cenário fecha no aceite agrupado 2 (depois da RT-6v3.7), com a primeira fatia refeita.
