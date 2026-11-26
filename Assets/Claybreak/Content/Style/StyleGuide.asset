@@ -1388,3 +1388,56 @@ MonoBehaviour:
     capturedEnemyMinHue: 90
     gateLabelMinRatio: 3
     skinMinDeltaE: 20
+  faces:
+    rules:
+    - trigger: 0
+      expression: 0
+      seconds: 0
+      priority: 0
+      handsOpen: 0
+    - trigger: 1
+      expression: 6
+      seconds: 0.13
+      priority: 1
+      handsOpen: 0
+    - trigger: 2
+      expression: 1
+      seconds: 0.9
+      priority: 2
+      handsOpen: 0.55
+    - trigger: 3
+      expression: 2
+      seconds: 0.8
+      priority: 3
+      handsOpen: 1
+    - trigger: 4
+      expression: 2
+      seconds: 0.6
+      priority: 3
+      handsOpen: 1
+    - trigger: 5
+      expression: 3
+      seconds: 0
+      priority: 1
+      handsOpen: 0.25
+    - trigger: 6
+      expression: 7
+      seconds: 0
+      priority: 0
+      handsOpen: 1
+    - trigger: 7
+      expression: 7
+      seconds: 0
+      priority: 0
+      handsOpen: 1
+    - trigger: 8
+      expression: 4
+      seconds: 0
+      priority: 5
+      handsOpen: 1
+    - trigger: 9
+      expression: 5
+      seconds: 0
+      priority: 5
+      handsOpen: 0
+    blinkEvery: 3.4

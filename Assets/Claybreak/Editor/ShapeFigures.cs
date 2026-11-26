@@ -10,7 +10,9 @@ namespace Claybreak.Editor
     /// layer (white shading; the shop tints it with the army's color) and the detail layer (eyes, beak, belly, outline in
     /// their own colors, drawn over it). A small software rasterizer, so it runs in batchmode without a GPU
     /// (<c>-nographics</c>) and gives the same bytes every time (a rebuild never touches git when nothing changed).
-    /// Nothing is drawn in the game: the shop shows two images.
+    /// Nothing is drawn in the game: the shop shows two images. RT-6v3.4b: a shape with a detailed level (the Bibopzi) is
+    /// drawn from it, and its painted face (UV2.w mask, UV0 in the face cell) takes the neutral cell of the face atlas, the
+    /// same face the game shows (direcao-visual-v3.md 3.1: "o detalhado nas telas").
     /// </summary>
     public static class ShapeFigures
     {
@@ -33,13 +35,21 @@ namespace Claybreak.Editor
             EnsureFolder();
             foreach (WorldContent.ShapeDefinition shape in WorldContent.Shapes)
             {
-                Mesh mesh = UnitShapeAssets.Load(shape.Asset);
+                Mesh mesh = UnitShapeAssets.Load(shape.LeaderAsset ?? shape.Asset);
                 if (mesh == null)
                 {
                     throw new System.InvalidOperationException($"shape '{shape.Id}': build the unit shapes first");
                 }
 
-                Render(mesh, Size, out Color32[] body, out Color32[] detail);
+                Color32[] atlas = null;
+                int atlasWidth = 0;
+                int atlasHeight = 0;
+                if ((shape.LeaderAsset ?? shape.Asset).PaintedFace)
+                {
+                    atlas = BibopziFaceArt.ReadPixels(out atlasWidth, out atlasHeight);
+                }
+
+                Render(mesh, Size, out Color32[] body, out Color32[] detail, atlas, atlasWidth, atlasHeight);
                 Write(BodyPath(shape.Id), body);
                 Write(DetailPath(shape.Id), detail);
             }
@@ -52,12 +62,24 @@ namespace Claybreak.Editor
         /// Draws <paramref name="mesh"/> into two <paramref name="size"/>² layers (row 0 at the bottom, like a texture):
         /// body pixels (vertex alpha 255) as white shading, every other part and the outline in its own color.
         /// </summary>
-        public static void Render(Mesh mesh, int size, out Color32[] body, out Color32[] detail)
+        public static void Render(Mesh mesh, int size, out Color32[] body, out Color32[] detail, Color32[] faceAtlas = null,
+            int atlasWidth = 0, int atlasHeight = 0, FaceExpression face = FaceExpression.Neutral)
         {
             int big = size * Supersample;
             Vector3[] source = mesh.vertices;
             Color32[] colors = mesh.colors32;
             int[] triangles = mesh.triangles;
+            var uv = new System.Collections.Generic.List<Vector2>();
+            var marks = new System.Collections.Generic.List<Vector4>();
+            if (faceAtlas != null)
+            {
+                mesh.GetUVs(0, uv);
+                mesh.GetUVs(1, marks);
+                if (uv.Count != source.Length || marks.Count != source.Length)
+                {
+                    faceAtlas = null;
+                }
+            }
             // Camera space as Unity's: the camera at −Z looking along +Z (right +X, up +Y). The shape turns half around to
             // face it (its front is +Z), a little more for the three-quarter view, and its top tilts toward the camera.
             Quaternion view = Quaternion.Euler(-PitchDegrees, 0f, 0f) * Quaternion.Euler(0f, 180f + YawDegrees, 0f);
@@ -134,7 +156,16 @@ namespace Claybreak.Editor
                             if (f >= 0)
                             {
                                 float s = shade[f];
-                                if (isBody[f])
+                                Color32 painted = faceAtlas == null || !isBody[f]
+                                    ? default
+                                    : Face(points, triangles, f, px + 0.5f, py + 0.5f, uv, marks, faceAtlas, atlasWidth, atlasHeight, face);
+                                if (isBody[f] && painted.a > 0)
+                                {
+                                    float a = painted.a / 255f;
+                                    bodySum += new Vector4(s, s, s, 1f) * (1f - a);
+                                    detailSum += new Vector4(painted.r / 255f * s, painted.g / 255f * s, painted.b / 255f * s, 1f) * a;
+                                }
+                                else if (isBody[f])
                                 {
                                     bodySum += new Vector4(s, s, s, 1f);
                                 }
@@ -155,6 +186,43 @@ namespace Claybreak.Editor
                     detail[y * size + x] = Straight(detailSum, samples);
                 }
             }
+        }
+
+        // The face atlas at a sample of triangle f: its UV and mask interpolated there, the cell's pixel (nearest), the mask
+        // times the cell's alpha as alpha. Same mapping as the kit's shader (ToonVertexMotion.FaceUV, inset of BibopziFaceArt).
+        private static Color32 Face(Vector3[] points, int[] triangles, int f, float x, float y, System.Collections.Generic.List<Vector2> uv,
+            System.Collections.Generic.List<Vector4> marks, Color32[] atlas, int width, int height, FaceExpression face)
+        {
+            int ia = triangles[f * 3];
+            int ib = triangles[f * 3 + 1];
+            int ic = triangles[f * 3 + 2];
+            Vector3 a = points[ia];
+            Vector3 b = points[ib];
+            Vector3 c = points[ic];
+            var p = new Vector3(x, y, 0f);
+            float area = Edge(a, b, c);
+            if (Mathf.Abs(area) < 1e-9f)
+            {
+                return default;
+            }
+
+            float w0 = Edge(b, c, p) / area;
+            float w1 = Edge(c, a, p) / area;
+            float w2 = 1f - w0 - w1;
+            float mask = Mathf.Clamp01(w0 * marks[ia].w + w1 * marks[ib].w + w2 * marks[ic].w);
+            if (mask <= 0f)
+            {
+                return default;
+            }
+
+            Vector2 local = w0 * uv[ia] + w1 * uv[ib] + w2 * uv[ic];
+            Unity.Mathematics.float2 atlasUv = JungleDegree.StudioKit.Toon.ToonVertexMotion.FaceUV(local, (int)face,
+                FaceRules.AtlasColumns, FaceRules.AtlasRows, BibopziFaceArt.Inset);
+            int px = Mathf.Clamp(Mathf.FloorToInt(atlasUv.x * width), 0, width - 1);
+            int py = Mathf.Clamp(Mathf.FloorToInt(atlasUv.y * height), 0, height - 1);
+            Color32 texel = atlas[py * width + px];
+            texel.a = (byte)Mathf.RoundToInt(texel.a * mask);
+            return texel;
         }
 
         // Fills the pixels whose centers are inside the triangle (either winding), nearest surface first.

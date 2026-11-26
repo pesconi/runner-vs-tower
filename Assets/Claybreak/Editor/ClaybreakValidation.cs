@@ -766,7 +766,7 @@ namespace Claybreak.Editor
                     continue;
                 }
 
-                foreach (string problem in UnitShapeRules.Check(mesh, entry.HasEyes, entry.FrontMarker, entry.Budget))
+                foreach (string problem in UnitShapeRules.Check(mesh, entry.HasEyes, entry.FrontMarker, entry.Budget, entry.PaintedFace))
                 {
                     failures.Add(entry.Path + ": " + problem);
                 }
@@ -796,6 +796,12 @@ namespace Claybreak.Editor
                         failures.Add($"{entry.Path} is not {entry.DataPath} (rebuild the scene)");
                     }
                 }
+            }
+
+            // RT-6v3.4b: the face atlas is the script's current output, imported for the face, and the crowd materials wear it.
+            foreach (string problem in BibopziFaceArt.Problems())
+            {
+                failures.Add("face: " + problem);
             }
 
             // A shader that fails to compile renders magenta without any run-time error (RT-6t.1 lost a device run to

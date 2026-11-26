@@ -169,7 +169,9 @@ MonoBehaviour:
       SquashBase: 0.86
       SquashAmount: 0.24
       ForwardLean: 0.06
-    crownSeat: 0.62399995
+      LandSquash: 0.12
+      RiseStretch: 0.1
+    crownSeat: 0.68399996
     figureBody: {fileID: 21300000, guid: 831ba089a26124448af4937295bb0823, type: 3}
     figureDetail: {fileID: 21300000, guid: ff1c5be5d57117c4992fa820d1081971, type: 3}
   - id: ball
@@ -183,6 +185,8 @@ MonoBehaviour:
       SquashBase: 0.8
       SquashAmount: 0.32
       ForwardLean: 0.12
+      LandSquash: 0
+      RiseStretch: 0
     crownSeat: 0
     figureBody: {fileID: 21300000, guid: 8e2e64665a09e44419a0d14d054c9fa9, type: 3}
     figureDetail: {fileID: 21300000, guid: 478c38073e177f64cbd454b7205387ee, type: 3}
@@ -197,6 +201,8 @@ MonoBehaviour:
       SquashBase: 0.82
       SquashAmount: 0.28
       ForwardLean: 0.2
+      LandSquash: 0
+      RiseStretch: 0
     crownSeat: 0
     figureBody: {fileID: 21300000, guid: db0e1c513788fdc448a3a76015cf575c, type: 3}
     figureDetail: {fileID: 21300000, guid: 6e31634458c2d9d49bf5cd5bfdc917b9, type: 3}
@@ -211,6 +217,8 @@ MonoBehaviour:
       SquashBase: 0.7
       SquashAmount: 0.5
       ForwardLean: 0.08
+      LandSquash: 0
+      RiseStretch: 0
     crownSeat: 0.41799998
     figureBody: {fileID: 21300000, guid: 2a41ee385cef2b64493fba64df94f767, type: 3}
     figureDetail: {fileID: 21300000, guid: 4630115ec3020ae418cbf31d205440d2, type: 3}
@@ -225,6 +233,8 @@ MonoBehaviour:
       SquashBase: 0.6
       SquashAmount: 0.6
       ForwardLean: 0.18
+      LandSquash: 0
+      RiseStretch: 0
     crownSeat: 0
     figureBody: {fileID: 21300000, guid: 2a9e032d59304e34a984c3406b2b8e2b, type: 3}
     figureDetail: {fileID: 21300000, guid: dca5a3bdca1f6d34ebe975ff2e2cac3c, type: 3}
@@ -239,6 +249,8 @@ MonoBehaviour:
       SquashBase: 0.94
       SquashAmount: 0.1
       ForwardLean: 0
+      LandSquash: 0
+      RiseStretch: 0
     crownSeat: 0
     figureBody: {fileID: 21300000, guid: c566c469ed282d848981348bfca409c5, type: 3}
     figureDetail: {fileID: 21300000, guid: 4617acc69d046a34484e51102f3d7f72, type: 3}

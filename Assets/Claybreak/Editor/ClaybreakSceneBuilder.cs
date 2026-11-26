@@ -120,6 +120,8 @@ namespace Claybreak.Editor
             // RT-6v3.3: the guide's surfaces into the materials (the art builders above made them on ToonLit).
             int moved = StyleGuideContent.ApplySurfaces(AssetDatabase.LoadAssetAtPath<StyleGuide>(StyleGuide.AssetPath));
             Debug.Log($"[Claybreak] {moved} materials on {ToonShaderIds.ToonVinylShader} from the style guide's profiles.");
+            // RT-6v3.4b: the Bibopzi's face atlas and its spring, hands and key on the crowd material (vinyl by now).
+            BibopziFaceArt.Apply();
             AssetDatabase.SaveAssets();
         }
 
@@ -286,6 +288,13 @@ namespace Claybreak.Editor
             SetRef(flow, "frameRateGovernor", governor);
             SetRef(flow, "monetization", monetization);
             SetRef(flow, "ads", ads);
+            // RT-6v3.4b: the crowd's face (the guide's table) on the run crowd, the units in flight and the obstacle deaths.
+            CrowdFace face = flowObject.AddComponent<CrowdFace>();
+            SetRef(face, "guide", Load<StyleGuide>(StyleGuide.AssetPath));
+            SetRef(face, "crowd", crowd.Swarm);
+            SetRef(face, "flyers", field.Flyers);
+            SetRef(face, "obstacleDeaths", obstacles.GetComponentInChildren<LooseSwarmRenderer>(true));
+            SetRef(flow, "face", face);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };

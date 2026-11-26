@@ -2677,3 +2677,58 @@ Nada aqui exige o usuário; o visual do personagem entra no aceite agrupado 1 (d
   60 fps firmes (leitura falsa do medidor, já registrada no perfil), repetida: GPU p95 7,4–8,4 ms (igual à RT-6v3.3), CPU
   ≤ 4,0 ms, 62,5 fps, PSS 313 MB. Medido com a malha de 1.150 tri; as correções da crítica levaram a 1.160 (+0,9%), sem nova medida (o OPPO
   bloqueou com senha; a GPU usa metade do teto de 11 ms, a diferença fica no ruído). O gate fica aprovado.
+
+## 2026-11-26 — RT-6v3.4b: rosto (8 expressões) e animação do Bibopzi — técnicas do maestro (sessão da entrega)
+
+Nada aqui exige decisão do usuário; o visual entra no **aceite agrupado 1** (luz e personagem), pedido sem parar a série.
+
+- **T-RT6v3.4b-1 — Rosto só no atlas, não mais em geometria.** Olhos, sobrancelhas e boca saíram dos três níveis do Blender
+  (o nariz de parafuso fica geometria); a frente do corpo, da base da caixa do rosto para cima, tem máscara UV2.w = 1 e UV0 =
+  projeção na caixa `FACE_BOX` (−0,2..0,2 × −0,02..0,68 m, o corpo inteiro), vista de frente (u cresce para a direita de
+  quem olha); a máscara vai em toda a metade da frente. Primeira tentativa (caixa só da cabeça, UV 0 fora dela) fez a boca
+  "escorrer" no nível de multidão: triângulos na borda da máscara interpolavam a UV até (0,0). Com a projeção verdadeira em
+  todo vértice do corpo, a borda só desbota a máscara onde o atlas é transparente. Triângulos: detalhado 4.990 → 4.382, multidão 1.160 → 1.028, reserva 546 → 502 (dentro das faixas do guia).
+- **T-RT6v3.4b-2 — Atlas 512 × 512, 4 × 2 células de 128 × 256 px (não 256 × 256).** O detalhado aparece grande nas telas
+  e no ícone; a célula cobre 0,4 × 0,7 m, ~330–370 px por metro nos dois eixos. Desenhado por `Tools/art/bibopzi_faces.py` (numpy + Pillow, mesmos bytes a cada
+  rodada, hash do script no PNG, conferido pelo validador), traço mínimo de 7,7 px (2,4 px a 40 px), margem vazia de 8% por
+  célula (o shader pula 6%). Importado com mipmaps, clamp, trilinear, sRGB, alfa como transparência; ASTC 4×4 no Android
+  (256 KB). Ordem: neutro, feliz, susto, esforço, vitória, derrota, piscar, "ui!". O rosto nunca pega a skin (a cor vem do
+  atlas onde o alfa é 1; fora dele a pele tingida aparece).
+- **T-RT6v3.4b-3 — Legível a 40 px, medido.** Teste `EveryPairOfFacesStillDiffersAt40Pixels`: cada célula reduzida a 40 px
+  (40 × 80, a célula inteira) sobre o rosa do corpo tem traços escuros e cada par de expressões difere em > 2,5% dos pixels
+  (menor par medido: feliz × piscar, 4,5%; a célula inclui o corpo, então a fração do rosto é metade da área).
+- **T-RT6v3.4b-4 — Tabela evento → expressão no guia (dado).** `StyleGuide.Faces` (`FaceRules`, escrita por
+  `StyleGuideContent.Faces()`, listada no `checklist.md`): base (fica) corrida = neutro, assalto = esforço, vitória e derrota;
+  reações com duração e prioridade: portão bom = feliz 0,9 s (p2, mãos 0,55), portão ruim = susto 0,8 s (p3, mãos 1),
+  obstáculo = susto 0,6 s (p3), piscar 0,13 s a cada 3,4 s só no neutro (p1); voando = "ui!", jogados fora = "ui!". Validador:
+  um evento por linha, toda célula usada, bases com 0 s. `FaceDirector` (puro, testado) aplica prioridade e duração;
+  `CrowdFace` escreve na multidão, nos que voam, nas mortes dos obstáculos e o líder lê a da multidão.
+- **T-RT6v3.4b-5 — Amassar no pouso e esticar na subida = acréscimo no kit (K.v3d, studiokit 0.18.0).** O quique do kit só
+  tinha `sy = base + amount · h` (linear na altura). Novo `SwarmMotion.ScaleY`: menos `LandSquash · (1 − u/0,2)²` logo depois
+  do pouso e mais `RiseStretch · cos(πu)` na subida, volume mantido (`sx = sz = 1/√sy`), mínimo 0,35; com os dois em 0 é
+  exatamente a fórmula antiga (Wild Pack e match-3 iguais). Bibopzi: 12% e 10%.
+- **T-RT6v3.4b-6 — Mola, mãos e chave pelo layout animado da K.v3b.** `BibopziFaceArt.Motion`: ponta da mola 7 cm para baixo
+  e 9 cm para trás, 0,08 s de atraso; mãos balançam 2,5 cm e abrem 9 cm para fora e 10 cm para cima; chave 1 volta por dois
+  pulos em torno do eixo da haste (pivô dos dados do Blender). Material da multidão e o da sombra com o layout animado; o
+  líder manda o vetor de movimento dele (mesma fase do quique dele). Formas sem marcas ganham UV0/UV2 zerados explícitos
+  (nada se mexe, sem rosto) em vez de depender do padrão do aparelho para canal ausente.
+- **T-RT6v3.4b-7 — O detalhado com o mesmo rosto nas telas.** A figura da loja do Bibopzi passa a ser desenhada do nível
+  detalhado com a célula neutra do atlas (o rasterizador do editor amostra o atlas pela máscara e UV, como o shader).
+- **T-RT6v3.4b-8 — Crítica independente (fable, agente em outra sessão): "pode seguir" com 4 correções obrigatórias,
+  aplicadas.** (1) Chave: era laranja como mãos e mola e lia como mais uma bola → asas 1,4× mais largas e chatas e cor
+  própria. A sugestão era creme/amarelo-claro; medido, o amarelo-claro clareou a multidão e reprovou a regra de contraste
+  da D36 (pista × multidão 16–17 L*, mínimo 20; inimigos 89° de matiz, mínimo 90°). Escolhido **aço escuro `#2E3E55`**:
+  contrasta com o laranja e o rosa, escurece a multidão contra a pista clara e a regra passa. (2) Coroa do líder cobria
+  as sobrancelhas e, inclinada na vitória, os olhos → assento da coroa do Bibopzi 6 cm acima do topo da cabeça
+  (`WorldContent.BibopziCrownSeat`). (3) Rosto ~3 cm mais baixo e mais ao centro, longe da engrenagem (o nariz de parafuso
+  desceu junto, `NOSE_T`). (4) Derrota redesenhada (brancos maiores sob pálpebra grossa, boca triste 1,5× mais larga e
+  grossa). Opcionais aplicadas: esforço com sobrancelhas mais grossas e íngremes, vitória com estrelas 2× e boca mais larga,
+  boca do susto 1,5× mais grossa, mola e mãos mais amplas. Não aplicada: saturação da figura da loja (o rasterizador do
+  editor tem três faixas de luz, sem o vinil; fica para a RT-6v3.10, telas). Notado pela crítica e fica para o aceite: na
+  câmera da corrida (alta, de costas) as trocas de rosto quase não se veem — o rosto é para o líder e as telas; de costas
+  quem lê é a chave e a mola.
+- **T-RT6v3.4b-9 — Gate 3× no OPPO: pendente.** Obrigatório nesta entrega (o layout animado passa a valer para a
+  multidão e o APK final da 6v3.4a não foi remedido), mas o OPPO ficou com a tela bloqueada por senha durante toda a
+  sessão (`isKeyguardShowing=true`; a sessão não digita senha). APKs de jogo e de medição prontos em `C:\temp\rt64b`;
+  passo exato na seção RT-6v3.4b do plano. A série pode seguir (a 6v3.4c não mexe no custo do Bibopzi); a primeira sessão
+  com o aparelho livre roda o gate antes de qualquer outra medição.

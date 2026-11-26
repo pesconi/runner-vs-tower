@@ -13,7 +13,9 @@ namespace Claybreak
     /// instanced pipeline as the crowd (<see cref="ToonInstanceDraw"/>: one instance for the body and its blob shadow, one
     /// for the crown), so there is no object per unit and nothing is created while playing. It bounces and leans like the
     /// units (<see cref="SwarmMotion"/>, <see cref="SwarmAnimation"/>). Where it stands is decided by <see cref="RunCrowd"/>
-    /// (<see cref="Place"/>); it is not part of the army.
+    /// (<see cref="Place"/>); it is not part of the army. RT-6v3.4b: with the crowd's animated material it also sends its
+    /// motion vector (hop phase and speed, the crowd's face and hands, <see cref="SwarmRenderer.Expression"/>), so its
+    /// spring, hands, key and face move like the crowd's.
     /// </summary>
     public sealed class CrowdLeader : MonoBehaviour
     {
@@ -42,6 +44,7 @@ namespace Claybreak
         private ToonInstanceDraw crownDraw;
         private NativeArray<ToonInstance> body;
         private NativeArray<ToonInstance> crown;
+        private NativeArray<float4> bodyMotion;
         private bool headless;
         private Vector3 ground;
         private float lastX;
@@ -124,6 +127,7 @@ namespace Claybreak
             }
 
             body = new NativeArray<ToonInstance>(1, Allocator.Persistent);
+            bodyMotion = new NativeArray<float4>(1, Allocator.Persistent);
             crown = new NativeArray<ToonInstance>(1, Allocator.Persistent);
             headless = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
             if (!headless)
@@ -141,6 +145,11 @@ namespace Claybreak
             if (body.IsCreated)
             {
                 body.Dispose();
+            }
+
+            if (bodyMotion.IsCreated)
+            {
+                bodyMotion.Dispose();
             }
 
             if (crown.IsCreated)
@@ -180,7 +189,7 @@ namespace Claybreak
             float acrossSpeed = (ground.x - lastX) / deltaTime;
             lastX = ground.x;
             Compose(Time.time, acrossSpeed);
-            bodyDraw.Upload(body, 1);
+            bodyDraw.Upload(body, bodyMotion, 1);
             crownDraw.Upload(crown, 1);
             var drawBounds = new Bounds(ground + new Vector3(0f, unitHeight * Scale, 0f), new Vector3(3f, unitHeight * Scale * 2f + 2f, 3f));
             bodyDraw.Draw(unit, 1, drawBounds);
@@ -200,7 +209,9 @@ namespace Claybreak
         private void Compose(float time, float acrossSpeed)
         {
             float bounce = SwarmMotion.Bounce(time, 0f, motion.Frequency);
-            float sy = SwarmMotion.SquashY(bounce, motion);
+            float sy = SwarmMotion.ScaleY(time, 0f, motion);
+            SwarmExpression face = swarm.Expression;
+            bodyMotion[0] = ToonInstanceMotion.Hop(face.Cell, time, 0f, motion.Frequency, face.HandsOpen);
             float sxz = SwarmMotion.SquashXZ(sy);
             float tilt = SwarmAnimation.Tilt(acrossSpeed, unitAnimation);
             Color skin = swarm.Tint.linear;

@@ -175,6 +175,9 @@ namespace Claybreak.Editor
 
         /// <summary>Bibopzi's fixed orange (gear, spring, hands, feet, key): #FF8A3D of the character sheet.</summary>
         public static readonly Color32 BibopziOrange = new Color32(0xff, 0x8a, 0x3d, 0);
+
+        /// <summary>RT-6v3.4b: the wind-up key's dark steel (Tools/blender/bibopzi.py "key"), apart from the orange parts and the pink.</summary>
+        public static readonly Color32 BibopziKey = new Color32(0x2e, 0x3e, 0x55, 0);
         /// <summary>Bibopzi's cream belly: #FFF1DC, never the skin.</summary>
         public static readonly Color32 Cream = new Color32(0xff, 0xf1, 0xdc, 0);
         /// <summary>Brows, mouth and the slot of the screw nose.</summary>

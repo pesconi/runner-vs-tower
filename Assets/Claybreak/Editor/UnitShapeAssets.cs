@@ -53,11 +53,15 @@ namespace Claybreak.Editor
                 Level = ShapeLevel.Legacy;
             }
 
-            /// <summary>A shape written by Blender as simple data (<paramref name="data"/>, project-relative); always with eyes.</summary>
+            /// <summary>
+            /// A shape written by Blender as simple data (<paramref name="data"/>, project-relative); always with eyes, painted by
+            /// the face atlas on its masked front (RT-6v3.4b), not geometry.
+            /// </summary>
             public Entry(string id, ShapeLevel level, string data, Color32? frontMarker)
             {
                 Id = id;
                 HasEyes = true;
+                PaintedFace = true;
                 Level = level;
                 DataPath = data;
                 FrontMarker = frontMarker;
@@ -72,6 +76,9 @@ namespace Claybreak.Editor
             /// <summary>Asset name (also the mesh name).</summary>
             public string Id { get; }
             public bool HasEyes { get; }
+
+            /// <summary>The eyes are the face atlas's (UV2.w face mask and UV0 on the front, RT-6v3.4b), not eye-colored vertices.</summary>
+            public bool PaintedFace { get; }
             public Func<Mesh> Build { get; }
             public ShapeLevel Level { get; }
 
@@ -125,10 +132,31 @@ namespace Claybreak.Editor
             EnsureFolder(Folder);
             foreach (Entry entry in All)
             {
-                Save(entry.Build(), entry.Path);
+                Save(WithMarks(entry.Build()), entry.Path);
             }
 
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// RT-6v3.4b: every crowd shape is drawn with the crowd's animated material (UV2 marks, face atlas by UV0). A recipe
+        /// shape gets UV0 and UV2 written as zeros (nothing moves, no face) instead of leaving the channels to the platform's
+        /// default for a missing stream.
+        /// </summary>
+        public static Mesh WithMarks(Mesh mesh)
+        {
+            int n = mesh.vertexCount;
+            if (!mesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.TexCoord0))
+            {
+                mesh.SetUVs(0, new Vector2[n]);
+            }
+
+            if (!mesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.TexCoord1))
+            {
+                mesh.SetUVs(1, new System.Collections.Generic.List<Vector4>(new Vector4[n]));
+            }
+
+            return mesh;
         }
 
         public static Mesh Load(Entry entry)

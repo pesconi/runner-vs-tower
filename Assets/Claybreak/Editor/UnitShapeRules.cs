@@ -8,7 +8,9 @@ namespace Claybreak.Editor
     /// Budget and shape rules of a crowd shape mesh (RT-6t.2), shared by the validator and the tests: one submesh within its
     /// level's triangle range (200–500 for the legacy recipes) with 16-bit indices; a tint mask (vertex alpha only 255 = body or 0 = fixed color, both
     /// present); resting on the ground (lowest point at y = 0); eyes only in the eyed variants, on the +Z front; and the
-    /// front marker (eyes, beak) sticking out toward +Z, so a recipe that forgot the three.js → Unity mirror fails.
+    /// front marker (eyes, beak) sticking out toward +Z, so a recipe that forgot the three.js → Unity mirror fails. A painted
+    /// face (RT-6v3.4b, the Bibopzi) has no eye-colored vertices: its eyes are the face atlas on the vertices with face mask
+    /// UV2.w = 1, which must be on the +Z front with their UV0 inside the cell (0..1).
     /// </summary>
     public static class UnitShapeRules
     {
@@ -18,7 +20,8 @@ namespace Claybreak.Editor
         /// The problems of a shape mesh; <paramref name="budget"/> is its triangle range (min, max), the legacy 200-500 when
         /// null (RT-6v3.4a: the Bibopzi levels pass theirs, <see cref="UnitShapeAssets.Budget"/>).
         /// </summary>
-        public static List<string> Check(Mesh mesh, bool hasEyes, Color32? frontMarker, Vector2Int? budget = null)
+        public static List<string> Check(Mesh mesh, bool hasEyes, Color32? frontMarker, Vector2Int? budget = null,
+            bool paintedFace = false)
         {
             var problems = new List<string>();
             Vector2Int range = budget ?? UnitShapeAssets.Budget(UnitShapeAssets.ShapeLevel.Legacy);
@@ -85,7 +88,11 @@ namespace Claybreak.Editor
                 problems.Add($"must rest on the ground (lowest point y = {mesh.bounds.min.y:0.####})");
             }
 
-            if (hasEyes && (eyes == 0 || eyesZ / eyes <= 0.1f))
+            if (paintedFace)
+            {
+                problems.AddRange(CheckPaintedFace(mesh, vertices, eyes));
+            }
+            else if (hasEyes && (eyes == 0 || eyesZ / eyes <= 0.1f))
             {
                 problems.Add("the eyes (fixed dark color) must be on the +Z front");
             }
@@ -100,6 +107,45 @@ namespace Claybreak.Editor
             }
 
             return problems;
+        }
+
+        private static IEnumerable<string> CheckPaintedFace(Mesh mesh, Vector3[] vertices, int eyeColored)
+        {
+            var marks = new List<Vector4>();
+            var uv = new List<Vector2>();
+            mesh.GetUVs(1, marks);
+            mesh.GetUVs(0, uv);
+            if (marks.Count != vertices.Length || uv.Count != vertices.Length)
+            {
+                yield return "a painted face needs UV0 and the UV2 marks on every vertex";
+                yield break;
+            }
+
+            if (eyeColored > 0)
+            {
+                yield return "a painted face has no eye-colored vertices (the eyes are the atlas's)";
+            }
+
+            int face = 0;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                if (marks[i].w <= 0f)
+                {
+                    continue;
+                }
+
+                face++;
+                if (marks[i].w != 1f || vertices[i].z <= 0f || uv[i].x < 0f || uv[i].x > 1f || uv[i].y < 0f || uv[i].y > 1f)
+                {
+                    yield return $"face vertex {i}: mask 1 on the +Z front with UV0 in 0..1 (mask {marks[i].w}, z {vertices[i].z:0.###}, uv {uv[i]})";
+                    yield break;
+                }
+            }
+
+            if (face == 0)
+            {
+                yield return "a painted face needs face-masked vertices (UV2.w = 1) on the front";
+            }
         }
 
         /// <summary>Triangles of the first submesh.</summary>

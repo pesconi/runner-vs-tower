@@ -85,6 +85,8 @@ namespace Claybreak
         [SerializeField] private FrameRateGovernor frameRateGovernor;
         [SerializeField] private ClaybreakMonetization monetization;
         [SerializeField] private ClaybreakAds ads;
+        [Tooltip("RT-6v3.4b: the crowd's face, told what happens (gates, obstacles, the assault, the level's end).")]
+        [SerializeField] private CrowdFace face;
 
         private IAdGateway adGateway;
         private bool continueUsed;
@@ -256,13 +258,19 @@ namespace Claybreak
                 || assaultShot == null || bossAssaultShot == null || gates == null || obstacles == null || obstacleLab == null || field == null
                 || tower == null || cannon == null || hud == null || screens == null
                 || firingLine == null || laneMarker == null || gameAudio == null || frameRateGovernor == null
-                || monetization == null || ads == null)
+                || monetization == null || ads == null || face == null)
             {
                 error = "a scene reference is missing (rebuild the scene with Claybreak > Build Scene).";
                 return false;
             }
 
             if (!crowd.TryValidate(out error) || !theme.TryValidate(out error))
+            {
+                return false;
+            }
+
+            error = face.Validate();
+            if (error != null)
             {
                 return false;
             }
@@ -625,6 +633,8 @@ namespace Claybreak
             hud.Show(true);
             crowd.SetArmy(continueUnits);
             crowd.Steering = true;
+            face.ResetFace();
+            face.Trigger(FaceEvent.Assault);
             state = FlowState.Assault;
             stateTime = 0f;
             launchCredit = 0f;
@@ -996,6 +1006,7 @@ namespace Claybreak
             {
                 int army = Mathf.Max(0, crowd.Army - killed);
                 crowd.SetArmy(army);
+                face.Trigger(FaceEvent.ObstacleHit);
                 pendingLoss += killed;
                 if (Specials > army)
                 {
@@ -1036,6 +1047,11 @@ namespace Claybreak
             if (army < before)
             {
                 crowd.Shake();
+                face.Trigger(FaceEvent.BadGate);
+            }
+            else if (gate.IsGood)
+            {
+                face.Trigger(FaceEvent.GoodGate);
             }
 
             if (army == 0)
@@ -1139,16 +1155,20 @@ namespace Claybreak
             {
                 case FlowState.Menu:
                     hud.SetHint(null);
+                    face.ResetFace();
                     break;
                 case FlowState.Run:
                     hud.SetHint(progression.LevelIndex == 0 && !deviceGate ? RunHint : null);
+                    face.ResetFace();
                     break;
                 case FlowState.Assault:
                     BeginAssault();
+                    face.Trigger(FaceEvent.Assault);
                     break;
                 case FlowState.Won:
                 case FlowState.Lost:
                     EndLevel(next == FlowState.Won);
+                    face.Trigger(next == FlowState.Won ? FaceEvent.Victory : FaceEvent.Defeat);
                     break;
                 case FlowState.ContinueOffer:
                     crowd.Steering = false;

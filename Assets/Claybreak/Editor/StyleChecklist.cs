@@ -125,6 +125,14 @@ namespace Claybreak.Editor
                 text.Append($"- [ ] **{effect.effect}**: até {effect.maxActive} ({effect.note}).\n");
             }
 
+            text.Append("\n## Rosto do Bibopzi (evento → expressão, RT-6v3.4b)\n\n");
+            text.Append($"Atlas de {FaceRules.Cells} células; base = fica até outra base; reação aparece sobre base e reação de prioridade menor ou igual; piscar a cada {Number(guide.Faces.blinkEvery)} s no rosto de corrida.\n\n");
+            text.Append("| Evento | Expressão | Duração | Prioridade | Mãos abertas |\n|---|---|---|---|---|\n");
+            foreach (FaceRule rule in guide.Faces.rules)
+            {
+                text.Append($"| {rule.trigger} | {rule.expression} | {(rule.IsBase ? "base" : Number(rule.seconds) + " s")} | {rule.priority} | {Number(rule.handsOpen)} |\n");
+            }
+
             text.Append("\n## Sons (pico alvo ± tolerância, antes do mixer)\n\n");
             foreach (SoundStyle sound in guide.Sounds)
             {

@@ -289,6 +289,8 @@ namespace Claybreak
         /// <summary>CIE76 distance a v3 color may be from the nearest of its three levels (docs 2.2).</summary>
         [SerializeField] private float colorTolerance = 3f;
         [SerializeField] private ContrastRule contrast = new ContrastRule();
+        /// <summary>RT-6v3.4b: the Bibopzi's faces, event → expression with duration and priority (docs 3.2).</summary>
+        [SerializeField] private FaceRules faces = new FaceRules();
 
         public ClassStyle[] Classes => classes;
         public WorldStyle[] Worlds => worlds;
@@ -300,6 +302,7 @@ namespace Claybreak
         public SoundStyle[] Sounds => sounds;
         public float ColorTolerance => colorTolerance;
         public ContrastRule Contrast => contrast;
+        public FaceRules Faces => faces;
 
         public ClassStyle ClassOf(StyleClass styleClass)
         {
@@ -407,6 +410,12 @@ namespace Claybreak
         }
 
 #if UNITY_EDITOR
+        /// <summary>Editor only (content and tests): replaces the face table.</summary>
+        public void EditorAssignFaces(FaceRules faces)
+        {
+            this.faces = faces;
+        }
+
         /// <summary>Editor only (content and tests): replaces every table.</summary>
         public void EditorAssign(ClassStyle[] classes, WorldStyle[] worlds, PaletteRole[] sharedRoles, MaterialProfile[] profiles,
             MaterialStyle[] materials, EffectStyle[] effects, SoundStyle[] sounds, float colorTolerance, ContrastRule contrast)

@@ -13,8 +13,11 @@ crowd spacing stay.
 
 UV2 marks for the kit's animated layout (StudioKit/ToonVinyl, K.v3b): x spring weight (0 at the head, 1 at the tip),
 y hand side (+1 his right hand on +X, -1 the left), z spin weight (1 on the key, which turns about meta.keyAxis through
-meta.keyPivot), w face mask (0 here: the face atlas comes in RT-6v3.4b). UV0: the front of the head projected on the
-face box (meta.faceBox), 0 elsewhere.
+meta.keyPivot), w face mask (1 on the front half of the body: the face atlas paints it). UV0: the body projected on the
+face box (meta.faceBox) as seen from the front (u grows to the viewer's right, which is his -X; v up), 0 on the other
+parts. The box holds the whole body, so every body vertex has its true projection: a triangle across the edge of the mask
+(the sides) fades the mask without dragging the UV across the cell. RT-6v3.4b: eyes, brows and mouth are no longer geometry; they are the cells of the face atlas
+(Tools/art/bibopzi_faces.py, same FACE_BOX), so the face changes with the game's events. The screw nose stays geometry.
 """
 
 import math
@@ -33,7 +36,7 @@ BLENDER = "5.3"
 OUT = os.path.join(HERE, "out")
 
 # ---------- palette (index = vertex color) ----------
-BODY, CREAM, ORANGE, EYES, WHITE, BROW, STEEL = range(7)
+BODY, CREAM, ORANGE, EYES, WHITE, BROW, STEEL, KEY = range(8)
 PALETTE = [
     simple_mesh.palette_entry("body", "#FFFFFF", True),     # takes the palette / skin tint
     simple_mesh.palette_entry("cream", "#FFF1DC", False),   # belly
@@ -42,6 +45,7 @@ PALETTE = [
     simple_mesh.palette_entry("white", "#FBF7F0", False),   # eye whites, highlights
     simple_mesh.palette_entry("brow", "#1D2B3A", False),    # brows, mouth, screw slot
     simple_mesh.palette_entry("steel", "#C8CED6", False),   # screw nose, gear bolt
+    simple_mesh.palette_entry("key", "#2E3E55", False),     # wind-up key: dark steel, apart from the orange and the pink (RT-6v3.4b)
 ]
 
 # Parts (face attribute 'part'): color and UV2 marks follow the part.
@@ -49,7 +53,7 @@ P_BODY, P_BELLY, P_EYE_WHITE, P_PUPIL, P_SHINE, P_BROW, P_MOUTH, P_NOSE, P_SLOT,
     P_HAND_L, P_FOOT, P_KEY = range(16)
 PART_COLOR = {P_BODY: BODY, P_BELLY: CREAM, P_EYE_WHITE: WHITE, P_PUPIL: EYES, P_SHINE: WHITE, P_BROW: BROW,
               P_MOUTH: BROW, P_NOSE: STEEL, P_SLOT: BROW, P_GEAR: ORANGE, P_BOLT: STEEL, P_SPRING: ORANGE,
-              P_HAND_R: ORANGE, P_HAND_L: ORANGE, P_FOOT: ORANGE, P_KEY: ORANGE}
+              P_HAND_R: ORANGE, P_HAND_L: ORANGE, P_FOOT: ORANGE, P_KEY: KEY}
 
 # ---------- the bean (Unity frame, meters; same numbers as UnitShapeRecipes.Bibopzi) ----------
 BOTTOM = 0.03
@@ -60,7 +64,7 @@ DEPTH = 0.82
 FULLNESS = 2.78
 HEAD_TOP = BOTTOM + HEIGHT
 
-FACE_BOX = (-0.13, 0.34, 0.13, 0.62)  # x min, y min, x max, y max of the face projection (UV0)
+FACE_BOX = (-0.2, -0.02, 0.2, 0.68)  # x min, y min, x max, y max of the face projection (UV0); = Tools/art/bibopzi_faces.py
 
 
 def half_width(t):
@@ -300,27 +304,23 @@ class Model:
 # ---------- the levels ----------
 # Resolutions per part: sphere (segments, rings), dome (segments, rings), tube (sides, steps), prism teeth and bevel.
 LEVELS = {
-    "detail": dict(range=(3000, 5000), body=(36, 26), belly=(20, 6), eye=(16, 5), pupil=(4, 2), shine=(6, 2),
-                   brow=(10, 3), mouth=(8, 10), nose=(6, 3), slot=(4, 2), gear_teeth=8, gear_bevel=(0.0035, 1), bolt=8,
+    "detail": dict(range=(3000, 5000), body=(36, 26), belly=(20, 6), nose=(6, 3), slot=(4, 2), gear_teeth=8, gear_bevel=(0.0035, 1), bolt=8,
                    spring=(8, 32), ball=(12, 8), hand=(14, 10), foot=(12, 5), key_shaft=8, key_lobe=(12, 8),
                    key_hub=(8, 6)),
-    "crowd": dict(range=(800, 1200), body=(16, 11), belly=(10, 3), eye=(8, 3), pupil=(4, 1), shine=None,
-                  brow=(6, 1), mouth=(4, 4), nose=(6, 2), slot=(4, 1), gear_teeth=6, gear_bevel=None, bolt=None,
+    "crowd": dict(range=(800, 1200), body=(16, 11), belly=(10, 3), nose=(6, 2), slot=(4, 1), gear_teeth=6, gear_bevel=None, bolt=None,
                   spring=(5, 12), ball=(6, 4), hand=(8, 6), foot=(8, 3), key_shaft=6, key_lobe=(8, 5), key_hub=None),
-    "reserve": dict(range=(450, 550), body=(10, 8), belly=(8, 2), eye=(6, 2), pupil=(4, 1), shine=None,
-                    brow=None, mouth=None, nose=(6, 1), slot=None, gear_teeth=5, gear_bevel=None, bolt=None,
+    "reserve": dict(range=(450, 550), body=(10, 8), belly=(8, 2), nose=(6, 1), slot=None, gear_teeth=5, gear_bevel=None, bolt=None,
                     spring=(4, 6), ball=(4, 3), hand=(6, 4), foot=(6, 2), key_shaft=4, key_lobe=(6, 4), key_hub=None),
 }
 
 NAMES = {"detail": "BibopziDetail", "crowd": "Bibopzi", "reserve": "BibopziReserve"}
 
 # Landmark geometry (Unity frame).
-EYE_T, EYE_X = 0.745, 0.074
-EYE_HEIGHT = 0.01
 SPRING_BASE = HEAD_TOP - 0.02
 SPRING_TOP = HEAD_TOP + 0.105
 BALL_RADIUS = 0.034
 KEY_T = 0.6
+NOSE_T = 0.603  # RT-6v3.4b: down with the painted face (Tools/art/bibopzi_faces.py), between the eyes and the mouth
 HAND_Y = BOTTOM + 0.38 * HEIGHT
 
 
@@ -369,33 +369,14 @@ def build(level):
         v.co = Vector(simple_mesh.to_blender(bend_into_bean(simple_mesh.to_unity(v.co))))
     m._tag(r["verts"], P_BODY)
 
-    # Face and belly as decals lying on the bean (domes whose rim follows the body; nothing hidden under the skin).
+    # Belly as a decal lying on the bean (domes whose rim follows the body; nothing hidden under the skin).
     m.dome(decal_on_bean(0.3, 0.0, 0.122, 0.096, 0.012, -0.0015), *cfg["belly"], P_BELLY)
-    for side in (-1, 1):
-        # Eyes (D36: bigger, readable at 40 px): a white oval, a dark diamond, a highlight on the detailed level.
-        x = side * EYE_X
-        m.dome(decal_on_bean(EYE_T, x, 0.056, 0.05, EYE_HEIGHT, -0.001), *cfg["eye"], P_EYE_WHITE)
-        m.dome(decal_on_bean(EYE_T - 0.008, x, 0.021, 0.031, 0.003, EYE_HEIGHT * 0.9), *cfg["pupil"], P_PUPIL)
-        if cfg["shine"]:
-            m.dome(decal_on_bean(EYE_T + 0.027, x + 0.016, 0.009, 0.009, 0.002, EYE_HEIGHT * 0.95), *cfg["shine"], P_SHINE)
-        if cfg["brow"]:
-            m.dome(decal_on_bean(0.885, side * 0.076, 0.042, 0.009, 0.004, -0.0005, side * 12.0), *cfg["brow"], P_BROW)
-
-    # Smile (the sheet's mouth), a shallow arc under the nose.
-    if cfg["mouth"]:
-        sides, steps = cfg["mouth"]
-        pts = []
-        for i in range(steps + 1):
-            x = -0.05 + 0.1 * i / steps
-            t = 0.575 - 0.03 * (1 - (x / 0.05) ** 2)
-            p = surface(t, front_azimuth(t, x))
-            pts.append(p + bean_normal(p) * 0.001)
-        m.tube(pts, lambda i: 0.0065, sides, P_MOUTH)
+    # Eyes, brows and mouth: the face atlas on the masked front (RT-6v3.4b), not geometry.
 
     # Screw nose: a hexagonal head with a slanted slot.
-    m.dome(decal_on_bean(0.65, 0.0, 0.018, 0.018, 0.008, -0.001), *cfg["nose"], P_NOSE)
+    m.dome(decal_on_bean(NOSE_T, 0.0, 0.018, 0.018, 0.008, -0.001), *cfg["nose"], P_NOSE)
     if cfg["slot"]:
-        m.dome(decal_on_bean(0.65, 0.0, 0.015, 0.0035, 0.0015, 0.0075, 45.0), *cfg["slot"], P_SLOT)
+        m.dome(decal_on_bean(NOSE_T, 0.0, 0.015, 0.0035, 0.0015, 0.0075, 45.0), *cfg["slot"], P_SLOT)
 
     # Gear on HIS right temple (+X), turned a little to the front, facing out like an ear.
     teeth = cfg["gear_teeth"]
@@ -443,9 +424,10 @@ def build(level):
     shaft_len = back.z + 0.02 - pivot.z
     m.cylinder(place(pivot, (0.013, shaft_len, 0.013), (Vector((1, 0, 0)), Vector((0, 0, 1)), Vector((0, -1, 0)))),
                cfg["key_shaft"], P_KEY)
-    lobe = (0.066, 0.052, 0.018) if level == "detail" else (0.068, 0.054, 0.02)
+    # RT-6v3.4b (fable): 1.4x wider flat wings, so the bow reads as a key, not one more orange ball.
+    lobe = (0.092, 0.07, 0.02) if level == "detail" else (0.095, 0.072, 0.022)
     for side in (-1, 1):
-        m.sphere(place(pivot + Vector((side * 0.074, 0.006, -0.006)), lobe), *cfg["key_lobe"], P_KEY)
+        m.sphere(place(pivot + Vector((side * 0.1, 0.006, -0.006)), lobe), *cfg["key_lobe"], P_KEY)
     if cfg["key_hub"]:
         m.sphere(place(pivot + Vector((0, 0, -0.008)), (0.026, 0.026, 0.02)), *cfg["key_hub"], P_KEY)
 
@@ -461,9 +443,14 @@ def build(level):
 
 
 def vertex_data(part, p):
-    if part == P_BODY and p[2] > 0:
-        x0, y0, x1, y1 = FACE_BOX
-        uv = (min(1.0, max(0.0, (p[0] - x0) / (x1 - x0))), min(1.0, max(0.0, (p[1] - y0) / (y1 - y0))))
+    x0, y0, x1, y1 = FACE_BOX
+    face = part == P_BODY and p[2] > 0
+    if part == P_BODY:
+        # Seen from the front: the viewer's right is -X. Every masked vertex is inside the box (no clamp: the atlas UV is
+        # interpolated linearly, so a clamped corner would stretch the cell).
+        uv = ((x1 - p[0]) / (x1 - x0), (p[1] - y0) / (y1 - y0))
+        if not (0.0 <= uv[0] <= 1.0 and 0.0 <= uv[1] <= 1.0):
+            raise SystemExit(f"body vertex {tuple(p)} outside FACE_BOX")
     else:
         uv = (0.0, 0.0)
     spring = 0.0
@@ -471,7 +458,7 @@ def vertex_data(part, p):
         spring = min(1.0, max(0.0, (p[1] - HEAD_TOP) / (SPRING_TOP + BALL_RADIUS * 0.7 - HEAD_TOP)))
     hand = 1.0 if part == P_HAND_R else -1.0 if part == P_HAND_L else 0.0
     spin = 1.0 if part == P_KEY else 0.0
-    return uv, (spring, hand, spin, 0.0)
+    return uv, (spring, hand, spin, 1.0 if face else 0.0)
 
 
 def normal_override(part, p):

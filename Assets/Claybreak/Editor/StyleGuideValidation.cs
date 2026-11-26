@@ -46,6 +46,12 @@ namespace Claybreak.Editor
             CheckPalettes(guide, facts, failures);
             CheckEffects(guide, facts, failures);
             CheckSounds(guide, facts, failures);
+            string faces = guide.Faces == null ? "no face table" : guide.Faces.Validate();
+            if (faces != null)
+            {
+                failures.Add("style faces (RT-6v3.4b): " + faces);
+            }
+
             CheckLooks(guide, facts, failures);
             CheckPaletteContrast(guide, failures);
             CheckCapturedContrast(guide, facts.Measures, failures);

@@ -9,7 +9,7 @@ namespace Claybreak.Tests
     /// <summary>
     /// RT-6v3.4a: the three Bibopzi levels written by Blender (Tools/blender/bibopzi.py) and read from their simple data, so
     /// none of this needs Blender installed. Landmarks on every level (direcao-visual-v3.md 3.1 and D36: spring topknot,
-    /// gear on HIS right temple, cream belly, loose hands, bigger eyes, wind-up key on the back), the UV2 marks the kit's
+    /// gear on HIS right temple, cream belly, loose hands, the painted face, wind-up key on the back), the UV2 marks the kit's
     /// animated layout reads, axis, scale, winding and the budgets of the style guide.
     /// </summary>
     public sealed class BibopziLevelTests
@@ -88,28 +88,28 @@ namespace Claybreak.Tests
             Vector3 gear = CentroidWhere(v, c, orange, (p, i) => marks[i] == Vector4.zero && p.y > headTop * 0.6f && p.y < headTop);
             Assert.Greater(gear.x, 0.1f, "the gear is on his right temple (+X, the viewer's left)");
 
-            // Belly: cream, on the front, well below the eyes; eyes centered on the front.
-            Vector3 belly = CentroidWhere(v, c, UnitShapeRecipes.Cream, (p, i) => true);
-            Vector3 eyes = CentroidWhere(v, c, UnitShapeRecipes.Eyes, (p, i) => true);
-            Assert.Greater(belly.z, 0.1f);
-            Assert.Less(belly.y, eyes.y - 0.15f);
-            Assert.AreEqual(0f, eyes.x, 2e-3f, "both eyes, centered");
-
-            // Eyes (D36): bigger than the RT-6t.22 recipe's (0.08 m wide whites, a quarter of the head's width): 28% or more.
-            float whiteLeft = float.PositiveInfinity;
-            float whiteRight = float.NegativeInfinity;
+            // Face (RT-6v3.4b): no geometry eyes; the atlas paints the masked front half of the body, centered, and its box is
+            // the one the atlas is drawn for. Belly: cream, on the front, below the face.
+            Vector3 face = Vector3.zero;
+            int faceCount = 0;
             for (int i = 0; i < v.Length; i++)
             {
-                if (Same(c[i], UnitShapeRecipes.White) && v[i].x > 0f)
+                if (marks[i].w > 0f)
                 {
-                    whiteLeft = Mathf.Min(whiteLeft, v[i].x);
-                    whiteRight = Mathf.Max(whiteRight, v[i].x);
+                    Assert.AreEqual(255, c[i].a, "only the body carries the face");
+                    face += v[i];
+                    faceCount++;
                 }
             }
 
-            float eyeWidth = whiteRight - whiteLeft;
-            Assert.Greater(eyeWidth, 0.09f, "the eye whites grew (readable at 40 px)");
-            Assert.Greater(eyeWidth, 0.28f * 2f * BodyHalfWidthNear(v, c, eyes.y), "an eye takes more of the head than the RT-6t.22 recipe (0.25)");
+            Assert.Greater(faceCount, 8, "a masked front");
+            face /= faceCount;
+            Assert.AreEqual(0f, face.x, 2e-3f, "the face is centered");
+            Assert.Greater(face.z, 0.05f, "on the front");
+            CollectionAssert.AreEqual(BibopziFaceArt.FaceBox, data.Landmarks.faceBox, "the atlas is drawn for the mesh's face box");
+            Vector3 belly = CentroidWhere(v, c, UnitShapeRecipes.Cream, (p, i) => true);
+            Assert.Greater(belly.z, 0.1f);
+            Assert.Less(belly.y, 0.3f, "the belly is below the face (the eyes are at 0.47 m)");
 
             // Hands: loose (a gap to the body), orange, and marked +1 on his right (+X) and -1 on his left for the kit.
             float bodyHalf = 0f;
@@ -144,7 +144,7 @@ namespace Claybreak.Tests
             Assert.Greater(right, 0);
             Assert.Greater(left, 0);
 
-            // Key (D36): orange, on the back, centered, a bow wide enough to read from behind, spinning about the script's
+            // Key (D36): dark steel (RT-6v3.4b), on the back, centered, a bow wide enough to read from behind, spinning about the script's
             // axis through a pivot behind the back.
             float back = 0f;
             for (int i = 0; i < v.Length; i++)
@@ -155,14 +155,15 @@ namespace Claybreak.Tests
                 }
             }
 
-            Vector3 key = CentroidWhere(v, c, orange, (p, i) => marks[i].z == 1f);
+            Color32 keyColor = UnitShapeRecipes.BibopziKey;
+            Vector3 key = CentroidWhere(v, c, keyColor, (p, i) => marks[i].z == 1f);
             float keyHalfWidth = 0f;
             for (int i = 0; i < v.Length; i++)
             {
                 if (marks[i].z > 0f)
                 {
                     Assert.AreEqual(1f, marks[i].z, "the key turns whole");
-                    Assert.IsTrue(Same(c[i], orange), "only the key spins");
+                    Assert.IsTrue(Same(c[i], keyColor), "only the key spins, in its own dark steel");
                     keyHalfWidth = Mathf.Max(keyHalfWidth, Mathf.Abs(v[i].x));
                 }
             }
@@ -180,7 +181,7 @@ namespace Claybreak.Tests
 
             UnitShapeAssets.Entry entry = System.Array.Find(UnitShapeAssets.All, e => e.DataPath == data.Path);
             Assert.IsNotNull(entry, data.Path);
-            CollectionAssert.IsEmpty(UnitShapeRules.Check(mesh, true, orange, entry.Budget));
+            CollectionAssert.IsEmpty(UnitShapeRules.Check(mesh, true, orange, entry.Budget, true));
         }
 
         // Same character on every level: the same height, width and depth within two centimeters (axis and scale of the data;
@@ -233,7 +234,7 @@ namespace Claybreak.Tests
             Assert.LessOrEqual(wrong, counted / 200, $"{wrong} of {counted} faces look inward");
         }
 
-        // The marks the kit reads: spring 0..1, hand -1/0/+1, spin 0/1, face 0 until the atlas (RT-6v3.4b); UV0 in 0..1.
+        // The marks the kit reads: spring 0..1, hand -1/0/+1, spin 0/1, face 0/1 (RT-6v3.4b); UV0 in 0..1.
         [TestCase("detail")]
         [TestCase("crowd")]
         [TestCase("reserve")]
@@ -251,7 +252,7 @@ namespace Claybreak.Tests
                 Assert.That(m.x, Is.InRange(0f, 1f));
                 Assert.That(m.y == -1f || m.y == 0f || m.y == 1f, Is.True, $"hand side {m.y}");
                 Assert.That(m.z == 0f || m.z == 1f, Is.True, $"spin weight {m.z}");
-                Assert.AreEqual(0f, m.w, "no face mask before the atlas");
+                Assert.That(m.w == 0f || m.w == 1f, Is.True, $"face mask {m.w}");
             }
 
             foreach (Vector2 p in uv)

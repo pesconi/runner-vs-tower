@@ -766,8 +766,9 @@ namespace Claybreak.Editor
         /// </summary>
         public static readonly ShapeDefinition[] Shapes =
         {
-            new ShapeDefinition(SaveMigration.DefaultShape, "BIBOPZI", UnitShapeAssets.Named("Bibopzi"), 0, Hop(8f, 0.24f, 0.86f, 0.24f, 0.06f),
-                UnitShapeRecipes.BibopziHeadTop, UnitShapeAssets.Named("BibopziDetail")),
+            new ShapeDefinition(SaveMigration.DefaultShape, "BIBOPZI", UnitShapeAssets.Named("Bibopzi"), 0,
+                Hop(8f, 0.24f, 0.86f, 0.24f, 0.06f, BibopziLandSquash, BibopziRiseStretch),
+                BibopziCrownSeat, UnitShapeAssets.Named("BibopziDetail")),
             new ShapeDefinition(SaveMigration.ShapeBeforeV4, "BALL", UnitShapeAssets.Named("Bolinha"), 0, SwarmMotionSettings.Default),
             new ShapeDefinition("chick", "CHICK", UnitShapeAssets.Named("Pintinho"), 300, Hop(11f, 0.15f, 0.82f, 0.28f, 0.2f)),
             new ShapeDefinition("bunny", "BUNNY", UnitShapeAssets.Named("Coelhinho"), 1000, Hop(6.5f, 0.42f, 0.7f, 0.5f, 0.08f),
@@ -776,11 +777,26 @@ namespace Claybreak.Editor
             new ShapeDefinition("penguin", "PENGUIN", UnitShapeAssets.Named("Pinguim"), 2400, Hop(14f, 0.05f, 0.94f, 0.1f, 0f)),
         };
 
-        private static SwarmMotionSettings Hop(float frequency, float height, float squashBase, float squashAmount, float lean)
+        /// <summary>
+        /// RT-6v3.4b (D36, "estica e achata no pulo"): the Bibopzi squashes 12% more at each landing and stretches up to 10%
+        /// more while rising, the volume kept (<see cref="SwarmMotion.ScaleY"/>). The other shapes join in RT-6v3.4c.
+        /// </summary>
+        public const float BibopziLandSquash = 0.12f;
+
+        /// <summary>
+        /// RT-6v3.4b (fable review): the leader's crown sits 6 cm above the head top, so it never covers the painted brows and
+        /// eyes, not even leaning in the victory hop.
+        /// </summary>
+        public const float BibopziCrownSeat = UnitShapeRecipes.BibopziHeadTop + 0.06f;
+        public const float BibopziRiseStretch = 0.1f;
+
+        private static SwarmMotionSettings Hop(float frequency, float height, float squashBase, float squashAmount, float lean,
+            float landSquash = 0f, float riseStretch = 0f)
         {
             return new SwarmMotionSettings
             {
-                Frequency = frequency, HopHeight = height, SquashBase = squashBase, SquashAmount = squashAmount, ForwardLean = lean
+                Frequency = frequency, HopHeight = height, SquashBase = squashBase, SquashAmount = squashAmount, ForwardLean = lean,
+                LandSquash = landSquash, RiseStretch = riseStretch
             };
         }
 

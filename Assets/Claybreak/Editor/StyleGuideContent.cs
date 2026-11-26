@@ -427,7 +427,35 @@ namespace Claybreak.Editor
                 Role(GateGoodRole, StyleClass.Gate, GateGood),
                 Role(GateBadRole, StyleClass.Gate, GateBad),
             }, Profiles(), Materials(), Effects(), Sounds(), ColorTolerance, Contrast());
+            guide.EditorAssignFaces(Faces());
             return guide;
+        }
+
+        /// <summary>
+        /// RT-6v3.4b (docs 3.2): event → expression of the Bibopzi's face atlas, with duration and priority. Base faces (0 s)
+        /// hold: the run is neutral and blinks, the assault is effort, the level's end holds victory or defeat. Reactions show
+        /// over a base of lower or equal priority: a bad gate or an obstacle (scared, hands wide open) wins over a good gate
+        /// (happy, hands half open); the units in flight say "ui!", and so do the ones thrown out.
+        /// </summary>
+        public static FaceRules Faces()
+        {
+            return new FaceRules
+            {
+                rules = new[]
+                {
+                    new FaceRule(FaceEvent.Run, FaceExpression.Neutral, 0f, 0, 0f),
+                    new FaceRule(FaceEvent.Blink, FaceExpression.Blink, 0.13f, 1, 0f),
+                    new FaceRule(FaceEvent.GoodGate, FaceExpression.Happy, 0.9f, 2, 0.55f),
+                    new FaceRule(FaceEvent.BadGate, FaceExpression.Scared, 0.8f, 3, 1f),
+                    new FaceRule(FaceEvent.ObstacleHit, FaceExpression.Scared, 0.6f, 3, 1f),
+                    new FaceRule(FaceEvent.Assault, FaceExpression.Effort, 0f, 1, 0.25f),
+                    new FaceRule(FaceEvent.Launch, FaceExpression.Ouch, 0f, 0, 1f),
+                    new FaceRule(FaceEvent.Thrown, FaceExpression.Ouch, 0f, 0, 1f),
+                    new FaceRule(FaceEvent.Victory, FaceExpression.Victory, 0f, 5, 1f),
+                    new FaceRule(FaceEvent.Defeat, FaceExpression.Defeat, 0f, 5, 0f),
+                },
+                blinkEvery = 3.4f,
+            };
         }
 
         [MenuItem("Claybreak/Write Style Guide")]
@@ -445,6 +473,7 @@ namespace Claybreak.Editor
                 // The migration state is part of the content (a class goes v3 by editing Classes()), so nothing is kept from the asset.
                 guide.EditorAssign(fresh.Classes, fresh.Worlds, fresh.SharedRoles, fresh.Profiles, fresh.Materials, fresh.Effects,
                     fresh.Sounds, fresh.ColorTolerance, fresh.Contrast);
+                guide.EditorAssignFaces(fresh.Faces);
                 EditorUtility.SetDirty(guide);
                 Object.DestroyImmediate(fresh);
             }

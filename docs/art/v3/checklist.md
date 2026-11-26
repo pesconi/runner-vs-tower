@@ -183,6 +183,23 @@ Cada linha é uma regra que a captura deve cumprir; classe `legado` = ainda no v
 - [ ] **ProjectileImpact**: até 32 (stone and landing shadow of the cannon (pool)).
 - [ ] **TowerBreak**: até 4 (tower floors crumbling (blocks per body)).
 
+## Rosto do Bibopzi (evento → expressão, RT-6v3.4b)
+
+Atlas de 8 células; base = fica até outra base; reação aparece sobre base e reação de prioridade menor ou igual; piscar a cada 3.4 s no rosto de corrida.
+
+| Evento | Expressão | Duração | Prioridade | Mãos abertas |
+|---|---|---|---|---|
+| Run | Neutral | base | 0 | 0 |
+| Blink | Blink | 0.13 s | 1 | 0 |
+| GoodGate | Happy | 0.9 s | 2 | 0.55 |
+| BadGate | Scared | 0.8 s | 3 | 1 |
+| ObstacleHit | Scared | 0.6 s | 3 | 1 |
+| Assault | Effort | base | 1 | 0.25 |
+| Launch | Ouch | base | 0 | 1 |
+| Thrown | Ouch | base | 0 | 1 |
+| Victory | Victory | base | 5 | 1 |
+| Defeat | Defeat | base | 5 | 0 |
+
 ## Sons (pico alvo ± tolerância, antes do mixer)
 
 - [ ] `Coin`: role Coin: purchase (short double bell); pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.

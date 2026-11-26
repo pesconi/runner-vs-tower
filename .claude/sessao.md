@@ -242,3 +242,12 @@
   (multidão, asset de sempre), `BibopziDetail` (líder, `CrowdShapeOption.leaderMesh`), `BibopziReserve` (reserva do gate).
   Capturas dos três níveis com o vinil do jogo: `-testFilter Claybreak.Tests.BibopziCaptureTests -bibopziCaptureDir <pasta>`
   com GPU (`bibopzi-niveis-perto.png`).
+- 2026-11-26 (RT-6v3.4b): o rosto do Bibopzi é o atlas `Content/Style/BibopziFaces.png`, desenhado por
+  `python -X utf8 Tools/art/bibopzi_faces.py [--preview <png>]` (hash do script no PNG, o validador confere); a caixa
+  `FACE_BOX` é a mesma no script do atlas e no `Tools/blender/bibopzi.py` (mudou uma, mude a outra e rode os dois + `scene`).
+  Tabela evento → expressão = `StyleGuideContent.Faces()`; o fluxo avisa o `CrowdFace`. Capturas dos 8 rostos, da sequência
+  e das costas: `-testFilter Claybreak.Tests.BibopziFaceCaptureTests -faceCaptureDir <pasta>` com GPU. Cor nova na multidão
+  (chave, rosto) pode reprovar a regra de contraste da D36 no `validate` (pista × multidão ≥ 20 L*): rodar `style` +
+  `validate` antes de dar a arte por boa. Pacote de aceite agrupado: `python -X utf8 Tools/art/aceite_pacote.py <pasta>
+  <título> <pares.json>` (JPEGs lado a lado + `index.html` sem rede). Na ferramenta Bash, `| grep` no fim de um script
+  longo segura a saída até o fim: para acompanhar, olhar os logs em `<out>/logs`.

@@ -43,7 +43,7 @@ namespace Claybreak.Tests
                 Mesh mesh = Keep(entry.Build());
                 Assert.AreEqual(entry.Id, mesh.name);
                 Assert.AreEqual(IndexFormat.UInt16, mesh.indexFormat);
-                CollectionAssert.IsEmpty(UnitShapeRules.Check(mesh, entry.HasEyes, entry.FrontMarker, entry.Budget), entry.Id);
+                CollectionAssert.IsEmpty(UnitShapeRules.Check(mesh, entry.HasEyes, entry.FrontMarker, entry.Budget, entry.PaintedFace), entry.Id);
             }
         }
 
