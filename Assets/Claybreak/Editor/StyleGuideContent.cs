@@ -3,16 +3,18 @@ using JungleDegree.StudioKit.Core;
 using JungleDegree.StudioKit.Toon;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Claybreak.Editor
 {
     /// <summary>
     /// The <see cref="StyleGuide"/> as code, like the rest of the game's content (RT-6v3.1): the asset is rewritten from here, so a
-    /// change to the guide is a reviewed edit of this file. It holds the values the game has TODAY and marks every class
-    /// <see cref="StyleStatus.Legacy"/>: nothing on screen changes. Palettes come from <see cref="PaletteContent"/> (one source,
-    /// not a copy), light from the scene's own constants and the toon look asset, sounds from <see cref="ClaybreakAudio"/>'s
-    /// clip list. The shade and highlight levels equal the base color while a role is legacy (the toon ramp does the shading
-    /// today); the v3 art series gives them values when it migrates the class.
+    /// change to the guide is a reviewed edit of this file. Palettes come from <see cref="PaletteContent"/> (one source, not a
+    /// copy), sounds from <see cref="ClaybreakAudio"/>'s clip list. RT-6v3.3 (D36): the surfaces of the drawn classes are v3 (the
+    /// kit's <c>StudioKit/ToonVinyl</c> through the profiles below, written into the materials by <see cref="ApplySurfaces"/>),
+    /// and each world has its vinyl light, its fog and its post stack, written into assets the scene shows per world
+    /// (<see cref="WriteWorldAssets"/>). Meshes are still the old ones (shape state legacy until RT-6v3.4 onward).
     /// Batchmode: <c>-executeMethod Claybreak.Editor.StyleGuideContent.WriteAndQuit</c>.
     /// </summary>
     public static class StyleGuideContent
@@ -50,8 +52,8 @@ namespace Claybreak.Editor
         public static readonly Color GateGood = new Color32(0x5a, 0xd1, 0xa0, 0xff);
         public static readonly Color GateBad = new Color32(0xff, 0x6b, 0x81, 0xff);
 
-        // Material profiles. Legacy ones name the shaders the game draws with today; the v3 ones (docs 2.1) have no shader until the
-        // sibling shader of the K.v3a delivery exists, so no material can claim one yet.
+        // Material profiles. Legacy ones name the shaders the game drew with before v3 (still used by the classes not migrated yet);
+        // the v3 ones (docs 2.1) name the kit's vinyl sibling (K.v3a) and carry its surface values.
         public const string ProfileToon = "legacy-toon";
         public const string ProfileTranslucent = "legacy-translucent";
         public const string ProfileText = "legacy-text";
@@ -60,25 +62,55 @@ namespace Claybreak.Editor
         public const string ProfileTrack = "legacy-track";
         public const string ProfileBlobShadow = "legacy-blob-shadow";
 
+        public const string ProfileVinyl = "vinyl";
+        public const string ProfileMatte = "matte-plastic";
+        public const string ProfileStructure = "structure";
+        public const string ProfileEnemy = "enemy";
+        public const string ProfileSkyV3 = "sky";
+        public const string ProfileTrackV3 = "track";
+        public const string ProfileContactShadow = "contact-shadow";
+        public const string ProfileOverlay = "unlit-overlay";
+
+        /// <summary>The threat color of the enemies' rim (warm red, against the cool night of every world).</summary>
+        public static readonly Color ThreatRim = new Color(1f, 0.42f, 0.34f);
+
+        // RT-6v3.3 surfaces (ToonVinylSurface: gloss, highlight size, rim, rim tint, top gloss, darken, emission, fog amount,
+        // translucent, alpha). Emission and fog amount are left as each material's art set them (glows, structure fog): see
+        // ApplySurfaces. "No gloss on the floor" (RT-6v3.2 review): every profile of the floor and the scenery keeps top gloss 0.
+        public static readonly ToonVinylSurface VinylSurface = new ToonVinylSurface(0.6f, 0.35f, 1f, Color.white, 1f, 0f, 0f, 1f, false, 1f);
+        public static readonly ToonVinylSurface MatteSurface = new ToonVinylSurface(0.12f, 0.6f, 0.45f, Color.white, 0f, 0f, 0f, 1f, false, 1f);
+        public static readonly ToonVinylSurface StructureSurface = new ToonVinylSurface(0.22f, 0.5f, 0.7f, Color.white, 0f, 0f, 0f, 1f, false, 1f);
+        public static readonly ToonVinylSurface EnemySurface = new ToonVinylSurface(0.45f, 0.35f, 1.4f, ThreatRim, 0.5f, 0.12f, 0f, 1f, false, 1f);
+
         private static MaterialProfile[] Profiles() => new[]
         {
-            Profile(ProfileToon, true, "Toon lit, 3-band ramp: structures, crowd, obstacles, props.", "StudioKit/ToonLit"),
-            Profile(ProfileTranslucent, true, "URP Unlit, transparent: gate panels, shadows, danger strip, dome.", "Universal Render Pipeline/Unlit"),
+            Profile(ProfileToon, true, "Toon lit, 3-band ramp (before v3): gate panels' classes still legacy.", "StudioKit/ToonLit"),
+            Profile(ProfileTranslucent, true, "URP Unlit, transparent: gate panels, effect shadows.", "Universal Render Pipeline/Unlit"),
             Profile(ProfileText, true, "TextMeshPro distance field: menu, HUD, gate and floating numbers.", "TextMeshPro/"),
             Profile(ProfileUiText, true, "The built-in text shader of the dynamic font (UI.Text and TextMesh: health labels, a few HUD texts).", "GUI/Text Shader"),
             Profile(ProfileSky, true, "The sky gradient (reads the palette globals).", "StudioKit/SkyGradientScreen"),
             Profile(ProfileTrack, true, "The striped track.", "StudioKit/StripedTrack"),
             Profile(ProfileBlobShadow, true, "The instanced blob shadow of the crowd.", "StudioKit/BlobShadowInstanced"),
-            Profile("vinyl", false, "v3: the character (edge light, soft specular, warm shade). Shader: K.v3a."),
-            Profile("matte-plastic", false, "v3: scenery, floor, towers. Shader: K.v3a."),
-            Profile("gate-glow", false, "v3: translucent gate with a lit edge, no depth write. Shader: K.v3a."),
-            Profile("enemy", false, "v3: darkened vinyl with a threat-colored edge. Shader: K.v3a."),
-            Profile("ui-effect", false, "v3: unlit UI and effects. Shader: K.v3a."),
+            Vinyl(ProfileVinyl, "v3: the character's glossy vinyl (soft ramp, warm key, highlight and rim, also on top).", VinylSurface),
+            Vinyl(ProfileMatte, "v3: matte plastic for the floor, the rails, the scenery and the gate posts; no gloss on faces looking up.", MatteSurface),
+            Vinyl(ProfileStructure, "v3: light matte plastic of the towers and bosses (the night factory's clear structures), a cool rim; no gloss on top.", StructureSurface),
+            Vinyl(ProfileEnemy, "v3: darkened vinyl with a warm threat rim (defenses and obstacles).", EnemySurface),
+            Profile(ProfileSkyV3, false, "v3: the night sky gradient of the world (palette sky top/bottom).", "StudioKit/SkyGradientScreen"),
+            Profile(ProfileTrackV3, false, "v3: the neutral striped track (unlit stripes, no gloss).", "StudioKit/StripedTrack"),
+            Profile(ProfileContactShadow, false, "v3: the contact shadow, a round blob under each figure (D36).", "StudioKit/BlobShadowInstanced"),
+            Profile(ProfileOverlay, false, "v3: unlit translucent overlays of the play area (lane marker, danger strip, shield dome).", "Universal Render Pipeline/Unlit"),
+            Profile("gate-glow", false, "v3: translucent gate with a lit edge, no depth write (RT-6v3.6)."),
+            Profile("ui-effect", false, "v3: unlit UI and effects (RT-6v3.8/3.10)."),
         };
 
         private static MaterialProfile Profile(string id, bool legacy, string note, params string[] shaders)
         {
             return new MaterialProfile { id = id, legacy = legacy, note = note, shaders = shaders };
+        }
+
+        private static MaterialProfile Vinyl(string id, string note, ToonVinylSurface surface)
+        {
+            return new MaterialProfile { id = id, legacy = false, note = note, shaders = new[] { ToonShaderIds.ToonVinylShader }, vinyl = true, surface = surface };
         }
 
         // Every material asset of the game and the class that owns it. The validator refuses a material asset not listed here.
@@ -93,22 +125,23 @@ namespace Claybreak.Editor
                 }
             }
 
-            Add(StyleClass.Unit, ProfileToon, "CrowdToon");
-            Add(StyleClass.Unit, ProfileBlobShadow, "CrowdShadow");
-            Add(StyleClass.Leader, ProfileToon, "LeaderCrown");
-            Add(StyleClass.Tower, ProfileToon, "Stone", "StoneDark", "StoneLight", "StoneWarm", "Wood", "Banner", "Terracotta", "ClayDark",
+            Add(StyleClass.Unit, ProfileVinyl, "CrowdToon");
+            Add(StyleClass.Unit, ProfileContactShadow, "CrowdShadow");
+            Add(StyleClass.Leader, ProfileVinyl, "LeaderCrown");
+            Add(StyleClass.Tower, ProfileStructure, "Stone", "StoneDark", "StoneLight", "StoneWarm", "Wood", "Banner", "Terracotta", "ClayDark",
                 "Moss", "Bone", "Health", "Glow", "GlowHot", "WoodDark", "Thatch", "Lantern", "Brick", "Frost", "Basalt", "Ice");
-            Add(StyleClass.Enemy, ProfileToon, "Iron", "IronWarm", "Soot", "Steel", "Wall", "ShieldCore");
-            Add(StyleClass.Enemy, ProfileTranslucent, "ShieldDome", "Danger");
+            Add(StyleClass.Enemy, ProfileEnemy, "Iron", "IronWarm", "Soot", "Steel", "Wall", "ShieldCore");
+            Add(StyleClass.Enemy, ProfileOverlay, "ShieldDome", "Danger");
             Add(StyleClass.Gate, ProfileTranslucent, "GateGood", "GateBad", "GateGoodLit", "GateBadLit", "GateOff");
-            Add(StyleClass.Gate, ProfileToon, "GatePostToon", "Crate");
+            // The gate class stays legacy until RT-6v3.6; its posts and crates already wear the matte plastic of the floor.
+            Add(StyleClass.Gate, ProfileMatte, "GatePostToon", "Crate");
             Add(StyleClass.Gate, ProfileText, "Baloo2 Gate Good", "Baloo2 Gate Bad");
-            Add(StyleClass.Obstacle, ProfileToon, "ObstacleToon");
-            Add(StyleClass.Floor, ProfileToon, "GroundToon", "Line");
-            Add(StyleClass.Floor, ProfileTrack, "StripedTrack");
-            Add(StyleClass.Floor, ProfileTranslucent, "LaneMarker");
-            Add(StyleClass.Scenery, ProfileToon, "PropsToon");
-            Add(StyleClass.Scenery, ProfileSky, "SkyGradient");
+            Add(StyleClass.Obstacle, ProfileEnemy, "ObstacleToon");
+            Add(StyleClass.Floor, ProfileMatte, "GroundToon", "Line");
+            Add(StyleClass.Floor, ProfileTrackV3, "StripedTrack");
+            Add(StyleClass.Floor, ProfileOverlay, "LaneMarker");
+            Add(StyleClass.Scenery, ProfileMatte, "PropsToon");
+            Add(StyleClass.Scenery, ProfileSkyV3, "SkyGradient");
             Add(StyleClass.Effect, ProfileTranslucent, "Shadow");
             Add(StyleClass.Effect, ProfileText, "Baloo2 Float");
             // Sub-assets of the font atlas and of the icon sprite sheet count too.
@@ -137,12 +170,21 @@ namespace Claybreak.Editor
             Class(StyleClass.Screen, 0, 0, 0, 0, 0),
         };
 
+        // RT-6v3.3: the classes whose surface (materials, palette levels, light) is v3. Gates (6v3.6), effects (6v3.8) and screens
+        // (6v3.10) come later; the sound went v3 whole in RT-6v3.9.
+        private static readonly StyleClass[] SurfaceV3 =
+        {
+            StyleClass.Unit, StyleClass.Leader, StyleClass.Enemy, StyleClass.Tower, StyleClass.Boss, StyleClass.Obstacle,
+            StyleClass.Floor, StyleClass.Scenery,
+        };
+
         private static ClassStyle Class(StyleClass styleClass, int maxTriangles, int maxDrawCalls, int v3Min, int v3Max, int v3Calls)
         {
             return new ClassStyle
             {
                 styleClass = styleClass,
                 status = styleClass == StyleClass.Sound ? StyleStatus.V3 : StyleStatus.Legacy, // RT-6v3.9 migrated the sound
+                surface = System.Array.IndexOf(SurfaceV3, styleClass) >= 0 ? StyleStatus.V3 : StyleStatus.Legacy,
                 maxTriangles = maxTriangles,
                 maxDrawCalls = maxDrawCalls,
                 v3MinTriangles = v3Min,
@@ -243,18 +285,34 @@ namespace Claybreak.Editor
             return clip.StartsWith("Cue") ? "cue " + clip.Substring(3) : "role " + clip;
         }
 
-        /// <summary>The roles of one world, from its palette definition: the base color of each, shade and highlight equal to it (legacy).</summary>
-        public static PaletteRole[] RolesOf(PaletteDefinition definition)
+        /// <summary>
+        /// The roles of one world, from its palette definition. A role of a v3-surface class gets the three levels the vinyl light
+        /// gives it on screen before the post: base, the base in full shadow (times the world's shadow tint) and the lit base
+        /// under the warm key through the tone shoulder; a legacy role keeps shade and highlight equal to the base.
+        /// </summary>
+        public static PaletteRole[] RolesOf(PaletteDefinition definition, WorldLight light)
         {
             Color[] colors = PaletteContent.Colors(definition);
             string[] names = ToonPalette.ColorNames;
             var roles = new PaletteRole[names.Length];
             for (int i = 0; i < names.Length; i++)
             {
-                roles[i] = Role(names[i], RoleClasses[i], colors[i]);
+                roles[i] = System.Array.IndexOf(SurfaceV3, RoleClasses[i]) >= 0
+                    ? V3Role(names[i], RoleClasses[i], colors[i], light)
+                    : Role(names[i], RoleClasses[i], colors[i]);
             }
 
             return roles;
+        }
+
+        private static PaletteRole V3Role(string name, StyleClass styleClass, Color color, WorldLight light)
+        {
+            Color shadow = color * light.shadowTint;
+            shadow.a = 1f;
+            Color key = light.keyColor * (light.keyIntensity * light.directIntensity + light.ambientIntensity);
+            Vector3 lit = ToonVinylLook.Shoulder(new Vector3(color.r * key.r, color.g * key.g, color.b * key.b), light.shoulderKnee);
+            var highlight = new Color(Mathf.Clamp01(lit.x), Mathf.Clamp01(lit.y), Mathf.Clamp01(lit.z), 1f);
+            return new PaletteRole { role = name, styleClass = styleClass, levels = new ColorLevels(color, shadow, highlight) };
         }
 
         private static PaletteRole Role(string name, StyleClass styleClass, Color color)
@@ -262,31 +320,99 @@ namespace Claybreak.Editor
             return new PaletteRole { role = name, styleClass = styleClass, levels = new ColorLevels(color, color, color) };
         }
 
+        // RT-6v3.3 (D36): the night factory of the A/M concept screens in every world (dark blue sky in a gradient, clear
+        // structures, a glow on the rims) with the world's own accent: the rim light takes the world's glow (palette structure
+        // detail). Warm key, cool two-tone ambient, rim, soft shoulder (the belly of the vinyl does not burn out, T-Kv3a-3).
+        private static WorldLight LightOf(PaletteDefinition definition)
+        {
+            Color[] colors = PaletteContent.Colors(definition);
+            Color glow = colors[System.Array.IndexOf(ToonPalette.ColorNames, "structureDetail")];
+            Color ground = colors[System.Array.IndexOf(ToonPalette.ColorNames, "ground")];
+            return new WorldLight
+            {
+                softness = 0.12f,
+                lambert = 0.35f,
+                // Review rounds 1-2: a light cool shade, so the clear structures, the whites and the cream belly do not read lilac.
+                shadowTint = new Color(0.84f, 0.83f, 0.92f),
+                keyColor = new Color(1f, 0.91f, 0.78f),
+                keyIntensity = 1.05f,
+                directIntensity = 0.78f,
+                skyAmbient = new Color(0.66f, 0.78f, 1f),
+                groundAmbient = Color.Lerp(new Color(0.55f, 0.52f, 0.72f), ground, 0.35f),
+                ambientIntensity = 0.7f,
+                rimColor = Color.Lerp(Color.white, glow, 0.55f),
+                rimStrength = 0.55f,
+                rimWidth = 3f,
+                shoulderKnee = 0.78f,
+                highlightPeak = 1.1f,
+            };
+        }
+
+        // The cheap post of every world (docs 2.1, D36 "bloom leve e vinheta"): a little contrast and saturation, a navy vignette
+        // and a light bloom that only the highlight cores pass (over 1 in HDR). No tonemapping (T-RT6v3.2-3).
+        private static WorldPost PostOf(int world) => new WorldPost
+        {
+            exposure = 0f,
+            contrast = 10f,
+            saturation = 10f,
+            filter = Color.white,
+            vignette = 0.22f,
+            vignetteColor = new Color(0.04f, 0.05f, 0.14f),
+            // Review round 1: at 1.15 nothing reached the bloom; at 1.0 only the vinyl highlights and rims (which pass 1 in HDR)
+            // glow a little, the matte track and structures stay under it.
+            bloom = 0.4f,
+            bloomThreshold = 1f,
+        };
+
+        private static readonly string[] Moods =
+        {
+            "fábrica noturna, céu azul-marinho, pista clara neutra, multidão rosa-choque, brilho ciano, defesas petróleo-escuro",
+            "fábrica noturna ao fim do turno, céu violeta-escuro, pista clara neutra, multidão laranja, brilho âmbar, defesas azul-cobalto",
+            "fábrica noturna de doces, céu azul-petróleo, pista clara neutra, multidão violeta, brilho menta, defesas âmbar-escuro",
+            "fábrica noturna de gelo, céu azul-profundo, pista escura neutra sobre chão petróleo, multidão lima, brilho ciano-gelo, defesas roxas",
+        };
+
         private static WorldStyle[] Worlds()
         {
-            var look = AssetDatabase.LoadAssetAtPath<ToonLook>(ClaybreakSceneBuilder.CrowdLookPath);
             PaletteDefinition[] palettes = PaletteContent.Palettes;
             var worlds = new WorldStyle[palettes.Length];
             for (int w = 0; w < worlds.Length; w++)
             {
+                WorldLight light = LightOf(palettes[w]);
                 worlds[w] = new WorldStyle
                 {
                     name = palettes[w].Name,
-                    roles = RolesOf(palettes[w]),
-                    // ClaybreakSceneBuilder.CreateEnvironment: one directional sun, the same in every world, no shadows, flat ambient.
+                    roles = RolesOf(palettes[w], light),
+                    // ClaybreakSceneBuilder.CreateEnvironment: one directional sun, the same in every world, no shadows.
                     sunEuler = new Vector3(50f, -30f, 0f),
-                    sunColor = Color.white,
-                    sunIntensity = 1f,
-                    ambientSky = look != null ? look.SkyLight : Color.white,
-                    ambientGround = look != null ? look.GroundLight : Color.gray,
-                    ambientIntensity = look != null ? look.AmbientIntensity : 1f,
-                    directIntensity = look != null ? look.DirectIntensity : 1f,
-                    postProcessing = "none",
+                    light = light,
+                    post = PostOf(w),
+                    fogStart = palettes[w].FogStart,
+                    fogEnd = palettes[w].FogEnd,
+                    mood = w < Moods.Length ? Moods[w] : palettes[w].Name,
                 };
             }
 
             return worlds;
         }
+
+        /// <summary>
+        /// The D36 contrast rule (RT-6v3.3). Palette thresholds are what the night palettes were designed to (crowd chroma 81–108
+        /// against at most 68 for anything else, |ΔL*| 34–62, hue gap 120–164°); captured ones leave room for the light and the
+        /// post, which move every color.
+        /// </summary>
+        public static ContrastRule Contrast() => new ContrastRule
+        {
+            crowdChromaMargin = 5f,
+            trackMaxChroma = 15f,
+            crowdTrackMinLightness = 30f,
+            enemyMinHue = 115f,
+            capturedCrowdChromaMargin = 0f,
+            capturedCrowdTrackMinLightness = 20f,
+            capturedEnemyMinHue = 90f,
+            gateLabelMinRatio = 3f,
+            skinMinDeltaE = 20f,
+        };
 
         /// <summary>Builds the guide the game has today, in memory (the tests start from it).</summary>
         public static StyleGuide Create()
@@ -296,7 +422,7 @@ namespace Claybreak.Editor
             {
                 Role(GateGoodRole, StyleClass.Gate, GateGood),
                 Role(GateBadRole, StyleClass.Gate, GateBad),
-            }, Profiles(), Materials(), Effects(), Sounds(), ColorTolerance);
+            }, Profiles(), Materials(), Effects(), Sounds(), ColorTolerance, Contrast());
             return guide;
         }
 
@@ -314,13 +440,192 @@ namespace Claybreak.Editor
             {
                 // The migration state is part of the content (a class goes v3 by editing Classes()), so nothing is kept from the asset.
                 guide.EditorAssign(fresh.Classes, fresh.Worlds, fresh.SharedRoles, fresh.Profiles, fresh.Materials, fresh.Effects,
-                    fresh.Sounds, fresh.ColorTolerance);
+                    fresh.Sounds, fresh.ColorTolerance, fresh.Contrast);
                 EditorUtility.SetDirty(guide);
                 Object.DestroyImmediate(fresh);
             }
 
+            WriteWorldAssets(guide ?? AssetDatabase.LoadAssetAtPath<StyleGuide>(StyleGuide.AssetPath));
             AssetDatabase.SaveAssets();
             Debug.Log("[StyleGuideContent] wrote " + StyleGuide.AssetPath);
+        }
+
+        // ---------- RT-6v3.3: the world assets and the materials, from the guide ----------
+
+        public static string LightPath(int world) => $"{Folder}/Light{PaletteContent.Palettes[world].Name}.asset";
+        public static string PostPath(int world) => $"{Folder}/Post{PaletteContent.Palettes[world].Name}.asset";
+
+        /// <summary>Writes each world's vinyl light (a kit <see cref="ToonVinylLook"/>) and post profile from the guide.</summary>
+        public static void WriteWorldAssets(StyleGuide guide)
+        {
+            for (int w = 0; w < guide.Worlds.Length; w++)
+            {
+                WorldStyle world = guide.Worlds[w];
+                var look = AssetDatabase.LoadAssetAtPath<ToonVinylLook>(LightPath(w));
+                if (look == null)
+                {
+                    look = ScriptableObject.CreateInstance<ToonVinylLook>();
+                    AssetDatabase.CreateAsset(look, LightPath(w));
+                }
+
+                FillLook(look, world.light);
+                var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(PostPath(w));
+                if (profile == null)
+                {
+                    profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                    AssetDatabase.CreateAsset(profile, PostPath(w));
+                }
+
+                FillPost(profile, world.post);
+                EditorUtility.SetDirty(look);
+                EditorUtility.SetDirty(profile);
+            }
+        }
+
+        /// <summary>The kit look's serialized fields, in the guide's values.</summary>
+        public static void FillLook(ToonVinylLook look, WorldLight light)
+        {
+            var so = new SerializedObject(look);
+            so.FindProperty("softness").floatValue = light.softness;
+            so.FindProperty("lambert").floatValue = light.lambert;
+            so.FindProperty("shadowTint").colorValue = light.shadowTint;
+            so.FindProperty("keyColor").colorValue = light.keyColor;
+            so.FindProperty("keyIntensity").floatValue = light.keyIntensity;
+            so.FindProperty("directIntensity").floatValue = light.directIntensity;
+            so.FindProperty("skyAmbient").colorValue = light.skyAmbient;
+            so.FindProperty("groundAmbient").colorValue = light.groundAmbient;
+            so.FindProperty("ambientIntensity").floatValue = light.ambientIntensity;
+            so.FindProperty("rimColor").colorValue = light.rimColor;
+            so.FindProperty("rimStrength").floatValue = light.rimStrength;
+            so.FindProperty("rimWidth").floatValue = light.rimWidth;
+            so.FindProperty("shoulderKnee").floatValue = light.shoulderKnee;
+            so.FindProperty("highlightPeak").floatValue = light.highlightPeak;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>True when the look asset holds the guide's light (validator).</summary>
+        public static bool LookMatches(ToonVinylLook look, WorldLight light)
+        {
+            return look != null && Same(look.Softness, light.softness) && Same(look.Lambert, light.lambert) && look.ShadowTint == light.shadowTint
+                && look.KeyColor == light.keyColor && Same(look.KeyIntensity, light.keyIntensity) && Same(look.DirectIntensity, light.directIntensity)
+                && look.SkyAmbient == light.skyAmbient && look.GroundAmbient == light.groundAmbient && Same(look.AmbientIntensity, light.ambientIntensity)
+                && look.RimColor == light.rimColor && Same(look.RimStrength, light.rimStrength) && Same(look.RimWidth, light.rimWidth)
+                && Same(look.ShoulderKnee, light.shoulderKnee) && Same(look.HighlightPeak, light.highlightPeak);
+        }
+
+        /// <summary>The post profile in the guide's values: no tonemapping, color adjustments, vignette, bloom (or none).</summary>
+        public static void FillPost(VolumeProfile profile, WorldPost post)
+        {
+            Override<Tonemapping>(profile).mode.Override(TonemappingMode.None);
+            ColorAdjustments color = Override<ColorAdjustments>(profile);
+            color.postExposure.Override(post.exposure);
+            color.contrast.Override(post.contrast);
+            color.saturation.Override(post.saturation);
+            color.colorFilter.Override(post.filter);
+            Vignette vignette = Override<Vignette>(profile);
+            vignette.intensity.Override(post.vignette);
+            vignette.smoothness.Override(0.45f);
+            vignette.color.Override(post.vignetteColor);
+            if (post.bloom > 0f)
+            {
+                Bloom bloom = Override<Bloom>(profile);
+                bloom.intensity.Override(post.bloom);
+                bloom.threshold.Override(post.bloomThreshold);
+                bloom.scatter.Override(0.6f);
+                bloom.highQualityFiltering.Override(false);
+                bloom.downscale.Override(BloomDownscaleMode.Quarter);
+                bloom.maxIterations.Override(4);
+            }
+            else if (profile.Has<Bloom>())
+            {
+                profile.Remove<Bloom>();
+            }
+        }
+
+        /// <summary>True when the profile holds the guide's post (validator).</summary>
+        public static bool PostMatches(VolumeProfile profile, WorldPost post)
+        {
+            if (profile == null || !profile.TryGet(out Tonemapping tonemapping) || tonemapping.mode.value != TonemappingMode.None
+                || !profile.TryGet(out ColorAdjustments color) || !profile.TryGet(out Vignette vignette))
+            {
+                return false;
+            }
+
+            bool bloomOk = post.bloom > 0f
+                ? profile.TryGet(out Bloom bloom) && bloom.active && Same(bloom.intensity.value, post.bloom) && Same(bloom.threshold.value, post.bloomThreshold)
+                : !profile.Has<Bloom>();
+            return bloomOk && Same(color.postExposure.value, post.exposure) && Same(color.contrast.value, post.contrast)
+                && Same(color.saturation.value, post.saturation) && color.colorFilter.value == post.filter
+                && Same(vignette.intensity.value, post.vignette) && vignette.color.value == post.vignetteColor;
+        }
+
+        private static bool Same(float a, float b) => Mathf.Abs(a - b) < 1e-4f;
+
+        private static T Override<T>(VolumeProfile profile) where T : VolumeComponent
+        {
+            if (!profile.TryGet(out T component))
+            {
+                component = profile.Add<T>(true);
+                // Sub-asset of the profile asset, as the volume editor would store it.
+                if (AssetDatabase.Contains(profile))
+                {
+                    component.name = typeof(T).Name;
+                    component.hideFlags = HideFlags.HideInInspector | HideFlags.HideInHierarchy;
+                    AssetDatabase.AddObjectToAsset(component, profile);
+                }
+            }
+
+            component.active = true;
+            return component;
+        }
+
+        private static readonly int EmissionId = ToonShaderIds.Emission;
+        private static readonly int FogAmountId = ToonShaderIds.FogAmount;
+
+        /// <summary>
+        /// Moves every material whose guide profile is a vinyl one onto <c>StudioKit/ToonVinyl</c> (same properties, keywords and
+        /// instance data as ToonLit: the owners, the routes and GPU instancing stay as they are) and writes the profile's surface.
+        /// Emission and fog amount stay as the material's art set them (the glows of the towers, the crown's light, the structures'
+        /// lower fog): the surface brings gloss, highlight, rim, darkening and the blend. Run after every material exists (the
+        /// scene builder's last step; the art builders recreate their materials on ToonLit and this moves them again).
+        /// </summary>
+        public static int ApplySurfaces(StyleGuide guide)
+        {
+            Shader vinyl = Shader.Find(ToonShaderIds.ToonVinylShader) ?? throw new System.InvalidOperationException("missing " + ToonShaderIds.ToonVinylShader);
+            int moved = 0;
+            foreach (string guid in AssetDatabase.FindAssets("t:Material", new[] { ClaybreakSceneBuilder.Root }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                MaterialStyle entry = guide.MaterialNamed(System.IO.Path.GetFileNameWithoutExtension(path));
+                MaterialProfile profile = entry == null ? null : guide.ProfileOf(entry.profile);
+                if (profile == null || !profile.vinyl)
+                {
+                    continue;
+                }
+
+                var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (material.shader != vinyl)
+                {
+                    if (!WorldScenery.IsToonFamily(material.shader.name))
+                    {
+                        throw new System.InvalidOperationException($"{path}: {material.shader.name} is not a toon shader; the vinyl profile needs a ToonLit material");
+                    }
+
+                    string[] keywords = material.shaderKeywords;
+                    material.shader = vinyl;
+                    material.shaderKeywords = keywords;
+                }
+
+                float emission = material.GetFloat(EmissionId);
+                float fog = material.GetFloat(FogAmountId);
+                profile.surface.ApplyTo(material);
+                material.SetFloat(EmissionId, emission);
+                material.SetFloat(FogAmountId, fog);
+                EditorUtility.SetDirty(material);
+                moved++;
+            }
+
+            return moved;
         }
 
         public static void WriteAndQuit()

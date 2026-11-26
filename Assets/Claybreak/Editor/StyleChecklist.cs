@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using JungleDegree.StudioKit.Toon;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,7 +29,7 @@ namespace Claybreak.Editor
             text.Append("## Classes\n\n");
             foreach (ClassStyle entry in guide.Classes)
             {
-                text.Append($"- [ ] **{entry.styleClass}** ({Status(entry.status)}): ");
+                text.Append($"- [ ] **{entry.styleClass}** (forma {Status(entry.status)}, superfície {Status(entry.surface)}): ");
                 if (entry.maxTriangles == 0)
                 {
                     text.Append("sem malha própria.\n");
@@ -53,10 +54,26 @@ namespace Claybreak.Editor
                 }
 
                 text.Append('\n');
-                text.Append($"- [ ] Luz: sol {Vector(world.sunEuler)} cor {Hex(world.sunColor)} intensidade {Number(world.sunIntensity)}; ");
-                text.Append($"ambiente céu {Hex(world.ambientSky)} chão {Hex(world.ambientGround)} (ambiente {Number(world.ambientIntensity)}, ");
-                text.Append($"direta {Number(world.directIntensity)}); pós: {world.postProcessing}.\n\n");
+                WorldLight light = world.light;
+                WorldPost post = world.post;
+                text.Append($"- [ ] Clima: {world.mood}\n");
+                text.Append($"- [ ] Luz (vinil): sol {Vector(world.sunEuler)}, principal {Hex(light.keyColor)} × {Number(light.keyIntensity)} (direta {Number(light.directIntensity)}); ");
+                text.Append($"ambiente céu {Hex(light.skyAmbient)} chão {Hex(light.groundAmbient)} × {Number(light.ambientIntensity)}; sombra {Hex(light.shadowTint)}; ");
+                text.Append($"contorno {Hex(light.rimColor)} × {Number(light.rimStrength)}; rampa {Number(light.softness)}; ombro {Number(light.shoulderKnee)}; pico {Number(light.highlightPeak)}.\n");
+                text.Append($"- [ ] Névoa na cor `fog` da paleta, {Number(world.fogStart)}–{Number(world.fogEnd)} m.\n");
+                text.Append($"- [ ] Pós: exposição {Number(post.exposure)}, contraste {Number(post.contrast)}, saturação {Number(post.saturation)}, ");
+                text.Append($"vinheta {Number(post.vignette)} ({Hex(post.vignetteColor)}), bloom {Number(post.bloom)} acima de {Number(post.bloomThreshold)}; sem tonemapping; UI fora do pós.\n\n");
             }
+
+            ContrastRule contrast = guide.Contrast;
+            text.Append("## Contraste (D36, CIELAB; paleta antes do pós e captura dos 4 mundos depois dele)\n\n");
+            text.Append($"- [ ] A multidão tem o maior croma da tela: ≥ {Number(contrast.crowdChromaMargin)} acima de qualquer outra cor do mundo na paleta; ");
+            text.Append($"≥ {Number(contrast.capturedCrowdChromaMargin)} acima de pista, chão, cenário, inimigos, torre e céu na captura.\n");
+            text.Append($"- [ ] Pista neutra (croma ≤ {Number(contrast.trackMaxChroma)}) e longe da multidão em valor: |ΔL*| ≥ {Number(contrast.crowdTrackMinLightness)} na paleta, ");
+            text.Append($"≥ {Number(contrast.capturedCrowdTrackMinLightness)} na captura.\n");
+            text.Append($"- [ ] Inimigos na cor complementar: matiz a ≥ {Number(contrast.enemyMinHue)}° da multidão na paleta, ≥ {Number(contrast.capturedEnemyMinHue)}° na captura.\n");
+            text.Append($"- [ ] Números dos portões legíveis: preenchimento × contorno ≥ {Number(contrast.gateLabelMinRatio)}:1 na captura.\n");
+            text.Append($"- [ ] Toda skin a ΔE ≥ {Number(contrast.skinMinDeltaE)} da pista na captura (depois do pós).\n\n");
 
             text.Append("### Cores iguais em todos os mundos\n\n| Papel | Classe | Base | Sombra | Destaque |\n|---|---|---|---|---|\n");
             foreach (PaletteRole role in guide.SharedRoles)
@@ -68,7 +85,15 @@ namespace Claybreak.Editor
             foreach (MaterialProfile profile in guide.Profiles)
             {
                 text.Append($"- [ ] Perfil `{profile.id}` ({(profile.legacy ? "legado" : "v3")}): {profile.note}");
-                text.Append(profile.shaders != null && profile.shaders.Length > 0 ? $" Shaders: {string.Join(", ", profile.shaders)}.\n" : " Sem shader ainda.\n");
+                text.Append(profile.shaders != null && profile.shaders.Length > 0 ? $" Shaders: {string.Join(", ", profile.shaders)}." : " Sem shader ainda.");
+                if (profile.vinyl)
+                {
+                    ToonVinylSurface surface = profile.surface;
+                    text.Append($" Superfície: brilho {Number(surface.Gloss)} (tamanho {Number(surface.SpecSize)}, no topo {Number(surface.TopGloss)}), ");
+                    text.Append($"contorno {Number(surface.Rim)} {Hex(surface.RimTint)}, escurecer {Number(surface.Darken)}{(surface.Translucent ? $", translúcido {Number(surface.Alpha)}" : "")}.");
+                }
+
+                text.Append('\n');
             }
 
             text.Append('\n');

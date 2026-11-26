@@ -40,8 +40,8 @@ namespace Claybreak.Editor
         public static readonly string Characters = BuildCharacters();
 
         // The prototype's colors (docs/direcao-visual-crowd.md items 19-21).
-        public static readonly Color GoodOutline = Hex("#1f7a55");
-        public static readonly Color BadOutline = Hex("#a52a3a");
+        public static readonly Color GoodOutline = Hex("#0f3d2b");
+        public static readonly Color BadOutline = Hex("#4f0d19");
         public static readonly Color CounterOutline = Hex("#3b2f4a");
 
         private const int SamplingPointSize = 64;
@@ -77,8 +77,10 @@ namespace Claybreak.Editor
                 sdf = Bake();
             }
 
-            WritePreset(GateGoodPath, sdf, Color.white, GoodOutline, 0.28f);
-            WritePreset(GateBadPath, sdf, Color.white, BadOutline, 0.28f);
+            // RT-6v3.3: darker and thicker outlines (review: the white number alone is 1.8:1 on a light pink panel), so the gate numbers stay legible over every world's track after the
+            // post (measured fill against outline in the style capture, at least 3:1).
+            WritePreset(GateGoodPath, sdf, Color.white, GoodOutline, 0.4f);
+            WritePreset(GateBadPath, sdf, Color.white, BadOutline, 0.4f);
             WritePreset(FloatPath, sdf, Color.white, Color.white, 0.18f);
             WritePreset(CounterPath, sdf, Color.white, CounterOutline, 0.22f);
             WritePreset(UiPath, sdf, Color.white, CounterOutline, 0.2f);

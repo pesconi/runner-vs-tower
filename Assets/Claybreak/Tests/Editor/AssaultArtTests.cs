@@ -28,7 +28,7 @@ namespace Claybreak.Tests
             {
                 var material = AssetDatabase.LoadAssetAtPath<Material>($"{ArtPalette.MaterialFolder}/{role}.mat");
                 Assert.IsNotNull(material, role + " (run Claybreak > Build Scene)");
-                Assert.AreEqual(ToonShaderIds.ToonLitShader, material.shader.name, role);
+                Assert.IsTrue(WorldScenery.IsToonFamily(material.shader.name), $"{role} draws with {material.shader.name}");
             }
 
             int toon = 0;
@@ -37,7 +37,7 @@ namespace Claybreak.Tests
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 var material = AssetDatabase.LoadAssetAtPath<Material>(path);
                 Assert.AreNotEqual("Universal Render Pipeline/Simple Lit", material.shader.name, path);
-                if (material.shader.name != ToonShaderIds.ToonLitShader || material.renderQueue >= (int)RenderQueue.Transparent)
+                if (!WorldScenery.IsToonFamily(material.shader.name) || material.renderQueue >= (int)RenderQueue.Transparent)
                 {
                     continue;
                 }

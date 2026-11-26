@@ -13,7 +13,8 @@
         "UnityEngine.UI",
         "Unity.TextMeshPro",
         "Unity.Mathematics",
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -415,8 +415,13 @@ namespace Claybreak.Tests
                 Assert.AreEqual(data.Levels[data.LevelCount - 1].Tower, flow.ActiveLevel.Tower, "the gate runs the world's boss tower");
                 // RT-6t.6a: the world's palette is on screen and the default skin wears its crowd color.
                 ToonPalette palette = data.Look.palette;
-                // RT-6t.13 (user): no fog in any world.
-                Assert.IsFalse(RenderSettings.fog, $"world {world}: the fog is off");
+                // RT-6v3.3 (D36 revises RT-6t.13): the world's colored fog, its vinyl light and its post are on screen.
+                Assert.IsTrue(RenderSettings.fog, $"world {world}: the fog is on");
+                Assert.AreEqual(palette.Fog, RenderSettings.fogColor, $"world {world}: the fog is the palette's");
+                var volume = flow.Scenery.GetComponentInChildren<UnityEngine.Rendering.Volume>();
+                Assert.AreSame(flow.Scenery.PostOf(world - 1), volume.sharedProfile, $"world {world}: the world's post");
+                Assert.AreSame(flow.Scenery.LightOf(world - 1), Object.FindFirstObjectByType<ToonVinylLookApplier>().Applied,
+                    $"world {world}: the world's vinyl light");
                 Assert.AreEqual(ToonShaderIds.SkyGradientShader, RenderSettings.skybox.shader.name, "the sky is the palette gradient");
                 // The device gate wears the dearest skin (maximum loadout): its own color in every world.
                 Assert.IsFalse(flow.Progress.WearsDefaultSkin);

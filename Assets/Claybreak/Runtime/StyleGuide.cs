@@ -1,4 +1,5 @@
 using System;
+using JungleDegree.StudioKit.Toon;
 using UnityEngine;
 
 namespace Claybreak
@@ -77,21 +78,90 @@ namespace Claybreak
         public ColorLevels levels;
     }
 
-    /// <summary>One world's palette, light and sky in the guide (RT-6v3.1: the values the game has now).</summary>
+    /// <summary>
+    /// The light of a world on the vinyl shader (RT-6v3.3): the values of a <c>ToonVinylLook</c> (kit), written into the world's
+    /// look asset by the content. Warm key, cool two-tone ambient, rim, soft shoulder (D36).
+    /// </summary>
+    [Serializable]
+    public struct WorldLight
+    {
+        public float softness;
+        public float lambert;
+        public Color shadowTint;
+        public Color keyColor;
+        public float keyIntensity;
+        public float directIntensity;
+        public Color skyAmbient;
+        public Color groundAmbient;
+        public float ambientIntensity;
+        public Color rimColor;
+        public float rimStrength;
+        public float rimWidth;
+        public float shoulderKnee;
+        public float highlightPeak;
+    }
+
+    /// <summary>
+    /// The cheap post stack of a world (RT-6v3.3, docs 2.1): color adjustments, a light vignette and a light bloom over the
+    /// highlights only. No tonemapping: the palette is authored as screen values (T-RT6v3.2-3). The UI is never under it
+    /// (screen-space overlay canvas).
+    /// </summary>
+    [Serializable]
+    public struct WorldPost
+    {
+        public float exposure;
+        public float contrast;
+        public float saturation;
+        public Color filter;
+        public float vignette;
+        public Color vignetteColor;
+        /// <summary>Bloom intensity; 0 = no bloom.</summary>
+        public float bloom;
+        public float bloomThreshold;
+    }
+
+    /// <summary>One world's palette, light, sky, fog and post in the guide.</summary>
     [Serializable]
     public sealed class WorldStyle
     {
         public string name;
         public PaletteRole[] roles;
+        /// <summary>Where the sun stands (euler of the directional light), the same in every world so far.</summary>
         public Vector3 sunEuler;
-        public Color sunColor;
-        public float sunIntensity;
-        public Color ambientSky;
-        public Color ambientGround;
-        public float ambientIntensity;
-        public float directIntensity;
-        /// <summary>The post effects of the world, by name ("none" until the v3 art direction adds some).</summary>
-        public string postProcessing;
+        public WorldLight light;
+        public WorldPost post;
+        /// <summary>Linear fog range (m) in the palette's fog color: colored depth, not a white veil (D36).</summary>
+        public float fogStart;
+        public float fogEnd;
+        /// <summary>One line on the look of the world (checklist).</summary>
+        public string mood;
+    }
+
+    /// <summary>
+    /// D36 contrast logic as measured rules (RT-6v3.3): the crowd is the most saturated thing on screen, the track is neutral and
+    /// far from the crowd in value, the enemies sit on the other side of the hue wheel. CIELAB: chroma = sqrt(a²+b²), value =
+    /// L*, hue = atan2(b, a). Checked on the palette (before the post) and on the captures of the four worlds (after it).
+    /// </summary>
+    [Serializable]
+    public sealed class ContrastRule
+    {
+        [Header("Palette, before the post")]
+        [Tooltip("The crowd's chroma is at least this much above every other drawn color of its world.")]
+        public float crowdChromaMargin;
+        [Tooltip("Most chroma of the track and its stripe (neutral).")]
+        public float trackMaxChroma;
+        [Tooltip("Least |L*| between the crowd and the track.")]
+        public float crowdTrackMinLightness;
+        [Tooltip("Least hue angle (degrees) between the crowd and the defenses.")]
+        public float enemyMinHue;
+        [Header("Captured, after the post")]
+        public float capturedCrowdChromaMargin;
+        public float capturedCrowdTrackMinLightness;
+        public float capturedEnemyMinHue;
+        [Tooltip("Least contrast ratio (WCAG) inside a gate number: its fill against its outline.")]
+        public float gateLabelMinRatio;
+        [Tooltip("Least ΔE (CIE76) between any skin on screen and the track on screen.")]
+        public float skinMinDeltaE;
     }
 
     /// <summary>
@@ -106,6 +176,9 @@ namespace Claybreak
         /// <summary>Shader names the profile accepts; a name ending in "/" accepts every shader under that folder.</summary>
         public string[] shaders;
         public string note;
+        /// <summary>True for a profile drawn by the kit's vinyl shader; <see cref="surface"/> is then written into its materials.</summary>
+        public bool vinyl;
+        public ToonVinylSurface surface;
 
         public bool Accepts(string shaderName)
         {
@@ -140,7 +213,13 @@ namespace Claybreak
     public sealed class ClassStyle
     {
         public StyleClass styleClass;
+        /// <summary>Shape state: the meshes (triangle ranges, bevels, draw calls) answer to the v3 rules.</summary>
         public StyleStatus status;
+        /// <summary>
+        /// Surface state (RT-6v3.3): materials on a v3 profile, palette within its three levels, light and post from the guide.
+        /// A class can be v3 on the surface while its meshes are still the old ones (<see cref="status"/>).
+        /// </summary>
+        public StyleStatus surface;
         /// <summary>
         /// Most triangles of one mesh (one object for scene-built classes), always checked; 0 = no meshes in this class. While the
         /// class is legacy this is the ceiling of what the game draws today; the v3 budget is <see cref="v3MaxTriangles"/>.
@@ -203,6 +282,7 @@ namespace Claybreak
         [SerializeField] private SoundStyle[] sounds = Array.Empty<SoundStyle>();
         /// <summary>CIE76 distance a v3 color may be from the nearest of its three levels (docs 2.2).</summary>
         [SerializeField] private float colorTolerance = 3f;
+        [SerializeField] private ContrastRule contrast = new ContrastRule();
 
         public ClassStyle[] Classes => classes;
         public WorldStyle[] Worlds => worlds;
@@ -213,6 +293,7 @@ namespace Claybreak
         public EffectStyle[] Effects => effects;
         public SoundStyle[] Sounds => sounds;
         public float ColorTolerance => colorTolerance;
+        public ContrastRule Contrast => contrast;
 
         public ClassStyle ClassOf(StyleClass styleClass)
         {
@@ -279,6 +360,39 @@ namespace Claybreak
             return null;
         }
 
+        /// <summary>
+        /// A short hash of everything that sets what the screen looks like (worlds: palettes, light, post, fog; material
+        /// profiles and their surfaces). The captured contrast measures carry the one they were taken with.
+        /// </summary>
+        public string LookFingerprint()
+        {
+            var text = new System.Text.StringBuilder();
+            foreach (WorldStyle world in worlds)
+            {
+                text.Append(JsonUtility.ToJson(world));
+            }
+
+            foreach (MaterialProfile profile in profiles)
+            {
+                text.Append(JsonUtility.ToJson(profile));
+            }
+
+            ulong hash = 14695981039346656037UL;
+            foreach (char c in text.ToString())
+            {
+                hash = (hash ^ c) * 1099511628211UL;
+            }
+
+            return hash.ToString("x16");
+        }
+
+        /// <summary>True when the class's surface (materials, palette levels, light) has migrated to v3.</summary>
+        public bool SurfaceIsV3(StyleClass styleClass)
+        {
+            ClassStyle entry = ClassOf(styleClass);
+            return entry != null && (entry.surface == StyleStatus.V3 || entry.status == StyleStatus.V3);
+        }
+
         /// <summary>True when the class has migrated and answers to the v3 rules.</summary>
         public bool IsV3(StyleClass styleClass)
         {
@@ -289,7 +403,7 @@ namespace Claybreak
 #if UNITY_EDITOR
         /// <summary>Editor only (content and tests): replaces every table.</summary>
         public void EditorAssign(ClassStyle[] classes, WorldStyle[] worlds, PaletteRole[] sharedRoles, MaterialProfile[] profiles,
-            MaterialStyle[] materials, EffectStyle[] effects, SoundStyle[] sounds, float colorTolerance)
+            MaterialStyle[] materials, EffectStyle[] effects, SoundStyle[] sounds, float colorTolerance, ContrastRule contrast)
         {
             this.classes = classes;
             this.worlds = worlds;
@@ -299,6 +413,7 @@ namespace Claybreak
             this.effects = effects;
             this.sounds = sounds;
             this.colorTolerance = colorTolerance;
+            this.contrast = contrast;
         }
 #endif
     }

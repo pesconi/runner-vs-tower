@@ -83,6 +83,7 @@ namespace Claybreak.Tests
                 smoothedTowers.Clear();
                 StyleCaptureRig.Dress = Dress;
                 StyleCaptureRig.AlternateTower = ToyTower;
+                StyleCaptureRig.Measure = false; // the lab's concepts are not the game's look
                 // The game refuses to start when its own materials are not on ToonLit (validation of the scenery): every
                 // scene load starts from the materials as they are on disk, and the framing switches them again.
                 Restore();

@@ -247,10 +247,7 @@ namespace Claybreak.Editor
                     + $"({(view == null ? 0f : view.farClipPlane)} m): with no fog they would pop in (lengthen the props window)");
             }
 
-            if (RenderSettings.fog)
-            {
-                failures.Add("scenery: the scene has fog on; the user removed it (RT-6t.13)");
-            }
+            // RT-6v3.3: the fog is back (D36: colored fog, not white); the style validator checks its color and range per world.
 
             int draws = 1 + props.LayerCount;
             if (draws > MaximumSideSceneryDraws)
@@ -981,7 +978,7 @@ namespace Claybreak.Editor
                         }
 
                         string problem = material == null ? "has an empty material slot"
-                            : !ToonPrimitives.IsToon(material) ? $"draws with {material.shader?.name} ({material.name}), not {ToonShaderIds.ToonLitShader}"
+                            : !ToonPrimitives.IsToon(material) ? $"draws with {material.shader?.name} ({material.name}), not a toon shader ({ToonShaderIds.ToonLitShader} or {ToonShaderIds.ToonVinylShader})"
                             : filter == null || filter.sharedMesh == null || filter.sharedMesh.colors32.Length == 0 ? "has no vertex colors for the toon shader"
                             : null;
                         if (problem != null && problems++ < 5)

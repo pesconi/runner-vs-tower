@@ -27,13 +27,23 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _DstBlend: 0
+    - _SrcBlend: 1
     - _ToonEmission: 0
     - _ToonFogAmount: 1
+    - _VinylAlpha: 1
+    - _VinylDarken: 0
+    - _VinylGloss: 0.12
+    - _VinylRim: 0.45
+    - _VinylSpecSize: 0.6
+    - _VinylTopGloss: 0
+    - _ZWrite: 1
     m_Colors:
     - _StructureWeights: {r: 0, g: 0, b: 0, a: 0}
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot0: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot1: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot2: {r: 1, g: 1, b: 1, a: 1}
+    - _VinylRimTint: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

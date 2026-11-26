@@ -34,7 +34,37 @@ namespace Claybreak.Tests
                 Clips = new List<ClipFact>(gathered.Clips),
                 EffectCapacity = new Dictionary<StyleEffect, int>(gathered.EffectCapacity),
                 UnclassifiedMeshes = new List<string>(gathered.UnclassifiedMeshes),
+                Looks = new List<WorldLookFact>(gathered.Looks),
+                UiOutsidePost = gathered.UiOutsidePost,
+                CameraPost = gathered.CameraPost,
+                Measures = gathered.Measures,
             };
+        }
+
+        // RT-6v3.3: measures as the capture would write them for this guide, every world passing (a test then breaks one).
+        private static ContrastMeasures GoodMeasures(StyleGuide guide)
+        {
+            var measures = new ContrastMeasures { fingerprint = guide.LookFingerprint() };
+            var shots = new List<WorldMeasure>();
+            for (int w = 0; w < guide.Worlds.Length; w++)
+            {
+                shots.Add(new WorldMeasure
+                {
+                    world = w,
+                    shot = "corrida",
+                    gateLabelRatio = 6f,
+                    roles = new[]
+                    {
+                        RoleMeasure.Of(StyleContrast.Crowd, 1000, new Color(1f, 0.18f, 0.6f)),
+                        RoleMeasure.Of(StyleContrast.Track, 1000, new Color(0.92f, 0.92f, 0.94f)),
+                        RoleMeasure.Of(StyleContrast.Enemy, 1000, new Color(0.06f, 0.43f, 0.52f)),
+                    },
+                    skins = new[] { new SkinMeasure { skin = "ember", deltaE = 40f } },
+                });
+            }
+
+            measures.shots = shots.ToArray();
+            return measures;
         }
 
         private static void MakeV3(StyleGuide guide, StyleClass styleClass)
@@ -57,14 +87,21 @@ namespace Claybreak.Tests
         // ---------- the game today ----------
 
         [Test]
-        public void TheGuideAssetExistsAndEveryClassButSoundIsLegacy()
+        public void TheGuideAssetExistsAndOnlyTheDrawnSurfacesAndTheSoundAreV3()
         {
             var guide = AssetDatabase.LoadAssetAtPath<StyleGuide>(StyleGuide.AssetPath);
             Assert.IsNotNull(guide, StyleGuide.AssetPath + " is missing (run Claybreak > Write Style Guide)");
+            var surfaces = new[]
+            {
+                StyleClass.Unit, StyleClass.Leader, StyleClass.Enemy, StyleClass.Tower, StyleClass.Boss, StyleClass.Obstacle,
+                StyleClass.Floor, StyleClass.Scenery,
+            };
             foreach (StyleClass styleClass in System.Enum.GetValues(typeof(StyleClass)))
             {
                 StyleStatus expected = styleClass == StyleClass.Sound ? StyleStatus.V3 : StyleStatus.Legacy; // RT-6v3.9 migrated the sound
-                Assert.AreEqual(expected, guide.ClassOf(styleClass).status, $"{styleClass} is not {expected}");
+                Assert.AreEqual(expected, guide.ClassOf(styleClass).status, $"{styleClass} shape is not {expected}");
+                StyleStatus surface = surfaces.Contains(styleClass) ? StyleStatus.V3 : StyleStatus.Legacy; // RT-6v3.3, meshes unchanged
+                Assert.AreEqual(surface, guide.ClassOf(styleClass).surface, $"{styleClass} surface is not {surface}");
             }
         }
 
@@ -202,7 +239,7 @@ namespace Claybreak.Tests
         {
             StyleGuide guide = StyleGuideContent.Create();
             guide.EditorAssign(guide.Classes, guide.Worlds, guide.SharedRoles, guide.Profiles, guide.Materials,
-                guide.Effects.Where(e => e.effect != StyleEffect.TowerBreak).ToArray(), guide.Sounds, guide.ColorTolerance);
+                guide.Effects.Where(e => e.effect != StyleEffect.TowerBreak).ToArray(), guide.Sounds, guide.ColorTolerance, guide.Contrast);
             AssertFails(StyleGuideValidation.Run(guide, Facts()), "effect TowerBreak has no entry");
             Object.DestroyImmediate(guide);
         }
@@ -238,6 +275,11 @@ namespace Claybreak.Tests
         {
             StyleGuide guide = StyleGuideContent.Create();
             guide.ClassOf(StyleClass.Sound).status = StyleStatus.Legacy;
+            foreach (ClassStyle entry in guide.Classes)
+            {
+                entry.surface = StyleStatus.Legacy;
+            }
+
             StyleFacts facts = Facts();
             facts.Colors.Add(new ColorFact { world = 0, role = "structureLight", color = Color.red });
             facts.Meshes.Add(new MeshFact { name = "Boxy", styleClass = StyleClass.Tower, triangles = 12, drawCalls = 1, maxEdgeAngle = 90f });
@@ -281,18 +323,133 @@ namespace Claybreak.Tests
         public void AShaderOutsideTheProfilesFailsInAV3Class()
         {
             StyleGuide guide = StyleGuideContent.Create();
-            MakeV3(guide, StyleClass.Obstacle);
-            // Still on the legacy profile: a v3 class must follow a v3 one.
+            Assert.IsEmpty(About(guide, Facts(), "ObstacleToon"), "the obstacles are on the enemy vinyl");
+            // A v3 class must follow a v3 profile.
+            MaterialStyle entry = guide.MaterialNamed("ObstacleToon");
+            entry.profile = StyleGuideContent.ProfileToon;
             AssertFails(StyleGuideValidation.Run(guide, Facts()), "ObstacleToon is in the v3 class Obstacle but follows the legacy profile");
 
-            // On a v3 profile, but with a shader the profile does not accept (no sibling shader exists yet).
-            MaterialStyle entry = guide.MaterialNamed("ObstacleToon");
-            entry.profile = "matte-plastic";
-            AssertFails(StyleGuideValidation.Run(guide, Facts()), "ObstacleToon uses shader 'StudioKit/ToonLit', outside the profile 'matte-plastic'");
+            // On a v3 profile, but with a shader the profile does not accept.
+            entry.profile = StyleGuideContent.ProfileSkyV3;
+            AssertFails(StyleGuideValidation.Run(guide, Facts()), "ObstacleToon uses shader 'StudioKit/ToonVinyl', outside the profile 'sky'");
+            Object.DestroyImmediate(guide);
+        }
 
-            // Once the profile accepts the shader, it passes.
-            guide.ProfileOf("matte-plastic").shaders = new[] { "StudioKit/ToonLit" };
-            Assert.IsEmpty(About(guide, Facts(), "ObstacleToon"));
+        // ---------- RT-6v3.3: surfaces, light and post, the contrast logic ----------
+
+        [Test]
+        public void TheVinylMaterialsHoldTheirProfilesSurface()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            StyleFacts facts = Facts();
+            Assert.IsEmpty(About(guide, facts, "does not hold the surface"));
+            int index = facts.Materials.FindIndex(m => m.name == "CrowdToon");
+            MaterialFact crowd = facts.Materials[index];
+            Assert.IsTrue(crowd.vinyl && crowd.shader == "StudioKit/ToonVinyl", "the crowd is vinyl");
+            crowd.surface = new Vector4(0f, 0f, 0f, 0f);
+            facts.Materials[index] = crowd;
+            AssertFails(StyleGuideValidation.Run(guide, facts), "CrowdToon does not hold the surface of the profile 'vinyl'");
+            Object.DestroyImmediate(guide);
+        }
+
+        [Test]
+        public void AGlossyFloorFails()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            MaterialStyle entry = guide.MaterialNamed("GroundToon");
+            entry.profile = StyleGuideContent.ProfileVinyl;
+            AssertFails(StyleGuideValidation.Run(guide, Facts()), "Floor material GroundToon shines on faces looking up");
+            Object.DestroyImmediate(guide);
+        }
+
+        [Test]
+        public void EveryWorldShowsTheGuidesLightPostAndFog()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            Assert.IsEmpty(About(guide, Facts(), "shows"), "the scene shows the guide's light and post");
+            Assert.IsEmpty(About(guide, Facts(), " fog "), "the palettes hold the guide's fog");
+            guide.Worlds[1].light.keyIntensity += 0.5f;
+            guide.Worlds[2].post.bloom = 0f;
+            List<string> failures = StyleGuideValidation.Run(guide, Facts());
+            AssertFails(failures, "world 2 (PorDoSol) shows a vinyl light that is not the guide's");
+            AssertFails(failures, "world 3 (Doce) shows a post stack that is not the guide's");
+            StyleFacts facts = Facts();
+            WorldLookFact white = facts.Looks[0];
+            white.fog = new Color(0.95f, 0.95f, 0.96f);
+            facts.Looks[0] = white;
+            facts.UiOutsidePost = false;
+            failures = StyleGuideValidation.Run(guide, facts);
+            AssertFails(failures, "is a white veil");
+            AssertFails(failures, "the UI stays outside the post");
+            Object.DestroyImmediate(guide);
+        }
+
+        [Test]
+        public void ThePalettesFollowTheContrastLogicAndAGreyCrowdFails()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            Assert.IsEmpty(About(guide, Facts(), "D36"), "the night palettes were designed to the rule");
+            PaletteRole crowd = guide.Worlds[0].roles.First(r => r.role == "crowd");
+            crowd.levels = new ColorLevels(new Color(0.75f, 0.72f, 0.74f), crowd.levels.shadow, crowd.levels.highlight);
+            PaletteRole track = guide.Worlds[1].roles.First(r => r.role == "track");
+            track.levels = new ColorLevels(new Color(1f, 0.85f, 0.5f), track.levels.shadow, track.levels.highlight);
+            PaletteRole defense = guide.Worlds[2].roles.First(r => r.role == "defense");
+            defense.levels = new ColorLevels(new Color(0.6f, 0.2f, 0.9f), defense.levels.shadow, defense.levels.highlight);
+            List<string> failures = StyleGuideValidation.Run(guide, Facts());
+            AssertFails(failures, "world 1 (Pastel) crowd chroma");
+            AssertFails(failures, "world 1 (Pastel) crowd and track are");
+            AssertFails(failures, "world 2 (PorDoSol) track chroma");
+            AssertFails(failures, "world 3 (Doce) defenses are");
+            Object.DestroyImmediate(guide);
+        }
+
+        [Test]
+        public void TheCapturedContrastIsCheckedAndMustBeFresh()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            var failures = new List<string>();
+            StyleGuideValidation.CheckCapturedContrast(guide, GoodMeasures(guide), failures);
+            Assert.IsEmpty(failures);
+
+            StyleGuideValidation.CheckCapturedContrast(guide, null, failures);
+            AssertFails(failures, "contraste.json is missing");
+            failures.Clear();
+            ContrastMeasures stale = GoodMeasures(guide);
+            stale.fingerprint = "0";
+            StyleGuideValidation.CheckCapturedContrast(guide, stale, failures);
+            AssertFails(failures, "was measured with another look");
+
+            failures.Clear();
+            ContrastMeasures bad = GoodMeasures(guide);
+            WorldMeasure run = bad.shots[0];
+            run.roles = new[]
+            {
+                RoleMeasure.Of(StyleContrast.Crowd, 1000, new Color(0.85f, 0.7f, 0.78f)),
+                RoleMeasure.Of(StyleContrast.Track, 1000, new Color(0.9f, 0.9f, 0.9f)),
+                RoleMeasure.Of(StyleContrast.Enemy, 1000, new Color(1f, 0.2f, 0.4f)),
+                RoleMeasure.Of(StyleContrast.Sky, 1000, new Color(0.1f, 0.2f, 0.9f)),
+            };
+            run.gateLabelRatio = 1.5f;
+            run.skins = new[] { new SkinMeasure { skin = "frost", deltaE = 8f } };
+            bad.shots = bad.shots.Skip(0).Take(3).ToArray(); // world 4 not measured
+            StyleGuideValidation.CheckCapturedContrast(guide, bad, failures);
+            AssertFails(failures, "world 1 corrida: on screen the crowd's chroma");
+            AssertFails(failures, "world 1 corrida: on screen crowd and track are");
+            AssertFails(failures, "world 1 corrida: on screen the enemies are");
+            AssertFails(failures, "world 1 corrida: the gate numbers measure");
+            AssertFails(failures, "world 1 corrida: skin frost is");
+            AssertFails(failures, "world 4 has no measured run");
+            Object.DestroyImmediate(guide);
+        }
+
+        [Test]
+        public void TheFingerprintFollowsTheLook()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            string before = guide.LookFingerprint();
+            Assert.AreEqual(before, guide.LookFingerprint());
+            guide.Worlds[3].post.vignette += 0.01f;
+            Assert.AreNotEqual(before, guide.LookFingerprint());
             Object.DestroyImmediate(guide);
         }
 

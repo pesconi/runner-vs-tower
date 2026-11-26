@@ -3,11 +3,13 @@
 # scene build, game validator (catalog, worlds, save fixtures, scene, code rules), kit isolation, EditMode
 # and PlayMode tests, the economy and level table (docs/rt6-economia.md; docs/rt5-economia.md is the RT-5 record), art captures (needs a GPU, so no
 # -nographics there), the two Android APKs (game and measurement) and the Play bundle (AAB, RT-8).
-# Usage (Git Bash, repository root): Tools/rt4-check.sh [out=/c/temp/rt4] [steps="scene validate isolation editmode playmode economy capture apk aab"]
+# Usage (Git Bash, repository root): Tools/rt4-check.sh [out=/c/temp/rt4] [steps="scene style validate isolation editmode playmode economy capture apk aab"]
+# RT-6v3.3: "style" takes the style captures of the four worlds with a GPU (docs/art/v3/telas, contrast measures in
+# docs/art/v3/contraste.json, read by the style validator in "validate"), so it runs before it.
 # Prints one PASS/FAIL line per step; logs in <out>/logs. Exit 1 if any step failed.
 set -uo pipefail
 OUT=${1:-/c/temp/rt4}
-STEPS=${2:-"scene validate isolation editmode playmode economy capture apk aab"}
+STEPS=${2:-"scene style validate isolation editmode playmode economy capture apk aab"}
 UNITY=${UNITY:-"/c/Program Files/Unity/Hub/Editor/6000.6.7f1/Editor/Unity.exe"}
 PROJECT=$(cd "$(dirname "$0")/.." && pwd -W 2>/dev/null || pwd)
 WIN_OUT=$(cd "$OUT" 2>/dev/null && pwd -W 2>/dev/null || echo "$OUT")
@@ -30,6 +32,10 @@ tests() { # platform
 for step in $STEPS; do
   case $step in
     scene) run scene -nographics -executeMethod Claybreak.Editor.ClaybreakSceneBuilder.BuildAndQuit ;;
+    style)
+      run style -runTests -testPlatform PlayMode -testFilter Claybreak.Tests.StyleCaptureTests -styleCaptureDir "$PROJECT/docs/art/v3/telas" -testResults "$WIN_OUT/logs/style.xml"
+      grep -oE 'test-run [^>]*total="[0-9]+" passed="[0-9]+" failed="[0-9]+"' "$OUT/logs/style.xml" | sed 's/.*total/  total/'
+      ;;
     validate) run validate -nographics -executeMethod Claybreak.Editor.ClaybreakValidation.RunAndQuit ;;
     isolation) run isolation -nographics -executeMethod JungleDegree.StudioKit.Editor.EngineIsolationValidation.RunAndQuit ;;
     editmode) tests EditMode ;;

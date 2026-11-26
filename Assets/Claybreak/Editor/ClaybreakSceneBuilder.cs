@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 namespace Claybreak.Editor
@@ -116,6 +117,9 @@ namespace Claybreak.Editor
             CreateFadeSprite();
             AssetDatabase.SaveAssets();
             CreateScene();
+            // RT-6v3.3: the guide's surfaces into the materials (the art builders above made them on ToonLit).
+            int moved = StyleGuideContent.ApplySurfaces(AssetDatabase.LoadAssetAtPath<StyleGuide>(StyleGuide.AssetPath));
+            Debug.Log($"[Claybreak] {moved} materials on {ToonShaderIds.ToonVinylShader} from the style guide's profiles.");
             AssetDatabase.SaveAssets();
         }
 
@@ -233,6 +237,8 @@ namespace Claybreak.Editor
             camera.clearFlags = CameraClearFlags.Skybox;
             camera.farClipPlane = ClaybreakSceneBuilder.CameraFarClip;
             camera.fieldOfView = 60f;
+            // RT-6v3.3: the world's post stack (the global volume of the scenery); the UI is a screen-space overlay, outside it.
+            camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
             cameraObject.transform.position = new Vector3(0f, 9f, -8f);
             cameraObject.transform.rotation = Quaternion.Euler(35f, 0f, 0f);
             RunCrowd crowd = CreateCrowd(cameraObject, theme, catalog);
@@ -288,11 +294,11 @@ namespace Claybreak.Editor
                 + $"{RunGateCourse.MaximumPairs} gate pairs, {ClaybreakLevel.MaximumCrates} crates, track to z={trackEnd:0}.");
         }
 
-        /// <summary>Lighting (no fog: RT-6t.13); the track and the scenery come with <see cref="CreateWorldScenery"/>.</summary>
+        /// <summary>Lighting; the track, the scenery, the world's fog, light and post come with <see cref="CreateWorldScenery"/>.</summary>
         public static Light CreateEnvironment()
         {
             RenderSettings.ambientMode = AmbientMode.Flat;
-            // RT-6t.13: no fog (the user's call); WorldScenery keeps it off when a world is shown.
+            // The world's palette turns its colored fog on when WorldScenery shows it (RT-6v3.3, D36).
             RenderSettings.fog = false;
             var sun = new GameObject("Sun", typeof(Light));
             Light light = sun.GetComponent<Light>();
@@ -366,7 +372,35 @@ namespace Claybreak.Editor
             SceneryParts parts = SceneryArt.Create(root.transform, TrackWidth * 0.5f, TrackStartZ, trackEnd, anchor, trees, rocks, groundMeshPath);
             ToonPaletteApplier applier = root.AddComponent<ToonPaletteApplier>();
             SetRef(applier, "skyMaterial", Load<Material>(SkyMaterialPath));
+            // RT-6v3.3: each world's vinyl light (warm key on the sun) and post, from the style guide's assets.
+            var vinylLight = sun.gameObject.GetComponent<ToonVinylLookApplier>();
+            if (vinylLight == null)
+            {
+                vinylLight = sun.gameObject.AddComponent<ToonVinylLookApplier>();
+            }
+
+            int worldCount = PaletteContent.Palettes.Length;
+            var lights = new UnityEngine.Object[worldCount];
+            var posts = new UnityEngine.Object[worldCount];
+            for (int w = 0; w < worldCount; w++)
+            {
+                lights[w] = Load<ToonVinylLook>(StyleGuideContent.LightPath(w));
+                posts[w] = Load<VolumeProfile>(StyleGuideContent.PostPath(w));
+            }
+
+            SetRef(vinylLight, "look", lights[0]);
+            SetRef(vinylLight, "keyLight", sun);
+            var postObject = new GameObject("WorldPost");
+            postObject.transform.SetParent(root.transform, false);
+            Volume volume = postObject.AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.priority = 1f;
+            volume.sharedProfile = (VolumeProfile)posts[0];
             WorldScenery scenery = root.AddComponent<WorldScenery>();
+            SetRef(scenery, "vinylLight", vinylLight);
+            SetRef(scenery, "post", volume);
+            SetArray(scenery, "worldLights", lights);
+            SetArray(scenery, "worldPosts", posts);
             SetRef(scenery, "track", parts.Track);
             SetRef(scenery, "ground", parts.Ground);
             SetRef(scenery, "props", parts.Props);

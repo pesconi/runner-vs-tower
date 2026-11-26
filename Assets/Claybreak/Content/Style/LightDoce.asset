@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81e42308df104f74b30bcdf913c44542, type: 3}
+  m_Name: LightDoce
+  m_EditorClassIdentifier: JungleDegree.StudioKit.Toon::JungleDegree.StudioKit.Toon.ToonVinylLook
+  softness: 0.12
+  lambert: 0.35
+  shadowTint: {r: 0.84, g: 0.83, b: 0.92, a: 1}
+  keyColor: {r: 1, g: 0.91, b: 0.78, a: 1}
+  keyIntensity: 1.05
+  directIntensity: 0.78
+  skyAmbient: {r: 0.66, g: 0.78, b: 1, a: 1}
+  groundAmbient: {r: 0.41789216, g: 0.50545096, b: 0.6134902, a: 1}
+  ambientIntensity: 0.7
+  rimColor: {r: 0.654902, g: 0.9719608, b: 0.8684314, a: 1}
+  rimStrength: 0.55
+  rimWidth: 3
+  shoulderKnee: 0.78
+  highlightPeak: 1.1

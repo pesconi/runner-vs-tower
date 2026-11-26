@@ -16,6 +16,10 @@ namespace Claybreak.Editor
     /// the material's profile is a v3 one and accepts its shader; the mesh is inside the v3 triangle range and draw-call budget and
     /// has no edge sharper than the class's limit; a palette color is within ΔE (CIE76) of one of its three levels, measured before
     /// the post effects; an effect's pool is within its limit; a clip's peak is at the guide's target.
+    /// RT-6v3.3: a class can be v3 on its SURFACE before its meshes (<see cref="ClassStyle.surface"/>): its materials follow a v3
+    /// profile and hold the profile's vinyl surface; nothing of the floor or the scenery shines on top; each world shows the
+    /// guide's light, post and colored fog; the UI is outside the post; and the D36 contrast logic is a rule, on the palette
+    /// (before the post) and on the captures of the four worlds (after it, <see cref="StyleContrast.MeasuresPath"/>).
     /// </summary>
     public static class StyleGuideValidation
     {
@@ -42,6 +46,9 @@ namespace Claybreak.Editor
             CheckPalettes(guide, facts, failures);
             CheckEffects(guide, facts, failures);
             CheckSounds(guide, facts, failures);
+            CheckLooks(guide, facts, failures);
+            CheckPaletteContrast(guide, failures);
+            CheckCapturedContrast(guide, facts.Measures, failures);
             return failures;
         }
 
@@ -127,14 +134,18 @@ namespace Claybreak.Editor
                     continue;
                 }
 
-                bool v3 = guide.IsV3(entry.styleClass);
+                bool v3 = guide.SurfaceIsV3(entry.styleClass);
                 if (v3 && profile.legacy)
                 {
                     failures.Add($"style: material {material.name} is in the v3 class {entry.styleClass} but follows the legacy profile '{profile.id}'");
                 }
-                else if ((v3 || profile.legacy) && !profile.Accepts(material.shader))
+                else if ((v3 || profile.legacy || profile.vinyl) && !profile.Accepts(material.shader))
                 {
                     failures.Add($"style: material {material.name} uses shader '{material.shader}', outside the profile '{profile.id}'");
+                }
+                else if (profile.vinyl)
+                {
+                    CheckSurface(entry, profile, material, failures);
                 }
             }
 
@@ -144,6 +155,31 @@ namespace Claybreak.Editor
                 {
                     failures.Add($"style: the guide lists material {entry.material}, which the game does not have");
                 }
+            }
+        }
+
+        // RT-6v3.3: a vinyl material holds its profile's surface (rebuild the scene after a change), and nothing of the floor or
+        // the scenery is glossy on faces looking up (RT-6v3.2 review: the track and the ground shone at a grazing angle).
+        private static void CheckSurface(MaterialStyle entry, MaterialProfile profile, MaterialFact material, List<string> failures)
+        {
+            ToonVinylSurface surface = profile.surface;
+            string error = surface.Validate();
+            if (error != null)
+            {
+                failures.Add($"style: profile '{profile.id}' has an unusable surface: {error}");
+                return;
+            }
+
+            var expected = new Vector4(surface.Gloss, surface.SpecSize, surface.Rim, surface.TopGloss);
+            if (!material.vinyl || (material.surface - expected).sqrMagnitude > 1e-6f || Mathf.Abs(material.darken - surface.Darken) > 1e-3f
+                || material.translucent != surface.Translucent)
+            {
+                failures.Add($"style: material {material.name} does not hold the surface of the profile '{profile.id}' (rebuild the scene)");
+            }
+
+            if ((entry.styleClass == StyleClass.Floor || entry.styleClass == StyleClass.Scenery) && surface.TopGloss > 0f)
+            {
+                failures.Add($"style: {entry.styleClass} material {material.name} shines on faces looking up (profile '{profile.id}' top gloss {surface.TopGloss:0.##}; the floor is matte)");
             }
         }
 
@@ -222,7 +258,7 @@ namespace Claybreak.Editor
                     continue;
                 }
 
-                if (!guide.IsV3(role.styleClass))
+                if (!guide.SurfaceIsV3(role.styleClass))
                 {
                     continue;
                 }
@@ -236,6 +272,233 @@ namespace Claybreak.Editor
                 if (nearest > guide.ColorTolerance)
                 {
                     failures.Add($"style: v3 {role.styleClass} color {where} is ΔE {nearest:0.0} from the nearest of its three levels (over {guide.ColorTolerance:0.#})");
+                }
+            }
+        }
+
+        // ---------- RT-6v3.3: light, post and fog per world; the UI outside the post ----------
+
+        /// <summary>Least CIELAB chroma of a fog that is not "white" (D36: colored fog), unless it is dark (L* under 70).</summary>
+        public const float FogMinChroma = 10f;
+
+        private static void CheckLooks(StyleGuide guide, StyleFacts facts, List<string> failures)
+        {
+            if (!facts.UiOutsidePost)
+            {
+                failures.Add("style: the game canvas must be a screen-space overlay: the UI stays outside the post (no color filter on the buttons)");
+            }
+
+            if (!facts.CameraPost)
+            {
+                failures.Add("style: the game camera does not render the post stack (renderPostProcessing)");
+            }
+
+            for (int w = 0; w < guide.Worlds.Length; w++)
+            {
+                WorldStyle world = guide.Worlds[w];
+                string where = $"world {w + 1} ({world.name})";
+                WorldLookFact look = default;
+                bool found = false;
+                foreach (WorldLookFact each in facts.Looks)
+                {
+                    if (each.world == w)
+                    {
+                        look = each;
+                        found = true;
+                    }
+                }
+
+                if (!found)
+                {
+                    failures.Add($"style: {where} shows no light, post or fog (rebuild the scene)");
+                    continue;
+                }
+
+                if (!StyleGuideContent.LookMatches(look.light, world.light))
+                {
+                    failures.Add($"style: {where} shows a vinyl light that is not the guide's (rebuild the scene)");
+                }
+
+                if (!StyleGuideContent.PostMatches(look.post, world.post))
+                {
+                    failures.Add($"style: {where} shows a post stack that is not the guide's (rebuild the scene)");
+                }
+
+                if (!Mathf.Approximately(look.fogStart, world.fogStart) || !Mathf.Approximately(look.fogEnd, world.fogEnd) || look.fogEnd <= look.fogStart)
+                {
+                    failures.Add($"style: {where} fog {look.fogStart:0}-{look.fogEnd:0} m, the guide says {world.fogStart:0}-{world.fogEnd:0} m");
+                }
+
+                if (StyleContrast.Chroma(look.fog) < FogMinChroma && StyleContrast.Lightness(look.fog) >= 70f)
+                {
+                    failures.Add($"style: {where} fog #{ColorUtility.ToHtmlStringRGB(look.fog)} is a white veil (D36: colored fog)");
+                }
+            }
+        }
+
+        // ---------- RT-6v3.3: the D36 contrast logic ----------
+
+        // The colors of a world drawn in play (not the UI, not the fog), against which the crowd must be the most saturated.
+        private static readonly string[] DrawnRoles =
+        {
+            "skyTop", "skyBottom", "ground", "track", "trackStripe", "foliageDark", "foliageLight", "trunk", "rock",
+            "structureLight", "structureDark", "structureDetail", "defense",
+        };
+
+        /// <summary>The palette, before the post: the crowd's chroma, the neutral track far in value, the defenses across the hue wheel.</summary>
+        private static void CheckPaletteContrast(StyleGuide guide, List<string> failures)
+        {
+            ContrastRule rule = guide.Contrast;
+            if (rule == null)
+            {
+                failures.Add("style: the guide has no contrast rule");
+                return;
+            }
+
+            for (int w = 0; w < guide.Worlds.Length; w++)
+            {
+                WorldStyle world = guide.Worlds[w];
+                string where = $"world {w + 1} ({world.name})";
+                PaletteRole crowd = RoleOf(world.roles, "crowd");
+                PaletteRole track = RoleOf(world.roles, "track");
+                PaletteRole defense = RoleOf(world.roles, "defense");
+                if (crowd == null || track == null || defense == null)
+                {
+                    continue; // CheckPalettes reports the missing role
+                }
+
+                Color crowdColor = crowd.levels.baseColor;
+                float crowdChroma = StyleContrast.Chroma(crowdColor);
+                var rivals = new List<PaletteRole>();
+                foreach (string name in DrawnRoles)
+                {
+                    PaletteRole role = RoleOf(world.roles, name);
+                    if (role != null)
+                    {
+                        rivals.Add(role);
+                    }
+                }
+
+                rivals.AddRange(guide.SharedRoles);
+                foreach (PaletteRole rival in rivals)
+                {
+                    float chroma = StyleContrast.Chroma(rival.levels.baseColor);
+                    if (crowdChroma < chroma + rule.crowdChromaMargin)
+                    {
+                        failures.Add($"style: {where} crowd chroma {crowdChroma:0} is not {rule.crowdChromaMargin:0} above {rival.role} ({chroma:0}): the crowd must be the most saturated color (D36)");
+                    }
+                }
+
+                foreach (string name in new[] { "track", "trackStripe" })
+                {
+                    PaletteRole role = RoleOf(world.roles, name);
+                    float chroma = role == null ? 0f : StyleContrast.Chroma(role.levels.baseColor);
+                    if (chroma > rule.trackMaxChroma)
+                    {
+                        failures.Add($"style: {where} {name} chroma {chroma:0} over {rule.trackMaxChroma:0}: the track is neutral (D36)");
+                    }
+                }
+
+                float gap = Mathf.Abs(StyleContrast.Lightness(crowdColor) - StyleContrast.Lightness(track.levels.baseColor));
+                if (gap < rule.crowdTrackMinLightness)
+                {
+                    failures.Add($"style: {where} crowd and track are {gap:0} apart in L*, under {rule.crowdTrackMinLightness:0} (D36: far in value)");
+                }
+
+                float hue = StyleContrast.HueGap(StyleContrast.Hue(crowdColor), StyleContrast.Hue(defense.levels.baseColor));
+                if (hue < rule.enemyMinHue)
+                {
+                    failures.Add($"style: {where} defenses are {hue:0}° of hue from the crowd, under {rule.enemyMinHue:0}° (D36: complementary)");
+                }
+            }
+        }
+
+        /// <summary>
+        /// The captures of the four worlds, after the light and the post (<c>StyleCaptureTests</c> writes them): taken with this
+        /// look, every world measured, the crowd the most saturated role on screen, far from the track in value, the enemies
+        /// across the hue wheel, the gate numbers legible and every skin apart from the track.
+        /// </summary>
+        public static void CheckCapturedContrast(StyleGuide guide, ContrastMeasures measures, List<string> failures)
+        {
+            ContrastRule rule = guide.Contrast;
+            if (rule == null)
+            {
+                return;
+            }
+
+            const string again = "run the style capture: -testFilter Claybreak.Tests.StyleCaptureTests -styleCaptureDir <folder>";
+            if (measures == null)
+            {
+                failures.Add($"style: {StyleContrast.MeasuresPath} is missing ({again})");
+                return;
+            }
+
+            if (measures.fingerprint != guide.LookFingerprint())
+            {
+                failures.Add($"style: {StyleContrast.MeasuresPath} was measured with another look (palette, light, post or surfaces changed; {again})");
+                return;
+            }
+
+            for (int w = 0; w < guide.Worlds.Length; w++)
+            {
+                bool run = false;
+                foreach (WorldMeasure shot in measures.shots)
+                {
+                    if (shot.world != w)
+                    {
+                        continue;
+                    }
+
+                    run |= shot.shot == "corrida";
+                    CheckShot(rule, shot, $"world {w + 1} {shot.shot}", failures);
+                }
+
+                if (!run)
+                {
+                    failures.Add($"style: world {w + 1} has no measured run in {StyleContrast.MeasuresPath} ({again})");
+                }
+            }
+        }
+
+        private static void CheckShot(ContrastRule rule, WorldMeasure shot, string where, List<string> failures)
+        {
+            RoleMeasure crowd = shot.Role(StyleContrast.Crowd);
+            if (crowd == null || crowd.pixels == 0)
+            {
+                failures.Add($"style: {where}: no crowd on screen in the capture");
+                return;
+            }
+
+            foreach (RoleMeasure role in shot.roles)
+            {
+                if (role.role != StyleContrast.Crowd && role.pixels > 0 && crowd.chroma < role.chroma + rule.capturedCrowdChromaMargin)
+                {
+                    failures.Add($"style: {where}: on screen the crowd's chroma {crowd.chroma:0} is not above the {role.role}'s ({role.chroma:0}) (D36)");
+                }
+            }
+
+            RoleMeasure track = shot.Role(StyleContrast.Track);
+            if (track != null && track.pixels > 0 && Mathf.Abs(crowd.lightness - track.lightness) < rule.capturedCrowdTrackMinLightness)
+            {
+                failures.Add($"style: {where}: on screen crowd and track are {Mathf.Abs(crowd.lightness - track.lightness):0} apart in L*, under {rule.capturedCrowdTrackMinLightness:0}");
+            }
+
+            RoleMeasure enemy = shot.Role(StyleContrast.Enemy);
+            if (enemy != null && enemy.pixels >= StyleContrast.MinimumHuePixels && StyleContrast.HueGap(crowd.hue, enemy.hue) < rule.capturedEnemyMinHue)
+            {
+                failures.Add($"style: {where}: on screen the enemies are {StyleContrast.HueGap(crowd.hue, enemy.hue):0}° of hue from the crowd, under {rule.capturedEnemyMinHue:0}°");
+            }
+
+            if (shot.shot == "corrida" && shot.gateLabelRatio < rule.gateLabelMinRatio)
+            {
+                failures.Add($"style: {where}: the gate numbers measure {shot.gateLabelRatio:0.00}:1 between fill and outline, under {rule.gateLabelMinRatio:0.#}:1");
+            }
+
+            foreach (SkinMeasure skin in shot.skins)
+            {
+                if (skin.deltaE < rule.skinMinDeltaE)
+                {
+                    failures.Add($"style: {where}: skin {skin.skin} is ΔE {skin.deltaE:0} from the track on screen, under {rule.skinMinDeltaE:0}");
                 }
             }
         }

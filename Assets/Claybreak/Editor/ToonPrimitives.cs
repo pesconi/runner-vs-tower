@@ -79,10 +79,10 @@ namespace Claybreak.Editor
             return mesh;
         }
 
-        /// <summary>True when <paramref name="material"/> draws with <c>StudioKit/ToonLit</c> (needs vertex colors).</summary>
+        /// <summary>True when <paramref name="material"/> draws with <c>StudioKit/ToonLit</c> or its vinyl sibling (needs vertex colors).</summary>
         public static bool IsToon(Material material)
         {
-            return material != null && material.shader != null && material.shader.name == ToonShaderIds.ToonLitShader;
+            return material != null && material.shader != null && WorldScenery.IsToonFamily(material.shader.name);
         }
     }
 }

@@ -1,6 +1,7 @@
 using JungleDegree.StudioKit.Swarm;
 using JungleDegree.StudioKit.Toon;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Claybreak
 {
@@ -26,6 +27,15 @@ namespace Claybreak
         [SerializeField] private Light sun;
         [Tooltip("Puts the world's palette on screen (the sky; the game keeps the fog off).")]
         [SerializeField] private ToonPaletteApplier palette;
+        [Header("RT-6v3.3: light and post per world, from the style guide")]
+        [Tooltip("Writes the world's vinyl light (StudioKit/ToonVinyl globals) and its warm key on the sun.")]
+        [SerializeField] private ToonVinylLookApplier vinylLight;
+        [Tooltip("The world's vinyl light, by catalog index.")]
+        [SerializeField] private ToonVinylLook[] worldLights = System.Array.Empty<ToonVinylLook>();
+        [Tooltip("The global volume of the game camera; its profile is the world's post.")]
+        [SerializeField] private Volume post;
+        [Tooltip("The world's post profile, by catalog index (shared assets, never edited at run time).")]
+        [SerializeField] private VolumeProfile[] worldPosts = System.Array.Empty<VolumeProfile>();
 
         private MaterialPropertyBlock trackBlock;
         private MaterialPropertyBlock groundBlock;
@@ -38,6 +48,16 @@ namespace Claybreak
 
         /// <summary>Draw calls of the side scenery (rails with the ground, trees, rocks) for the world shown.</summary>
         public int SideDrawCalls => (ground != null && ground.enabled ? 1 : 0) + (props == null ? 0 : props.DrawCalls);
+
+        /// <summary>True for the kit's toon shaders that share properties, keywords and instance data (ToonLit and its vinyl sibling).</summary>
+        public static bool IsToonFamily(string shaderName)
+        {
+            return shaderName == ToonShaderIds.ToonLitShader || shaderName == ToonShaderIds.ToonVinylShader;
+        }
+
+        public ToonVinylLook LightOf(int world) => worldLights != null && world >= 0 && world < worldLights.Length ? worldLights[world] : null;
+
+        public VolumeProfile PostOf(int world) => worldPosts != null && world >= 0 && world < worldPosts.Length ? worldPosts[world] : null;
 
         public bool TryValidate(int worlds, out string error)
         {
@@ -54,11 +74,28 @@ namespace Claybreak
             }
 
             Material groundMaterial = ground.sharedMaterial;
-            if (groundMaterial == null || groundMaterial.shader.name != ToonShaderIds.ToonLitShader
+            if (groundMaterial == null || !IsToonFamily(groundMaterial.shader.name)
                 || !groundMaterial.IsKeywordEnabled(ToonShaderIds.SlotsKeyword))
             {
-                error = $"WorldScenery: the ground must use {ToonShaderIds.ToonLitShader} with {ToonShaderIds.SlotsKeyword}.";
+                error = $"WorldScenery: the ground must use {ToonShaderIds.ToonVinylShader} (or {ToonShaderIds.ToonLitShader}) with {ToonShaderIds.SlotsKeyword}.";
                 return false;
+            }
+
+            if (vinylLight == null || post == null || !post.isGlobal || worldLights == null || worldPosts == null
+                || worldLights.Length != worlds || worldPosts.Length != worlds)
+            {
+                error = "WorldScenery: needs the vinyl light applier, the global post volume and one light and one post profile per world.";
+                return false;
+            }
+
+            for (int w = 0; w < worlds; w++)
+            {
+                string lightError = worldLights[w] == null ? "missing" : worldLights[w].Validate();
+                if (lightError != null || worldPosts[w] == null)
+                {
+                    error = $"WorldScenery: world {w + 1} light or post: {lightError ?? "post missing"}.";
+                    return false;
+                }
             }
 
             string propsError = props.Validate();
@@ -96,10 +133,8 @@ namespace Claybreak
                 return;
             }
 
-            // RT-6t.13 (user, 2026-11-22: "take this fog out"): no fog in any world, run or assault. The kit's applier
-            // always turns the palette's linear fog on, so the game turns it off right after; every fogged shader then runs
-            // its no-fog variant. The props wrap past the camera far clip instead (ClaybreakValidation, PropWrapGuard).
-            RenderSettings.fog = false;
+            // RT-6v3.3 (D36, which revises RT-6t.13's "no fog"): the palette applier turns the world's linear fog on, in the
+            // palette's color (a dark blue of the night factory, never white) and range (far, past the play area).
 
             trackBlock ??= new MaterialPropertyBlock();
             groundBlock ??= new MaterialPropertyBlock();
@@ -116,6 +151,17 @@ namespace Claybreak
             RenderSettings.ambientLight = look.ambient;
             sun.color = look.sun;
             sun.intensity = look.sunIntensity;
+            // The vinyl light after the sun: its warm key replaces the color and intensity above.
+            if (vinylLight != null && worldLights != null && world >= 0 && world < worldLights.Length && worldLights[world] != null)
+            {
+                vinylLight.Apply(worldLights[world]);
+            }
+
+            if (post != null && worldPosts != null && world >= 0 && world < worldPosts.Length && worldPosts[world] != null)
+            {
+                post.sharedProfile = worldPosts[world];
+            }
+
             shown = world;
         }
     }

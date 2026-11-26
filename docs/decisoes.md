@@ -2525,3 +2525,65 @@ Este jogo ainda não usa o shader (os materiais passam a ele na RT-6v3.3).
   do medidor, quadro firme). O matcap economiza ~0,7 ms mas prende a luz a uma câmera e a um sol (rebake por mundo, recuo
   da câmera e assalto) e perde brilho por material; os dois cabem no teto de 11 ms → **luz**. Capturas do aparelho e dos
   testes em `../studiokit/docs/kv3a/`.
+
+## 2026-11-26 — RT-6v3.3: vinil, luz, céu, névoa e pós por mundo; contraste D36 medido — técnicas do maestro (sessão da entrega)
+
+Ainda com as malhas de hoje. O visual entra no aceite agrupado 1 (depois da RT-6v3.4b); nada aqui exige o usuário.
+
+- **T-RT6v3.3-1 — Estado de superfície separado do de forma.** `ClassStyle.surface` (novo) ao lado de `status`: uma classe
+  pode ser `v3` na superfície (materiais em perfil v3, paleta nos três níveis, luz e pós do guia) com as malhas antigas.
+  Superfície `v3`: Unit, Leader, Enemy, Tower, Boss, Obstacle, Floor, Scenery; Gate (6v3.6), Effect (6v3.8) e Screen (6v3.10)
+  seguem legado; Sound já era v3. As regras de malha (faixa de triângulos, chanfro) continuam presas a `status`.
+- **T-RT6v3.3-2 — Materiais pelo guia, numa passada só.** Perfis v3 `vinyl` (multidão, coroa), `matte-plastic` (chão, trilhos,
+  cenário, postes e caixas dos portões), `structure` (torres e chefes, fosco claro), `enemy` (defesas e obstáculos, borda
+  quente de ameaça) com a `ToonVinylSurface` do kit, mais `sky`, `track`, `contact-shadow` e `unlit-overlay` para os shaders
+  que não são vinil. `StyleGuideContent.ApplySurfaces` (último passo do construtor de cena) troca para `StudioKit/ToonVinyl`
+  todo material cujo perfil é vinil e grava a superfície; **emissão e fração de névoa ficam como a arte de cada material
+  definiu** (brilhos das torres, luz da coroa, névoa menor das estruturas), a superfície traz brilho, realce, borda,
+  escurecer e mistura. 34 materiais migrados. O validador confere que cada material vinil guarda a superfície do perfil.
+- **T-RT6v3.3-3 — Luz, pós e névoa por mundo como assets do guia.** `WorldStyle` guarda `WorldLight` (valores de um
+  `ToonVinylLook` do kit), `WorldPost` e a faixa da névoa; `StyleGuideContent` grava `Style/Light<Mundo>.asset` e
+  `Style/Post<Mundo>.asset`. A cena tem um `ToonVinylLookApplier` no sol e um `Volume` global (`WorldPost`) dentro do cenário;
+  `WorldScenery.Apply` aplica a luz e troca o `sharedProfile` (asset compartilhado, nunca editado em jogo) por mundo; a câmera
+  do jogo liga o pós. Luz (D36): principal quente (1, 0,91, 0,78) × 1,05, ambiente frio de dois tons × 0,7, sombra
+  (0,84, 0,83, 0,92), borda na cor do brilho do mundo, ombro 0,78, pico 1,1. Pós: sem tonemapping (T-RT6v3.2-3), contraste e
+  saturação +10, vinheta 0,22 azul-marinho, bloom 0,4 acima de 1,0 (só o miolo do brilho e a borda do vinil passam de 1).
+- **T-RT6v3.3-4 — Névoa de volta, colorida.** A D36 ("névoa colorida, não branca") revê a RT-6t.13: a névoa linear da paleta
+  volta a valer, 40–180 m, na cor do horizonte de cada mundo (= `skyBottom`, o chão distante se funde ao céu); o validador recusa névoa clara e sem croma. O
+  `PropWrapGuard` continua (os objetos entram no plano de corte, agora quase todo coberto pela névoa).
+- **T-RT6v3.3-5 — Paletas "fábrica noturna" pela regra de contraste.** Os 4 mundos ganham céu azul-escuro em degradê, chão
+  petróleo/ardósia, estruturas claras e um brilho de destaque por mundo (ciano, âmbar, menta, ciano-gelo). Multidão:
+  rosa-choque, laranja, violeta e lima (croma 81–108); pista neutra (croma ≤ 15), clara nos mundos 1–3 e escura no 4 (lima
+  claro); defesas no lado oposto do círculo de matiz (≥ 120°): petróleo-escuro, cobalto, âmbar-escuro, roxo. Nomes dos assets de
+  paleta mantidos (ids estáveis).
+- **T-RT6v3.3-6 — Regra de contraste da D36 medida.** `ContrastRule` no guia, conferida em dois lugares: **na paleta** (antes
+  do pós: croma da multidão ≥ 5 acima de toda outra cor desenhada do mundo, pista com croma ≤ 15, |ΔL*| multidão × pista ≥
+  30, defesas a ≥ 115° de matiz) e **na captura** (depois da luz e do pós, nos 4 mundos: multidão com o maior croma médio na
+  tela, |ΔL*| ≥ 20, defesas a ≥ 90°, números dos portões ≥ 3:1 entre preenchimento e contorno, toda skin a ΔE ≥ 20 da pista).
+  A medida: `ContrastProbe` congela o tempo, põe cada papel numa camada própria e desenha cada uma sozinha sobre preto e
+  sobre branco sem pós (o pixel do papel é igual nos dois fundos e igual à imagem completa, sem nada na frente); cor média,
+  L* médio e croma médio por pixel na imagem com pós. Os desenhos instanciados do kit guardam a camada ao criar o desenho:
+  a sonda força a outra rota por um quadro e solta, para recriá-los na camada nova (sem mudar o kit). Grava
+  `docs/art/v3/contraste.json` com a impressão digital do visual (`StyleGuide.LookFingerprint`); o validador recusa medida
+  ausente ou de outro visual. Novo passo `style` no `rt4-check`, antes do `validate`.
+- **T-RT6v3.3-7 — "Inimigo" da regra de matiz = defesas.** Os obstáculos têm corpo na cor de defesa, mas detalhes de cor fixa
+  (cabo de madeira, faixa vermelha de perigo, aço) que puxavam o matiz médio para perto da multidão (18° no mundo 1): viram
+  papel próprio (`obstacle`, só croma). Os detalhes fixos passam à paleta na RT-6v3.6 (anotado lá).
+- **T-RT6v3.3-8 — Revisão: nada de brilho no chão, UI fora do filtro, números legíveis.** Perfis do chão e do cenário com
+  brilho no topo 0 (regra do validador para Floor e Scenery). A UI do jogo é sobreposição de tela (o validador recusa outro
+  modo); as capturas desenham a UI com câmera própria sem pós, sobre preto e sobre branco, e a compõem sobre a imagem com
+  pós, como no celular. Contornos dos números dos portões mais escuros e mais grossos (0,28 → 0,40), medidos.
+- **T-RT6v3.3-9 — Camada de nuvens adiada para a RT-6v3.7.** A seção 10 (que prevalece) pede céu em degradê; o shader de
+  céu é do kit e nuvens pedem entrega K ou shader do jogo. Fica com o cenário e o céu (6v3.7).
+- **T-RT6v3.3-10 — Crítica independente (fable).** Volta 1: tela inicial lavada (erro da composição da captura, corrigido),
+  números sem medida (corrigido), estruturas e barriga acinzentadas (sombra e ambiente mais claros), defesa do mundo 3
+  saturada demais (âmbar mais escuro), pista e chão do mundo 4 fundidos (chão petróleo mais claro, pista mais escura), bloom
+  que nada alcançava (limiar 1,0), névoa até 180 m. Fora do escopo, anotado: unidades morrendo marrons iguais em todos os
+  mundos (6v3.8), madeira da torre do mundo 3 (6v3.5), cores fixas dos obstáculos (6v3.6), horizonte do céu (6v3.7).
+  Volta 2 (veredito do revisor: "sim, pode seguir"): céu mais claro com degradê maior (mundo 1 `#233764` → `#3a5a79`, os outros
+  na mesma luminância com o matiz do mundo) e névoa na cor do horizonte; contorno dos números 0,40 em tons quase pretos; sombra
+  (0,84, 0,83, 0,92) para os brancos não lerem lilás; pista do mundo 1 mais neutra; defesa do mundo 1 em petróleo-escuro
+  (`#0d5a55`, depois de `#0e4f63` virar azul-violeta na tela, 80° da multidão). **Bloom:** o limiar 1,0 só pega o miolo do
+  brilho do vinil; emissão HDR nas janelas e lanternas pede emissão acima de 1 no shader do kit (hoje 0–1) — anotado para a
+  K.v3b/RT-6v3.5, sem mudar o kit aqui.
+

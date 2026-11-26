@@ -11,8 +11,11 @@ namespace Claybreak.Editor
         public string SkyTop, SkyBottom, Fog, Ground, Track, TrackStripe, Crowd, FoliageDark, FoliageLight, Trunk, Rock,
             UiAccent, UiInk, TowerLight, TowerDark, TowerDetail, Defense;
         // Tower* fill the palette's structure colors (the towers are this game's structures).
-        public float FogStart = 110f;
-        public float FogEnd = 150f;
+        // RT-6v3.3 (D36): colored depth fog, from the middle of the play area to just past the camera far clip (170 m): the far
+        // ground meets the fog color at the horizon, the towers keep most of their colors (structures take a third of it) and
+        // the props come in at the horizon almost fully fogged (review round 1).
+        public float FogStart = 40f;
+        public float FogEnd = 180f;
 
         public string[] Hex => new[]
         {
@@ -22,13 +25,13 @@ namespace Claybreak.Editor
     }
 
     /// <summary>
-    /// The world palettes (RT-6t.6a) as code, like the rest of the content: the scene builder rewrites the assets from here
-    /// on every build, so a palette change is a reviewed edit of this file. Worlds 1–3 are the user's palettes with the
-    /// exact values (docs/direcao-visual-crowd.md section 1.1); world 4 is the provisional "Aurora" of section 5.1. The
-    /// tower and defense colors are ours, provisional [P]: on screen since RT-6t.10 (towers, bosses, defenses, projectiles,
-    /// crates, through ArtPalette's structure weights), Pastel's tower light/dark darkened there so the towers read against
-    /// its pink sky. Fog: none on screen (RT-6t.13, user 2026-11-22: "take this fog out"; WorldScenery turns it off). The
-    /// kit's palette still requires a fog color and range; they are kept (110–150 m) but nothing draws them.
+    /// The world palettes as code, like the rest of the content: the scene builder rewrites the assets from here on every build,
+    /// so a palette change is a reviewed edit of this file. RT-6v3.3 (D36): every world is the "night factory" of the A/M
+    /// concept screens (dark blue sky in a gradient, clear structures, a glow) with its own accents, and follows the D36
+    /// contrast logic, checked by the style validator: the crowd is the most saturated color (CIELAB chroma 81–108), the
+    /// track is neutral (chroma ≤ 15) and far from the crowd in value (|ΔL*| ≥ 30: light track in worlds 1–3, dark in world 4
+    /// for the light lime crowd), the defenses sit across the hue wheel from the crowd (≥ 115°). The fog is on again
+    /// (D36 revises RT-6t.13), in the color of the world's horizon (the sky bottom), so the far ground melts into the sky. Asset names stay the first palettes' (stable ids).
     /// </summary>
     public static class PaletteContent
     {
@@ -40,38 +43,38 @@ namespace Claybreak.Editor
             new PaletteDefinition
             {
                 Name = "Pastel",
-                SkyTop = "#ffd9cf", SkyBottom = "#cfe8ff", Fog = "#f3e3ea", Ground = "#bfe6cf",
-                Track = "#fff4ea", TrackStripe = "#ffe3d1", Crowd = "#ff8fab",
-                FoliageDark = "#7cc6a4", FoliageLight = "#a8dcbf", Trunk = "#c99076", Rock = "#e7d3f0",
+                SkyTop = "#233764", SkyBottom = "#3a5a79", Fog = "#3a5a79", Ground = "#2f6f7a",
+                Track = "#e9e9ec", TrackStripe = "#dbdade", Crowd = "#ff2e9a",
+                FoliageDark = "#1f5d6b", FoliageLight = "#3f8f97", Trunk = "#3a3f66", Rock = "#c9c3e6",
                 UiAccent = "#ff6f91", UiInk = "#3b2f4a",
-                TowerLight = "#f1d2e1", TowerDark = "#ab86b8", TowerDetail = "#ff6f91", Defense = "#7d6b91",
+                TowerLight = "#f2f4fa", TowerDark = "#3b4a7a", TowerDetail = "#39e6ff", Defense = "#0d5a55",
             },
             new PaletteDefinition
             {
                 Name = "PorDoSol",
-                SkyTop = "#3a3270", SkyBottom = "#f7a26b", Fog = "#e9967a", Ground = "#7a5482",
-                Track = "#f6caa6", TrackStripe = "#eeb790", Crowd = "#fff1d6",
-                FoliageDark = "#463a78", FoliageLight = "#5b4a8c", Trunk = "#2f2650", Rock = "#a36b8f",
+                SkyTop = "#2e2458", SkyBottom = "#5a4a7e", Fog = "#5a4a7e", Ground = "#2e4f5e",
+                Track = "#efebe7", TrackStripe = "#e2ddd8", Crowd = "#f0600a",
+                FoliageDark = "#2b2552", FoliageLight = "#4a3f7a", Trunk = "#241d40", Rock = "#9b7fb8",
                 UiAccent = "#f26a5a", UiInk = "#2d2448",
-                TowerLight = "#d9a6b0", TowerDark = "#5b4170", TowerDetail = "#f26a5a", Defense = "#3a2d5c",
+                TowerLight = "#f3eef8", TowerDark = "#4a3a78", TowerDetail = "#ffb347", Defense = "#2a52b8",
             },
             new PaletteDefinition
             {
                 Name = "Doce",
-                SkyTop = "#8fd3ff", SkyBottom = "#eef9ff", Fog = "#dff2ff", Ground = "#93d99a",
-                Track = "#fffae6", TrackStripe = "#ffedb0", Crowd = "#ffcf3a",
-                FoliageDark = "#45b07c", FoliageLight = "#6fcf8f", Trunk = "#b07a55", Rock = "#f4b4c8",
+                SkyTop = "#173a5c", SkyBottom = "#2f6a80", Fog = "#2f6a80", Ground = "#2c7a6a",
+                Track = "#f0efe9", TrackStripe = "#e3e1d8", Crowd = "#a03cff",
+                FoliageDark = "#1d5f55", FoliageLight = "#3d9a7f", Trunk = "#2f3b52", Rock = "#f2b8d0",
                 UiAccent = "#2fa7e6", UiInk = "#24435a",
-                TowerLight = "#fff0f5", TowerDark = "#e58fae", TowerDetail = "#2fa7e6", Defense = "#5a6fb0",
+                TowerLight = "#fbf7ea", TowerDark = "#3a4f6e", TowerDetail = "#5ff2c2", Defense = "#b07a12",
             },
             new PaletteDefinition
             {
                 Name = "Aurora",
-                SkyTop = "#2c3e66", SkyBottom = "#9ad0c2", Fog = "#a9cfc4", Ground = "#5e8f88",
-                Track = "#f2efe4", TrackStripe = "#e3dcc8", Crowd = "#c9f2a0",
-                FoliageDark = "#2f6f73", FoliageLight = "#4f9a8f", Trunk = "#3d3b52", Rock = "#c3b5e0",
+                SkyTop = "#152a52", SkyBottom = "#2f5a7e", Fog = "#2f5a7e", Ground = "#24586a",
+                Track = "#23273a", TrackStripe = "#2f3446", Crowd = "#9be21c",
+                FoliageDark = "#1e5a66", FoliageLight = "#2f7f86", Trunk = "#2a2d44", Rock = "#b8c8ef",
                 UiAccent = "#ff8a5c", UiInk = "#22313f",
-                TowerLight = "#dfe7f0", TowerDark = "#4c5f86", TowerDetail = "#ff8a5c", Defense = "#2c3e66",
+                TowerLight = "#e8f1fb", TowerDark = "#33406a", TowerDetail = "#6af0ff", Defense = "#7a2f9e",
             },
         };
 

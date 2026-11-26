@@ -219,3 +219,11 @@
   kit rodam também no EditMode deste jogo (os 3 de desenho do vinil ficam ignorados com `-nographics`). Medir shader
   isolado: `VinylScene` do `TestProject` + `SCENE_EXTRA="--ei vinyl N ..." Tools~/scene-measure-run.sh`; numa cena
   gerada pela 1ª vez, conferir no logcat a linha da cena antes de aceitar números (referência nula = nada desenhado).
+- 2026-11-26 (RT-6v3.3): a superfície de uma classe (`ClassStyle.surface`) vira `v3` antes das malhas; materiais vinil saem
+  do `StyleGuideContent.ApplySurfaces` (último passo do construtor de cena; emissão e névoa ficam as da arte). Mudou paleta,
+  luz, pós ou superfície: rodar o passo `style` do `rt4-check` antes do `validate` (regrava `docs/art/v3/telas` e
+  `docs/art/v3/contraste.json`, que o validador recusa se for de outro visual). Os desenhos instanciados do kit guardam a
+  camada do objeto ao criar o desenho: para mudar a camada em teste, forçar a outra rota por um quadro
+  (`ToonInstanceRouting.Forced`) e soltar. Camadas 20–29 são da sonda de contraste. A ferramenta Bash troca `\n` dentro de
+  heredoc Python: scripts de edição em arquivo (Write). Matar processo do Unity/rt4-check pelo PowerShell foi negado pelo
+  classificador nesta sessão: esperar a rodada terminar antes de editar.

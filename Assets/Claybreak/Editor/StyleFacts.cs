@@ -13,6 +13,22 @@ namespace Claybreak.Editor
     {
         public string name;
         public string shader;
+        /// <summary>RT-6v3.3: the vinyl surface the material holds (gloss, highlight size, rim, top gloss), when it has one.</summary>
+        public bool vinyl;
+        public Vector4 surface;
+        public float darken;
+        public bool translucent;
+    }
+
+    /// <summary>RT-6v3.3: the light and post assets a world really shows (what the scene's <see cref="WorldScenery"/> points at).</summary>
+    public struct WorldLookFact
+    {
+        public int world;
+        public ToonVinylLook light;
+        public UnityEngine.Rendering.VolumeProfile post;
+        public float fogStart;
+        public float fogEnd;
+        public Color fog;
     }
 
     /// <summary>A mesh (or a scene object's meshes) of a class, with what the style rules measure.</summary>
@@ -58,6 +74,21 @@ namespace Claybreak.Editor
         public List<MeshFact> Meshes = new List<MeshFact>();
         public List<ColorFact> Colors = new List<ColorFact>();
         public List<ClipFact> Clips = new List<ClipFact>();
+        /// <summary>RT-6v3.3: per world, the light and post of the scene and the fog of the palette (empty before the first build).</summary>
+        public List<WorldLookFact> Looks = new List<WorldLookFact>();
+        /// <summary>RT-6v3.3: true when the scene's game canvas is a screen-space overlay (the UI never goes through the post).</summary>
+        public bool UiOutsidePost = true;
+        /// <summary>RT-6v3.3: true when the game camera renders the post stack.</summary>
+        public bool CameraPost = true;
+        /// <summary>RT-6v3.3: the contrast the last style capture measured (null when there is none).</summary>
+        public ContrastMeasures Measures;
+
+        /// <summary>The measures of <see cref="StyleContrast.MeasuresPath"/>, or null.</summary>
+        public static ContrastMeasures LoadMeasures()
+        {
+            string path = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", StyleContrast.MeasuresPath);
+            return File.Exists(path) ? JsonUtility.FromJson<ContrastMeasures>(File.ReadAllText(path)) : null;
+        }
         public Dictionary<StyleEffect, int> EffectCapacity = new Dictionary<StyleEffect, int>();
         /// <summary>Mesh assets under the generated folder that no class owns (the shared primitives are listed apart).</summary>
         public List<string> UnclassifiedMeshes = new List<string>();
@@ -70,6 +101,7 @@ namespace Claybreak.Editor
         public static StyleFacts Gather()
         {
             var facts = new StyleFacts();
+            facts.Measures = LoadMeasures();
             GatherMaterials(facts);
             GatherMeshAssets(facts);
             GatherScene(facts);
@@ -77,6 +109,12 @@ namespace Claybreak.Editor
             GatherClips(facts);
             return facts;
         }
+
+        private static readonly int VinylGlossId = Shader.PropertyToID("_VinylGloss");
+        private static readonly int VinylSpecSizeId = Shader.PropertyToID("_VinylSpecSize");
+        private static readonly int VinylRimId = Shader.PropertyToID("_VinylRim");
+        private static readonly int VinylTopGlossId = Shader.PropertyToID("_VinylTopGloss");
+        private static readonly int VinylDarkenId = Shader.PropertyToID("_VinylDarken");
 
         private static void GatherMaterials(StyleFacts facts)
         {
@@ -86,7 +124,17 @@ namespace Claybreak.Editor
                 var material = AssetDatabase.LoadAssetAtPath<Material>(path);
                 if (material != null)
                 {
-                    facts.Materials.Add(new MaterialFact { name = Path.GetFileNameWithoutExtension(path), shader = material.shader != null ? material.shader.name : null });
+                    var fact = new MaterialFact { name = Path.GetFileNameWithoutExtension(path), shader = material.shader != null ? material.shader.name : null };
+                    if (material.HasProperty(VinylGlossId))
+                    {
+                        fact.vinyl = true;
+                        fact.surface = new Vector4(material.GetFloat(VinylGlossId), material.GetFloat(VinylSpecSizeId),
+                            material.GetFloat(VinylRimId), material.GetFloat(VinylTopGlossId));
+                        fact.darken = material.GetFloat(VinylDarkenId);
+                        fact.translucent = material.renderQueue >= (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                    }
+
+                    facts.Materials.Add(fact);
                 }
             }
         }
@@ -158,6 +206,41 @@ namespace Claybreak.Editor
         }
 
         // The scene-built classes: each tower body (boss bodies are the Boss class), each defense root and each gate pair.
+        // RT-6v3.3: what each world shows (light, post, fog) and whether the UI and the camera are set for the post.
+        private static void GatherLooks(StyleFacts facts)
+        {
+            var scenery = UnityEngine.Object.FindFirstObjectByType<WorldScenery>(FindObjectsInactive.Include);
+            PaletteDefinition[] definitions = PaletteContent.Palettes;
+            for (int w = 0; w < definitions.Length; w++)
+            {
+                ToonPalette palette = PaletteContent.Load(w);
+                facts.Looks.Add(new WorldLookFact
+                {
+                    world = w,
+                    light = scenery != null ? scenery.LightOf(w) : null,
+                    post = scenery != null ? scenery.PostOf(w) : null,
+                    fogStart = palette != null ? palette.FogStart : 0f,
+                    fogEnd = palette != null ? palette.FogEnd : 0f,
+                    fog = palette != null ? palette.Fog : Color.clear,
+                });
+            }
+
+            GameObject ui = GameObject.Find("/Ui");
+            Canvas canvas = ui != null ? ui.GetComponent<Canvas>() : null;
+            facts.UiOutsidePost = canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay;
+            Camera main = null;
+            foreach (Camera camera in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (camera.CompareTag("MainCamera"))
+                {
+                    main = camera;
+                }
+            }
+
+            var data = main != null ? main.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>() : null;
+            facts.CameraPost = data != null && data.renderPostProcessing;
+        }
+
         private static void GatherScene(StyleFacts facts)
         {
             if (EditorSceneManager.GetActiveScene().path != ClaybreakSceneBuilder.ScenePath)
@@ -165,6 +248,7 @@ namespace Claybreak.Editor
                 EditorSceneManager.OpenScene(ClaybreakSceneBuilder.ScenePath, OpenSceneMode.Single);
             }
 
+            GatherLooks(facts);
             var tower = UnityEngine.Object.FindFirstObjectByType<AssaultTower>(FindObjectsInactive.Include);
             if (tower != null)
             {
