@@ -48,7 +48,7 @@ lançamento jun/2027.
 | RT-6v3.1 Guia de estilo como dado e validador (sem mudar a tela) — **concluída** (2026-11-25; `direcao-visual-v3.md`) | 0,75 | 0,9 | dez/2026 |
 | RT-6v3.2 Imagem-alvo medida: 2–3 telas-conceito no Unity + ensaio no OPPO + ficha **D36** — **concluída** (2026-11-25; D36 com o usuário) | 1 | 1,2 | dez/2026 |
 | K.v3a (studiokit) Shader irmão de vinil (`ToonLit` intacto; aceitação com match-3 e Wild Pack) — **concluída** (2026-11-26; `studiokit` 0.15.0, tag `v0.15.0`; luz escolhida contra matcap pela medida no OPPO) | 0,75 | 0,9 | dez/2026 |
-| RT-6v3.3 Vinil, plástico fosco, luz, céu e pós por mundo + gate 3× — **concluída em 2026-11-26, gate 3× pendente (OPPO desconectado)** | 0,75 | 0,9 | dez/2026–jan/2027 |
+| RT-6v3.3 Vinil, plástico fosco, luz, céu e pós por mundo + gate 3× — **concluída em 2026-11-26** (gate 3× no OPPO dentro do teto nas duas rotas) | 0,75 | 0,9 | dez/2026–jan/2027 |
 | K.v3b (studiokit) Layout de instância opcional (rosto, fase do quique, UV/UV2, atlas) — **planejada** | 0,75 | 0,9 | jan/2027 |
 | K.v3c (studiokit) Construtor liso e chanfrado (torno, chanfro, normais suaves, UV) — **planejada** | 0,5 | 0,6 | jan/2027 |
 | RT-6v3.4a Bibopzi detalhado (3–5 mil tri) e de multidão (800–1.200) por Blender (dados simples) + gate 3× — **planejada** | 1 | 1,2 | jan/2027 |
@@ -1080,8 +1080,7 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** capturas das 6 câmeras nos 4 mundos contra a imagem-alvo (crítica de outra sessão); validador do guia verde;
   **gate 3× no OPPO** no caso mais pesado (assalto do mundo 4, 300 em voo, chefe), Vulkan e GLES em blocos.
 - **Exige o usuário:** nada agora (entra no aceite agrupado 1).
-- **Status:** concluída em 2026-11-26, **gate 3× no OPPO pendente** (o celular estava bloqueado e depois desconectado durante
-  toda a sessão; APK de medição pronto em `C:\temp\rt63\Claybreak-measure.apk`, passo a passo abaixo). Superfície `v3` em
+- **Status:** concluída em 2026-11-26. Superfície `v3` em
   Unit, Leader, Enemy, Tower, Boss, Obstacle, Floor e Scenery (malhas ainda as de hoje): 34 materiais em `StudioKit/ToonVinyl`
   pelos perfis do `StyleGuide` (vinil, plástico fosco, estrutura, inimigo); luz, pós (sem tonemapping, cor, vinheta, bloom
   leve) e névoa colorida por mundo vindos do guia (`Style/Light*`, `Style/Post*`, aplicados pelo `WorldScenery`); paletas
@@ -1093,11 +1092,12 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   "pode seguir"); capturas em `docs/art/v3/telas/`. `rt4-check` completo verde: cena, captura de estilo, validador,
   isolamento, EditMode 753/753, PlayMode 28 executados, economia, capturas, APKs e AAB. Decisões T-RT6v3.3-1..10 em
   `decisoes.md`. Camada de nuvens adiada para a 6v3.7; emissão HDR (bloom nas janelas) para a K.v3b/6v3.5.
-  **Gate pendente, passo para o usuário:** conectar o OPPO CPH2791 por cabo, desbloquear a tela e avisar o maestro (ou rodar,
-  na raiz do repositório, em Git Bash: `Tools/rt2-gate.sh rt6v33-vk 60 20 /c/temp/rt63/Claybreak-measure.apk 4` e
-  `RT2_EXTRA="--ez chunks true -e unity -force-gles" Tools/rt2-gate.sh rt6v33-gles 60 20 /c/temp/rt63/Claybreak-measure.apk 4`,
-  depois `adb shell am force-stop com.jungledegree.stampeep`).
-- **Histórico:** entregue em 2026-11-26 (`Stage RT.6v3.3`), gate pendente.
+  **Gate 3× no OPPO CPH2791** (2026-11-26, com o celular reconectado; assalto do mundo 4, chefe, 300 em voo, APK de medição
+  do commit `c483067`; janelas de 5 s 2–6): **Vulkan** (rota buffer) GPU p95 4,2–4,6 ms, CPU principal p95 2,2–2,9 ms,
+  62,5 fps médios, quadro p95 16 ms, > 50 ms 0%, PSS 270 MB; **GLES em blocos** (`[ToonRoute] route=Chunks api=OpenGLES3`)
+  GPU p95 7,8–8,4 ms, CPU principal p95 2,5–5,2 ms, 62,5 fps, quadro p95 16 ms, > 50 ms 0%, PSS 299 MB. Teto 11/11/16,7 ms:
+  dentro nas duas rotas, sem repetição; nenhum "Shader error" no build. App fechado no aparelho (`am force-stop`).
+- **Histórico:** entregue em 2026-11-26 (`Stage RT.6v3.3`); gate 3× no OPPO no mesmo dia, nas duas rotas.
 - **Prompt da sessão:** "Entrega RT-6v3.3 do Stampeep: vinil, luz e pós. Leia `docs/direcao-visual-v3.md`, a resposta da
   D36 em `docs/decisoes.md` e as telas em `docs/art/v3/alvo/`. Use o shader da K.v3a pelos perfis do `StyleGuide`; luz, céu e
   pós por mundo do guia (skills unity:urp-postprocessing e unity:craft-game-floors; as regras do projeto prevalecem). Ciclo:

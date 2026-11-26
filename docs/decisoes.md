@@ -2586,4 +2586,8 @@ Ainda com as malhas de hoje. O visual entra no aceite agrupado 1 (depois da RT-6
   (`#0d5a55`, depois de `#0e4f63` virar azul-violeta na tela, 80° da multidão). **Bloom:** o limiar 1,0 só pega o miolo do
   brilho do vinil; emissão HDR nas janelas e lanternas pede emissão acima de 1 no shader do kit (hoje 0–1) — anotado para a
   K.v3b/RT-6v3.5, sem mudar o kit aqui.
+- **T-RT6v3.3-11 — Gate 3× no OPPO (feito depois do commit da entrega, com o celular reconectado).** Assalto do mundo 4 com
+  o chefe e 300 em voo, APK de medição de `c483067`: Vulkan GPU p95 4,2–4,6 ms (RT-6t.17: ≤ 4,3; o vinil, a névoa e o pós
+  custam ~0,3 ms aqui), GLES em blocos 7,8–8,4 ms; CPU principal ≤ 5,2 ms; 62,5 fps e quadro p95 16 ms nas duas rotas. Dentro
+  do teto (11 ms) sem repetição: nada a cortar (o bloom fica).
 
