@@ -8,7 +8,7 @@ luz quente com ambiente frio, contorno, sombra de contato, céu em degradê, né
 
 1. **Página única (celular):** abra `index.html` desta pasta (as imagens vão dentro da página). As mesmas comparações
    estão nos `NN-*.jpg` ao lado.
-2. **No OPPO:** com o APK de jogo desta entrega instalado (ver abaixo), jogue 2–3 fases do mundo 1.
+2. **No OPPO:** o APK de jogo desta entrega já está instalado no aparelho (26/11, 13:16); jogue 2–3 fases do mundo 1.
 
 ## Roteiro (5 minutos)
 

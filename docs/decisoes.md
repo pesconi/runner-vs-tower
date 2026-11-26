@@ -2727,8 +2727,9 @@ Nada aqui exige decisão do usuário; o visual entra no **aceite agrupado 1** (l
   editor tem três faixas de luz, sem o vinil; fica para a RT-6v3.10, telas). Notado pela crítica e fica para o aceite: na
   câmera da corrida (alta, de costas) as trocas de rosto quase não se veem — o rosto é para o líder e as telas; de costas
   quem lê é a chave e a mola.
-- **T-RT6v3.4b-9 — Gate 3× no OPPO: pendente.** Obrigatório nesta entrega (o layout animado passa a valer para a
-  multidão e o APK final da 6v3.4a não foi remedido), mas o OPPO ficou com a tela bloqueada por senha durante toda a
-  sessão (`isKeyguardShowing=true`; a sessão não digita senha). APKs de jogo e de medição prontos em `C:\temp\rt64b`;
-  passo exato na seção RT-6v3.4b do plano. A série pode seguir (a 6v3.4c não mexe no custo do Bibopzi); a primeira sessão
-  com o aparelho livre roda o gate antes de qualquer outra medição.
+- **T-RT6v3.4b-9 — Gate 3× no OPPO: aprovado sem reserva.** O aparelho ficou bloqueado com senha durante a sessão e foi
+  liberado no fim (aviso do maestro). Assalto do mundo 4 com o chefe e 300 Bibopzis de multidão em voo, agora com o layout
+  animado (80 bytes, rosto, mola, mãos, chave). Vulkan: GPU p95 4,7–6,4 ms (6,4 na janela da corrida), CPU principal
+  ≤ 3,9 ms, 62,4 fps, 0 quadros perdidos, PSS 320 MB. GLES em blocos: GPU p95 7,2–7,9 ms, CPU ≤ 3,8 ms, 62,5 fps, PSS
+  309 MB. Igual à RT-6v3.4a dentro do ruído (o layout animado custa o que a K.v3b mediu e a malha tem 11% menos
+  triângulos). Também fica medido o APK final da 6v3.4a (o Bibopzi daquela entrega mudou só no rosto e na chave).

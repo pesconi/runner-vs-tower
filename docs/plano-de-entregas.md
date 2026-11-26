@@ -52,7 +52,7 @@ lançamento jun/2027.
 | K.v3b (studiokit) Layout de instância opcional (rosto, fase do quique, UV/UV2, atlas) — **concluída** (2026-11-26; `studiokit` 0.16.0, tag `v0.16.0`; medido no OPPO nas duas rotas) | 0,75 | 0,9 | jan/2027 |
 | K.v3c (studiokit) Construtor liso e chanfrado (torno, chanfro, normais suaves, UV) — **concluída** (2026-11-26; `studiokit` 0.17.0, tag `v0.17.0`; primitivas antigas com os mesmos bytes) | 0,5 | 0,6 | jan/2027 |
 | RT-6v3.4a Bibopzi detalhado (3–5 mil tri) e de multidão (800–1.200) por Blender (dados simples) + gate 3× — **concluída em 2026-11-26** (detalhado 4.990 no líder, multidão 1.160, reserva 546; chave de corda e olhos maiores; gate 3× no OPPO aprovado nas duas rotas, sem reserva) | 1 | 1,2 | jan/2027 |
-| RT-6v3.4b Rosto (8 expressões) e animação do Bibopzi; aceite agrupado 1 — **concluída em 2026-11-26, com gate 3× no OPPO pendente (aparelho bloqueado) e aceite agrupado 1 pendente** (atlas 8 rostos no líder, multidão e loja; tabela evento → expressão no guia; amassar/esticar pelo kit 0.18.0; mola, mãos e chave pelo layout animado; pacote em `docs/aceite/agrupado-1/`) | 1 | 1,2 | fev/2027 |
+| RT-6v3.4b Rosto (8 expressões) e animação do Bibopzi; aceite agrupado 1 — **concluída em 2026-11-26, com gate 3× no OPPO aprovado nas duas rotas e aceite agrupado 1 pendente** (atlas 8 rostos no líder, multidão e loja; tabela evento → expressão no guia; amassar/esticar pelo kit 0.18.0; mola, mãos e chave pelo layout animado; pacote em `docs/aceite/agrupado-1/`) | 1 | 1,2 | fev/2027 |
 | RT-6v3.4c As outras 5 formas da loja no padrão — **planejada** | 0,75 | 0,9 | fev/2027 |
 | RT-6v3.5 Inimigos, torres e chefes (tema pela D36) + gate 3× — **planejada** | 1,5 | 1,8 | fev/2027 |
 | RT-6v3.6 Portões e obstáculos + gate 3× — **planejada** | 0,75 | 0,9 | fev–mar/2027 |
@@ -1184,14 +1184,10 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** testes EditMode das fórmulas e da tabela; capturas em sequência (susto, feliz, vitória); gate 3× se o custo
   mudar; **aceite agrupado 1** pedido ao usuário (luz e personagem: capturas + APK no OPPO), sem parar a série.
 - **Exige o usuário:** aceite agrupado 1 (não bloqueia a 6v3.4c).
-- **Status:** concluída em 2026-11-26 (decisões T-RT6v3.4b-1..9 em `decisoes.md`), **gate 3× no OPPO pendente**: o aparelho ficou bloqueado com senha a sessão toda. Passo exato, com o OPPO
-  desbloqueado e no cabo (Git Bash, raiz do repositório): `Tools/rt2-gate.sh rt64b-vulkan 60 20
-  /c/temp/rt64b/Claybreak-measure.apk 4` e `RT2_EXTRA="--ez chunks true -e unity -force-gles" Tools/rt2-gate.sh rt64b-gles
-  60 20 /c/temp/rt64b/Claybreak-measure.apk 4` (assalto do mundo 4 com 300; conferir `[ToonRoute]` e a captura), depois
-  `adb shell am force-stop com.jungledegree.stampeep` e `adb install -r /c/temp/rt64b/Stampeep-RT-6v3.4b.apk`; se os
-  APKs sumirem de `C:\temp`, refazer com `Tools/rt4-check.sh /c/temp/rt64b apk`. Custo esperado: o layout animado
-  passa a valer para a multidão (a K.v3b mediu +0,2–0,6 ms de GPU no Vulkan) com 11% menos triângulos por unidade (1.028
-  contra 1.160). **Aceite agrupado 1
+- **Status:** concluída em 2026-11-26 (decisões T-RT6v3.4b-1..9 em `decisoes.md`), **gate 3× no OPPO aprovado** (assalto do mundo 4, chefe, 300 Bibopzis em voo, layout animado com rosto, mola e chave):
+  Vulkan (buffer) GPU p95 4,7–6,4 ms, CPU principal p95 ≤ 3,9 ms, 62,4 fps, quadro p95 16 ms, 0 perdidos, PSS 320 MB; GLES
+  (blocos de 256) GPU p95 7,2–7,9 ms, CPU ≤ 3,8 ms, 62,5 fps, 0 perdidos, PSS 309 MB; `[ToonRoute]` conferido nas duas,
+  captura do aparelho sem shader de erro; reserva não usada. APK de jogo instalado no OPPO; app fechado. **Aceite agrupado 1
   pendente** (não bloqueia a 6v3.4c): pacote em `docs/aceite/agrupado-1/` (`index.html` com antes/depois e roteiro no
   `README.md`), APK de jogo em `C:\temp\rt64b\Stampeep-RT-6v3.4b.apk` (fora do repositório). Atlas `BibopziFaces.png`
   (512 × 512, 8 células de 128 × 256, mipmaps, ASTC 4×4) desenhado por `Tools/art/bibopzi_faces.py` (hash conferido pelo
