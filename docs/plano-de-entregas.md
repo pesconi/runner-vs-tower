@@ -51,7 +51,7 @@ lançamento jun/2027.
 | RT-6v3.3 Vinil, plástico fosco, luz, céu e pós por mundo + gate 3× — **concluída em 2026-11-26** (gate 3× no OPPO dentro do teto nas duas rotas) | 0,75 | 0,9 | dez/2026–jan/2027 |
 | K.v3b (studiokit) Layout de instância opcional (rosto, fase do quique, UV/UV2, atlas) — **concluída** (2026-11-26; `studiokit` 0.16.0, tag `v0.16.0`; medido no OPPO nas duas rotas) | 0,75 | 0,9 | jan/2027 |
 | K.v3c (studiokit) Construtor liso e chanfrado (torno, chanfro, normais suaves, UV) — **concluída** (2026-11-26; `studiokit` 0.17.0, tag `v0.17.0`; primitivas antigas com os mesmos bytes) | 0,5 | 0,6 | jan/2027 |
-| RT-6v3.4a Bibopzi detalhado (3–5 mil tri) e de multidão (800–1.200) por Blender (dados simples) + gate 3× — **planejada** | 1 | 1,2 | jan/2027 |
+| RT-6v3.4a Bibopzi detalhado (3–5 mil tri) e de multidão (800–1.200) por Blender (dados simples) + gate 3× — **concluída em 2026-11-26** (detalhado 4.990 no líder, multidão 1.160, reserva 546; chave de corda e olhos maiores; gate 3× no OPPO aprovado nas duas rotas, sem reserva) | 1 | 1,2 | jan/2027 |
 | RT-6v3.4b Rosto (8 expressões) e animação do Bibopzi; aceite agrupado 1 — **planejada** | 1 | 1,2 | fev/2027 |
 | RT-6v3.4c As outras 5 formas da loja no padrão — **planejada** | 0,75 | 0,9 | fev/2027 |
 | RT-6v3.5 Inimigos, torres e chefes (tema pela D36) + gate 3× — **planejada** | 1,5 | 1,8 | fev/2027 |
@@ -1158,6 +1158,19 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** testes e validador; a validação não depende do Blender instalado; capturas de perto e com 300 contra o alvo;
   gate aprovado.
 - **Exige o usuário:** OPPO para o gate.
+- **Status:** concluída em 2026-11-26 (decisões T-RT6v3.4a-1..11 em `decisoes.md`). Scripts do Blender 5.3 em
+  `Tools/blender/` (README lá; `run.sh` confere o determinismo) gravam dados simples em `Tools/blender/out/*.json`;
+  `SimpleMeshData` + `UnitShapeAssets` gravam os `.asset` no passo `scene`; o validador confere o hash dos scripts e não
+  precisa do Blender. Níveis: detalhado 4.990 tri (o líder, `CrowdShapeOption.leaderMesh`), multidão 1.160 (as 300, asset
+  `Bibopzi` de sempre), reserva 546. Marcos nos três (mola, engrenagem, barriga creme, mãos soltas, olhos maiores, **chave de
+  corda nas costas**), UV2 com mola, mãos e chave para o layout animado (a palavra-chave fica para a 6v3.4b). Orçamento por
+  malha no guia (v3 e reserva antes da classe migrar) e aresta dura na regra de 60°. Corrigido o achado da K.v3b: os
+  construtores de arte voltavam os materiais vinil para `ToonLit` (passo `capture`); agora mantêm o vinil e os 34 `.mat`
+  estão commitados. Capturas em `docs/art/rt6v34a/` (três níveis de perto, corrida com 300, comparação com o alvo A) e telas
+  do guia regravadas; crítica fable: "pode seguir", correções aplicadas. rt4-check verde (cena, style, validador, isolamento,
+  EditMode, PlayMode, economia, capturas, APKs, AAB). Gate 3× no OPPO (assalto do mundo 4, 300 Bibopzis em voo): Vulkan GPU
+  p95 4,9–5,4 ms, GLES em blocos 7,4–8,4 ms, CPU ≤ 4,0 ms, 62,5 fps, quadro p95 16 ms; reserva não usada. APK final (1.160 tri, +0,9% depois da crítica) não remedido: o OPPO bloqueou com senha; margem de GPU ~2× no teto.
+- **Histórico:** entregue em 2026-11-26 (`Stage RT.6v3.4a`).
 - **Prompt da sessão:** "Entrega RT-6v3.4a do Stampeep: Bibopzi detalhado e de multidão. Leia `docs/direcao-visual-v3.md`
   (seção 3.1), a folha do personagem no repositório `personagem` (D3 'Feijão') e as capturas da RT-6t.22. Escreva os
   scripts do Blender 5.3 (`blender -b -P`) que gravam dados simples versionados e o gerador de Editor que grava os `.asset`;

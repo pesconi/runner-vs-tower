@@ -31,14 +31,27 @@ namespace Claybreak.Editor
         public Color fog;
     }
 
+    /// <summary>
+    /// Which budget a mesh answers to (RT-6v3.4a): its class's state (legacy ceiling or v3 range), or, for a mesh already
+    /// remade in v3 inside a class that is still legacy (the Bibopzi levels before the other shapes, 6v3.4c), the v3 range or
+    /// the class's reserve range.
+    /// </summary>
+    public enum MeshTier
+    {
+        FollowsClass,
+        V3,
+        Reserve,
+    }
+
     /// <summary>A mesh (or a scene object's meshes) of a class, with what the style rules measure.</summary>
     public struct MeshFact
     {
         public string name;
         public StyleClass styleClass;
+        public MeshTier tier;
         public int triangles;
         public int drawCalls;
-        /// <summary>Largest angle (degrees) between two neighbouring faces over the meshes of the object.</summary>
+        /// <summary>Largest angle (degrees) between two neighbouring faces across a hard edge over the meshes of the object.</summary>
         public float maxEdgeAngle;
     }
 
@@ -151,7 +164,10 @@ namespace Claybreak.Editor
 
             if (path.StartsWith(GeneratedFolder + "/Units/", StringComparison.Ordinal))
             {
-                return name == "LeaderCrown" ? StyleClass.Leader : StyleClass.Unit;
+                // RT-6v3.4a: the detailed Bibopzi is what the leader wears.
+                return name == "LeaderCrown" || UnitShapeAssets.AtPath(path)?.Level == UnitShapeAssets.ShapeLevel.Detail
+                    ? StyleClass.Leader
+                    : StyleClass.Unit;
             }
 
             if (path.StartsWith(GeneratedFolder + "/Obstacles/", StringComparison.Ordinal))
@@ -197,11 +213,27 @@ namespace Claybreak.Editor
                     {
                         name = Path.GetFileNameWithoutExtension(path),
                         styleClass = owner.Value,
+                        tier = TierOf(path),
                         triangles = Triangles(mesh),
                         drawCalls = 1,
                         maxEdgeAngle = MaxEdgeAngle(mesh),
                     });
                 }
+            }
+        }
+
+        // RT-6v3.4a: the shapes written by Blender answer to the v3 budgets before their class migrates.
+        private static MeshTier TierOf(string path)
+        {
+            switch (UnitShapeAssets.AtPath(path)?.Level)
+            {
+                case UnitShapeAssets.ShapeLevel.Crowd:
+                case UnitShapeAssets.ShapeLevel.Detail:
+                    return MeshTier.V3;
+                case UnitShapeAssets.ShapeLevel.Reserve:
+                    return MeshTier.Reserve;
+                default:
+                    return MeshTier.FollowsClass;
             }
         }
 
@@ -402,8 +434,10 @@ namespace Claybreak.Editor
         }
 
         /// <summary>
-        /// The largest angle, in degrees, between the normals of two faces that share an edge (vertices welded by position, so the
-        /// split vertices of flat shading do not hide the edge). 0 for a mesh with no shared edge; a cube is 90, a sphere a few degrees.
+        /// The largest angle, in degrees, between the normals of two faces that share a HARD edge: vertices welded by position (so
+        /// the split vertices of flat shading do not hide the edge), and the edge counts when the vertex normals on its two sides
+        /// differ (RT-6v3.4a: an edge drawn with one shared normal is shaded round, it does not read as an unbevelled corner; a
+        /// flat-shaded edge does). 0 for a mesh with no hard edge; a cube is 90, a smooth sphere 0.
         /// </summary>
         public static float MaxEdgeAngle(Mesh mesh)
         {
@@ -422,7 +456,9 @@ namespace Claybreak.Editor
                 ids[v] = id;
             }
 
-            var faces = new Dictionary<long, Vector3>();
+            Vector3[] vertexNormals = mesh.normals;
+            bool hasNormals = vertexNormals.Length == vertices.Length;
+            var faces = new Dictionary<long, (Vector3 normal, int from, int to)>();
             float widest = 0f;
             for (int s = 0; s < mesh.subMeshCount; s++)
             {
@@ -446,22 +482,32 @@ namespace Claybreak.Editor
                     normal.Normalize();
                     for (int e = 0; e < 3; e++)
                     {
-                        int from = ids[triangles[t + e]];
-                        int to = ids[triangles[t + (e + 1) % 3]];
+                        int rawFrom = triangles[t + e];
+                        int rawTo = triangles[t + (e + 1) % 3];
+                        int from = ids[rawFrom];
+                        int to = ids[rawTo];
                         if (from == to)
                         {
                             continue;
                         }
 
+                        // The raw vertices in welded order (low id first), so both sides of the edge compare end to end.
+                        (int low, int high) raw = from < to ? (rawFrom, rawTo) : (rawTo, rawFrom);
                         long key = from < to ? ((long)from << 32) | (uint)to : ((long)to << 32) | (uint)from;
-                        if (faces.TryGetValue(key, out Vector3 other))
+                        if (faces.TryGetValue(key, out var other))
                         {
-                            widest = Mathf.Max(widest, Vector3.Angle(other, normal));
-                            faces[key] = normal;
+                            bool hard = !hasNormals || Vector3.Angle(vertexNormals[other.from], vertexNormals[raw.low]) > 1f
+                                || Vector3.Angle(vertexNormals[other.to], vertexNormals[raw.high]) > 1f;
+                            if (hard)
+                            {
+                                widest = Mathf.Max(widest, Vector3.Angle(other.normal, normal));
+                            }
+
+                            faces[key] = (normal, raw.low, raw.high);
                         }
                         else
                         {
-                            faces.Add(key, normal);
+                            faces.Add(key, (normal, raw.low, raw.high));
                         }
                     }
                 }

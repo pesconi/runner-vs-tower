@@ -232,6 +232,12 @@ namespace Claybreak
         public int v3MaxTriangles;
         /// <summary>The v3 draw-call budget of one object, checked only when the class is v3.</summary>
         public int v3MaxDrawCalls;
+        /// <summary>
+        /// RT-6v3.4a: triangle range of the class's reserve mesh (the smooth fallback if the v3 one fails the device gate; the
+        /// Unit's ~500); 0-0 = the class has none.
+        /// </summary>
+        public int reserveMinTriangles;
+        public int reserveMaxTriangles;
         /// <summary>Largest angle (degrees) between two neighbouring faces of a v3 mesh; a sharper edge needs a bevel. Only for v3 classes.</summary>
         public float maxEdgeAngle;
     }

@@ -161,6 +161,7 @@ MonoBehaviour:
   - id: bibopzi
     title: BIBOPZI
     mesh: {fileID: 4300000, guid: 87cb0bb252eff41448988e832fc48398, type: 2}
+    leaderMesh: {fileID: 4300000, guid: 7f6834fe54b088e4db57c6ebdd48a01c, type: 2}
     price: 0
     motion:
       Frequency: 8
@@ -174,6 +175,7 @@ MonoBehaviour:
   - id: ball
     title: BALL
     mesh: {fileID: 4300000, guid: 3492d2dda05ae874b91f0decb7196476, type: 2}
+    leaderMesh: {fileID: 0}
     price: 0
     motion:
       Frequency: 9.5
@@ -187,6 +189,7 @@ MonoBehaviour:
   - id: chick
     title: CHICK
     mesh: {fileID: 4300000, guid: 8cb3313dda0ba81449f15ea8919ed45c, type: 2}
+    leaderMesh: {fileID: 0}
     price: 300
     motion:
       Frequency: 11
@@ -200,6 +203,7 @@ MonoBehaviour:
   - id: bunny
     title: BUNNY
     mesh: {fileID: 4300000, guid: d6ee4835431f06645b101b1f0be46dbd, type: 2}
+    leaderMesh: {fileID: 0}
     price: 1000
     motion:
       Frequency: 6.5
@@ -213,6 +217,7 @@ MonoBehaviour:
   - id: froggy
     title: FROGGY
     mesh: {fileID: 4300000, guid: 0bcc3faa76a8a5948b87ec4c3943eca0, type: 2}
+    leaderMesh: {fileID: 0}
     price: 1600
     motion:
       Frequency: 5.5
@@ -226,6 +231,7 @@ MonoBehaviour:
   - id: penguin
     title: PENGUIN
     mesh: {fileID: 4300000, guid: a1b80d0e1217520449d6309d045b5bbc, type: 2}
+    leaderMesh: {fileID: 0}
     price: 2400
     motion:
       Frequency: 14

@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: IronWarm
-  m_Shader: {fileID: 4800000, guid: fc1b8eacba3b2ee4db4799284ac2485e, type: 3}
+  m_Shader: {fileID: 4800000, guid: 7ffb0d254ba444c884be5eb63fa7b18d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -30,21 +30,42 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _VinylFaceAtlas:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _DstBlend: 0
+    - _SrcBlend: 1
     - _ToonEmission: 0
     - _ToonFogAmount: 0.35
+    - _VinylAlpha: 1
+    - _VinylDarken: 0.12
+    - _VinylGloss: 0.45
+    - _VinylRim: 1.4
+    - _VinylSpecSize: 0.35
+    - _VinylTopGloss: 0.5
+    - _ZWrite: 1
     m_Colors:
     - _StructureWeights: {r: 0, g: 0.4, b: 0, a: 0.6}
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot0: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot1: {r: 1, g: 1, b: 1, a: 1}
     - _ToonSlot2: {r: 1, g: 1, b: 1, a: 1}
+    - _VinylFaceGrid: {r: 4, g: 2, b: 0.06, a: 0}
+    - _VinylHands: {r: 0.04, g: 0.12, b: 0.1, a: 0}
+    - _VinylKeyAxis: {r: 0, g: 0, b: 1, a: 1}
+    - _VinylKeyPivot: {r: 0, g: 0, b: 0, a: 0}
+    - _VinylMotion: {r: 0, g: 0, b: 0, a: 0}
+    - _VinylRimTint: {r: 1, g: 0.42, b: 0.34, a: 1}
+    - _VinylSpring: {r: 0, g: -0.12, b: -0.1, a: 0.07}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

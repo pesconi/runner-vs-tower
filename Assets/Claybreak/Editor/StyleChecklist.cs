@@ -38,6 +38,11 @@ namespace Claybreak.Editor
 
                 text.Append($"teto atual {entry.maxTriangles} triângulos e {entry.maxDrawCalls} chamadas por objeto");
                 text.Append($"; meta v3 {entry.v3MinTriangles}–{entry.v3MaxTriangles} triângulos, até {entry.v3MaxDrawCalls} chamadas, ");
+                if (entry.reserveMaxTriangles > 0)
+                {
+                    text.Append($"reserva {entry.reserveMinTriangles}–{entry.reserveMaxTriangles} triângulos, ");
+                }
+
                 text.Append($"nenhuma aresta viva acima de {entry.maxEdgeAngle:0}° (chanfro).\n");
             }
 

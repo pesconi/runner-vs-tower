@@ -92,6 +92,8 @@ namespace Claybreak
         public string id = "shape";
         public string title = "SHAPE";
         public Mesh mesh;
+        [Tooltip("The detailed mesh the leader wears (RT-6v3.4a, the Bibopzi's 3-5 thousand triangles); none = the crowd mesh.")]
+        public Mesh leaderMesh;
         [Tooltip("Price in coins; the first shape must be free (the default look).")]
         [Min(0)] public int price;
         [Tooltip("How the units of this shape hop (the crowd, the leader, the assault).")]
@@ -317,9 +319,9 @@ namespace Claybreak
                     return false;
                 }
 
-                if (shape.mesh == null || shape.mesh.subMeshCount != 1)
+                if (shape.mesh == null || shape.mesh.subMeshCount != 1 || (shape.leaderMesh != null && shape.leaderMesh.subMeshCount != 1))
                 {
-                    error = $"shape '{shape.id}' needs one of the generated crowd shapes (one submesh).";
+                    error = $"shape '{shape.id}' needs one of the generated crowd shapes (one submesh, and one for the leader's).";
                     return false;
                 }
 

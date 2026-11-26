@@ -54,14 +54,26 @@ namespace Claybreak.Tests
             Assert.AreEqual(expected, Triangles(Keep(UnitShapeRecipes.Pinguim(eyes))));
         }
 
-        // No shape sold is heavier than the Pintinho (492, the device gate's worst case until now): the 3x gate stays valid.
+        // No shape sold passes its level's budget, and the heaviest one is the v3 crowd Bibopzi (RT-6v3.4a: 800-1200, what the
+        // 3x device gate measured with 300 units; before, the Pintinho's 492): a heavier shape needs a new gate.
         [Test]
-        public void NoShapeOnOfferPassesThePintinhosTriangles()
+        public void NoShapeOnOfferPassesItsBudgetAndTheGatedOneIsTheHeaviest()
         {
+            int heaviest = 0;
+            string heaviestId = null;
             foreach (WorldContent.ShapeDefinition shape in WorldContent.Shapes)
             {
-                Assert.LessOrEqual(Triangles(Keep(shape.Asset.Build())), 492, shape.Id);
+                int triangles = Triangles(Keep(shape.Asset.Build()));
+                Assert.LessOrEqual(triangles, shape.Asset.Budget.y, shape.Id);
+                if (triangles > heaviest)
+                {
+                    heaviest = triangles;
+                    heaviestId = shape.Id;
+                }
             }
+
+            Assert.AreEqual(SaveMigration.DefaultShape, heaviestId, "the gated shape is the heaviest on offer");
+            Assert.LessOrEqual(heaviest, UnitShapeAssets.Budget(UnitShapeAssets.ShapeLevel.Crowd).y);
         }
 
         // The user's criterion (D31 A): each shape reads from afar. At crowd distance mostly the outline is left, so every pair
@@ -117,13 +129,6 @@ namespace Claybreak.Tests
                 System.Array.ConvertAll(WorldContent.Shapes, s => s.Id));
             CollectionAssert.AreEqual(new[] { 0, 0, 300, 1000, 1600, 2400 }, System.Array.ConvertAll(WorldContent.Shapes, s => s.Price));
             Assert.AreEqual(SaveMigration.DefaultShape, WorldContent.Shapes[0].Id);
-        }
-
-        [TestCase(true, 490)]
-        [TestCase(false, 458)]
-        public void BibopziTriangles(bool eyes, int expected)
-        {
-            Assert.AreEqual(expected, Triangles(Keep(UnitShapeRecipes.Bibopzi(eyes))));
         }
 
         // The bridge writes the kit renderers' serialized hop; it fails if the kit renames the field (the hop would silently stop).

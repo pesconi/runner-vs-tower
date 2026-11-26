@@ -35,7 +35,7 @@ namespace Claybreak.Editor
                 AssetDatabase.CreateAsset(material, CrownMaterialPath);
             }
 
-            material.shader = toon;
+            material.shader = StyleGuideContent.KeepVinyl(material, toon);
             material.EnableKeyword(ToonShaderIds.InstancesKeyword);
             material.DisableKeyword(ToonShaderIds.SlotsKeyword);
             material.SetColor(ToonShaderIds.TintColor, Color.white);

@@ -95,7 +95,8 @@ namespace Claybreak.Editor
                     continue;
                 }
 
-                if (entry.maxTriangles < 0 || entry.maxDrawCalls < 0 || entry.v3MinTriangles > entry.v3MaxTriangles || entry.maxEdgeAngle <= 0f)
+                if (entry.maxTriangles < 0 || entry.maxDrawCalls < 0 || entry.v3MinTriangles > entry.v3MaxTriangles || entry.maxEdgeAngle <= 0f
+                    || entry.reserveMinTriangles > entry.reserveMaxTriangles)
                 {
                     failures.Add($"style: the class {styleClass} has impossible limits");
                 }
@@ -199,7 +200,16 @@ namespace Claybreak.Editor
                 }
 
                 // The ceiling of what the game draws today holds until the class migrates; from then on the v3 budget replaces it.
-                if (limits.status != StyleStatus.V3)
+                // RT-6v3.4a: a mesh already remade in v3 (or the class's reserve) answers to its own budget before the class does.
+                if (mesh.tier == MeshTier.Reserve)
+                {
+                    if (limits.reserveMaxTriangles == 0 || mesh.triangles < limits.reserveMinTriangles || mesh.triangles > limits.reserveMaxTriangles)
+                    {
+                        failures.Add($"style: reserve {mesh.styleClass} {mesh.name} has {mesh.triangles} triangles, outside the reserve "
+                            + $"{limits.reserveMinTriangles}-{limits.reserveMaxTriangles}");
+                    }
+                }
+                else if (limits.status != StyleStatus.V3 && mesh.tier != MeshTier.V3)
                 {
                     if (mesh.triangles > limits.maxTriangles)
                     {
@@ -213,8 +223,7 @@ namespace Claybreak.Editor
 
                     continue;
                 }
-
-                if (mesh.triangles < limits.v3MinTriangles || mesh.triangles > limits.v3MaxTriangles)
+                else if (mesh.triangles < limits.v3MinTriangles || mesh.triangles > limits.v3MaxTriangles)
                 {
                     failures.Add($"style: v3 {mesh.styleClass} {mesh.name} has {mesh.triangles} triangles, outside {limits.v3MinTriangles}-{limits.v3MaxTriangles}");
                 }

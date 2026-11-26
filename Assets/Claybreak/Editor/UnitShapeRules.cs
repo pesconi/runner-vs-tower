@@ -5,8 +5,8 @@ using UnityEngine.Rendering;
 namespace Claybreak.Editor
 {
     /// <summary>
-    /// Budget and shape rules of a crowd shape mesh (RT-6t.2), shared by the validator and the tests: one submesh of
-    /// 200–500 triangles with 16-bit indices; a tint mask (vertex alpha only 255 = body or 0 = fixed color, both
+    /// Budget and shape rules of a crowd shape mesh (RT-6t.2), shared by the validator and the tests: one submesh within its
+    /// level's triangle range (200–500 for the legacy recipes) with 16-bit indices; a tint mask (vertex alpha only 255 = body or 0 = fixed color, both
     /// present); resting on the ground (lowest point at y = 0); eyes only in the eyed variants, on the +Z front; and the
     /// front marker (eyes, beak) sticking out toward +Z, so a recipe that forgot the three.js → Unity mirror fails.
     /// </summary>
@@ -14,14 +14,18 @@ namespace Claybreak.Editor
     {
         private const float GroundTolerance = 1e-3f;
 
-        public static List<string> Check(Mesh mesh, bool hasEyes, Color32? frontMarker)
+        /// <summary>
+        /// The problems of a shape mesh; <paramref name="budget"/> is its triangle range (min, max), the legacy 200-500 when
+        /// null (RT-6v3.4a: the Bibopzi levels pass theirs, <see cref="UnitShapeAssets.Budget"/>).
+        /// </summary>
+        public static List<string> Check(Mesh mesh, bool hasEyes, Color32? frontMarker, Vector2Int? budget = null)
         {
             var problems = new List<string>();
+            Vector2Int range = budget ?? UnitShapeAssets.Budget(UnitShapeAssets.ShapeLevel.Legacy);
             int triangles = mesh.subMeshCount == 0 ? 0 : (int)(mesh.GetIndexCount(0) / 3);
-            if (mesh.subMeshCount != 1 || triangles < UnitShapeRecipes.MinimumTriangles || triangles > UnitShapeRecipes.MaximumTriangles)
+            if (mesh.subMeshCount != 1 || triangles < range.x || triangles > range.y)
             {
-                problems.Add($"{triangles} triangles in {mesh.subMeshCount} submesh(es); the budget is one mesh of "
-                    + $"{UnitShapeRecipes.MinimumTriangles}-{UnitShapeRecipes.MaximumTriangles}");
+                problems.Add($"{triangles} triangles in {mesh.subMeshCount} submesh(es); the budget is one mesh of {range.x}-{range.y}");
             }
 
             if (mesh.indexFormat != IndexFormat.UInt16)
@@ -96,6 +100,12 @@ namespace Claybreak.Editor
             }
 
             return problems;
+        }
+
+        /// <summary>Triangles of the first submesh.</summary>
+        public static int Triangles(Mesh mesh)
+        {
+            return mesh.subMeshCount == 0 ? 0 : (int)(mesh.GetIndexCount(0) / 3);
         }
 
         private static bool Same(Color32 a, Color32 b)

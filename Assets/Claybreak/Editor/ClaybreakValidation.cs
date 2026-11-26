@@ -752,7 +752,7 @@ namespace Claybreak.Editor
             }
         }
 
-        // RT-6t.1/6t.2: every crowd shape stays within the budget (one mesh, 200-500 triangles, 16-bit, tint mask, on the
+        // RT-6t.1/6t.2: every crowd shape stays within the budget (one mesh, its level's triangles, 16-bit, tint mask, on the
         // ground, front +Z, eyes only where wanted) and the toon lab scene exists for the measurement player. RT-6t.4: the
         // crowd materials and the run camera profile are the game's too.
         private static void CheckToonLab(List<string> failures)
@@ -766,9 +766,35 @@ namespace Claybreak.Editor
                     continue;
                 }
 
-                foreach (string problem in UnitShapeRules.Check(mesh, entry.HasEyes, entry.FrontMarker))
+                foreach (string problem in UnitShapeRules.Check(mesh, entry.HasEyes, entry.FrontMarker, entry.Budget))
                 {
                     failures.Add(entry.Path + ": " + problem);
+                }
+
+                // RT-6v3.4a: a shape written by Blender is checked from its data (no Blender needed): the data is the
+                // scripts' current output, and the asset is that data (rebuild the scene after running Tools/blender/run.sh).
+                if (entry.DataPath != null)
+                {
+                    SimpleMeshData data;
+                    try
+                    {
+                        data = SimpleMeshData.Read(entry.DataPath);
+                    }
+                    catch (System.Exception e)
+                    {
+                        failures.Add($"{entry.DataPath}: {e.Message}");
+                        continue;
+                    }
+
+                    foreach (string problem in data.Problems())
+                    {
+                        failures.Add($"{entry.DataPath}: {problem}");
+                    }
+
+                    if (mesh.vertexCount != data.VertexCount || UnitShapeRules.Triangles(mesh) != data.TriangleCount)
+                    {
+                        failures.Add($"{entry.Path} is not {entry.DataPath} (rebuild the scene)");
+                    }
                 }
             }
 

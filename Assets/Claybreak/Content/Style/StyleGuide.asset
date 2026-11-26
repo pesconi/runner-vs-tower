@@ -21,6 +21,8 @@ MonoBehaviour:
     v3MinTriangles: 800
     v3MaxTriangles: 1200
     v3MaxDrawCalls: 1
+    reserveMinTriangles: 450
+    reserveMaxTriangles: 550
     maxEdgeAngle: 60
   - styleClass: 1
     status: 0
@@ -30,6 +32,8 @@ MonoBehaviour:
     v3MinTriangles: 3000
     v3MaxTriangles: 5000
     v3MaxDrawCalls: 1
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 2
     status: 0
@@ -39,6 +43,8 @@ MonoBehaviour:
     v3MinTriangles: 1500
     v3MaxTriangles: 3000
     v3MaxDrawCalls: 1
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 3
     status: 0
@@ -48,6 +54,8 @@ MonoBehaviour:
     v3MinTriangles: 6000
     v3MaxTriangles: 12000
     v3MaxDrawCalls: 4
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 4
     status: 0
@@ -57,6 +65,8 @@ MonoBehaviour:
     v3MinTriangles: 8000
     v3MaxTriangles: 15000
     v3MaxDrawCalls: 4
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 5
     status: 0
@@ -66,6 +76,8 @@ MonoBehaviour:
     v3MinTriangles: 100
     v3MaxTriangles: 2000
     v3MaxDrawCalls: 2
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 6
     status: 0
@@ -75,6 +87,8 @@ MonoBehaviour:
     v3MinTriangles: 100
     v3MaxTriangles: 2500
     v3MaxDrawCalls: 1
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 7
     status: 0
@@ -84,6 +98,8 @@ MonoBehaviour:
     v3MinTriangles: 100
     v3MaxTriangles: 4000
     v3MaxDrawCalls: 1
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 8
     status: 0
@@ -93,6 +109,8 @@ MonoBehaviour:
     v3MinTriangles: 300
     v3MaxTriangles: 1500
     v3MaxDrawCalls: 1
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 9
     status: 0
@@ -102,6 +120,8 @@ MonoBehaviour:
     v3MinTriangles: 0
     v3MaxTriangles: 0
     v3MaxDrawCalls: 0
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 10
     status: 1
@@ -111,6 +131,8 @@ MonoBehaviour:
     v3MinTriangles: 0
     v3MaxTriangles: 0
     v3MaxDrawCalls: 0
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   - styleClass: 11
     status: 0
@@ -120,6 +142,8 @@ MonoBehaviour:
     v3MinTriangles: 0
     v3MaxTriangles: 0
     v3MaxDrawCalls: 0
+    reserveMinTriangles: 0
+    reserveMaxTriangles: 0
     maxEdgeAngle: 60
   worlds:
   - name: Pastel

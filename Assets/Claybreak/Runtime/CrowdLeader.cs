@@ -51,19 +51,25 @@ namespace Claybreak
         private float unitHeight = 1f;
         private float unitWidth = 1f;
         private float crownSeat;
+        private Mesh leaderMesh;
 
         /// <summary>The hop the leader draws with now (the worn shape's, RT-6t.20).</summary>
         public SwarmMotionSettings Motion => motion;
 
         /// <summary>
         /// The worn shape's hop and crown seat (RT-6t.20): the leader hops like its crowd; <paramref name="seat"/> is the
-        /// crown's height on the unit (m), 0 = the top of the mesh.
+        /// crown's height on the unit (m), 0 = the top of the mesh. RT-6v3.4a: <paramref name="mesh"/> is the shape's detailed
+        /// level (null = the crowd's mesh).
         /// </summary>
-        public void UseShape(in SwarmMotionSettings hop, float seat)
+        public void UseShape(in SwarmMotionSettings hop, float seat, Mesh mesh = null)
         {
             motion = hop;
             crownSeat = Mathf.Max(0f, seat);
+            leaderMesh = mesh;
         }
+
+        /// <summary>The mesh the leader draws now: the worn shape's detailed level, or the crowd's.</summary>
+        public Mesh BodyMesh => leaderMesh != null ? leaderMesh : swarm.UnitMesh;
 
         /// <summary>Where the leader stands on the ground now.</summary>
         public Vector3 Ground => ground;
@@ -161,7 +167,7 @@ namespace Claybreak
                 CreateDraws();
             }
 
-            Mesh unit = swarm.UnitMesh;
+            Mesh unit = BodyMesh;
             if (unit != measuredMesh)
             {
                 Bounds bounds = unit.bounds;

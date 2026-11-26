@@ -2620,3 +2620,60 @@ Feitas no `studiokit` 0.16.0 (tag `v0.16.0`) e 0.17.0 (tag `v0.17.0`); registro 
   `rt4-check` (que os passa a `ToonVinyl` pelo `ApplySurfaces`) o EditMode passa inteiro (775/783, 8 ignorados). Os
   materiais regravados não foram commitados aqui (entrega do kit). Corrigir na RT-6v3.4a: commitar os materiais que o
   passo `scene` grava ou fazer o teste não depender dele.
+
+## 2026-11-26 — RT-6v3.4a: Bibopzi detalhado, de multidão e reserva por Blender — técnicas do maestro (sessão da entrega)
+
+Nada aqui exige o usuário; o visual do personagem entra no aceite agrupado 1 (depois da RT-6v3.4b).
+
+- **T-RT6v3.4a-1 — Materiais vinil: a causa e a correção (achado da K.v3b).** O `HEAD` tinha os 34 materiais do jogo em
+  `ToonLit` porque os construtores de arte (`ArtPalette`, `GateArt`, `LeaderArt`, `ObstacleArt`, `SceneryArt`,
+  `ToonLabBuilder`) regravam `ToonLit` sempre que rodavam fora do construtor de cena — o passo `capture` do `rt4-check` e
+  testes de arte — depois de o `scene` os passar a `ToonVinyl`; a validação da RT-6v3.3 rodou antes do `capture`, e o commit
+  levou o estado de depois. Agora `StyleGuideContent.KeepVinyl` mantém o irmão vinil quando um construtor pede `ToonLit`
+  (mesmas propriedades); os 34 `.mat` vinil entram no repositório; conferido: depois de `scene` + `capture` os `.mat`
+  continuam vinil, e o EditMode passa sem passos prévios. Teste novo `TheArtBuildersKeepTheVinylMaterials`. Aprendizado do
+  perfil corrigido (reverter só as cenas, nunca os `.mat`).
+- **T-RT6v3.4a-2 — Dados simples, não FBX.** `Tools/blender/bibopzi.py` + `simple_mesh.py` (Blender 5.3 fixo, `blender -b`)
+  gravam `Tools/blender/out/bibopzi_{detail,crowd,reserve}.json` (formato `jungledegree.simple-mesh/1`: posições, normais, UV,
+  UV2, índice de paleta com a cor linear e o sRGB da folha, índices; referencial do Unity, enrolamento invertido pela
+  reflexão). `SimpleMeshData` (Editor) lê o JSON e monta a malha; `UnitShapeAssets` grava os `.asset` no passo `scene`. O
+  validador confere o hash SHA-256 dos scripts guardado no JSON (script mudado sem rodar o Blender reprova) e que o `.asset` é
+  o JSON. A validação não precisa do Blender instalado.
+- **T-RT6v3.4a-3 — Determinismo.** O bmesh muda a ordem das faces e o `recalc_face_normals` orienta diferente entre rodadas: o
+  script canoniza a malha (faces por peça e posição, cada uma começando no menor canto, cantos colapsados descartados) e
+  orienta as faces ele mesmo; `Tools/blender/run.sh` roda duas vezes e recusa bytes diferentes.
+- **T-RT6v3.4a-4 — Três níveis da mesma receita.** Detalhado 4.990 tri (líder), multidão 1.160 (as 300 unidades; asset
+  `Bibopzi`, mesmo GUID da receita da RT-6t.22, o catálogo e os saves não mudam), reserva 546 (`BibopziReserve`, ~500
+  suavizado). Mesma altura da cabeça (0,624 m: assento da coroa igual). A receita C# antiga e a variante sem olhos saíram (D25
+  A ficou com olhos; a reserva agora é um nível). Ferramenta de prévia sem Unity: `Tools/blender/preview.py`.
+- **T-RT6v3.4a-5 — Marcos (D3 + D36) nos três níveis, testados.** Mola em espiral com bola, engrenagem na têmpora direita
+  dele (virada para fora como orelha, aparece de costas), barriga creme, mãos soltas, pés, olhos maiores (branco ~0,10 m, era
+  0,08; pupila em losango; brilho no detalhado), sorriso (detalhado e multidão) e a **chave de corda nas costas**: eixo e laço
+  em borboleta virado para trás, a 60% da altura do corpo (de costas, que é como a câmera da corrida vê a multidão, a chave lê
+  como hélice). Rosto e barriga são **decalques conformes** (cúpulas assentadas na superfície, sem metade escondida): mais
+  baratos e sem disputa de profundidade. `BibopziHasItsLandmarks` roda nos três níveis a partir do JSON.
+- **T-RT6v3.4a-6 — UV2 para o layout animado do kit.** x peso da mola (0 na cabeça → 1 na ponta, crescente com a altura), y
+  lado da mão (+1 direita, −1 esquerda, como o shader abre as mãos), z chave (1; eixo +Z e pivô em `meta`, aceitos pelo
+  `ToonVinylMotion`), w rosto 0 (o atlas é da 6v3.4b). UV0 = frente da cabeça projetada na caixa do rosto, para a 6v3.4b. A
+  palavra-chave animada **não** é ligada aqui (escopo da 6v3.4b, que mede de novo se o custo mudar).
+- **T-RT6v3.4a-7 — Orçamento por malha no guia.** Cada malha medida tem um nível (`MeshTier`): as do Blender respondem ao
+  orçamento v3 da classe (multidão = Unit 800–1.200, detalhado = Leader 3.000–5.000) mesmo com a classe ainda legada (as
+  outras 5 formas migram na 6v3.4c), e a reserva à faixa nova da classe (`reserveMinTriangles/MaxTriangles`, Unit 450–550).
+  `UnitShapeRules` usa a faixa de cada entrada; um teste confere que as faixas do código são as do guia.
+- **T-RT6v3.4a-8 — Aresta "viva" = aresta dura.** A regra de 60° do guia passa a medir só arestas com normais divididas (onde
+  a luz mostra a quina); aresta com normal compartilhada é desenhada redonda. Malhas legadas (sombreado plano) medem igual a
+  antes. Os três níveis são lisos (D36) e passam.
+- **T-RT6v3.4a-9 — Líder veste o detalhado.** `CrowdShapeOption.leaderMesh` (opcional; só o Bibopzi tem, seção 3.1) e
+  `CrowdLeader.UseShape(..., mesh)`; as outras formas seguem com a malha da multidão no líder. A tela `lider-perto` do guia
+  mostra a malha do líder.
+- **T-RT6v3.4a-10 — Crítica independente (fable): "pode seguir".** Marcos presentes nos três níveis; mais perto do alvo e da
+  folha que antes. Aplicado: chave ~1,3× maior, mais afastada e mais alta; fio da mola 1,6× mais grosso e bola maior;
+  engrenagem maior, mais grossa e mais para o lado (não tapa o olho, aparece de costas); degrau de ombro da folha (cabeça
+  0,143 m de meia largura, transição mais curta); barriga do nível de multidão com 10 lados. Não aplicado: dentes vivos na
+  engrenagem da multidão (pediria chanfro, ~100 tri a mais, fora do orçamento) — fica lisa, dentes legíveis de perto.
+- **T-RT6v3.4a-11 — Gate 3× no OPPO: aprovado sem reserva.** Assalto do mundo 4 com o chefe e 300 Bibopzis de multidão em voo
+  (a forma mais pesada à venda, que o nível de gate veste). Vulkan: GPU p95 4,9–5,4 ms no assalto (corrida 6,5), CPU principal
+  ≤ 4,0 ms, 62,5 fps, quadro p95 16 ms, 0 quadros perdidos, PSS 296 MB. GLES em blocos: primeira rodada leu GPU 17–22 ms com
+  60 fps firmes (leitura falsa do medidor, já registrada no perfil), repetida: GPU p95 7,4–8,4 ms (igual à RT-6v3.3), CPU
+  ≤ 4,0 ms, 62,5 fps, PSS 313 MB. Medido com a malha de 1.150 tri; as correções da crítica levaram a 1.160 (+0,9%), sem nova medida (o OPPO
+  bloqueou com senha; a GPU usa metade do teto de 11 ms, a diferença fica no ruído). O gate fica aprovado.

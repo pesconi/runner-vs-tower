@@ -678,6 +678,7 @@ namespace Claybreak.Editor
                 shapes.Add(new CrowdShapeOption
                 {
                     id = shape.Id, title = shape.Title, mesh = UnitShapeAssets.Load(shape.Asset), price = shape.Price, motion = shape.Motion,
+                    leaderMesh = shape.LeaderAsset != null ? UnitShapeAssets.Load(shape.LeaderAsset) : null,
                     crownSeat = shape.CrownSeat, figureBody = ShapeFigures.LoadBody(shape.Id), figureDetail = ShapeFigures.LoadDetail(shape.Id)
                 });
             }
@@ -728,12 +729,13 @@ namespace Claybreak.Editor
 
         /// <summary>
         /// A crowd shape in the shop: stable save id, shop title, the generated mesh it draws, price in coins, its own hop
-        /// and the leader's crown seat (0 = the top of the mesh).
+        /// and the leader's crown seat (0 = the top of the mesh); RT-6v3.4a: the detailed mesh the leader wears (null = the
+        /// crowd mesh; only the Bibopzi has one, direcao-visual-v3.md 3.1).
         /// </summary>
         public readonly struct ShapeDefinition
         {
             public ShapeDefinition(string id, string title, UnitShapeAssets.Entry asset, int price, SwarmMotionSettings motion,
-                float crownSeat = 0f)
+                float crownSeat = 0f, UnitShapeAssets.Entry leaderAsset = null)
             {
                 Id = id;
                 Title = title;
@@ -741,7 +743,10 @@ namespace Claybreak.Editor
                 Price = price;
                 Motion = motion;
                 CrownSeat = crownSeat;
+                LeaderAsset = leaderAsset;
             }
+
+            public UnitShapeAssets.Entry LeaderAsset { get; }
 
             public string Id { get; }
             public string Title { get; }
@@ -762,7 +767,7 @@ namespace Claybreak.Editor
         public static readonly ShapeDefinition[] Shapes =
         {
             new ShapeDefinition(SaveMigration.DefaultShape, "BIBOPZI", UnitShapeAssets.Named("Bibopzi"), 0, Hop(8f, 0.24f, 0.86f, 0.24f, 0.06f),
-                UnitShapeRecipes.BibopziHeadTop),
+                UnitShapeRecipes.BibopziHeadTop, UnitShapeAssets.Named("BibopziDetail")),
             new ShapeDefinition(SaveMigration.ShapeBeforeV4, "BALL", UnitShapeAssets.Named("Bolinha"), 0, SwarmMotionSettings.Default),
             new ShapeDefinition("chick", "CHICK", UnitShapeAssets.Named("Pintinho"), 300, Hop(11f, 0.15f, 0.82f, 0.28f, 0.2f)),
             new ShapeDefinition("bunny", "BUNNY", UnitShapeAssets.Named("Coelhinho"), 1000, Hop(6.5f, 0.42f, 0.7f, 0.5f, 0.08f),

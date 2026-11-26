@@ -5,7 +5,7 @@ Cada linha é uma regra que a captura deve cumprir; classe `legado` = ainda no v
 
 ## Classes
 
-- [ ] **Unit** (forma legado, superfície v3): teto atual 600 triângulos e 1 chamadas por objeto; meta v3 800–1200 triângulos, até 1 chamadas, nenhuma aresta viva acima de 60° (chanfro).
+- [ ] **Unit** (forma legado, superfície v3): teto atual 600 triângulos e 1 chamadas por objeto; meta v3 800–1200 triângulos, até 1 chamadas, reserva 450–550 triângulos, nenhuma aresta viva acima de 60° (chanfro).
 - [ ] **Leader** (forma legado, superfície v3): teto atual 400 triângulos e 1 chamadas por objeto; meta v3 3000–5000 triângulos, até 1 chamadas, nenhuma aresta viva acima de 60° (chanfro).
 - [ ] **Enemy** (forma legado, superfície v3): teto atual 2200 triângulos e 16 chamadas por objeto; meta v3 1500–3000 triângulos, até 1 chamadas, nenhuma aresta viva acima de 60° (chanfro).
 - [ ] **Tower** (forma legado, superfície v3): teto atual 6000 triângulos e 70 chamadas por objeto; meta v3 6000–12000 triângulos, até 4 chamadas, nenhuma aresta viva acima de 60° (chanfro).

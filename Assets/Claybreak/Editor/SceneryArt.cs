@@ -219,7 +219,7 @@ namespace Claybreak.Editor
                 AssetDatabase.CreateAsset(material, path);
             }
 
-            material.shader = shader;
+            material.shader = StyleGuideContent.KeepVinyl(material, shader);
             configure(material);
             EditorUtility.SetDirty(material);
         }

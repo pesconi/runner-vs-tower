@@ -129,7 +129,7 @@ namespace Claybreak.Editor
                 material = new Material(shader) { name = name.Substring(name.LastIndexOf('/') + 1) };
                 AssetDatabase.CreateAsset(material, path);
             }
-            else if (material.shader != shader)
+            else if (material.shader != StyleGuideContent.KeepVinyl(material, shader))
             {
                 // Switching shader keeps the old shader's saved values (Simple Lit's _BaseColor, keywords, disabled passes):
                 // overwrite the asset with a fresh material of the new shader, same asset id, so it holds only what that

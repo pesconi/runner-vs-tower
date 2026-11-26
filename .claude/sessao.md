@@ -232,3 +232,13 @@
   `Tools/rt4-check.sh <out> "scene editmode"` e reverter `Assets/Claybreak/Content` e `Assets/Claybreak/Lab/ToonLab.unity`
   por caminho (um `git checkout -- Assets ProjectSettings` amplo foi negado pelo classificador). Layout animado do kit: UV2 =
   mola, mão (±1), peça que gira (chave), máscara do rosto; material da multidão e o da sombra ligam a palavra-chave juntos.
+  **Corrigido na RT-6v3.4a:** os 34 `.mat` vinil estão commitados; depois do `scene`, reverter só as cenas (`Claybreak.unity`,
+  `ToonLab.unity`, fileIDs), nunca os `.mat` (os aprendizados da RT-6t.1/6v3.2 que mandam reverter `Content` inteiro valem só
+  para as cenas e os `world3/*.mat` legados).
+- 2026-11-26 (RT-6v3.4a): modelos do Bibopzi vêm do Blender 5.3 em dados simples (`Tools/blender/`, README lá):
+  `Tools/blender/run.sh --preview <png>` regrava `Tools/blender/out/*.json` (duas rodadas, recusa bytes diferentes) e faz a
+  prévia; depois `scene` grava os `.asset`. Commitar scripts e JSON juntos (o validador confere o hash dos scripts). O bmesh
+  não é determinístico na ordem das faces nem no `recalc_face_normals`: canonizar e orientar à mão. Níveis: `Bibopzi`
+  (multidão, asset de sempre), `BibopziDetail` (líder, `CrowdShapeOption.leaderMesh`), `BibopziReserve` (reserva do gate).
+  Capturas dos três níveis com o vinil do jogo: `-testFilter Claybreak.Tests.BibopziCaptureTests -bibopziCaptureDir <pasta>`
+  com GPU (`bibopzi-niveis-perto.png`).

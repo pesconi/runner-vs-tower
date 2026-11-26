@@ -329,7 +329,9 @@ namespace Claybreak.Tests
             material.DisableKeyword(ToonShaderIds.InstancesKeyword);
             material.SetColor("_TintColor", worldColor);
             model.transform.position = new Vector3(0f, 60f, 0f);
-            model.AddComponent<MeshFilter>().sharedMesh = shape.mesh;
+            // RT-6v3.4a: the leader wears the shape's detailed level when it has one.
+            Mesh leaderMesh = shape.leaderMesh != null ? shape.leaderMesh : shape.mesh;
+            model.AddComponent<MeshFilter>().sharedMesh = leaderMesh;
             model.AddComponent<MeshRenderer>().sharedMaterial = material;
             var cameraObject = new GameObject("StyleCaptureLeaderCamera");
             Camera close = cameraObject.AddComponent<Camera>();
@@ -352,7 +354,7 @@ namespace Claybreak.Tests
                 sheet.Save(Path.Combine(folder, "lider-perto.png"));
             }
 
-            Debug.Log($"[StyleCapture] lider-perto shape={shape.id} tris={shape.mesh.triangles.Length / 3}");
+            Debug.Log($"[StyleCapture] lider-perto shape={shape.id} tris={leaderMesh.triangles.Length / 3}");
             Object.Destroy(cameraObject);
             Object.Destroy(model);
             Object.Destroy(material);

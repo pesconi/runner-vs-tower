@@ -470,6 +470,72 @@ namespace Claybreak.Tests
             Object.DestroyImmediate(guide);
         }
 
+        // RT-6v3.4a: a mesh already remade in v3 answers to the v3 range while its class is still legacy (the Bibopzi before the
+        // other shapes), and the class's reserve answers to the reserve range.
+        [Test]
+        public void AV3OrReserveMeshAnswersToItsOwnBudgetInALegacyClass()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            Assert.AreNotEqual(StyleStatus.V3, guide.ClassOf(StyleClass.Unit).status);
+            StyleFacts facts = Facts();
+            facts.Meshes.RemoveAll(m => m.styleClass == StyleClass.Unit);
+            facts.Meshes.Add(new MeshFact { name = "OldShape", styleClass = StyleClass.Unit, triangles = 490, drawCalls = 1, maxEdgeAngle = 90f });
+            facts.Meshes.Add(new MeshFact { name = "NewLow", styleClass = StyleClass.Unit, tier = MeshTier.V3, triangles = 490, drawCalls = 1 });
+            facts.Meshes.Add(new MeshFact { name = "NewGood", styleClass = StyleClass.Unit, tier = MeshTier.V3, triangles = 1100, drawCalls = 1 });
+            facts.Meshes.Add(new MeshFact { name = "NewSharp", styleClass = StyleClass.Unit, tier = MeshTier.V3, triangles = 1100, drawCalls = 1, maxEdgeAngle = 80f });
+            facts.Meshes.Add(new MeshFact { name = "SpareGood", styleClass = StyleClass.Unit, tier = MeshTier.Reserve, triangles = 500, drawCalls = 1 });
+            facts.Meshes.Add(new MeshFact { name = "SpareBig", styleClass = StyleClass.Unit, tier = MeshTier.Reserve, triangles = 900, drawCalls = 1 });
+            facts.Meshes.Add(new MeshFact { name = "NoSpare", styleClass = StyleClass.Leader, tier = MeshTier.Reserve, triangles = 500, drawCalls = 1 });
+            List<string> failures = StyleGuideValidation.Run(guide, facts);
+            AssertFails(failures, "v3 Unit NewLow has 490 triangles");
+            AssertFails(failures, "v3 Unit NewSharp has an unbevelled edge");
+            AssertFails(failures, "reserve Unit SpareBig has 900 triangles");
+            AssertFails(failures, "reserve Leader NoSpare");
+            Assert.IsFalse(failures.Any(f => f.Contains("OldShape") || f.Contains("NewGood") || f.Contains("SpareGood")), string.Join("\n", failures));
+            Object.DestroyImmediate(guide);
+        }
+
+        // RT-6v3.4a (the K.v3b finding): an art builder run outside the scene builder (captures, art tests) used to put the
+        // game's vinyl materials back on ToonLit, and the repository was committed so. The builders keep the vinyl sibling.
+        [Test]
+        public void TheArtBuildersKeepTheVinylMaterials()
+        {
+            Shader lit = Shader.Find(JungleDegree.StudioKit.Toon.ToonShaderIds.ToonLitShader);
+            Shader vinyl = Shader.Find(JungleDegree.StudioKit.Toon.ToonShaderIds.ToonVinylShader);
+            var onVinyl = new Material(vinyl);
+            var onLit = new Material(lit);
+            Assert.AreSame(vinyl, StyleGuideContent.KeepVinyl(onVinyl, lit));
+            Assert.AreSame(lit, StyleGuideContent.KeepVinyl(onLit, lit));
+            Assert.AreSame(lit, StyleGuideContent.KeepVinyl(null, lit));
+            Object.DestroyImmediate(onVinyl);
+            Object.DestroyImmediate(onLit);
+
+            const string crown = "Assets/Claybreak/Content/Generated/Units/LeaderCrown.mat";
+            Assert.AreSame(vinyl, AssetDatabase.LoadAssetAtPath<Material>(crown).shader, "the committed crown material is vinyl");
+            LeaderArt.BuildAssets();
+            Assert.AreSame(vinyl, AssetDatabase.LoadAssetAtPath<Material>(crown).shader, "rebuilding the crown art keeps it vinyl");
+        }
+
+        // RT-6v3.4a: only hard edges count; the same cube shaded smooth (one normal per corner) reads round to the light.
+        [Test]
+        public void ASmoothShadedEdgeIsNotAHardEdge()
+        {
+            var corners = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+            {
+                corners[i] = new Vector3(i & 1, (i >> 1) & 1, (i >> 2) & 1) - Vector3.one * 0.5f;
+            }
+
+            var cube = new Mesh { vertices = corners };
+            cube.triangles = new[]
+            {
+                0, 2, 3, 0, 3, 1, 4, 5, 7, 4, 7, 6, 0, 1, 5, 0, 5, 4, 2, 6, 7, 2, 7, 3, 0, 4, 6, 0, 6, 2, 1, 3, 7, 1, 7, 5,
+            };
+            cube.RecalculateNormals();
+            Assert.AreEqual(0f, StyleFacts.MaxEdgeAngle(cube), 1e-3f);
+            Object.DestroyImmediate(cube);
+        }
+
         [Test]
         public void AnEffectOverItsLimitFailsInAV3Class()
         {
@@ -570,8 +636,12 @@ namespace Claybreak.Tests
             foreach (MeshFact mesh in gathered.Meshes)
             {
                 ClassStyle limits = guide.ClassOf(mesh.styleClass);
-                Assert.LessOrEqual(mesh.triangles, limits.maxTriangles, mesh.name);
-                Assert.LessOrEqual(mesh.drawCalls, limits.maxDrawCalls, mesh.name);
+                // RT-6v3.4a: a mesh already remade in v3 (or the reserve) answers to its own range, not the legacy ceiling.
+                int ceiling = mesh.tier == MeshTier.V3 ? limits.v3MaxTriangles
+                    : mesh.tier == MeshTier.Reserve ? limits.reserveMaxTriangles
+                    : limits.maxTriangles;
+                Assert.LessOrEqual(mesh.triangles, ceiling, mesh.name);
+                Assert.LessOrEqual(mesh.drawCalls, mesh.tier == MeshTier.FollowsClass ? limits.maxDrawCalls : limits.v3MaxDrawCalls, mesh.name);
             }
 
             Object.DestroyImmediate(guide);

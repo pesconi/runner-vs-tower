@@ -200,7 +200,7 @@ namespace Claybreak
         {
             swarm.SetUnitMesh(shape.mesh);
             SwarmMotionBridge.Apply(swarm, shape.motion);
-            leader.UseShape(shape.motion, shape.crownSeat);
+            leader.UseShape(shape.motion, shape.crownSeat, shape.leaderMesh);
         }
 
         /// <summary>Shakes the run camera (a bad gate).</summary>

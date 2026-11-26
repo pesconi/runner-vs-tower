@@ -12,6 +12,9 @@ namespace Claybreak.Tests
     /// <list type="bullet">
     /// <item><c>bibopzi-perto.png</c>: close-ups (front, three quarters, three quarters from behind as the run camera sees
     /// it) in the reference teal #22B3A6, and the front in world 1's crowd color (what a new player sees).</item>
+    /// <item>RT-6v3.4a, <c>bibopzi-niveis-perto.png</c>: the three levels written by Blender (rows: detailed, crowd, reserve)
+    /// with the game's vinyl crowd material, from the front, three quarters, behind and the run camera's angle, in world 1's
+    /// crowd color.</item>
     /// <item><c>bibopzi-corrida-300.png</c>: the run camera with the crowd at its cap of 300 Bibopzis, in world 1's color and
     /// in the reference teal, two moments a quarter second apart.</item>
     /// </list>
@@ -22,6 +25,8 @@ namespace Claybreak.Tests
     {
         private const string FolderArgument = "-bibopziCaptureDir";
         private const string CatalogPath = "Assets/Claybreak/Content/Data/Catalog.asset";
+        private const string UnitsFolder = "Assets/Claybreak/Content/Generated/Units";
+        private const string CrowdMaterialPath = UnitsFolder + "/CrowdToon.mat";
         private const int Width = 540;
         private const int Height = 1177;
         private const int CloseSize = 600;
@@ -50,9 +55,11 @@ namespace Claybreak.Tests
             Assert.IsTrue(flow.Progress.TryWearSkin(0));
             Color worldColor = flow.Progress.CrowdColorIn(0);
 
-            // Close-ups: the mesh alone high above the track (out of the props), lit by the scene's own light and look.
+            // Close-ups: the mesh alone high above the track (out of the props), lit by the scene's own light and look, with the
+            // crowd's own vinyl material (RT-6v3.3) drawn without instancing.
             var model = new GameObject("BibopziCloseUp");
-            var material = new Material(Shader.Find("StudioKit/ToonLit"));
+            var material = new Material(UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(CrowdMaterialPath));
+            material.DisableKeyword(JungleDegree.StudioKit.Toon.ToonShaderIds.InstancesKeyword);
             model.transform.position = new Vector3(0f, 60f, 0f);
             model.AddComponent<MeshFilter>().sharedMesh = bibopzi.mesh;
             model.AddComponent<MeshRenderer>().sharedMaterial = material;
@@ -78,6 +85,31 @@ namespace Claybreak.Tests
                 }
 
                 sheet.Save(Path.Combine(folder, "bibopzi-perto.png"));
+            }
+
+            // RT-6v3.4a: the three levels, rows detailed / crowd / reserve; front, 3/4, behind, the run camera (high, behind).
+            string[] levels = { "BibopziDetail", "Bibopzi", "BibopziReserve" };
+            (float yaw, float pitch)[] views = { (0f, 8f), (35f, 8f), (180f, 8f), (165f, 32f) };
+            MeshFilter filter = model.GetComponent<MeshFilter>();
+            material.SetColor("_TintColor", worldColor);
+            using (var shot = new ShapeSkinCaptureTests.Shot(close, CloseSize, CloseSize))
+            using (var sheet = new ShapeSkinCaptureTests.Sheet(views.Length, levels.Length, CloseSize, CloseSize))
+            {
+                for (int row = 0; row < levels.Length; row++)
+                {
+                    filter.sharedMesh = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh>($"{UnitsFolder}/{levels[row]}.asset");
+                    Assert.IsNotNull(filter.sharedMesh, levels[row]);
+                    for (int i = 0; i < views.Length; i++)
+                    {
+                        Vector3 from = Quaternion.Euler(views[i].pitch, views[i].yaw, 0f) * new Vector3(0f, 0f, 2.2f);
+                        cameraObject.transform.position = center + from;
+                        cameraObject.transform.LookAt(center);
+                        yield return shot.Take();
+                        sheet.Put(i, row, shot.Panel);
+                    }
+                }
+
+                sheet.Save(Path.Combine(folder, "bibopzi-niveis-perto.png"));
             }
 
             Object.Destroy(cameraObject);

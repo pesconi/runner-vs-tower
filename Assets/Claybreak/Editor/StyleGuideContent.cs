@@ -153,10 +153,11 @@ namespace Claybreak.Editor
         // The class table. The legacy ceilings are the present game's as the validator measured it (StyleGuideTests logs the measures:
         // Unit 492 triangles, Leader 250, Enemy 1744 and 10 draws, Tower 4976 and 55, Boss 11976 and 60, Gate 264 and 7, Obstacle 552,
         // Floor 36, Scenery 160), rounded up about 20% so a small edit does not fail but a regression does; the v3
-        // budgets are the plan's (docs 4.1). Edge angle: no sharper than 60 degrees between neighbouring faces in a v3 mesh.
+        // budgets are the plan's (docs 4.1). Edge angle: no hard edge sharper than 60 degrees between neighbouring faces in a v3 mesh.
+        // RT-6v3.4a: the Unit's reserve (docs 3.1, ~500 smooth) is 450-550.
         private static ClassStyle[] Classes() => new[]
         {
-            Class(StyleClass.Unit, maxTriangles: 600, maxDrawCalls: 1, v3Min: 800, v3Max: 1200, v3Calls: 1),
+            Class(StyleClass.Unit, maxTriangles: 600, maxDrawCalls: 1, v3Min: 800, v3Max: 1200, v3Calls: 1, reserveMin: 450, reserveMax: 550),
             Class(StyleClass.Leader, 400, 1, 3000, 5000, 1),
             Class(StyleClass.Enemy, 2200, 16, 1500, 3000, 1),
             Class(StyleClass.Tower, 6000, 70, 6000, 12000, 4),
@@ -178,7 +179,8 @@ namespace Claybreak.Editor
             StyleClass.Floor, StyleClass.Scenery,
         };
 
-        private static ClassStyle Class(StyleClass styleClass, int maxTriangles, int maxDrawCalls, int v3Min, int v3Max, int v3Calls)
+        private static ClassStyle Class(StyleClass styleClass, int maxTriangles, int maxDrawCalls, int v3Min, int v3Max, int v3Calls,
+            int reserveMin = 0, int reserveMax = 0)
         {
             return new ClassStyle
             {
@@ -190,6 +192,8 @@ namespace Claybreak.Editor
                 v3MinTriangles = v3Min,
                 v3MaxTriangles = v3Max,
                 v3MaxDrawCalls = v3Calls,
+                reserveMinTriangles = reserveMin,
+                reserveMaxTriangles = reserveMax,
                 maxEdgeAngle = 60f,
             };
         }
@@ -590,6 +594,25 @@ namespace Claybreak.Editor
         /// scene builder's last step; the art builders recreate their materials on ToonLit and this moves them again).
         /// </summary>
         public static int ApplySurfaces(StyleGuide guide)
+        {
+            return ApplySurfacesTo(guide);
+        }
+
+        /// <summary>
+        /// The shader an art builder should set on <paramref name="material"/> when it asks for <paramref name="wanted"/>: a
+        /// material the guide already moved to the vinyl sibling keeps <c>StudioKit/ToonVinyl</c> when <c>StudioKit/ToonLit</c>
+        /// is asked (same properties; RT-6v3.4a: the art builders that run outside the scene builder, such as the captures and
+        /// the art tests, put the game's materials back on ToonLit and the repository ended up with them so).
+        /// </summary>
+        public static Shader KeepVinyl(Material material, Shader wanted)
+        {
+            return wanted != null && material != null && material.shader != null && wanted.name == ToonShaderIds.ToonLitShader
+                && material.shader.name == ToonShaderIds.ToonVinylShader
+                ? material.shader
+                : wanted;
+        }
+
+        private static int ApplySurfacesTo(StyleGuide guide)
         {
             Shader vinyl = Shader.Find(ToonShaderIds.ToonVinylShader) ?? throw new System.InvalidOperationException("missing " + ToonShaderIds.ToonVinylShader);
             int moved = 0;
