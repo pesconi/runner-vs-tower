@@ -49,8 +49,8 @@ lançamento jun/2027.
 | RT-6v3.2 Imagem-alvo medida: 2–3 telas-conceito no Unity + ensaio no OPPO + ficha **D36** — **concluída** (2026-11-25; D36 com o usuário) | 1 | 1,2 | dez/2026 |
 | K.v3a (studiokit) Shader irmão de vinil (`ToonLit` intacto; aceitação com match-3 e Wild Pack) — **concluída** (2026-11-26; `studiokit` 0.15.0, tag `v0.15.0`; luz escolhida contra matcap pela medida no OPPO) | 0,75 | 0,9 | dez/2026 |
 | RT-6v3.3 Vinil, plástico fosco, luz, céu e pós por mundo + gate 3× — **concluída em 2026-11-26** (gate 3× no OPPO dentro do teto nas duas rotas) | 0,75 | 0,9 | dez/2026–jan/2027 |
-| K.v3b (studiokit) Layout de instância opcional (rosto, fase do quique, UV/UV2, atlas) — **planejada** | 0,75 | 0,9 | jan/2027 |
-| K.v3c (studiokit) Construtor liso e chanfrado (torno, chanfro, normais suaves, UV) — **planejada** | 0,5 | 0,6 | jan/2027 |
+| K.v3b (studiokit) Layout de instância opcional (rosto, fase do quique, UV/UV2, atlas) — **concluída** (2026-11-26; `studiokit` 0.16.0, tag `v0.16.0`; medido no OPPO nas duas rotas) | 0,75 | 0,9 | jan/2027 |
+| K.v3c (studiokit) Construtor liso e chanfrado (torno, chanfro, normais suaves, UV) — **concluída** (2026-11-26; `studiokit` 0.17.0, tag `v0.17.0`; primitivas antigas com os mesmos bytes) | 0,5 | 0,6 | jan/2027 |
 | RT-6v3.4a Bibopzi detalhado (3–5 mil tri) e de multidão (800–1.200) por Blender (dados simples) + gate 3× — **planejada** | 1 | 1,2 | jan/2027 |
 | RT-6v3.4b Rosto (8 expressões) e animação do Bibopzi; aceite agrupado 1 — **planejada** | 1 | 1,2 | fev/2027 |
 | RT-6v3.4c As outras 5 formas da loja no padrão — **planejada** | 0,75 | 0,9 | fev/2027 |
@@ -1113,6 +1113,17 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Depende de:** 6v3.3.
 - **Aceite:** aceitação do studiokit (match-3 e Wild Pack incluídos); medição de custo nas duas rotas no `TestProject`.
 - **Exige o usuário:** nada.
+- **Status:** concluída em 2026-11-26. `studiokit` 0.16.0, tag `v0.16.0` (decisão T44 lá; T-Kv3b-1..5 em `decisoes.md`).
+  Material `ToonVinyl` com `ToonVinylMotion.ApplyTo` (palavra-chave `STUDIOKIT_TOON_ANIMATED`) passa ao layout animado:
+  80 bytes no buffer, `_ToonInstanceMotion` nos blocos de 256, sombra no mesmo layout; multidão (`SwarmRenderer`) e
+  soltos do assalto (`LooseSwarmRenderer`) escrevem célula do rosto, fase e velocidade do quique e mãos
+  (`SwarmExpression`, trocada pelo jogo nos eventos). Vértices marcados em UV2: x mola (antena/topete), y mãos (±1), z peça
+  que gira (a **chave de corda** da D36, voltas inteiras por ciclo do quique), w rosto; rosto por `ToonFaceAtlas`
+  (`STUDIOKIT_VINYL_FACE`, linha 0 em cima, margem por célula). Layout de 64 bytes e `ToonLit` intactos. Medição no OPPO
+  (`VinylScene` do `TestProject`, 300 unidades, 60 fps firmes): GPU p95 Vulkan vinil 5,9–6,3 ms, animado (2.120 tri com
+  rosto, mola, mãos e chave) 6,5–6,6 ms; GLES lê ~15 ms nos dois (leitura do medidor). Aceitação conjunta com a K.v3c
+  abaixo. **Para a RT-6v3.4a/b:** pesos da mola e das mãos e a chave nas costas vão em UV2 (os scripts do Blender gravam
+  esse canal); o material da multidão e o da sombra dela ligam a palavra-chave juntos (o kit recusa um sem o outro).
 - **Prompt da sessão:** "Entrega K.v3b do studiokit: layout de instância opcional com expressão e fase do quique, UV/UV2 e
   atlas no shader irmão, atraso analítico de fase por vértice marcado. Leia `RunnerVsTower/docs/direcao-visual-v3.md`
   (seções 3.2 e 3.3). Não mude o layout atual nem o `ToonLit`. Aceitação do studiokit com match-3 e Wild Pack."
@@ -1125,6 +1136,14 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** testes do construtor (contagem, normais para fora, UV no intervalo); saída das primitivas antigas idêntica;
   aceitação do studiokit.
 - **Exige o usuário:** nada.
+- **Status:** concluída em 2026-11-26, na mesma sessão da K.v3b. `studiokit` 0.17.0, tag `v0.17.0` (decisão T45 lá;
+  T-Kv3c-1..2 em `decisoes.md`). `AddLathe` (perfil com ângulo de vinco, polos, tampas; `LatheProfiles.RoundedCylinder` e
+  `Capsule`), `AddRoundedBox` (arestas e cantos arredondados em passos de ângulo igual), `SmoothNormals` (grupo),
+  `ProjectUv` e `Mark` (UV e UV2 em qualquer trecho). Primitivas antigas com os mesmos bytes (impressão digital gravada com
+  o construtor da 0.15.0 igual depois; match-3 regerado sem diff). Aceitação das duas: EditMode do `TestProject` 516/516
+  com GPU, isolamento PASS; match-3 isolamento PASS, EditMode 99/99, evolução PASS; Wild Pack igual à linha de base
+  (90/0, 117/0, áudio 16, save 87/87, isolamento PASS, anúncios offline 25/25); este jogo: isolamento PASS, EditMode 775
+  de 783 (8 ignorados: desenho sem GPU) com o passo `scene` antes. Revisão independente (`fable`): nada bloqueante.
 - **Prompt da sessão:** "Entrega K.v3c do studiokit: torno/perfil, chanfro, normais suaves e UV no `LowPolyMeshBuilder`,
   sem mudar a saída das primitivas atuais. Leia `RunnerVsTower/docs/direcao-visual-v3.md` (seção 5). Aceitação do studiokit."
 

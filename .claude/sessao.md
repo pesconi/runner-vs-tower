@@ -227,3 +227,8 @@
   (`ToonInstanceRouting.Forced`) e soltar. Camadas 20–29 são da sonda de contraste. A ferramenta Bash troca `\n` dentro de
   heredoc Python: scripts de edição em arquivo (Write). Matar processo do Unity/rt4-check pelo PowerShell foi negado pelo
   classificador nesta sessão: esperar a rodada terminar antes de editar.
+- 2026-11-26 (K.v3b/K.v3c): no `HEAD` limpo o EditMode deste jogo falha 4 `StyleGuideTests` até rodar o passo `scene` (34
+  materiais gravados em `ToonLit`; o `ApplySurfaces` os passa a vinil): para aceitar uma entrega do kit aqui, rodar
+  `Tools/rt4-check.sh <out> "scene editmode"` e reverter `Assets/Claybreak/Content` e `Assets/Claybreak/Lab/ToonLab.unity`
+  por caminho (um `git checkout -- Assets ProjectSettings` amplo foi negado pelo classificador). Layout animado do kit: UV2 =
+  mola, mão (±1), peça que gira (chave), máscara do rosto; material da multidão e o da sombra ligam a palavra-chave juntos.

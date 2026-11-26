@@ -2591,3 +2591,32 @@ Ainda com as malhas de hoje. O visual entra no aceite agrupado 1 (depois da RT-6
   custam ~0,3 ms aqui), GLES em blocos 7,8–8,4 ms; CPU principal ≤ 5,2 ms; 62,5 fps e quadro p95 16 ms nas duas rotas. Dentro
   do teto (11 ms) sem repetição: nada a cortar (o bloom fica).
 
+## 2026-11-26 — K.v3b e K.v3c (studiokit): layout animado, rosto e construtor liso — técnicas do maestro (sessão da entrega)
+
+Feitas no `studiokit` 0.16.0 (tag `v0.16.0`) e 0.17.0 (tag `v0.17.0`); registro completo lá, decisões **T44** e **T45** em
+`../studiokit/docs/decisoes.md`. Este jogo ainda não usa nada disso (entra na RT-6v3.4a/b/c).
+
+- **T-Kv3b-1 — Opcional pelo material:** o layout segue a palavra-chave `STUDIOKIT_TOON_ANIMATED` do material do corpo; sem
+  ela nada muda (64 bytes, `ToonLit` sem diff). A variante é `multi_compile_local` (sempre no build: ela decide o passo do
+  buffer); o rosto é `shader_feature_local` (removido, só some o rosto).
+- **T-Kv3b-2 — Um buffer de 80 bytes, não dois buffers:** um segundo `StructuredBuffer` no vértice pediria mais do aparelho
+  do que a detecção de hoje confere; o kit junta instância e movimento por job Burst antes do envio. Nos blocos de 256 o
+  movimento é uma propriedade instanciada a mais (8 KB no bloco de propriedades, dentro dos 16 KB do GLES 3).
+- **T-Kv3b-3 — Atraso analítico de fase (sem estado):** a ponta marcada segue o quique `velocidade × atraso × peso`
+  segundos atrasada e anda ao longo da curva pela diferença; reta com a unidade parada. Mãos contra o quique e abrindo pela
+  quantidade da instância. A **chave de corda** da D36 usa o mesmo mecanismo: rotação em torno de eixo e pivô do material
+  por `fase × voltas`, voltas inteiras por ciclo (sem salto). Fórmulas espelhadas em C# e testadas.
+- **T-Kv3b-4 — Expressão por multidão:** `SwarmExpression` (célula e mãos dos vivos e dos que morrem), trocada pelo jogo nos
+  eventos (tabela evento → expressão da 6v3.4b). Expressão por unidade (piscar desencontrado) fica para quando o jogo pedir.
+- **T-Kv3b-5 — Custo medido:** no OPPO o animado custou ~0,2–0,6 ms de GPU a mais que o vinil padrão no Vulkan (10% mais
+  triângulos, atlas e movimento), CPU sem diferença acima do ruído; o gate de verdade é o da RT-6v3.4a (300 Bibopzis no
+  assalto do mundo 4).
+- **T-Kv3c-1 — Construtor só por acréscimo:** UV/UV2 só entram na malha quando escritos; impressão digital das primitivas
+  gravada antes da mudança e igual depois. Novos: torno com vinco, caixa arredondada, normais suaves por grupo, UV e marcas.
+- **T-Kv3c-2 — Formas lisas da 6v3.4c:** as cinco formas da loja podem sair de `AddLathe` (perfis de revolução com
+  `LatheProfiles`) e `AddRoundedBox`, soldadas com `SmoothNormals`; os detalhes por geometria seguem com as primitivas.
+- **Achado fora do escopo (para a próxima sessão do jogo):** com a árvore limpa no `HEAD` (4ba1cb7), 34 materiais do jogo
+  estão gravados em `StudioKit/ToonLit` e 4 testes do `StyleGuideTests` falham no EditMode puro; depois do passo `scene` do
+  `rt4-check` (que os passa a `ToonVinyl` pelo `ApplySurfaces`) o EditMode passa inteiro (775/783, 8 ignorados). Os
+  materiais regravados não foram commitados aqui (entrega do kit). Corrigir na RT-6v3.4a: commitar os materiais que o
+  passo `scene` grava ou fazer o teste não depender dele.
