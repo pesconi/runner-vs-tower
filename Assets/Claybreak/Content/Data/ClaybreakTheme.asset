@@ -184,3 +184,26 @@ MonoBehaviour:
       vibrationMilliseconds: 5
       vibrationAmplitude: 1
       vibrationInterval: 0
+    - id: KeyWind
+      clip: {fileID: 8300000, guid: 8d2a7fb349c8a9e4ca8a0e93e6bde110, type: 3}
+      volume: 0.5
+      pitchVariation: 0.03
+      minimumInterval: 0.3
+      vibrate: 0
+      vibrationMilliseconds: 5
+      vibrationAmplitude: 1
+      vibrationInterval: 0
+    - id: NumberPop
+      clip: {fileID: 8300000, guid: 5759ba8d7158c824f89f9948ec68062d, type: 3}
+      volume: 0.45
+      pitchVariation: 0.05
+      minimumInterval: 0.08
+      vibrate: 0
+      vibrationMilliseconds: 5
+      vibrationAmplitude: 1
+      vibrationInterval: 0
+  worldRunMusic:
+  - {fileID: 8300000, guid: 6e71e35dfaec4c741a683c2811e6addd, type: 3}
+  - {fileID: 8300000, guid: 478eabbf968d0e44fb8f278b6da24357, type: 3}
+  - {fileID: 8300000, guid: 34e343f389e812641a9da737088c5b23, type: 3}
+  - {fileID: 8300000, guid: 3e425bdc9188ce647af71af4a9481831, type: 3}

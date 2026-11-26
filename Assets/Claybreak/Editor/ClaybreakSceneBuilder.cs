@@ -139,6 +139,7 @@ namespace Claybreak.Editor
             var so = new SerializedObject(theme);
             so.FindProperty("crowdColor").colorValue = Orange;
             ClaybreakAudio.Apply(so.FindProperty("audio"));
+            ClaybreakAudio.ApplyWorldMusic(so.FindProperty("worldRunMusic"));
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(theme);
         }

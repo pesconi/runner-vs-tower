@@ -70,12 +70,19 @@ namespace Claybreak.Editor
             { ClaybreakSfx.Cue.Sweep, new Mix(0.45f, 0.1f, 0.15f) },
             { ClaybreakSfx.Cue.Crate, new Mix(0.7f, 0.03f, 0.1f, 15, 100, 0.2f) },
             { ClaybreakSfx.Cue.Boss, new Mix(0.85f, 0f, 1f, 90, 220, 1f) },
+            { ClaybreakSfx.Cue.KeyWind, new Mix(0.5f, 0.03f, 0.3f) },
+            { ClaybreakSfx.Cue.NumberPop, new Mix(0.45f, 0.05f, 0.08f) },
         };
 
         public static string RoleClip(GameSound sound) => sound.ToString();
         public static string CueClip(ClaybreakSfx.Cue cue) => "Cue" + cue;
         public const string MenuMusicClip = "MenuLoop";
         public const string RunMusicClip = "RunLoop";
+
+        /// <summary>The run/assault loop of each world, in world order (world 1 is the kit's own "run music" role, <see cref="RunMusicClip"/>).</summary>
+        public static readonly string[] WorldMusicClips = { RunMusicClip, "RunLoopW2", "RunLoopW3", "RunLoopW4" };
+
+        public static bool IsMusic(string clip) => clip == MenuMusicClip || Array.IndexOf(WorldMusicClips, clip) >= 0;
 
         /// <summary>Every clip name the game uses (the generator writes exactly these).</summary>
         public static IEnumerable<string> ClipNames()
@@ -91,7 +98,10 @@ namespace Claybreak.Editor
             }
 
             yield return MenuMusicClip;
-            yield return RunMusicClip;
+            foreach (string clip in WorldMusicClips)
+            {
+                yield return clip;
+            }
         }
 
         /// <summary>Writes the theme's audio block (the theme's SerializedProperty "audio").</summary>
@@ -154,6 +164,16 @@ namespace Claybreak.Editor
             audio.FindPropertyRelative("musicVolume").floatValue = MusicVolume;
         }
 
+        /// <summary>Writes the theme's per-world run loops (the theme's SerializedProperty "worldRunMusic").</summary>
+        public static void ApplyWorldMusic(SerializedProperty worldRunMusic)
+        {
+            worldRunMusic.arraySize = WorldMusicClips.Length;
+            for (int i = 0; i < WorldMusicClips.Length; i++)
+            {
+                worldRunMusic.GetArrayElementAtIndex(i).objectReferenceValue = Load(WorldMusicClips[i], true);
+            }
+        }
+
         /// <summary>
         /// Every clip exists with the release import settings and is listed in docs/audio-licenses.md (and no
         /// audio file in the folder is unlisted or unused).
@@ -179,7 +199,7 @@ namespace Claybreak.Editor
                     return false;
                 }
 
-                bool music = name == MenuMusicClip || name == RunMusicClip;
+                bool music = IsMusic(name);
                 AudioImporterSampleSettings settings = importer.defaultSampleSettings;
                 if (!importer.forceToMono || settings.compressionFormat != AudioCompressionFormat.Vorbis
                     || settings.loadType != (music ? AudioClipLoadType.CompressedInMemory : AudioClipLoadType.DecompressOnLoad))

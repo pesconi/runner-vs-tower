@@ -57,13 +57,14 @@ namespace Claybreak.Tests
         // ---------- the game today ----------
 
         [Test]
-        public void TheGuideAssetExistsAndEveryClassIsLegacy()
+        public void TheGuideAssetExistsAndEveryClassButSoundIsLegacy()
         {
             var guide = AssetDatabase.LoadAssetAtPath<StyleGuide>(StyleGuide.AssetPath);
             Assert.IsNotNull(guide, StyleGuide.AssetPath + " is missing (run Claybreak > Write Style Guide)");
             foreach (StyleClass styleClass in System.Enum.GetValues(typeof(StyleClass)))
             {
-                Assert.AreEqual(StyleStatus.Legacy, guide.ClassOf(styleClass).status, $"{styleClass} is not legacy: RT-6v3.1 must not change the game");
+                StyleStatus expected = styleClass == StyleClass.Sound ? StyleStatus.V3 : StyleStatus.Legacy; // RT-6v3.9 migrated the sound
+                Assert.AreEqual(expected, guide.ClassOf(styleClass).status, $"{styleClass} is not {expected}");
             }
         }
 
@@ -236,6 +237,7 @@ namespace Claybreak.Tests
         public void TheV3RulesStayOffForLegacyClasses()
         {
             StyleGuide guide = StyleGuideContent.Create();
+            guide.ClassOf(StyleClass.Sound).status = StyleStatus.Legacy;
             StyleFacts facts = Facts();
             facts.Colors.Add(new ColorFact { world = 0, role = "structureLight", color = Color.red });
             facts.Meshes.Add(new MeshFact { name = "Boxy", styleClass = StyleClass.Tower, triangles = 12, drawCalls = 1, maxEdgeAngle = 90f });
@@ -332,6 +334,39 @@ namespace Claybreak.Tests
             ClipFact first = facts.Clips[0];
             facts.Clips[0] = new ClipFact { name = first.name, peakDb = -12f, licensed = true };
             AssertFails(StyleGuideValidation.Run(guide, facts), $"v3 clip {first.name} peaks at -12");
+            Object.DestroyImmediate(guide);
+        }
+
+        [Test]
+        public void AClipOffTheVolumeOrDurationWindowFailsInAV3Class()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            StyleFacts facts = Facts();
+            ClipFact first = facts.Clips[0];
+            SoundStyle entry = guide.SoundOf(first.name);
+            facts.Clips[0] = new ClipFact { name = first.name, peakDb = first.peakDb, loudnessDb = entry.loudnessDb - 20f, seconds = first.seconds, licensed = true };
+            AssertFails(StyleGuideValidation.Run(guide, facts), $"v3 clip {first.name} has volume");
+            facts.Clips[0] = new ClipFact { name = first.name, peakDb = first.peakDb, loudnessDb = first.loudnessDb, seconds = entry.maxSeconds + 5f, licensed = true };
+            AssertFails(StyleGuideValidation.Run(guide, facts), $"v3 clip {first.name} lasts");
+            Object.DestroyImmediate(guide);
+        }
+
+        [Test]
+        public void EveryWorldHasItsOwnLoopAndEveryClipHasAnEventInTheTable()
+        {
+            StyleGuide guide = StyleGuideContent.Create();
+            Assert.AreEqual(4, ClaybreakAudio.WorldMusicClips.Length);
+            foreach (string clip in ClaybreakAudio.WorldMusicClips)
+            {
+                Assert.IsNotNull(guide.SoundOf(clip), clip);
+                StringAssert.StartsWith("music: run and assault, world", guide.SoundOf(clip).playedBy);
+            }
+
+            foreach (SoundStyle sound in guide.Sounds)
+            {
+                Assert.IsNotEmpty(sound.playedBy, sound.clip);
+            }
+
             Object.DestroyImmediate(guide);
         }
 

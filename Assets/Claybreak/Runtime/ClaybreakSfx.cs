@@ -22,7 +22,9 @@ namespace Claybreak
             Boss,
             ProjectileWarning,
             StoneImpact,
-            TowerHit
+            TowerHit,
+            KeyWind,
+            NumberPop
         }
 
         private static readonly int[] Indices = CreateIndices();

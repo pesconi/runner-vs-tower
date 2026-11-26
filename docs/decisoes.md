@@ -2482,3 +2482,23 @@ do usuário (D36); estas são as decisões técnicas para produzir e medir as op
   brinquedo aumentam a leitura infantil na Play (D25); a declaração de público é refeita com o visual novo na RT-6v3.11.
 - Efeito: destrava K.v3a e RT-6v3.3 em diante. As diretrizes entram em `direcao-visual-v3.md` seção 10, que prevalece
   sobre o texto anterior onde divergirem. "Matcap" é sugestão técnica: a sessão decide pela medida no OPPO.
+
+## 2026-11-26 — RT-6v3.9 som e música "brinquedo de corda" — técnicas do maestro (sessão da entrega)
+
+- **Síntese própria, nada de terceiros nem IA** (D37 = C): `Tools/audio/stampeep_toy_audio.py` (catraca, mola, sino curto,
+  estouro em peças + confete, chave de corda) sobre os blocos do `clay_siege_audio.py`. Papéis refeitos: `GateGood` (catraca +
+  3 primeiras notas do motivo), `GateBad` (mola), `UnitLoss` (estouro em peças), `Coin`, `ButtonClick`, `ButtonBack`. Cues novos:
+  `KeyWind` (ao começar a fase) e `NumberPop` (portão bom, com um pequeno silêncio inicial para cair depois do `GateGood`).
+- **Motivo de 4 notas** = graus 1-5-3-8 (maior ou menor conforme o mundo), tocado a cada 2 compassos no líder de cada mundo e no
+  começo das duas frases do menu. Mundos: 1 dó maior 124 BPM (sino), 2 lá menor 132 (pluck), 3 fá maior 112 com balanço (metal),
+  4 ré menor 140 (onda quadrada). `RunLoop` continua sendo o papel de música do kit (mundo 1); os outros três são clipes do jogo.
+- **Música por mundo sem mexer no kit** (regra do projeto): o kit só tem `menuMusic`/`runMusic` no `ThemeAudio` e toca o que o
+  tema segura quando a fase começa. `ClaybreakTheme.worldRunMusic` guarda os 4 laços e `SelectWorldMusic(mundo)` grava o campo
+  `runMusic` do `ThemeAudio` por reflexão antes de `Enter(Run)`. É paliativo; o validador falha se o campo sumir do kit.
+  **Pendência K:** o kit deve expor `ThemeAudio.RunMusicOverride` (ou setter); trocar quando houver entrega K.
+- **Métricas no validador** (`StyleFacts.WavMetrics`, `StyleGuideValidation.CheckSounds`, classe `Sound` agora `v3`): pico,
+  volume aproximado (RMS em dBFS dos trechos acima de -40 dBFS; mesma conta de `Tools/audio/audio_metrics.py`) e duração por
+  clipe, com janelas por tipo (toque, efeito, aviso contínuo, fanfarra/queda, música) em `StyleGuideContent`. Clipe fora da
+  lista de `audio-licenses.md` ou fora da janela reprova. O aviso do projétil tem alvo próprio (-7 ± 3): é um assobio contínuo.
+- **O modelo não ouve:** a escuta é do usuário (aceite agrupado 3). Página `docs/audio/v3/escuta.html` com antes/depois e
+  métricas; "antes" em `docs/audio/v3/antes/` (só os clipes que mudaram).

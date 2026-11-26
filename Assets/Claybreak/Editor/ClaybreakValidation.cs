@@ -385,6 +385,11 @@ namespace Claybreak.Editor
             {
                 failures.Add("theme: " + error);
             }
+
+            if (theme.WorldMusicCount != catalog.Worlds.Count)
+            {
+                failures.Add($"theme: {theme.WorldMusicCount} world run loops for {catalog.Worlds.Count} worlds");
+            }
         }
 
         // One world: levels within the menu, a look of its own (a palette not shared with another world, the content's,

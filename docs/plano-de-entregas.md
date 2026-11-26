@@ -58,7 +58,7 @@ lançamento jun/2027.
 | RT-6v3.6 Portões e obstáculos + gate 3× — **planejada** | 0,75 | 0,9 | fev–mar/2027 |
 | RT-6v3.7 Piso, cenário e céu + gate 3×; aceite agrupado 2 — **planejada** | 1 | 1,2 | mar/2027 |
 | RT-6v3.8 Efeitos visuais + gate 3× — **planejada** | 0,75 | 0,9 | mar/2027 |
-| RT-6v3.9 Som e música (síntese/CC0; IA só com D37); escuta do usuário — **planejada**; em paralelo | 1 | 1,2 | dez/2026–mar/2027 (paralelo) |
+| RT-6v3.9 Som e música (síntese/CC0; IA só com D37); escuta do usuário — **concluída em 2026-11-26, com aceite pendente (escuta)**; em paralelo | 1 | 1,2 | dez/2026–mar/2027 (paralelo) |
 | RT-6v3.10 Telas e ícone; aceite agrupado 3 — **planejada** | 0,75 | 0,9 | mar/2027 |
 | RT-6v3.11 Gate final e capturas da loja — **planejada** | 0,75 | 0,9 | início de abr/2027 |
 | RT-10 Soft launch e ajuste | 4 | 4,8 | meados de mai–meados de jun |
@@ -1196,6 +1196,14 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
   do mundo 4. Registre decisões e status."
 
 ## RT-6v3.9 — Som e música (Sonnet; em paralelo)
+
+- **Status:** concluída em 2026-11-26, **aceite pendente (escuta do usuário, aceite agrupado 3; não bloqueia a série)**. Efeitos
+  "brinquedo de corda" e 4 músicas por mundo com o motivo 1-5-3-8, tudo por síntese (`Tools/audio/stampeep_toy_audio.py`; D37 = C,
+  nada por IA). Cues novos `KeyWind` e `NumberPop`; `ClaybreakTheme.SelectWorldMusic` (reflexão no `runMusic` do kit, paliativo:
+  pendência K) escolhe o laço do mundo. Validador: classe `Sound` v3 com pico, volume aproximado e duração por clipe; tabela
+  evento → som no `StyleGuide`/checklist; tudo em `audio-licenses.md`. `rt4-check` scene, validate, isolation, EditMode (739/739
+  + 1 ignorado) e PlayMode (28/28 + ignorados) verdes. **Para o usuário:** abrir `docs/audio/v3/escuta.html` (PC, de dentro da pasta
+  do projeto) e dizer o que ficou bom ou estranho. Detalhes técnicos em `decisoes.md` (2026-11-26).
 
 - **Escopo:** efeitos sonoros "brinquedo de corda" (catraca, mola, sino curto) por síntese (evolução de `Tools/audio/`) ou
   CC0; música por mundo com o mesmo motivo de 4 notas; gerador de música do vidIQ só se a D37 aprovar, com os termos lidos

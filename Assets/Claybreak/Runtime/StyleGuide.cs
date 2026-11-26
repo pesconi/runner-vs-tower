@@ -175,6 +175,12 @@ namespace Claybreak
         /// <summary>Target peak (dBFS) of the clip and how far it may be from it; checked only when the Sound class is v3.</summary>
         public float peakDb;
         public float peakToleranceDb;
+        /// <summary>Target approximate volume (RMS of the samples above -40 dBFS, in dBFS) and its tolerance; v3 only.</summary>
+        public float loudnessDb;
+        public float loudnessToleranceDb;
+        /// <summary>Allowed duration of the clip in seconds; v3 only.</summary>
+        public float minSeconds;
+        public float maxSeconds;
     }
 
     /// <summary>

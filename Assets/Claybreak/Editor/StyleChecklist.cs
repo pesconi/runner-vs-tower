@@ -98,7 +98,7 @@ namespace Claybreak.Editor
             text.Append("\n## Sons (pico alvo ± tolerância, antes do mixer)\n\n");
             foreach (SoundStyle sound in guide.Sounds)
             {
-                text.Append($"- [ ] `{sound.clip}`: {sound.playedBy}; pico {sound.peakDb:0.#} dBFS ± {sound.peakToleranceDb:0.#} dB.\n");
+                text.Append($"- [ ] `{sound.clip}`: {sound.playedBy}; pico {sound.peakDb:0.#} dBFS ± {sound.peakToleranceDb:0.#} dB; volume {sound.loudnessDb:0.#} ± {sound.loudnessToleranceDb:0.#} dBFS; {sound.minSeconds:0.##}–{sound.maxSeconds:0.##} s.\n");
             }
 
             return text.ToString();

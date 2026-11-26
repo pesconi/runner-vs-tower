@@ -300,6 +300,16 @@ namespace Claybreak.Editor
                 {
                     failures.Add($"style: v3 clip {clip.name} peaks at {clip.peakDb:0.0} dBFS, not within {entry.peakToleranceDb:0.#} dB of {entry.peakDb:0.#}");
                 }
+
+                if (v3 && entry.loudnessToleranceDb > 0f && Mathf.Abs(clip.loudnessDb - entry.loudnessDb) > entry.loudnessToleranceDb)
+                {
+                    failures.Add($"style: v3 clip {clip.name} has volume {clip.loudnessDb:0.0} dBFS, not within {entry.loudnessToleranceDb:0.#} dB of {entry.loudnessDb:0.#}");
+                }
+
+                if (v3 && entry.maxSeconds > 0f && (clip.seconds < entry.minSeconds || clip.seconds > entry.maxSeconds))
+                {
+                    failures.Add($"style: v3 clip {clip.name} lasts {clip.seconds:0.00} s, outside {entry.minSeconds:0.##}-{entry.maxSeconds:0.##} s");
+                }
             }
 
             foreach (SoundStyle entry in guide.Sounds)

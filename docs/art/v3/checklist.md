@@ -15,7 +15,7 @@ Cada linha é uma regra que a captura deve cumprir; classe `legado` = ainda no v
 - [ ] **Floor** (legado): teto atual 200 triângulos e 2 chamadas por objeto; meta v3 100–4000 triângulos, até 1 chamadas, nenhuma aresta viva acima de 60° (chanfro).
 - [ ] **Scenery** (legado): teto atual 300 triângulos e 1 chamadas por objeto; meta v3 300–1500 triângulos, até 1 chamadas, nenhuma aresta viva acima de 60° (chanfro).
 - [ ] **Effect** (legado): sem malha própria.
-- [ ] **Sound** (legado): sem malha própria.
+- [ ] **Sound** (v3): sem malha própria.
 - [ ] **Screen** (legado): sem malha própria.
 
 ## Paletas (antes do pós; tolerância ΔE CIE76 ≤ 3 sobre os três níveis: base, sombra, destaque)
@@ -160,25 +160,30 @@ Cada linha é uma regra que a captura deve cumprir; classe `legado` = ainda no v
 
 ## Sons (pico alvo ± tolerância, antes do mixer)
 
-- [ ] `Coin`: role Coin; pico -1 dBFS ± 1.5 dB.
-- [ ] `GateGood`: role GateGood; pico -1 dBFS ± 1.5 dB.
-- [ ] `GateBad`: role GateBad; pico -1 dBFS ± 1.5 dB.
-- [ ] `UnitLoss`: role UnitLoss; pico -1 dBFS ± 1.5 dB.
-- [ ] `Finish`: role Finish; pico -1 dBFS ± 1.5 dB.
-- [ ] `Victory`: role Victory; pico -1 dBFS ± 1.5 dB.
-- [ ] `Defeat`: role Defeat; pico -1 dBFS ± 1.5 dB.
-- [ ] `ButtonClick`: role ButtonClick; pico -1 dBFS ± 1.5 dB.
-- [ ] `ButtonBack`: role ButtonBack; pico -1 dBFS ± 1.5 dB.
-- [ ] `AdReward`: role AdReward; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueCannonFire`: cue CannonFire; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueTowerFall`: cue TowerFall; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueFloorBreak`: cue FloorBreak; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueWallBreak`: cue WallBreak; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueSweep`: cue Sweep; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueCrate`: cue Crate; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueBoss`: cue Boss; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueProjectileWarning`: cue ProjectileWarning; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueStoneImpact`: cue StoneImpact; pico -1 dBFS ± 1.5 dB.
-- [ ] `CueTowerHit`: cue TowerHit; pico -1 dBFS ± 1.5 dB.
-- [ ] `MenuLoop`: music: menus; pico -3 dBFS ± 1.5 dB.
-- [ ] `RunLoop`: music: run and assault; pico -3 dBFS ± 1.5 dB.
+- [ ] `Coin`: role Coin: purchase (short double bell); pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `GateGood`: role GateGood: crowd takes a good gate (ratchet + first three notes of the motif on a short bell); pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `GateBad`: role GateBad: bad gate or obstacle loss (coil spring loosening); pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `UnitLoss`: role UnitLoss: a figure bursts into pieces and confetti (assault); pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `Finish`: role Finish; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `Victory`: role Victory; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.5–3 s.
+- [ ] `Defeat`: role Defeat; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.5–3 s.
+- [ ] `ButtonClick`: role ButtonClick: button press (ratchet tick); pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.04–0.25 s.
+- [ ] `ButtonBack`: role ButtonBack: back (lower tick); pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.04–0.25 s.
+- [ ] `AdReward`: role AdReward; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueCannonFire`: cue CannonFire; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueTowerFall`: cue TowerFall; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.5–3 s.
+- [ ] `CueFloorBreak`: cue FloorBreak; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueWallBreak`: cue WallBreak; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueSweep`: cue Sweep; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueCrate`: cue Crate; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueBoss`: cue Boss; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.5–3 s.
+- [ ] `CueProjectileWarning`: cue ProjectileWarning; pico -1 dBFS ± 1.5 dB; volume -7 ± 3 dBFS; 0.05–1.5 s.
+- [ ] `CueStoneImpact`: cue StoneImpact; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueTowerHit`: cue TowerHit; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueKeyWind`: cue KeyWind: the wind-up key turns as a level starts; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `CueNumberPop`: cue NumberPop: the number of a good gate jumps; pico -1 dBFS ± 1.5 dB; volume -15 ± 5 dBFS; 0.05–1.5 s.
+- [ ] `MenuLoop`: music: menus (the motif in C major, marimba and bell); pico -3 dBFS ± 1.5 dB; volume -17 ± 3 dBFS; 10–25 s.
+- [ ] `RunLoop`: music: run and assault, world 1 (C major, 124 BPM, bell lead); pico -3 dBFS ± 1.5 dB; volume -17 ± 3 dBFS; 10–25 s.
+- [ ] `RunLoopW2`: music: run and assault, world 2 (A minor, 132 BPM, pluck lead); pico -3 dBFS ± 1.5 dB; volume -17 ± 3 dBFS; 10–25 s.
+- [ ] `RunLoopW3`: music: run and assault, world 3 (F major, 112 BPM, swing, brass lead); pico -3 dBFS ± 1.5 dB; volume -17 ± 3 dBFS; 10–25 s.
+- [ ] `RunLoopW4`: music: run and assault, world 4 (D minor, 140 BPM, square lead); pico -3 dBFS ± 1.5 dB; volume -17 ± 3 dBFS; 10–25 s.

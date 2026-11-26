@@ -834,6 +834,8 @@ namespace Claybreak
 
             crowd.Speed = level.RunSpeed;
             crowd.Steering = true;
+            theme.SelectWorldMusic(progression.WorldIndex);
+            ClaybreakSfx.Play(ClaybreakSfx.Cue.KeyWind);
             Debug.Log($"[Claybreak] Level '{level.name}' starts: army {crowd.Army}, {level.RunGates.Count} gate pairs, {level.Obstacles.Count} obstacles, "
                 + $"tower {level.Tower} {tower.MaximumHealth} in {level.Floors} floor(s), projectile limit {level.MaximumProjectiles}, "
                 + $"sweeper {(level.SweeperEnabled ? "on" : "off")}, wall {(level.WallEnabled ? "on" : "off")}.", this);
@@ -1024,6 +1026,11 @@ namespace Claybreak
             int before = crowd.Army;
             int army = GateMath.Apply(gate, before, crowd.MaximumArmy);
             hud.FloatGate(gate);
+            if (gate.IsGood)
+            {
+                ClaybreakSfx.Play(ClaybreakSfx.Cue.NumberPop);
+            }
+
             // A bad gate throws the outer ring out in the ballistic death and shakes the camera.
             crowd.SetArmy(army, SwarmRemoval.Die);
             if (army < before)

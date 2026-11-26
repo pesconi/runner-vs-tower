@@ -40,6 +40,9 @@ namespace Claybreak.Editor
         public string name;
         /// <summary>Peak of the file in dBFS (-120 for silence).</summary>
         public float peakDb;
+        /// <summary>Approximate volume: RMS in dBFS of the samples above -40 dBFS (same definition as Tools/audio/audio_metrics.py).</summary>
+        public float loudnessDb;
+        public float seconds;
         /// <summary>True when docs/audio-licenses.md lists the file.</summary>
         public bool licensed;
     }
@@ -290,7 +293,11 @@ namespace Claybreak.Editor
             foreach (string file in Directory.GetFiles(ClaybreakAudio.Folder, "*.wav"))
             {
                 string name = Path.GetFileNameWithoutExtension(file);
-                facts.Clips.Add(new ClipFact { name = name, peakDb = WavPeakDb(file), licensed = licenses.Contains($"`{name}.wav`") });
+                WavMetrics(file, out float peak, out float loudness, out float seconds);
+                facts.Clips.Add(new ClipFact
+                {
+                    name = name, peakDb = peak, loudnessDb = loudness, seconds = seconds, licensed = licenses.Contains($"`{name}.wav`")
+                });
             }
         }
 
@@ -382,9 +389,20 @@ namespace Claybreak.Editor
         /// <summary>The peak of a 16-bit PCM WAV file in dBFS (read from the file, so no import setting changes it); -120 for silence or a format it does not read.</summary>
         public static float WavPeakDb(string path)
         {
+            WavMetrics(path, out float peak, out _, out _);
+            return peak;
+        }
+
+        /// <summary>Peak (dBFS), approximate volume (RMS dBFS over samples above -40 dBFS) and duration of a 16-bit mono WAV.</summary>
+        public static void WavMetrics(string path, out float peakDb, out float loudnessDb, out float seconds)
+        {
+            peakDb = -120f;
+            loudnessDb = -120f;
+            seconds = 0f;
             byte[] bytes = File.ReadAllBytes(path);
             int position = 12;
             int bits = 0;
+            int rate = 44100;
             while (position + 8 <= bytes.Length)
             {
                 string id = System.Text.Encoding.ASCII.GetString(bytes, position, 4);
@@ -393,28 +411,39 @@ namespace Claybreak.Editor
                 if (id == "fmt ")
                 {
                     bits = BitConverter.ToInt16(bytes, body + 14);
+                    rate = BitConverter.ToInt32(bytes, body + 4);
                 }
                 else if (id == "data")
                 {
                     if (bits != 16)
                     {
-                        return -120f;
+                        return;
                     }
 
                     int end = Math.Min(bytes.Length, body + size);
                     int peak = 0;
+                    double sum = 0;
+                    long active = 0;
+                    const int Gate = 328; // 10^(-40/20) of full scale (32768)
                     for (int i = body; i + 1 < end; i += 2)
                     {
-                        peak = Math.Max(peak, Math.Abs((int)BitConverter.ToInt16(bytes, i)));
+                        int v = Math.Abs((int)BitConverter.ToInt16(bytes, i));
+                        peak = Math.Max(peak, v);
+                        if (v > Gate)
+                        {
+                            sum += (double)v * v;
+                            active++;
+                        }
                     }
 
-                    return peak == 0 ? -120f : 20f * Mathf.Log10(peak / 32768f);
+                    seconds = (end - body) / 2f / rate;
+                    peakDb = peak == 0 ? -120f : 20f * Mathf.Log10(peak / 32768f);
+                    loudnessDb = active == 0 ? -120f : 10f * Mathf.Log10((float)(sum / active) / (32768f * 32768f));
+                    return;
                 }
 
                 position = body + size + (size & 1);
             }
-
-            return -120f;
         }
     }
 }

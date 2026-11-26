@@ -1,4 +1,4 @@
-"""Clay Siege audio, made by Jungle Degree (RT-8): every sound effect and both music loops.
+"""Stampeep audio, made by Jungle Degree (RT-8, redone as the wind-up toy set in RT-6v3.9): every sound effect and music loop.
 
 Own work, synthesized from math only (no samples, no third-party audio): see docs/audio-licenses.md.
 Deterministic (fixed seeds), so the same script always writes the same files.
@@ -224,34 +224,12 @@ def rubble(seconds, density, seed, cutoff=2500.0, decay=3.0):
 
 # ---------------------------------------------------------------- sound effects (kit roles)
 
-def sfx_coin():
-    a = bell(midi(83), 0.12, 20.0)
-    b = bell(midi(88), 0.35, 12.0)
-    return mix(a, np.concatenate([np.zeros(int(0.06 * SR)), b])) * 0.8
 
 
-def sfx_gate_good():
-    out = np.zeros(int(0.55 * SR))
-    for i, n in enumerate([72, 76, 79, 84]):
-        place(out, pluck(midi(n), 0.3, 1.2, 11.0), i * 0.055, 0.8)
-    sparkle = bell(midi(96), 0.3, 14.0) * 0.25
-    place(out, sparkle, 0.2)
-    whoosh = bandpass(noise(0.25, 61), 2000.0, 9000.0) * env_adsr(0.25, 0.1, 0.05, 0.5, 0.1) * 0.15
-    return mix(out, whoosh)
 
 
-def sfx_gate_bad():
-    seconds = 0.5
-    ph = sweep_phase(midi(52), midi(40), seconds, 0.8)
-    tone = lowpass(square(ph, 7) * 0.6 + square(ph * 1.012, 7) * 0.4, 1400.0)
-    wah = env_adsr(seconds, 0.01, 0.1, 0.8, 0.2)
-    return tone * wah * 0.8
 
 
-def sfx_unit_loss():
-    pop = np.sin(sweep_phase(520.0, 140.0, 0.11, 2.0)) * env_ad(0.11, 0.001, 35.0)
-    squish = bandpass(noise(0.09, 71), 300.0, 2200.0) * env_ad(0.09, 0.001, 45.0) * 0.6
-    return mix(pop, squish) * 0.7
 
 
 def sfx_finish():
@@ -288,23 +266,16 @@ def sfx_defeat():
     return room(out, 0.2, 0.8)
 
 
-def sfx_button_click():
-    body = np.sin(sweep_phase(1400.0, 700.0, 0.06, 2.0)) * env_ad(0.06, 0.0005, 70.0)
-    tick = highpass(noise(0.01, 81), 3000.0) * env_ad(0.01, 0.0003, 300.0) * 0.4
-    return mix(body, tick) * 0.7
 
 
-def sfx_button_back():
-    body = np.sin(sweep_phase(800.0, 420.0, 0.07, 2.0)) * env_ad(0.07, 0.0005, 60.0)
-    tick = highpass(noise(0.01, 82), 2500.0) * env_ad(0.01, 0.0003, 300.0) * 0.35
-    return mix(body, tick) * 0.7
 
 
 def sfx_ad_reward():
     out = np.zeros(int(1.0 * SR))
     for i, n in enumerate([76, 79, 83, 88, 91]):
         place(out, bell(midi(n), 0.5, 8.0), i * 0.07, 0.35)
-    place(out, sfx_coin(), 0.32, 0.6)
+    import stampeep_toy_audio as toy
+    place(out, toy.toy_coin(), 0.32, 0.6)
     return room(out, 0.25, 0.7)
 
 
@@ -422,11 +393,11 @@ def menu_music():
     bpm, bars = 96, 8
     chords = [(48, [60, 64, 67]), (45, [57, 60, 64]), (41, [57, 60, 65]), (43, [55, 59, 62])] * 2
     melody = [
-        (0, 76), (1, 79), (2, 76), (2.5, 74), (3, 72),
+        (0, 72), (1, 79), (2, 76), (3, 84),
         (4, 72), (5, 76), (6, 74), (7, 72),
         (8, 69), (9, 72), (10, 77), (10.5, 76), (11, 74),
         (12, 74), (13, 71), (14, 67), (15, 74),
-        (16, 76), (17, 79), (18, 81), (18.5, 79), (19, 76),
+        (16, 72), (17, 79), (18, 76), (19, 84),
         (20, 72), (21, 76), (22, 79), (23, 76),
         (24, 77), (25, 76), (26, 74), (26.5, 72), (27, 69),
         (28, 71), (29, 74), (30, 72),
@@ -448,48 +419,14 @@ def menu_music():
     return np.tanh(normalize(room(loop, 0.2, 1.0)[: len(loop)], -2.0) * 1.1)
 
 
-def run_music():
-    """Driving march for the run and the assault, 128 BPM, 8 bars: Am - F - C - G."""
-    bpm, bars = 128, 8
-    chords = [(45, [57, 60, 64]), (41, [57, 60, 65]), (48, [55, 60, 64]), (43, [55, 59, 62])] * 2
-    riff = [0, 12, 7, 12, 3, 12, 7, 10]  # semitones over the bar root, eighth notes
-    voices = []
-    for bar, (root, triad) in enumerate(chords):
-        b0 = bar * 4
-        for k in range(4):
-            voices.append((b0 + k, kick(0.3, 150, 48), 0.75))
-        voices.append((b0 + 1, snare(0.2, 21), 0.42))
-        voices.append((b0 + 3, snare(0.2, 23), 0.42))
-        if bar % 2 == 1:
-            voices.append((b0 + 3.75, snare(0.12, 25), 0.25))
-        for k in range(8):
-            voices.append((b0 + k * 0.5, hat(0.05, 31 + k % 4, k % 2 == 1), 0.09 if k % 2 else 0.06))
-        for k, (offset) in enumerate([0, 0.75, 1.5, 2, 2.75, 3.5]):
-            n = root - 12 + (7 if k in (2, 5) else 0) + 12
-            bass = lowpass(saw(TAU * midi(n) * t_axis(0.3), 10), 700.0) * env_ad(0.3, 0.003, 9.0)
-            voices.append((b0 + offset, bass, 0.33))
-        for k, step in enumerate(riff):
-            n = root + 24 + step
-            voices.append((b0 + k * 0.5, pluck(midi(n), 0.25, 1.4, 14.0), 0.12))
-        if bar in (3, 7):
-            for i, n in enumerate(triad):
-                voices.append((b0, brass(midi(n + 12), 4 * 60.0 / bpm * 0.95, 1800.0, 0.06), 0.07))
-    loop = render_loop(bars, bpm, 4, voices)
-    return np.tanh(normalize(room(loop, 0.12, 0.7)[: len(loop)], -2.0) * 1.15)
 
 
 # ---------------------------------------------------------------- output
 
 SOUNDS = {
-    "Coin": sfx_coin,
-    "GateGood": sfx_gate_good,
-    "GateBad": sfx_gate_bad,
-    "UnitLoss": sfx_unit_loss,
     "Finish": sfx_finish,
     "Victory": sfx_victory,
     "Defeat": sfx_defeat,
-    "ButtonClick": sfx_button_click,
-    "ButtonBack": sfx_button_back,
     "AdReward": sfx_ad_reward,
     "CueCannonFire": cue_cannon_fire,
     "CueProjectileWarning": cue_projectile_warn,
@@ -503,7 +440,7 @@ SOUNDS = {
     "CueBoss": cue_boss,
 }
 
-MUSIC = {"MenuLoop": menu_music, "RunLoop": run_music}
+MUSIC = {"MenuLoop": menu_music}
 
 
 def trim_tail(x, floor_db=-54.0, keep=0.03):
@@ -524,12 +461,15 @@ def write_wav(path, samples):
 
 
 def main():
+    import stampeep_toy_audio as toy
+    SOUNDS.update(toy.TOY_SOUNDS)
+    MUSIC.update(toy.WORLD_MUSIC)
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Assets", "Claybreak", "Content", "Audio")
     os.makedirs(folder, exist_ok=True)
     for name, make in SOUNDS.items():
-        samples = trim_tail(normalize(make(), -1.0))
-        samples = fade(samples, 0.001, 0.015)
+        samples = fade(trim_tail(make()), 0.001, 0.015)
+        samples = normalize(samples, -1.0)
         write_wav(os.path.join(folder, name + ".wav"), samples)
         print(f"{name:22s} {len(samples) / SR:5.2f} s")
     for name, make in MUSIC.items():

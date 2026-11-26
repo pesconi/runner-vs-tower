@@ -94,7 +94,7 @@ MonoBehaviour:
     v3MaxDrawCalls: 0
     maxEdgeAngle: 60
   - styleClass: 10
-    status: 0
+    status: 1
     maxTriangles: 0
     maxDrawCalls: 0
     v3MinTriangles: 0
@@ -814,91 +814,219 @@ MonoBehaviour:
     note: tower floors crumbling (blocks per body)
   sounds:
   - clip: Coin
-    playedBy: role Coin
+    playedBy: 'role Coin: purchase (short double bell)'
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: GateGood
-    playedBy: role GateGood
+    playedBy: 'role GateGood: crowd takes a good gate (ratchet + first three notes of the motif on a short bell)'
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: GateBad
-    playedBy: role GateBad
+    playedBy: 'role GateBad: bad gate or obstacle loss (coil spring loosening)'
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: UnitLoss
-    playedBy: role UnitLoss
+    playedBy: 'role UnitLoss: a figure bursts into pieces and confetti (assault)'
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: Finish
     playedBy: role Finish
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: Victory
     playedBy: role Victory
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.5
+    maxSeconds: 3
   - clip: Defeat
     playedBy: role Defeat
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.5
+    maxSeconds: 3
   - clip: ButtonClick
-    playedBy: role ButtonClick
+    playedBy: 'role ButtonClick: button press (ratchet tick)'
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.04
+    maxSeconds: 0.25
   - clip: ButtonBack
-    playedBy: role ButtonBack
+    playedBy: 'role ButtonBack: back (lower tick)'
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.04
+    maxSeconds: 0.25
   - clip: AdReward
     playedBy: role AdReward
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueCannonFire
     playedBy: cue CannonFire
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueTowerFall
     playedBy: cue TowerFall
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.5
+    maxSeconds: 3
   - clip: CueFloorBreak
     playedBy: cue FloorBreak
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueWallBreak
     playedBy: cue WallBreak
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueSweep
     playedBy: cue Sweep
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueCrate
     playedBy: cue Crate
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueBoss
     playedBy: cue Boss
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.5
+    maxSeconds: 3
   - clip: CueProjectileWarning
     playedBy: cue ProjectileWarning
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -7
+    loudnessToleranceDb: 3
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueStoneImpact
     playedBy: cue StoneImpact
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: CueTowerHit
     playedBy: cue TowerHit
     peakDb: -1
     peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
+  - clip: CueKeyWind
+    playedBy: 'cue KeyWind: the wind-up key turns as a level starts'
+    peakDb: -1
+    peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
+  - clip: CueNumberPop
+    playedBy: 'cue NumberPop: the number of a good gate jumps'
+    peakDb: -1
+    peakToleranceDb: 1.5
+    loudnessDb: -15
+    loudnessToleranceDb: 5
+    minSeconds: 0.05
+    maxSeconds: 1.5
   - clip: MenuLoop
-    playedBy: 'music: menus'
+    playedBy: 'music: menus (the motif in C major, marimba and bell)'
     peakDb: -3
     peakToleranceDb: 1.5
+    loudnessDb: -17
+    loudnessToleranceDb: 3
+    minSeconds: 10
+    maxSeconds: 25
   - clip: RunLoop
-    playedBy: 'music: run and assault'
+    playedBy: 'music: run and assault, world 1 (C major, 124 BPM, bell lead)'
     peakDb: -3
     peakToleranceDb: 1.5
+    loudnessDb: -17
+    loudnessToleranceDb: 3
+    minSeconds: 10
+    maxSeconds: 25
+  - clip: RunLoopW2
+    playedBy: 'music: run and assault, world 2 (A minor, 132 BPM, pluck lead)'
+    peakDb: -3
+    peakToleranceDb: 1.5
+    loudnessDb: -17
+    loudnessToleranceDb: 3
+    minSeconds: 10
+    maxSeconds: 25
+  - clip: RunLoopW3
+    playedBy: 'music: run and assault, world 3 (F major, 112 BPM, swing, brass lead)'
+    peakDb: -3
+    peakToleranceDb: 1.5
+    loudnessDb: -17
+    loudnessToleranceDb: 3
+    minSeconds: 10
+    maxSeconds: 25
+  - clip: RunLoopW4
+    playedBy: 'music: run and assault, world 4 (D minor, 140 BPM, square lead)'
+    peakDb: -3
+    peakToleranceDb: 1.5
+    loudnessDb: -17
+    loudnessToleranceDb: 3
+    minSeconds: 10
+    maxSeconds: 25
   colorTolerance: 3

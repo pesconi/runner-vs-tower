@@ -142,7 +142,7 @@ namespace Claybreak.Editor
             return new ClassStyle
             {
                 styleClass = styleClass,
-                status = StyleStatus.Legacy,
+                status = styleClass == StyleClass.Sound ? StyleStatus.V3 : StyleStatus.Legacy, // RT-6v3.9 migrated the sound
                 maxTriangles = maxTriangles,
                 maxDrawCalls = maxDrawCalls,
                 v3MinTriangles = v3Min,
@@ -163,33 +163,81 @@ namespace Claybreak.Editor
             new EffectStyle { effect = StyleEffect.TowerBreak, maxActive = AssaultTower.BlocksPerBody, note = "tower floors crumbling (blocks per body)" },
         };
 
-        /// <summary>The generator's peaks (clay_siege_audio.py): effects are normalized to -1 dBFS, the two music loops sit at -3.</summary>
+        /// <summary>The generator's peaks (stampeep_toy_audio / clay_siege_audio.py): effects are normalized to -1 dBFS, the music loops sit at -3.</summary>
         public const float EffectPeakDb = -1f;
         public const float MusicPeakDb = -3f;
 
-        // The sounds: one entry per clip the game uses, the event that plays it (docs/audio-licenses.md has the same table with
-        // licenses). The loudness target is the generator's.
+        // RT-6v3.9: the sound table, "wind-up toy" signature (ratchet, spring, short bell, burst into pieces, key winding) and one
+        // four-note motif (degrees 1-5-3-8) in every music loop. Loudness is the approximate volume (RMS in dBFS of the samples above
+        // -40 dBFS, Tools/audio/audio_metrics.py and StyleFacts.WavMetrics measure it the same way); a clip outside its peak, volume or
+        // duration window fails the validator.
+        private enum SoundKind { Tap, Effect, Warning, Jingle, Music }
+
         private static SoundStyle[] Sounds()
         {
             var list = new List<SoundStyle>();
             foreach (string clip in ClaybreakAudio.ClipNames())
             {
-                list.Add(new SoundStyle { clip = clip, playedBy = PlayedBy(clip), peakDb = clip == ClaybreakAudio.MenuMusicClip || clip == ClaybreakAudio.RunMusicClip ? MusicPeakDb : EffectPeakDb, peakToleranceDb = 1.5f });
+                SoundKind kind = KindOf(clip);
+                bool music = kind == SoundKind.Music;
+                list.Add(new SoundStyle
+                {
+                    clip = clip,
+                    playedBy = PlayedBy(clip),
+                    peakDb = music ? MusicPeakDb : EffectPeakDb,
+                    peakToleranceDb = 1.5f,
+                    loudnessDb = kind == SoundKind.Warning ? -7f : music ? -17f : -15f,
+                    loudnessToleranceDb = kind == SoundKind.Warning ? 3f : music ? 3f : 5f,
+                    minSeconds = kind == SoundKind.Tap ? 0.04f : kind == SoundKind.Jingle ? 0.5f : music ? 10f : 0.05f,
+                    maxSeconds = kind == SoundKind.Tap ? 0.25f : kind == SoundKind.Jingle ? 3f : music ? 25f : 1.5f,
+                });
             }
 
             return list.ToArray();
         }
 
-        private static string PlayedBy(string clip)
+        private static SoundKind KindOf(string clip)
         {
-            if (clip == ClaybreakAudio.MenuMusicClip)
+            if (ClaybreakAudio.IsMusic(clip))
             {
-                return "music: menus";
+                return SoundKind.Music;
             }
 
-            if (clip == ClaybreakAudio.RunMusicClip)
+            switch (clip)
             {
-                return "music: run and assault";
+                case "ButtonClick":
+                case "ButtonBack":
+                    return SoundKind.Tap;
+                case "CueProjectileWarning":
+                    return SoundKind.Warning; // a steady whistle: its RMS sits near its peak
+                case "Victory":
+                case "Defeat":
+                case "CueTowerFall":
+                case "CueBoss":
+                    return SoundKind.Jingle;
+                default:
+                    return SoundKind.Effect;
+            }
+        }
+
+        // The event -> sound table (also written into docs/art/v3/checklist.md and docs/audio-licenses.md).
+        private static string PlayedBy(string clip)
+        {
+            switch (clip)
+            {
+                case "MenuLoop": return "music: menus (the motif in C major, marimba and bell)";
+                case "RunLoop": return "music: run and assault, world 1 (C major, 124 BPM, bell lead)";
+                case "RunLoopW2": return "music: run and assault, world 2 (A minor, 132 BPM, pluck lead)";
+                case "RunLoopW3": return "music: run and assault, world 3 (F major, 112 BPM, swing, brass lead)";
+                case "RunLoopW4": return "music: run and assault, world 4 (D minor, 140 BPM, square lead)";
+                case "GateGood": return "role GateGood: crowd takes a good gate (ratchet + first three notes of the motif on a short bell)";
+                case "GateBad": return "role GateBad: bad gate or obstacle loss (coil spring loosening)";
+                case "UnitLoss": return "role UnitLoss: a figure bursts into pieces and confetti (assault)";
+                case "Coin": return "role Coin: purchase (short double bell)";
+                case "ButtonClick": return "role ButtonClick: button press (ratchet tick)";
+                case "ButtonBack": return "role ButtonBack: back (lower tick)";
+                case "CueKeyWind": return "cue KeyWind: the wind-up key turns as a level starts";
+                case "CueNumberPop": return "cue NumberPop: the number of a good gate jumps";
             }
 
             return clip.StartsWith("Cue") ? "cue " + clip.Substring(3) : "role " + clip;
