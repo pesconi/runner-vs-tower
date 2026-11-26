@@ -47,7 +47,7 @@ lançamento jun/2027.
 | RT-9b.1 Trocar o application ID para `com.jungledegree.stampeep` (D34 = B) — concluída em 2026-11-24 (fonte única + `Tools/app-id.sh`, validador recusa o ID antigo, build sem Firebase com aviso até o `google-services.json` novo, passo 4b do Firebase; junto, D35 = A: IDs do AdMob fora do repositório, passo 4.5 feito); instalado no OPPO em 2026-11-24 pelo maestro (app antigo desinstalado; abre como Stampeep, `com.jungledegree.stampeep`; Firebase desligado até o passo 4b; AdMob responde "Account not approved yet", esperado para app novo) | — | RT-9b | antes do passo 5 da RT-9b |
 | RT-6v3.1 Guia de estilo como dado e validador (sem mudar a tela) — **concluída** (2026-11-25; `direcao-visual-v3.md`) | 0,75 | 0,9 | dez/2026 |
 | RT-6v3.2 Imagem-alvo medida: 2–3 telas-conceito no Unity + ensaio no OPPO + ficha **D36** — **concluída** (2026-11-25; D36 com o usuário) | 1 | 1,2 | dez/2026 |
-| K.v3a (studiokit) Shader irmão de vinil (`ToonLit` intacto; aceitação com match-3 e Wild Pack) — **planejada**; trava em D36 | 0,75 | 0,9 | dez/2026 |
+| K.v3a (studiokit) Shader irmão de vinil (`ToonLit` intacto; aceitação com match-3 e Wild Pack) — **concluída** (2026-11-26; `studiokit` 0.15.0, tag `v0.15.0`; luz escolhida contra matcap pela medida no OPPO) | 0,75 | 0,9 | dez/2026 |
 | RT-6v3.3 Vinil, plástico fosco, luz, céu e pós por mundo + gate 3× — **planejada** | 0,75 | 0,9 | dez/2026–jan/2027 |
 | K.v3b (studiokit) Layout de instância opcional (rosto, fase do quique, UV/UV2, atlas) — **planejada** | 0,75 | 0,9 | jan/2027 |
 | K.v3c (studiokit) Construtor liso e chanfrado (torno, chanfro, normais suaves, UV) — **planejada** | 0,5 | 0,6 | jan/2027 |
@@ -1056,6 +1056,15 @@ Calendário: o encaixe em jun/2027 é **justo**; ver "Folga e riscos de prazo".
 - **Aceite:** aceitação do studiokit (testes, isolamento, validadores e save do Wild Pack, **match-3 sem mudança na tela**);
   versão nova do kit com tag.
 - **Exige o usuário:** nada.
+- **Status:** concluída em 2026-11-26. `studiokit` 0.15.0, tag `v0.15.0` (decisão T43 lá; T-Kv3a-1..4 em `decisoes.md`).
+  `StudioKit/ToonVinyl` irmão do `ToonLit` (mesmas propriedades, palavras-chave e `ToonInstanceData`, duas rotas),
+  `ToonVinylLook`/`ToonVinylLookApplier` (luz principal quente, ambiente frio, borda, ombro de tom) e `ToonVinylSurface`
+  (vinil, fosco, portão, inimigo, efeito/UI); barriga da A sem estouro (ombro + brilho limitado), brilho mantido.
+  Matcap medido no OPPO (`VinylScene` do `TestProject`, 300 × 1.920 tri, 60 fps firmes; GPU p95 Vulkan `ToonLit`
+  4,9–5,4 ms, luz 5,9–6,3, matcap 5,2–5,6; GLES ~15 ms em todos, leitura do medidor) e descartado: **luz**. Aceitação:
+  `TestProject` EditMode 490/490 com GPU e isolamento PASS; match-3 sem arquivo usado alterado, isolamento PASS, EditMode
+  99/99, fases PASS; Wild Pack igual à linha de base (90/0, 117/0, áudio 16, save 87/87, isolamento PASS); este jogo
+  isolamento PASS e EditMode 747/751 (4 ignorados sem GPU; os testes do vinil com GPU neste projeto linear: 11/11). Revisão independente sem bloqueio. Capturas em `../studiokit/docs/kv3a/`. Nada exige o usuário.
 - **Prompt da sessão:** "Entrega K.v3a do studiokit: shader irmão de vinil para o Stampeep (o kit não nomeia o jogo). Leia
   `RunnerVsTower/docs/direcao-visual-v3.md` (seções 1, 2.1, 7) e a resposta da D36. Escreva um shader novo ao lado do
   `ToonLit`, sem mudar o `ToonLit` nem o `ToonInstanceData`, nas duas rotas. Rode a aceitação do studiokit incluindo o

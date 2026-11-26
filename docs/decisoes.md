@@ -2502,3 +2502,26 @@ do usuário (D36); estas são as decisões técnicas para produzir e medir as op
   lista de `audio-licenses.md` ou fora da janela reprova. O aviso do projétil tem alvo próprio (-7 ± 3): é um assobio contínuo.
 - **O modelo não ouve:** a escuta é do usuário (aceite agrupado 3). Página `docs/audio/v3/escuta.html` com antes/depois e
   métricas; "antes" em `docs/audio/v3/antes/` (só os clipes que mudaram).
+
+## 2026-11-26 — K.v3a (studiokit): shader irmão de vinil — técnicas do maestro (sessão da entrega)
+
+Feita no `studiokit` 0.15.0 (tag `v0.15.0`); registro completo lá, decisão **T43** em `../studiokit/docs/decisoes.md`.
+Este jogo ainda não usa o shader (os materiais passam a ele na RT-6v3.3).
+
+- **T-Kv3a-1 — Irmão do ToonLit no kit:** `StudioKit/ToonVinyl` com as mesmas propriedades, palavras-chave e dados de
+  instância do `ToonLit` (troca de shader num material sem mudar dono nem rota); `ToonLit` e `ToonInstanceData` intactos.
+  Substitui o `Claybreak/VinylLab` do laboratório quando a RT-6v3.3 migrar os materiais (o laboratório fica como estava).
+- **T-Kv3a-2 — Luz e perfis como dado do kit:** `ToonVinylLook` (rampa suave, sombra tingida, luz principal **quente**,
+  ambiente de dois tons **frio**, borda, ombro de tom, pico do brilho; padrões = direção A da RT-6v3.2 com a luz da D36) e
+  `ToonVinylSurface` com os perfis do guia (vinil, fosco, portão translúcido, inimigo com borda de ameaça, efeito/UI). O
+  `StyleGuide` do jogo guarda as cópias dele e grava com `ApplyTo`; a sombra de contato é o `BlobShadowInstanced`.
+- **T-Kv3a-3 — Barriga da A sem estouro e com o vinil:** ombro suave no difuso (joelho 0,78, matiz mantido) e brilho/borda
+  que misturam até uma cor limitada (pico 1,1 × luz) em vez de somar. No teste com GPU a barriga creme não tem branco puro
+  e guarda o sombreado (o `ToonLit` vira mancha branca); o miolo do brilho ainda passa de 1 e pode pegar bloom com limiar
+  logo acima de 1. Atenção na RT-6v3.3: o pós da A (contraste +14, saturação +22) pode reabrir o estouro; conferir na
+  captura.
+- **T-Kv3a-4 — Matcap (sugestão do usuário na D36) medido e descartado:** no OPPO, 300 × 1.920 triângulos, 60 fps firmes,
+  GPU p95 Vulkan: `ToonLit` 4,9–5,4 ms, vinil com luz 5,9–6,3, matcap 5,2–5,6; GLES lê ~15 ms em quase tudo (leitura
+  do medidor, quadro firme). O matcap economiza ~0,7 ms mas prende a luz a uma câmera e a um sol (rebake por mundo, recuo
+  da câmera e assalto) e perde brilho por material; os dois cabem no teto de 11 ms → **luz**. Capturas do aparelho e dos
+  testes em `../studiokit/docs/kv3a/`.

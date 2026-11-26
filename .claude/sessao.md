@@ -214,3 +214,8 @@
   O tonemapping Neutral acinzenta a paleta pastel (valores de tela): o laboratório usa sem tonemapping.
   No ensaio, conferir a linha `[ToonRoute]` de cada arquivo: com "Activity not started" no log, o `am start` caiu na instância
   aberta e a rodada "GLES" saiu em Vulkan (refazer). GLES sem pós às vezes lê ~20 ms de GPU com 60 fps firmes: repetir.
+- 2026-11-26 (K.v3a, no `studiokit` 0.15.0): o shader de vinil do jogo é `StudioKit/ToonVinyl` (irmão do ToonLit:
+  trocar `material.shader` basta; luz por `ToonVinylLookApplier`, perfis por `ToonVinylSurface.ApplyTo`). Os testes do
+  kit rodam também no EditMode deste jogo (os 3 de desenho do vinil ficam ignorados com `-nographics`). Medir shader
+  isolado: `VinylScene` do `TestProject` + `SCENE_EXTRA="--ei vinyl N ..." Tools~/scene-measure-run.sh`; numa cena
+  gerada pela 1ª vez, conferir no logcat a linha da cena antes de aceitar números (referência nula = nada desenhado).
